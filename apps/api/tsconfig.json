@@ -1,0 +1,14 @@
+{
+  "extends": "@hr/config/tsconfig.base.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "declaration": false,
+    "declarationMap": false,
+    "outDir": "dist",
+    "baseUrl": "./"
+  },
+  "include": ["src", "test"]
+}
