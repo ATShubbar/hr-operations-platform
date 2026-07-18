@@ -6,6 +6,18 @@ An HR operations platform for a Saudi Arabian HR consultancy: recruitment, GRO (
 
 Walking skeleton phase. Work proceeds one approved task at a time from the backlog.
 
+## Getting started
+
+Requires Node ≥ 22.14 (see `.nvmrc`). The package manager is pnpm, pinned via the `packageManager` field and provided by corepack (bundled with Node):
+
+```sh
+corepack enable    # one-time, may need sudo; afterwards `pnpm` works directly
+pnpm install
+pnpm build         # turbo run build across the workspace
+```
+
+If you can't (or don't want to) run `corepack enable`, prefix commands instead: `corepack pnpm install`.
+
 ## Documents
 
 | Document | Purpose |
