@@ -1,0 +1,17 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Throwaway proof table for the WS-11 migration-workflow check.
+// Remove when the first real module table lands (tracked in WS-11 evidence).
+model Ws11Check {
+  id   Int    @id @default(autoincrement())
+  note String
+
+  @@map("ws11_check")
+}

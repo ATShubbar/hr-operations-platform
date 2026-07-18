@@ -2,6 +2,7 @@ import base from '@hr/config/eslint';
 import hr from '@hr/config/eslint-plugin';
 
 export default [
+  { ignores: ['src/generated/**'] },
   ...base,
   {
     plugins: { hr },

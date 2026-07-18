@@ -5,6 +5,7 @@ export default defineConfig({
   test: {
     include: ['test/**/*.e2e-spec.ts'],
     environment: 'node',
+    setupFiles: ['dotenv/config'],
   },
   plugins: [
     swc.vite({
