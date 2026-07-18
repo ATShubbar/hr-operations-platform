@@ -12,7 +12,7 @@ One decision per file, numbered in creation order. A record is never edited to c
 
 | # | Title | Status |
 |---|---|---|
-| [ADR-001](ADR-001-data-isolation-rls-prisma-pooling.md) | Data isolation — client_id + RLS with Prisma and pooling | Proposed (pending SPIKE-001) |
+| [ADR-001](ADR-001-data-isolation-rls-prisma-pooling.md) | Data isolation — client_id + RLS with Prisma and pooling | Accepted |
 | [ADR-002](ADR-002-authorization-model.md) | Authorization — permission-based RBAC, deny by default | Accepted |
 | [ADR-003](ADR-003-module-structure-and-boundaries.md) | Module structure and boundary enforcement | Accepted |
 | [ADR-004](ADR-004-inter-module-communication.md) | Inter-module communication — domain events | Proposed |

@@ -1,8 +1,10 @@
 # ADR-001 — Data isolation: client_id + RLS with Prisma and pooling
 
-- Status: Proposed (pending SPIKE-001)
+- Status: **Accepted** (2026-07-18 — SPIKE-001 executed: S1–S7 all pass; see `spikes/001-rls/README.md`)
 - Date: 2026-07-18
 - Owner: TBD
+
+> **Spike amendments to the pattern:** (1) policies must use `NULLIF(current_setting('app.client_id', true), '')::uuid` — pooled-connection reuse leaves the GUC as empty string, not NULL, and the bare cast throws; (2) client `transactionOptions.maxWait` must be sized with the pool (burst depth > pool size queues against it); (3) Prisma 7's pg driver adapter provides an in-process pool we configure directly — **no external pooler (pgBouncer) at launch**, removing the session-state risk class entirely. Measured overhead: +1.16ms p95 per operation.
 
 ## Context
 One consultancy operates the system; many client companies are managed within it. Client-company representatives log in and must be strictly isolated to their own client's records. The data is highly sensitive (passports, iqamas, salaries). Application-level filtering alone fails *open*: one forgotten `where client_id` clause is a cross-client data leak. We need a database-enforced backstop, and it must coexist with Prisma's connection pooling without leaking session state between requests.

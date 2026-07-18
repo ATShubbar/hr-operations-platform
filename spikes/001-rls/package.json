@@ -1,0 +1,21 @@
+{
+  "name": "@hr/spike-001-rls",
+  "version": "0.0.1",
+  "private": true,
+  "description": "THROWAWAY spike: RLS + Prisma 7 + pooling (SPIKE-001). Nothing may import from this package.",
+  "type": "module",
+  "scripts": {
+    "spike": "vitest run",
+    "db:migrate": "CHECKPOINT_DISABLE=1 prisma migrate dev",
+    "db:generate": "CHECKPOINT_DISABLE=1 prisma generate"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "dotenv": "^17.0.0"
+  },
+  "devDependencies": {
+    "prisma": "^7.8.0",
+    "vitest": "^3.0.0"
+  }
+}

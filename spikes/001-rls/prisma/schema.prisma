@@ -1,0 +1,17 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model SpEmployee {
+  id       Int    @id @default(autoincrement())
+  clientId String @map("client_id") @db.Uuid
+  name     String
+  salary   Int
+
+  @@map("sp_employees")
+}
