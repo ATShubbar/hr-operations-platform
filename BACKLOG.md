@@ -19,7 +19,7 @@
 | WS-03 | Shared config package (tsconfig/eslint/prettier bases) | WS-02 | done ([evidence](evidence/skeleton/WS-03.md)) |
 | WS-04 | Shared contracts package (Zod) | WS-03 | done ([evidence](evidence/skeleton/WS-04.md)) |
 | WS-05 | NestJS API scaffold with health endpoints | WS-03 | done ([evidence](evidence/skeleton/WS-05.md)) |
-| WS-06 | Next.js web scaffold | WS-03 | todo |
+| WS-06 | Next.js web scaffold | WS-03 | done ([evidence](evidence/skeleton/WS-06.md)) |
 | WS-07 | Module skeleton + example module (ADR-003 layout) | WS-05 | todo |
 | WS-08 | Boundary + RTL lint enforcement | WS-07, WS-06 | todo |
 | WS-09 | CI pipeline (lint, typecheck, test, build) | WS-08 | todo |
