@@ -1,6 +1,6 @@
 # ADR-003 — Module structure and boundary enforcement
 
-- Status: Proposed
+- Status: Accepted (2026-07-18 — layout proven in WS-07, boundary lint proven with deliberate violations in WS-08)
 - Date: 2026-07-18
 - Owner: TBD
 
