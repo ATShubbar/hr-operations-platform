@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import type { BilingualText } from '@hr/contracts';
-import { GreetingService } from '../../example/public-api';
+import { GreetingService } from '../../example/application/greeting.service';
 
 @Controller('example-consumer')
 export class ExampleConsumerController {
