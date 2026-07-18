@@ -25,7 +25,7 @@
 | WS-09 | CI pipeline (lint, typecheck, test, build) | WS-08 | done ([evidence](evidence/skeleton/WS-09.md)) |
 | WS-10 | Local dev stack (Docker Compose: Postgres + Redis) | WS-01 | done ([evidence](evidence/skeleton/WS-10.md)) |
 | WS-11 | Prisma setup + migration workflow | WS-10, WS-05 | done ([evidence](evidence/skeleton/WS-11.md)) |
-| WS-12 | Execute SPIKE-001 (RLS + Prisma + pooling) → finalize ADR-001 | WS-11 | todo |
+| WS-12 | Execute SPIKE-001 (RLS + Prisma + pooling) → finalize ADR-001 | WS-11 | done ([evidence](evidence/skeleton/WS-12.md)) |
 | WS-13 | Production RLS pattern (roles, policies, client extension) | WS-12 | todo |
 | WS-14 | Request context + structured logging | WS-05 | todo |
 | WS-15 | Deny-by-default authorization guard | WS-14 | todo |
