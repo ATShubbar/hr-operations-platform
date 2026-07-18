@@ -23,7 +23,7 @@
 | WS-07 | Module skeleton + example module (ADR-003 layout) | WS-05 | done ([evidence](evidence/skeleton/WS-07.md)) |
 | WS-08 | Boundary + RTL lint enforcement | WS-07, WS-06 | done ([evidence](evidence/skeleton/WS-08.md)) |
 | WS-09 | CI pipeline (lint, typecheck, test, build) | WS-08 | done ([evidence](evidence/skeleton/WS-09.md)) |
-| WS-10 | Local dev stack (Docker Compose: Postgres + Redis) | WS-01 | todo |
+| WS-10 | Local dev stack (Docker Compose: Postgres + Redis) | WS-01 | done ([evidence](evidence/skeleton/WS-10.md)) |
 | WS-11 | Prisma setup + migration workflow | WS-10, WS-05 | todo |
 | WS-12 | Execute SPIKE-001 (RLS + Prisma + pooling) → finalize ADR-001 | WS-11 | todo |
 | WS-13 | Production RLS pattern (roles, policies, client extension) | WS-12 | todo |
