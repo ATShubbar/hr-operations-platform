@@ -17,7 +17,7 @@
 | WS-01 | Initialize repository | — | done ([evidence](evidence/skeleton/WS-01.md)) |
 | WS-02 | Monorepo scaffolding (pnpm + Turborepo) | WS-01 | done ([evidence](evidence/skeleton/WS-02.md)) |
 | WS-03 | Shared config package (tsconfig/eslint/prettier bases) | WS-02 | done ([evidence](evidence/skeleton/WS-03.md)) |
-| WS-04 | Shared contracts package (Zod) | WS-03 | todo |
+| WS-04 | Shared contracts package (Zod) | WS-03 | done ([evidence](evidence/skeleton/WS-04.md)) |
 | WS-05 | NestJS API scaffold with health endpoints | WS-03 | todo |
 | WS-06 | Next.js web scaffold | WS-03 | todo |
 | WS-07 | Module skeleton + example module (ADR-003 layout) | WS-05 | todo |
