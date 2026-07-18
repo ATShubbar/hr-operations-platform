@@ -15,7 +15,7 @@
 | ID | Task | Depends on | Status |
 |---|---|---|---|
 | WS-01 | Initialize repository | — | done ([evidence](evidence/skeleton/WS-01.md)) |
-| WS-02 | Monorepo scaffolding (pnpm + Turborepo) | WS-01 | todo |
+| WS-02 | Monorepo scaffolding (pnpm + Turborepo) | WS-01 | done ([evidence](evidence/skeleton/WS-02.md)) |
 | WS-03 | Shared config package (tsconfig/eslint/prettier bases) | WS-02 | todo |
 | WS-04 | Shared contracts package (Zod) | WS-03 | todo |
 | WS-05 | NestJS API scaffold with health endpoints | WS-03 | todo |
