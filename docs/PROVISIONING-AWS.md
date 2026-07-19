@@ -79,3 +79,7 @@ this paragraph is never used.
 
 - 2026-07-19: ADR-006 rev. 4 — UAE interim decided. Region enable: ✅
   Verification: RDS PG16 ✅  ElastiCache ✅  S3 ✅   Budget: ✅ ($50/mo)  Root MFA: ✅
+- 2026-07-19 ~13:10: Batch-1 resources + ALB live; Docker images verified
+  locally; deploy pipeline committed (gated). RDS/ECS creation blocked by
+  new-account restrictions ~2h; background retry running; AWS support case
+  raised (Account and billing → verification) to lift limits.
