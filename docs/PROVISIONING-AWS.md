@@ -77,5 +77,5 @@ this paragraph is never used.
 
 ## Status log
 
-- 2026-07-19: ADR-006 rev. 4 — UAE interim decided. Region enable: ☐
-  Verification: RDS ☐  ElastiCache ☐  S3 ☐   Budget: ☐  Root MFA: ☐
+- 2026-07-19: ADR-006 rev. 4 — UAE interim decided. Region enable: ✅
+  Verification: RDS PG16 ✅  ElastiCache ✅  S3 ✅   Budget: ✅ ($50/mo)  Root MFA: ✅
