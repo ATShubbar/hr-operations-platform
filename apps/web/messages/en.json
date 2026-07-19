@@ -9,7 +9,8 @@
     "clientLabel": "Client",
     "statusLabel": "Status",
     "statusActive": "Active",
-    "rtlCheckLink": "Component check page"
+    "rtlCheckLink": "Component check page",
+    "todayHijri": "Today (Hijri)"
   },
   "rtlCheck": {
     "title": "Bidirectional component check",

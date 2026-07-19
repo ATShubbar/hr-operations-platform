@@ -9,7 +9,8 @@
     "clientLabel": "العميل",
     "statusLabel": "الحالة",
     "statusActive": "نشط",
-    "rtlCheckLink": "صفحة فحص المكونات"
+    "rtlCheckLink": "صفحة فحص المكونات",
+    "todayHijri": "تاريخ اليوم الهجري"
   },
   "rtlCheck": {
     "title": "فحص المكونات في الاتجاهين",

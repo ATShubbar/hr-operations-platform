@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { hasLocale } from 'next-intl';
 import { clientCompanySchema, type ClientCompany } from '@hr/contracts';
+import { formatHijri } from '@hr/dates';
 import { Link } from '@/i18n/navigation';
 import { LanguageSwitcher } from '@/components/language-switcher';
 
@@ -23,6 +24,9 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         <LanguageSwitcher />
       </div>
       <p className="mt-2 text-gray-600">{t('subtitle')}</p>
+      <p className="mt-1 text-sm text-gray-500">
+        {t('todayHijri')}: {formatHijri(new Date(), locale === 'ar' ? 'ar' : 'en')}
+      </p>
       <section className="mt-8 rounded-lg border border-gray-200 p-4">
         <h2 className="text-sm font-medium text-gray-500">{t('contractCheck')}</h2>
         <dl className="mt-3 space-y-1">

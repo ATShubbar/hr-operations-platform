@@ -1,0 +1,25 @@
+{
+  "name": "@hr/dates",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Shared dual-calendar utility (ADR-005): store Gregorian UTC, render/parse Hijri (Umm al-Qura)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@hr/config": "workspace:*",
+    "vitest": "^3.0.0"
+  }
+}

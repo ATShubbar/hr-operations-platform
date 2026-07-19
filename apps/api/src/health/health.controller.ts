@@ -1,4 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
+import { formatHijri } from '@hr/dates';
 import { Public } from '../auth/permissions.decorator';
 
 // These endpoints are probed unauthenticated by the deploy gate and load
@@ -12,6 +13,7 @@ interface HealthResponse {
   service: string;
   version: string;
   uptimeSeconds: number;
+  todayHijri: string;
 }
 
 interface ReadyResponse {
@@ -28,6 +30,7 @@ export class HealthController {
       service: 'hr-api',
       version: process.env.BUILD_VERSION ?? 'dev',
       uptimeSeconds: Math.floor((Date.now() - startedAt) / 1000),
+      todayHijri: formatHijri(new Date(), 'en'),
     };
   }
 
