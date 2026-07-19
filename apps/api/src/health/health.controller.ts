@@ -1,8 +1,9 @@
 import { Controller, Get } from '@nestjs/common';
+import { Public } from '../auth/permissions.decorator';
 
 // These endpoints are probed unauthenticated by the deploy gate and load
-// balancer — they must stay public when the deny-by-default authorization
-// guard (WS-15, ADR-002) lands.
+// balancer — hence the explicit @Public() opt-out of the deny-by-default
+// guard (WS-15, ADR-002).
 
 const startedAt = Date.now();
 
@@ -19,6 +20,7 @@ interface ReadyResponse {
 
 @Controller()
 export class HealthController {
+  @Public()
   @Get('health')
   health(): HealthResponse {
     return {
@@ -29,6 +31,7 @@ export class HealthController {
     };
   }
 
+  @Public()
   @Get('ready')
   ready(): ReadyResponse {
     return { status: 'ready' };
