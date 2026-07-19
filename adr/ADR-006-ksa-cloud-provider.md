@@ -1,8 +1,8 @@
 # ADR-006 — KSA cloud provider selection
 
-- Status: Open — **evaluation complete (2026-07-19), decision pending owner sign-off; recommendation: AWS Riyadh (me-central-2)**
-- Date: 2026-07-18 (evaluation added 2026-07-19)
-- Owner: TBD
+- Status: **Accepted** (2026-07-19 — owner selected **AWS Riyadh, me-central-2** per the evaluation below)
+- Date: 2026-07-18 (evaluation 2026-07-19; decision 2026-07-19)
+- Owner: Ahmed Alshubbar
 
 ## Context
 All production data, backups, and logs must remain in Saudi Arabia (PDPL/residency principle). The provider choice determines whether we get **managed** PostgreSQL, Redis, and S3-compatible storage — or operate our own stateful services, a major hidden cost and reliability risk for a small team. It also determines pooler behavior relevant to ADR-001 (now moot per SPIKE-001: in-process pool, no external pooler needed at launch).
@@ -28,7 +28,16 @@ All production data, backups, and logs must remain in Saudi Arabia (PDPL/residen
 **Ruled out for now:** GCP Dammam (CNTXT reseller gate is disproportionate friction for this team), Azure (not open until Q4 2026), STC Cloud (no clear self-service managed Postgres).
 
 ## Decision
-Pending owner sign-off on the recommendation. On acceptance record here: chosen region, verified service list (RDS/ElastiCache/S3 checkboxes), RPO/RTO targets, backup schedule, and the WS-13 dev-password rotation confirmation.
+**AWS, region me-central-2 (Riyadh).** Accepted by the owner 2026-07-19.
+
+Provisioning-day verification checklist (fill in during WS-20 provisioning; falls back to OCI per Consequences if the first two fail):
+- [ ] RDS for PostgreSQL 16 creatable in me-central-2 (Multi-AZ)
+- [ ] ElastiCache (Redis/Valkey) creatable in me-central-2 — if not: interim Redis container, revisit monthly
+- [ ] S3 bucket in me-central-2 with default encryption
+- [ ] GitHub Actions OIDC role (no long-lived keys)
+- [ ] `app_staff`/`app_client` passwords rotated from dev defaults (WS-13 flag)
+- [ ] RPO/RTO targets recorded: RPO ≤ ____ , RTO ≤ ____ (measured by WS-21 restore test)
+- [ ] Backup schedule recorded: ____
 
 ## Consequences (expected)
 - AWS path: GitHub Actions deploys via OIDC role (no long-lived keys); RDS automated backups + snapshot restore test satisfies WS-21; S3 bucket policies per-client-prefix per the storage design.

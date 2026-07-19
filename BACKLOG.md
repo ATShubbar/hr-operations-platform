@@ -33,7 +33,7 @@
 | WS-17 | Hijri/Gregorian shared date utility | WS-04 | done ([evidence](evidence/skeleton/WS-17.md)) |
 | WS-18 | Cross-client isolation test harness in CI | WS-13, WS-15, WS-09 | done ([evidence](evidence/skeleton/WS-18.md)) |
 | WS-19 | Seed script (2 clients, all roles) | WS-13 | done ([evidence](evidence/skeleton/WS-19.md)) |
-| WS-20 | Finalize ADR-006 + deploy pipeline to KSA host | WS-09 | todo |
+| WS-20 | Finalize ADR-006 + deploy pipeline to KSA host | WS-09 | in progress — ADR-006 **Accepted (AWS Riyadh)**; blocked on owner provisioning ([guide](docs/PROVISIONING-AWS.md)) |
 | WS-21 | Backups + restore test | WS-20 | todo |
 | WS-22 | Skeleton exit review (evidence walkthrough) | WS-01…WS-21 | todo |
 
