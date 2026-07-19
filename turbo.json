@@ -1,5 +1,13 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalEnv": [
+    "DATABASE_URL",
+    "STAFF_DATABASE_URL",
+    "CLIENT_DATABASE_URL",
+    "REDIS_URL",
+    "PORT",
+    "BUILD_VERSION"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
