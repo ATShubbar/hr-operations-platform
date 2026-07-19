@@ -1,0 +1,27 @@
+{
+  "family": "hr-migrate",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::075483720704:role/hr-task-execution",
+  "taskRoleArn": "arn:aws:iam::075483720704:role/hr-task-role",
+  "containerDefinitions": [
+    {
+      "name": "migrate",
+      "image": "IMAGE_PLACEHOLDER",
+      "essential": true,
+      "secrets": [
+        { "name": "DATABASE_URL", "valueFrom": "arn:aws:ssm:me-central-1:075483720704:parameter/hr/staging/db/url" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/hr/api",
+          "awslogs-region": "me-central-1",
+          "awslogs-stream-prefix": "migrate"
+        }
+      }
+    }
+  ]
+}

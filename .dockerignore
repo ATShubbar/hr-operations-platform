@@ -1,0 +1,15 @@
+.git
+node_modules
+**/node_modules
+**/dist
+**/.next
+**/.turbo
+coverage
+evidence
+spikes
+docs
+adr
+*.md
+.env
+.env.*
+.claude

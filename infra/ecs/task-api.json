@@ -1,0 +1,33 @@
+{
+  "family": "hr-api",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::075483720704:role/hr-task-execution",
+  "taskRoleArn": "arn:aws:iam::075483720704:role/hr-task-role",
+  "containerDefinitions": [
+    {
+      "name": "api",
+      "image": "IMAGE_PLACEHOLDER",
+      "essential": true,
+      "portMappings": [{ "containerPort": 3001, "protocol": "tcp" }],
+      "environment": [
+        { "name": "NODE_ENV", "value": "production" },
+        { "name": "PORT", "value": "3001" }
+      ],
+      "secrets": [
+        { "name": "STAFF_DATABASE_URL", "valueFrom": "arn:aws:ssm:me-central-1:075483720704:parameter/hr/staging/db/staff-url" },
+        { "name": "CLIENT_DATABASE_URL", "valueFrom": "arn:aws:ssm:me-central-1:075483720704:parameter/hr/staging/db/client-url" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/hr/api",
+          "awslogs-region": "me-central-1",
+          "awslogs-stream-prefix": "api"
+        }
+      }
+    }
+  ]
+}

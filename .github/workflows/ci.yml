@@ -48,3 +48,81 @@ jobs:
 
       - name: Lint, typecheck, test, build
         run: pnpm turbo run lint typecheck test build
+
+  deploy:
+    needs: ci
+    # Enabled by setting the repo variable DEPLOY_ENABLED=true once the
+    # staging infrastructure exists (WS-20; blocked on new-account limits).
+    if: github.ref == 'refs/heads/main' && vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    environment: staging
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      AWS_REGION: me-central-1
+      ECR: 075483720704.dkr.ecr.me-central-1.amazonaws.com
+      CLUSTER: hr-staging
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::075483720704:role/hr-platform-deploy
+          aws-region: me-central-1
+
+      - name: Login to ECR
+        run: aws ecr get-login-password | docker login --username AWS --password-stdin $ECR
+
+      - name: Build and push images
+        run: |
+          docker build -f apps/api/Dockerfile --target runtime -t $ECR/hr-api:${{ github.sha }} .
+          docker build -f apps/api/Dockerfile --target migrate -t $ECR/hr-api:migrate-${{ github.sha }} .
+          docker build -f apps/web/Dockerfile --target runtime -t $ECR/hr-web:${{ github.sha }} .
+          docker push $ECR/hr-api:${{ github.sha }}
+          docker push $ECR/hr-api:migrate-${{ github.sha }}
+          docker push $ECR/hr-web:${{ github.sha }}
+
+      - name: Register task definitions
+        id: taskdefs
+        run: |
+          for t in api web migrate; do
+            img="$ECR/hr-api:${{ github.sha }}"
+            [ "$t" = "web" ] && img="$ECR/hr-web:${{ github.sha }}"
+            [ "$t" = "migrate" ] && img="$ECR/hr-api:migrate-${{ github.sha }}"
+            sed "s|IMAGE_PLACEHOLDER|$img|" infra/ecs/task-$t.json > /tmp/task-$t.json
+            arn=$(aws ecs register-task-definition --cli-input-json file:///tmp/task-$t.json \
+              --query 'taskDefinition.taskDefinitionArn' --output text)
+            echo "$t=$arn" >> "$GITHUB_OUTPUT"
+          done
+
+      - name: Run database migrations (one-off task)
+        run: |
+          TASK=$(aws ecs run-task --cluster $CLUSTER \
+            --task-definition "${{ steps.taskdefs.outputs.migrate }}" \
+            --launch-type FARGATE \
+            --network-configuration 'awsvpcConfiguration={subnets=[subnet-00e08925f1405d04e,subnet-073fc4a972274d7d4],securityGroups=[sg-04307ab0b644ff608],assignPublicIp=ENABLED}' \
+            --query 'tasks[0].taskArn' --output text)
+          echo "migrate task: $TASK"
+          aws ecs wait tasks-stopped --cluster $CLUSTER --tasks "$TASK"
+          EXIT=$(aws ecs describe-tasks --cluster $CLUSTER --tasks "$TASK" \
+            --query 'tasks[0].containers[0].exitCode' --output text)
+          echo "migrate exit code: $EXIT"; [ "$EXIT" = "0" ]
+
+      - name: Deploy services
+        run: |
+          aws ecs update-service --cluster $CLUSTER --service hr-api \
+            --task-definition "${{ steps.taskdefs.outputs.api }}" --force-new-deployment >/dev/null
+          aws ecs update-service --cluster $CLUSTER --service hr-web \
+            --task-definition "${{ steps.taskdefs.outputs.web }}" --force-new-deployment >/dev/null
+          aws ecs wait services-stable --cluster $CLUSTER --services hr-api hr-web
+
+      - name: Health gate
+        run: |
+          for i in $(seq 1 20); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://hr-staging-alb-1441042291.me-central-1.elb.amazonaws.com/health || true)
+            [ "$code" = "200" ] && echo "healthy" && exit 0
+            sleep 10
+          done
+          echo "health gate FAILED"; exit 1
