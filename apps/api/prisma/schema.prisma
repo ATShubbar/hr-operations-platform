@@ -7,11 +7,14 @@ datasource db {
   provider = "postgresql"
 }
 
-// Throwaway proof table for the WS-11 migration-workflow check.
-// Remove when the first real module table lands (tracked in WS-11 evidence).
-model Ws11Check {
-  id   Int    @id @default(autoincrement())
-  note String
+// Pattern exemplar for client-scoped tables (ADR-001). Every client-owned
+// table carries client_id and ships RLS policies in its migration — see the
+// checklist in src/modules/README.md. This table exists to keep the RLS
+// wiring continuously tested until the first real module table lands.
+model CoreScopeCheck {
+  id       Int    @id @default(autoincrement())
+  clientId String @map("client_id") @db.Uuid
+  note     String
 
-  @@map("ws11_check")
+  @@map("core_scope_check")
 }

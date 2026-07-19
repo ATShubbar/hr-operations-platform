@@ -8,5 +8,5 @@
  *
  * 🟢 You can import this file directly.
  */
-export type * from './models/Ws11Check'
+export type * from './models/CoreScopeCheck'
 export type * from './commonInputTypes'

@@ -21,3 +21,29 @@ modules/<name>/
 5. `domain/` and `infra/` are added when the module actually needs them — empty ceremony directories are noise.
 
 The `example/` and `example-consumer/` modules are the living reference for this shape (and the lint rule's test subjects). Copy `example/` when starting a new module.
+
+## Client-scoped table checklist (ADR-001)
+
+Every table holding client-owned data MUST, in the migration that creates it:
+
+1. Carry a `client_id uuid NOT NULL` column (denormalized — including child tables; never derive scope through joins).
+2. Grant table + sequence access to both roles:
+   ```sql
+   GRANT SELECT, INSERT, UPDATE, DELETE ON <table> TO app_staff, app_client;
+   GRANT USAGE, SELECT ON SEQUENCE <table>_id_seq TO app_staff, app_client;
+   ```
+3. Enable RLS and ship both policies (**the NULLIF is load-bearing** — SPIKE-001 finding: pooled reuse leaves the GUC as `''`, and a bare `::uuid` cast throws):
+   ```sql
+   ALTER TABLE <table> ENABLE ROW LEVEL SECURITY;
+
+   CREATE POLICY staff_full_access ON <table>
+     FOR ALL TO app_staff USING (true) WITH CHECK (true);
+
+   CREATE POLICY client_isolation ON <table>
+     FOR ALL TO app_client
+     USING (client_id = NULLIF(current_setting('app.client_id', true), '')::uuid)
+     WITH CHECK (client_id = NULLIF(current_setting('app.client_id', true), '')::uuid);
+   ```
+4. Register the table's endpoints in the isolation test harness (WS-18) — unregistered endpoints fail CI.
+
+Data access: staff-path code uses `PrismaService`; client-representative-path code uses `ScopedPrismaService.forClient(clientId)` and never the raw client. The reference implementation and its tests: `src/prisma/` and `test/rls.e2e-spec.ts`; migration exemplar: `prisma/migrations/*rls_roles_and_policies`.

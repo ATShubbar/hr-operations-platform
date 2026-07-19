@@ -18,7 +18,7 @@ export { Prisma }
 export * as $Enums from './enums'
 export * from './enums';
 /**
- * Model Ws11Check
+ * Model CoreScopeCheck
  * 
  */
-export type Ws11Check = Prisma.Ws11CheckModel
+export type CoreScopeCheck = Prisma.CoreScopeCheckModel

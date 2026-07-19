@@ -384,7 +384,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 
 export const ModelName = {
-  Ws11Check: 'Ws11Check'
+  CoreScopeCheck: 'CoreScopeCheck'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -400,81 +400,81 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "ws11Check"
+    modelProps: "coreScopeCheck"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
-    Ws11Check: {
-      payload: Prisma.$Ws11CheckPayload<ExtArgs>
-      fields: Prisma.Ws11CheckFieldRefs
+    CoreScopeCheck: {
+      payload: Prisma.$CoreScopeCheckPayload<ExtArgs>
+      fields: Prisma.CoreScopeCheckFieldRefs
       operations: {
         findUnique: {
-          args: Prisma.Ws11CheckFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$Ws11CheckPayload> | null
+          args: Prisma.CoreScopeCheckFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoreScopeCheckPayload> | null
         }
         findUniqueOrThrow: {
-          args: Prisma.Ws11CheckFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$Ws11CheckPayload>
+          args: Prisma.CoreScopeCheckFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoreScopeCheckPayload>
         }
         findFirst: {
-          args: Prisma.Ws11CheckFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$Ws11CheckPayload> | null
+          args: Prisma.CoreScopeCheckFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoreScopeCheckPayload> | null
         }
         findFirstOrThrow: {
-          args: Prisma.Ws11CheckFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$Ws11CheckPayload>
+          args: Prisma.CoreScopeCheckFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoreScopeCheckPayload>
         }
         findMany: {
-          args: Prisma.Ws11CheckFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$Ws11CheckPayload>[]
+          args: Prisma.CoreScopeCheckFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoreScopeCheckPayload>[]
         }
         create: {
-          args: Prisma.Ws11CheckCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$Ws11CheckPayload>
+          args: Prisma.CoreScopeCheckCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoreScopeCheckPayload>
         }
         createMany: {
-          args: Prisma.Ws11CheckCreateManyArgs<ExtArgs>
+          args: Prisma.CoreScopeCheckCreateManyArgs<ExtArgs>
           result: BatchPayload
         }
         createManyAndReturn: {
-          args: Prisma.Ws11CheckCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$Ws11CheckPayload>[]
+          args: Prisma.CoreScopeCheckCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoreScopeCheckPayload>[]
         }
         delete: {
-          args: Prisma.Ws11CheckDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$Ws11CheckPayload>
+          args: Prisma.CoreScopeCheckDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoreScopeCheckPayload>
         }
         update: {
-          args: Prisma.Ws11CheckUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$Ws11CheckPayload>
+          args: Prisma.CoreScopeCheckUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoreScopeCheckPayload>
         }
         deleteMany: {
-          args: Prisma.Ws11CheckDeleteManyArgs<ExtArgs>
+          args: Prisma.CoreScopeCheckDeleteManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateMany: {
-          args: Prisma.Ws11CheckUpdateManyArgs<ExtArgs>
+          args: Prisma.CoreScopeCheckUpdateManyArgs<ExtArgs>
           result: BatchPayload
         }
         updateManyAndReturn: {
-          args: Prisma.Ws11CheckUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$Ws11CheckPayload>[]
+          args: Prisma.CoreScopeCheckUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoreScopeCheckPayload>[]
         }
         upsert: {
-          args: Prisma.Ws11CheckUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$Ws11CheckPayload>
+          args: Prisma.CoreScopeCheckUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CoreScopeCheckPayload>
         }
         aggregate: {
-          args: Prisma.Ws11CheckAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateWs11Check>
+          args: Prisma.CoreScopeCheckAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCoreScopeCheck>
         }
         groupBy: {
-          args: Prisma.Ws11CheckGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.Ws11CheckGroupByOutputType>[]
+          args: Prisma.CoreScopeCheckGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CoreScopeCheckGroupByOutputType>[]
         }
         count: {
-          args: Prisma.Ws11CheckCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.Ws11CheckCountAggregateOutputType> | number
+          args: Prisma.CoreScopeCheckCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CoreScopeCheckCountAggregateOutputType> | number
         }
       }
     }
@@ -517,12 +517,13 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
-export const Ws11CheckScalarFieldEnum = {
+export const CoreScopeCheckScalarFieldEnum = {
   id: 'id',
+  clientId: 'clientId',
   note: 'note'
 } as const
 
-export type Ws11CheckScalarFieldEnum = (typeof Ws11CheckScalarFieldEnum)[keyof typeof Ws11CheckScalarFieldEnum]
+export type CoreScopeCheckScalarFieldEnum = (typeof CoreScopeCheckScalarFieldEnum)[keyof typeof CoreScopeCheckScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -698,7 +699,7 @@ export type PrismaClientOptions = ({
   queryPlanCacheMaxSize?: number
 }
 export type GlobalOmitConfig = {
-  ws11Check?: Prisma.Ws11CheckOmit
+  coreScopeCheck?: Prisma.CoreScopeCheckOmit
 }
 
 /* Types for Logging */

@@ -51,7 +51,7 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
-  Ws11Check: 'Ws11Check'
+  CoreScopeCheck: 'CoreScopeCheck'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -70,12 +70,13 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
-export const Ws11CheckScalarFieldEnum = {
+export const CoreScopeCheckScalarFieldEnum = {
   id: 'id',
+  clientId: 'clientId',
   note: 'note'
 } as const
 
-export type Ws11CheckScalarFieldEnum = (typeof Ws11CheckScalarFieldEnum)[keyof typeof Ws11CheckScalarFieldEnum]
+export type CoreScopeCheckScalarFieldEnum = (typeof CoreScopeCheckScalarFieldEnum)[keyof typeof CoreScopeCheckScalarFieldEnum]
 
 
 export const SortOrder = {

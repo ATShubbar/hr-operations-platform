@@ -20,7 +20,7 @@ const config: runtime.GetPrismaClientConfig = {
   "clientVersion": "7.8.0",
   "engineVersion": "3c6e192761c0362d496ed980de936e2f3cebcd3a",
   "activeProvider": "postgresql",
-  "inlineSchema": "generator client {\n  provider = \"prisma-client\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\n// Throwaway proof table for the WS-11 migration-workflow check.\n// Remove when the first real module table lands (tracked in WS-11 evidence).\nmodel Ws11Check {\n  id   Int    @id @default(autoincrement())\n  note String\n\n  @@map(\"ws11_check\")\n}\n",
+  "inlineSchema": "generator client {\n  provider = \"prisma-client\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\n// Pattern exemplar for client-scoped tables (ADR-001). Every client-owned\n// table carries client_id and ships RLS policies in its migration — see the\n// checklist in src/modules/README.md. This table exists to keep the RLS\n// wiring continuously tested until the first real module table lands.\nmodel CoreScopeCheck {\n  id       Int    @id @default(autoincrement())\n  clientId String @map(\"client_id\") @db.Uuid\n  note     String\n\n  @@map(\"core_scope_check\")\n}\n",
   "runtimeDataModel": {
     "models": {},
     "enums": {},
@@ -32,10 +32,10 @@ const config: runtime.GetPrismaClientConfig = {
   }
 }
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"Ws11Check\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"note\",\"kind\":\"scalar\",\"type\":\"String\"}],\"dbName\":\"ws11_check\"}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"CoreScopeCheck\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"clientId\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"client_id\"},{\"name\":\"note\",\"kind\":\"scalar\",\"type\":\"String\"}],\"dbName\":\"core_scope_check\"}},\"enums\":{},\"types\":{}}")
 config.parameterizationSchema = {
-  strings: JSON.parse("[\"where\",\"Ws11Check.findUnique\",\"Ws11Check.findUniqueOrThrow\",\"orderBy\",\"cursor\",\"Ws11Check.findFirst\",\"Ws11Check.findFirstOrThrow\",\"Ws11Check.findMany\",\"data\",\"Ws11Check.createOne\",\"Ws11Check.createMany\",\"Ws11Check.createManyAndReturn\",\"Ws11Check.updateOne\",\"Ws11Check.updateMany\",\"Ws11Check.updateManyAndReturn\",\"create\",\"update\",\"Ws11Check.upsertOne\",\"Ws11Check.deleteOne\",\"Ws11Check.deleteMany\",\"having\",\"_count\",\"_avg\",\"_sum\",\"_min\",\"_max\",\"Ws11Check.groupBy\",\"Ws11Check.aggregate\",\"AND\",\"OR\",\"NOT\",\"id\",\"note\",\"equals\",\"in\",\"notIn\",\"lt\",\"lte\",\"gt\",\"gte\",\"contains\",\"startsWith\",\"endsWith\",\"not\",\"set\",\"increment\",\"decrement\",\"multiply\",\"divide\"]"),
-  graph: "KwsQBRwAACIAMB0AAAQAEB4AACIAMB8CAAAAASABACQAIQEAAAABACABAAAAAQAgBRwAACIAMB0AAAQAEB4AACIAMB8CACMAISABACQAIQADAAAABAAgAwAABQAwBAAAAQAgAwAAAAQAIAMAAAUAMAQAAAEAIAMAAAAEACADAAAFADAEAAABACACHwIAAAABIAEAAAABAQgAAAkAIAIfAgAAAAEgAQAAAAEBCAAACwAwAQgAAAsAMAIfAgArACEgAQAqACECAAAAAQAgCAAADgAgAh8CACsAISABACoAIQIAAAAEACAIAAAQACACAAAABAAgCAAAEAAgAwAAAAEAIA8AAAkAIBAAAA4AIAEAAAABACABAAAABAAgBRUAACUAIBYAACYAIBcAACkAIBgAACgAIBkAACcAIAUcAAAaADAdAAAXABAeAAAaADAfAgAbACEgAQAcACEDAAAABAAgAwAAFgAwFAAAFwAgAwAAAAQAIAMAAAUAMAQAAAEAIAUcAAAaADAdAAAXABAeAAAaADAfAgAbACEgAQAcACENFQAAHgAgFgAAIQAgFwAAHgAgGAAAHgAgGQAAHgAgIQIAAAABIgIAAAAEIwIAAAAEJAIAAAABJQIAAAABJgIAAAABJwIAAAABKwIAIAAhDhUAAB4AIBgAAB8AIBkAAB8AICEBAAAAASIBAAAABCMBAAAABCQBAAAAASUBAAAAASYBAAAAAScBAAAAASgBAAAAASkBAAAAASoBAAAAASsBAB0AIQ4VAAAeACAYAAAfACAZAAAfACAhAQAAAAEiAQAAAAQjAQAAAAQkAQAAAAElAQAAAAEmAQAAAAEnAQAAAAEoAQAAAAEpAQAAAAEqAQAAAAErAQAdACEIIQIAAAABIgIAAAAEIwIAAAAEJAIAAAABJQIAAAABJgIAAAABJwIAAAABKwIAHgAhCyEBAAAAASIBAAAABCMBAAAABCQBAAAAASUBAAAAASYBAAAAAScBAAAAASgBAAAAASkBAAAAASoBAAAAASsBAB8AIQ0VAAAeACAWAAAhACAXAAAeACAYAAAeACAZAAAeACAhAgAAAAEiAgAAAAQjAgAAAAQkAgAAAAElAgAAAAEmAgAAAAEnAgAAAAErAgAgACEIIQgAAAABIggAAAAEIwgAAAAEJAgAAAABJQgAAAABJggAAAABJwgAAAABKwgAIQAhBRwAACIAMB0AAAQAEB4AACIAMB8CACMAISABACQAIQghAgAAAAEiAgAAAAQjAgAAAAQkAgAAAAElAgAAAAEmAgAAAAEnAgAAAAErAgAeACELIQEAAAABIgEAAAAEIwEAAAAEJAEAAAABJQEAAAABJgEAAAABJwEAAAABKAEAAAABKQEAAAABKgEAAAABKwEAHwAhAAAAAAABLAEAAAABBSwCAAAAAS0CAAAAAS4CAAAAAS8CAAAAATACAAAAAQAAAAAFFQAGFgAHFwAIGAAJGQAKAAAAAAAFFQAGFgAHFwAIGAAJGQAKAQIBAgMBBQYBBgcBBwgBCQoBCgwCCw0DDA8BDRECDhIEERMBEhQBExUCGhgFGxkL"
+  strings: JSON.parse("[\"where\",\"CoreScopeCheck.findUnique\",\"CoreScopeCheck.findUniqueOrThrow\",\"orderBy\",\"cursor\",\"CoreScopeCheck.findFirst\",\"CoreScopeCheck.findFirstOrThrow\",\"CoreScopeCheck.findMany\",\"data\",\"CoreScopeCheck.createOne\",\"CoreScopeCheck.createMany\",\"CoreScopeCheck.createManyAndReturn\",\"CoreScopeCheck.updateOne\",\"CoreScopeCheck.updateMany\",\"CoreScopeCheck.updateManyAndReturn\",\"create\",\"update\",\"CoreScopeCheck.upsertOne\",\"CoreScopeCheck.deleteOne\",\"CoreScopeCheck.deleteMany\",\"having\",\"_count\",\"_avg\",\"_sum\",\"_min\",\"_max\",\"CoreScopeCheck.groupBy\",\"CoreScopeCheck.aggregate\",\"AND\",\"OR\",\"NOT\",\"id\",\"clientId\",\"note\",\"equals\",\"in\",\"notIn\",\"lt\",\"lte\",\"gt\",\"gte\",\"contains\",\"startsWith\",\"endsWith\",\"not\",\"set\",\"increment\",\"decrement\",\"multiply\",\"divide\"]"),
+  graph: "LwsQBhwAACQAMB0AAAQAEB4AACQAMB8CAAAAASABACYAISEBACcAIQEAAAABACABAAAAAQAgBhwAACQAMB0AAAQAEB4AACQAMB8CACUAISABACYAISEBACcAIQADAAAABAAgAwAABQAwBAAAAQAgAwAAAAQAIAMAAAUAMAQAAAEAIAMAAAAEACADAAAFADAEAAABACADHwIAAAABIAEAAAABIQEAAAABAQgAAAkAIAMfAgAAAAEgAQAAAAEhAQAAAAEBCAAACwAwAQgAAAsAMAMfAgAvACEgAQAuACEhAQAuACECAAAAAQAgCAAADgAgAx8CAC8AISABAC4AISEBAC4AIQIAAAAEACAIAAAQACACAAAABAAgCAAAEAAgAwAAAAEAIA8AAAkAIBAAAA4AIAEAAAABACABAAAABAAgBRUAACkAIBYAACoAIBcAAC0AIBgAACwAIBkAACsAIAYcAAAaADAdAAAXABAeAAAaADAfAgAbACEgAQAcACEhAQAdACEDAAAABAAgAwAAFgAwFAAAFwAgAwAAAAQAIAMAAAUAMAQAAAEAIAYcAAAaADAdAAAXABAeAAAaADAfAgAbACEgAQAcACEhAQAdACENFQAAHwAgFgAAIwAgFwAAHwAgGAAAHwAgGQAAHwAgIgIAAAABIwIAAAAEJAIAAAAEJQIAAAABJgIAAAABJwIAAAABKAIAAAABLAIAIgAhCxUAAB8AIBgAACAAIBkAACAAICIBAAAAASMBAAAABCQBAAAABCUBAAAAASYBAAAAAScBAAAAASgBAAAAASwBACEAIQ4VAAAfACAYAAAgACAZAAAgACAiAQAAAAEjAQAAAAQkAQAAAAQlAQAAAAEmAQAAAAEnAQAAAAEoAQAAAAEpAQAAAAEqAQAAAAErAQAAAAEsAQAeACEOFQAAHwAgGAAAIAAgGQAAIAAgIgEAAAABIwEAAAAEJAEAAAAEJQEAAAABJgEAAAABJwEAAAABKAEAAAABKQEAAAABKgEAAAABKwEAAAABLAEAHgAhCCICAAAAASMCAAAABCQCAAAABCUCAAAAASYCAAAAAScCAAAAASgCAAAAASwCAB8AIQsiAQAAAAEjAQAAAAQkAQAAAAQlAQAAAAEmAQAAAAEnAQAAAAEoAQAAAAEpAQAAAAEqAQAAAAErAQAAAAEsAQAgACELFQAAHwAgGAAAIAAgGQAAIAAgIgEAAAABIwEAAAAEJAEAAAAEJQEAAAABJgEAAAABJwEAAAABKAEAAAABLAEAIQAhDRUAAB8AIBYAACMAIBcAAB8AIBgAAB8AIBkAAB8AICICAAAAASMCAAAABCQCAAAABCUCAAAAASYCAAAAAScCAAAAASgCAAAAASwCACIAIQgiCAAAAAEjCAAAAAQkCAAAAAQlCAAAAAEmCAAAAAEnCAAAAAEoCAAAAAEsCAAjACEGHAAAJAAwHQAABAAQHgAAJAAwHwIAJQAhIAEAJgAhIQEAJwAhCCICAAAAASMCAAAABCQCAAAABCUCAAAAASYCAAAAAScCAAAAASgCAAAAASwCAB8AIQgiAQAAAAEjAQAAAAQkAQAAAAQlAQAAAAEmAQAAAAEnAQAAAAEoAQAAAAEsAQAoACELIgEAAAABIwEAAAAEJAEAAAAEJQEAAAABJgEAAAABJwEAAAABKAEAAAABKQEAAAABKgEAAAABKwEAAAABLAEAIAAhCCIBAAAAASMBAAAABCQBAAAABCUBAAAAASYBAAAAAScBAAAAASgBAAAAASwBACgAIQAAAAAAAS0BAAAAAQUtAgAAAAEuAgAAAAEvAgAAAAEwAgAAAAExAgAAAAEAAAAABRUABhYABxcACBgACRkACgAAAAAABRUABhYABxcACBgACRkACgECAQIDAQUGAQYHAQcIAQkKAQoMAgsNAwwPAQ0RAg4SBBETARIUARMVAhoYBRsZCw"
 }
 
 async function decodeBase64AsWasm(wasmBase64: string): Promise<WebAssembly.Module> {
@@ -70,8 +70,8 @@ export interface PrismaClientConstructor {
    * const prisma = new PrismaClient({
    *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
    * })
-   * // Fetch zero or more Ws11Checks
-   * const ws11Checks = await prisma.ws11Check.findMany()
+   * // Fetch zero or more CoreScopeChecks
+   * const coreScopeChecks = await prisma.coreScopeCheck.findMany()
    * ```
    * 
    * Read more in our [docs](https://pris.ly/d/client).
@@ -94,8 +94,8 @@ export interface PrismaClientConstructor {
  * const prisma = new PrismaClient({
  *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
  * })
- * // Fetch zero or more Ws11Checks
- * const ws11Checks = await prisma.ws11Check.findMany()
+ * // Fetch zero or more CoreScopeChecks
+ * const coreScopeChecks = await prisma.coreScopeCheck.findMany()
  * ```
  * 
  * Read more in our [docs](https://pris.ly/d/client).
@@ -189,14 +189,14 @@ export interface PrismaClient<
   }>>
 
       /**
-   * `prisma.ws11Check`: Exposes CRUD operations for the **Ws11Check** model.
+   * `prisma.coreScopeCheck`: Exposes CRUD operations for the **CoreScopeCheck** model.
     * Example usage:
     * ```ts
-    * // Fetch zero or more Ws11Checks
-    * const ws11Checks = await prisma.ws11Check.findMany()
+    * // Fetch zero or more CoreScopeChecks
+    * const coreScopeChecks = await prisma.coreScopeCheck.findMany()
     * ```
     */
-  get ws11Check(): Prisma.Ws11CheckDelegate<ExtArgs, { omit: OmitOpts }>;
+  get coreScopeCheck(): Prisma.CoreScopeCheckDelegate<ExtArgs, { omit: OmitOpts }>;
 }
 
 export function getPrismaClientClass(): PrismaClientConstructor {

@@ -29,8 +29,8 @@ export * from "./enums"
  * const prisma = new PrismaClient({
  *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
  * })
- * // Fetch zero or more Ws11Checks
- * const ws11Checks = await prisma.ws11Check.findMany()
+ * // Fetch zero or more CoreScopeChecks
+ * const coreScopeChecks = await prisma.coreScopeCheck.findMany()
  * ```
  * 
  * Read more in our [docs](https://pris.ly/d/client).
@@ -40,7 +40,7 @@ export type PrismaClient<LogOpts extends Prisma.LogLevel = never, OmitOpts exten
 export { Prisma }
 
 /**
- * Model Ws11Check
+ * Model CoreScopeCheck
  * 
  */
-export type Ws11Check = Prisma.Ws11CheckModel
+export type CoreScopeCheck = Prisma.CoreScopeCheckModel
