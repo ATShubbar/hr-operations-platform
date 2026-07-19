@@ -1,50 +1,81 @@
-# ⛔ SUPERSEDED — see PROVISIONING-GCP-CNTXT.md and ADR-006 rev. 3
-# (me-central-2 proved inaccessible to standard AWS accounts, 2026-07-19)
+# AWS UAE (me-central-1) — ACTIVE interim staging guide (WS-20/21)
 
-# AWS Riyadh (me-central-2) provisioning guide — WS-20/21
+Per ADR-006 rev. 4. This is the **interim staging** environment in the
+existing AWS account. The KSA production target remains Google Dammam via
+CNTXT (`docs/PROVISIONING-GCP-CNTXT.md`), with OCI as recorded fallback.
 
-The owner-side steps to stand up the KSA environment per ADR-006. Do them in
-order; steps marked **[owner]** need your account/billing access, steps marked
-**[assisted]** we do together in a session once credentials exist.
+## ⚠️ The one hard rule
 
-## 1. Account foundation — [owner], ~30 min
+**No real client, employee, or candidate data ever enters this environment.**
+Seed/demo data only. The KSA-residency principle applies to production
+customer data; this environment must never hold any. Cutover to the KSA
+region happens BEFORE the first real client onboards.
 
-1. Create the AWS account (or use an existing organization): https://aws.amazon.com — **Paid plan** (per ADR-006 discussion: same $200 credits, no 6-month auto-close, no service restrictions). Enable MFA on the root user immediately, then create an IAM Identity Center (SSO) admin user for daily work. Never use root again.
-   - *2026-07-19: account created with a personal root email as an interim measure.* **Follow-up:** rotate the root email to a company address when one exists (Account settings → Edit → email); until then the personal inbox must itself have 2FA — it can reset the root password.
-2. In the console, switch region to **Middle East (Riyadh) — me-central-2** (top-right region picker). New accounts may need to *enable* the region: Account settings → Regions → enable me-central-2.
-3. **Verification checklist from ADR-006** (5 minutes, before any money is spent):
-   - Open RDS → Create database → is **PostgreSQL 16** offered in me-central-2?
-   - Open ElastiCache → Create cache → is **Redis or Valkey** offered?
-   - Open S3 → Create bucket → me-central-2 selectable?
-   - Record all three answers in ADR-006's checklist. If RDS is missing → stop, we regroup on OCI per the ADR fallback.
-4. Set a billing alarm: Billing → Budgets → create a monthly budget with an alert (e.g., $200 to start).
+## 1. Enable the region + verify — [owner], ~15 min
 
-## 2. GitHub Actions OIDC role — [assisted], ~20 min
+1. Console → account name (top-right) → **Account** → **AWS Regions** →
+   **Middle East (UAE)** → **Enable**. Wait a few minutes, then select
+   **Middle East (UAE) me-central-1** in the region picker.
+2. Verification checklist (open Create screens, create nothing):
+   - [ ] RDS → Create database → PostgreSQL **16.x** offered
+   - [ ] ElastiCache → Create cache → Redis/Valkey offered
+   - [ ] S3 → Create bucket → me-central-1 selectable
+3. If not done yet: **MFA on root**, and **Billing → Budgets** → monthly
+   budget ~$50 with email alert.
+4. Account hygiene footnote: root email is personal for now — rotate to a
+   company address when one exists; 2FA on that inbox meanwhile.
 
-No long-lived AWS keys in GitHub. We create an IAM OIDC identity provider for
-`token.actions.githubusercontent.com` and a deploy role trusting
-`repo:ATShubbar/hr-operations-platform:ref:refs/heads/main`, with permissions
-scoped to ECR push + ECS deploy + (temporarily) RDS migrate access via a
-bastion-less approach. Done together in-session; the role ARN then goes into a
-GitHub Actions repo variable.
+## 2. Identity + deploy plumbing — [assisted, in-session]
 
-## 3. Core infrastructure — [assisted], ~1–2 h
+- IAM Identity Center admin user for daily work (retire root usage).
+- GitHub Actions **OIDC role** trusting
+  `repo:ATShubbar/hr-operations-platform:ref:refs/heads/main` — no
+  long-lived keys. Role ARN → GitHub repo variable.
 
-Provisioned together (console-first is fine at this stage; IaC is a post-
-skeleton task):
+## 3. Core staging infrastructure — [assisted, in-session]
 
-- **VPC**: default VPC is acceptable for the skeleton; private subnets for RDS/ElastiCache.
-- **RDS PostgreSQL 16**: Multi-AZ, smallest production class to start, automated backups ON (7-day retention to start), deletion protection ON.
-- **ElastiCache** (Redis/Valkey): single small node to start.
-- **S3**: one bucket, default encryption, block public access, versioning ON.
-- **ECR + ECS Fargate**: two services (api, web) behind an ALB — the deploy target for `deploy.yml`.
-- After RDS exists: run migrations once from the session, then **rotate `app_staff`/`app_client` passwords** (`ALTER ROLE … PASSWORD`) and store them in SSM Parameter Store (SecureString) — closing the WS-13 flag.
+- RDS PostgreSQL 16 (single-AZ is acceptable for staging; automated
+  backups ON, 7-day retention), private subnet.
+- ElastiCache (smallest node) or interim Redis container.
+- S3 bucket (default encryption, block public access, versioning).
+- ECR + ECS Fargate (api, web) behind an ALB, health-gated.
+- Run migrations once; **rotate `app_staff`/`app_client` passwords** into
+  SSM Parameter Store (closes the WS-13 flag).
 
-## 4. What happens after (my side)
+## 4. WS-20/21 completion on this environment
 
-- `deploy.yml`: build images → push ECR → migrate → deploy ECS → health-gate on `/health`; one deliberate rollback performed and evidenced (WS-20 DoD).
-- WS-21: confirm the RDS backup schedule, run a snapshot **restore test** into a scratch instance, boot the app against it, record measured RTO + RPO in ADR-006.
+- `deploy.yml`: build → ECR → migrate → deploy → `/health` gate; one
+  deliberate rollback, evidenced.
+- Backup schedule confirmed + snapshot **restore test** into a scratch
+  instance; measured RPO/RTO recorded in ADR-006.
+- Evidence records the environment as **interim staging (me-central-1)**
+  with the KSA cutover as a tracked follow-up.
 
-## Cost expectation (order of magnitude, verify at provisioning)
+## 5. Migration plan to the KSA region (the "later" in migrate-later)
 
-Smallest sensible production shapes in a new region: RDS Multi-AZ small class + ElastiCache small node + Fargate ×2 + ALB — typically low hundreds of USD/month. The dev/staging trick to halve it early: single-AZ RDS until first client data arrives, then flip Multi-AZ.
+**Trigger:** CNTXT onboarding completes (Google Dammam), or AWS Saudi
+(me-central-2) opens to standard accounts — whichever lands first and is
+confirmed by the same service-verification checklist.
+
+**Deadline rule:** cutover MUST complete before the first real client
+onboards. This is what makes the migration trivial.
+
+**Steps (no-production-data case — the planned path):**
+1. Provision KSA equivalents (managed Postgres 16, Redis, object storage,
+   container hosting) using this guide's shape.
+2. Point `deploy.yml` at the new target (region/project variables + new
+   OIDC/workload identity); run migrations fresh; seed.
+3. Repoint DNS/secrets; verify health + isolation harness against the new
+   environment; decommission the UAE data stores.
+4. Update ADR-006 to final status with the KSA environment recorded.
+
+**Contingency (if real data somehow exists before cutover — avoid):**
+maintenance window + `pg_dump`/restore + S3 sync; Redis is cache/queues
+only (never source of truth, ADR-008) — no Redis migration. This path
+also requires a PDPL review of the interim period. The guard exists so
+this paragraph is never used.
+
+## Status log
+
+- 2026-07-19: ADR-006 rev. 4 — UAE interim decided. Region enable: ☐
+  Verification: RDS ☐  ElastiCache ☐  S3 ☐   Budget: ☐  Root MFA: ☐
