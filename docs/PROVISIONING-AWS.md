@@ -6,7 +6,8 @@ order; steps marked **[owner]** need your account/billing access, steps marked
 
 ## 1. Account foundation — [owner], ~30 min
 
-1. Create the AWS account (or use an existing organization): https://aws.amazon.com — use a company email, enable MFA on the root user immediately, then create an IAM Identity Center (SSO) admin user for daily work. Never use root again.
+1. Create the AWS account (or use an existing organization): https://aws.amazon.com — **Paid plan** (per ADR-006 discussion: same $200 credits, no 6-month auto-close, no service restrictions). Enable MFA on the root user immediately, then create an IAM Identity Center (SSO) admin user for daily work. Never use root again.
+   - *2026-07-19: account created with a personal root email as an interim measure.* **Follow-up:** rotate the root email to a company address when one exists (Account settings → Edit → email); until then the personal inbox must itself have 2FA — it can reset the root password.
 2. In the console, switch region to **Middle East (Riyadh) — me-central-2** (top-right region picker). New accounts may need to *enable* the region: Account settings → Regions → enable me-central-2.
 3. **Verification checklist from ADR-006** (5 minutes, before any money is spent):
    - Open RDS → Create database → is **PostgreSQL 16** offered in me-central-2?
