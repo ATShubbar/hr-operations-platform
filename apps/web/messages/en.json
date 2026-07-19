@@ -1,0 +1,38 @@
+{
+  "common": {
+    "appName": "HR Operations Platform",
+    "switchLanguage": "العربية"
+  },
+  "home": {
+    "subtitle": "Walking skeleton — web app",
+    "contractCheck": "Shared contract check",
+    "clientLabel": "Client",
+    "statusLabel": "Status",
+    "statusActive": "Active",
+    "rtlCheckLink": "Component check page"
+  },
+  "rtlCheck": {
+    "title": "Bidirectional component check",
+    "subtitle": "UI components approved for the early phases",
+    "buttonPrimary": "Primary button",
+    "buttonOutline": "Outline button",
+    "cardTitle": "Card",
+    "cardBody": "Card content renders here with correct alignment.",
+    "inputLabel": "Employee name",
+    "inputPlaceholder": "Enter name",
+    "selectLabel": "Nationality",
+    "selectPlaceholder": "Select nationality",
+    "selectOption1": "Saudi",
+    "selectOption2": "Resident",
+    "dialogTrigger": "Open dialog",
+    "dialogTitle": "Dialog title",
+    "dialogBody": "Dialog body text for direction verification.",
+    "badge": "Badge",
+    "tableName": "Name",
+    "tableRole": "Role",
+    "tableRow1Name": "Ahmed",
+    "tableRow1Role": "HR Officer",
+    "tableRow2Name": "Sara",
+    "tableRow2Role": "Recruiter"
+  }
+}

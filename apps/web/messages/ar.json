@@ -1,0 +1,38 @@
+{
+  "common": {
+    "appName": "منصة عمليات الموارد البشرية",
+    "switchLanguage": "English"
+  },
+  "home": {
+    "subtitle": "الهيكل الأساسي — واجهة الويب",
+    "contractCheck": "فحص العقود المشتركة",
+    "clientLabel": "العميل",
+    "statusLabel": "الحالة",
+    "statusActive": "نشط",
+    "rtlCheckLink": "صفحة فحص المكونات"
+  },
+  "rtlCheck": {
+    "title": "فحص المكونات في الاتجاهين",
+    "subtitle": "قائمة مكونات واجهة المستخدم المعتمدة للمراحل الأولى",
+    "buttonPrimary": "زر أساسي",
+    "buttonOutline": "زر ثانوي",
+    "cardTitle": "بطاقة",
+    "cardBody": "محتوى البطاقة يظهر هنا مع محاذاة صحيحة.",
+    "inputLabel": "اسم الموظف",
+    "inputPlaceholder": "أدخل الاسم",
+    "selectLabel": "الجنسية",
+    "selectPlaceholder": "اختر الجنسية",
+    "selectOption1": "سعودي",
+    "selectOption2": "مقيم",
+    "dialogTrigger": "فتح الحوار",
+    "dialogTitle": "عنوان الحوار",
+    "dialogBody": "نص الحوار للتحقق من الاتجاه.",
+    "badge": "شارة",
+    "tableName": "الاسم",
+    "tableRole": "الدور",
+    "tableRow1Name": "أحمد",
+    "tableRow1Role": "مسؤول موارد بشرية",
+    "tableRow2Name": "سارة",
+    "tableRow2Role": "مسؤولة استقدام"
+  }
+}
