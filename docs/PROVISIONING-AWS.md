@@ -1,4 +1,4 @@
-# ⛔ SUPERSEDED — see PROVISIONING-OCI.md and ADR-006 rev. 2
+# ⛔ SUPERSEDED — see PROVISIONING-GCP-CNTXT.md and ADR-006 rev. 3
 # (me-central-2 proved inaccessible to standard AWS accounts, 2026-07-19)
 
 # AWS Riyadh (me-central-2) provisioning guide — WS-20/21

@@ -1,4 +1,6 @@
-# OCI Saudi provisioning guide — WS-20/21 (supersedes PROVISIONING-AWS.md)
+# ⛔ SUPERSEDED by owner directive — see PROVISIONING-GCP-CNTXT.md (ADR-006 rev. 3); this OCI guide remains the recorded fallback
+
+# OCI Saudi provisioning guide — WS-20/21
 
 Per ADR-006 rev. 2: AWS me-central-2 proved inaccessible to standard accounts;
 fallback to Oracle OCI with **home region Saudi Arabia Central (Riyadh)** and

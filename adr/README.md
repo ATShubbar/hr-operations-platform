@@ -17,7 +17,7 @@ One decision per file, numbered in creation order. A record is never edited to c
 | [ADR-003](ADR-003-module-structure-and-boundaries.md) | Module structure and boundary enforcement | Accepted |
 | [ADR-004](ADR-004-inter-module-communication.md) | Inter-module communication — domain events | Proposed |
 | [ADR-005](ADR-005-localization.md) | Localization — configurable with Saudi defaults | Accepted |
-| [ADR-006](ADR-006-ksa-cloud-provider.md) | KSA cloud provider selection | Accepted rev. 2 (OCI Saudi — AWS failed access verification) |
+| [ADR-006](ADR-006-ksa-cloud-provider.md) | KSA cloud provider selection | Accepted rev. 3 (Google Cloud Dammam via CNTXT; OCI fallback) |
 | [ADR-007](ADR-007-api-conventions.md) | API conventions | Proposed |
 | [ADR-008](ADR-008-modular-monolith-and-stack.md) | Modular monolith, single deployment, tech stack | Accepted |
 | [ADR-009](ADR-009-google-calendar-data-minimization.md) | Google Calendar integration with data minimization | Accepted |

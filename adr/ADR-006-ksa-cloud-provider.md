@@ -1,6 +1,8 @@
 # ADR-006 — KSA cloud provider selection
 
-- Status: **Accepted, rev. 2** (2026-07-19 — **Oracle OCI Saudi regions** via the fallback clause; see revision note)
+- Status: **Accepted, rev. 3** (2026-07-19 — **Google Cloud Dammam via CNTXT**, owner directive; see revision notes)
+
+> **Revision note 3 (2026-07-19):** Owner declined the OCI fallback and directed the choice to **Google Cloud (me-central2, Dammam)**. Verified constraint from Google's authoritative access doc: KSA-based customers can purchase Dammam access **only through CNTXT**, the exclusive regional reseller — no self-service path exists. Consequences: (a) WS-20 deploy and WS-21 backups are gated on CNTXT commercial onboarding (timeline outside our control — days to weeks); (b) the walking-skeleton exit review (WS-22) proceeds with the deploy/backup gap explicitly recorded rather than blocking on the reseller; (c) service verification (Cloud SQL PostgreSQL 16, Memorystore Redis, GCS) happens once console access exists — same checklist discipline as before. OCI remains the recorded fallback if CNTXT onboarding stalls beyond an acceptable window.
 - Date: 2026-07-18 (evaluation 2026-07-19; AWS decision 2026-07-19; fallback invoked same day)
 - Owner: Ahmed Alshubbar
 
