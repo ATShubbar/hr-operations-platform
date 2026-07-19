@@ -28,7 +28,7 @@
 | WS-12 | Execute SPIKE-001 (RLS + Prisma + pooling) → finalize ADR-001 | WS-11 | done ([evidence](evidence/skeleton/WS-12.md)) |
 | WS-13 | Production RLS pattern (roles, policies, client extension) | WS-12 | done ([evidence](evidence/skeleton/WS-13.md)) |
 | WS-14 | Request context + structured logging | WS-05 | done ([evidence](evidence/skeleton/WS-14.md)) |
-| WS-15 | Deny-by-default authorization guard | WS-14 | todo |
+| WS-15 | Deny-by-default authorization guard | WS-14 | done ([evidence](evidence/skeleton/WS-15.md)) |
 | WS-16 | i18n scaffold (ar/en, runtime RTL switch) | WS-06 | todo |
 | WS-17 | Hijri/Gregorian shared date utility | WS-04 | todo |
 | WS-18 | Cross-client isolation test harness in CI | WS-13, WS-15, WS-09 | todo |
