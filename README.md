@@ -22,7 +22,7 @@ If you can't (or don't want to) run `corepack enable`, prefix commands instead: 
 
 Every push to `main` and every pull request runs `.github/workflows/ci.yml`: install → lint (including module-boundary and RTL rules) → typecheck → test → build. A red run blocks the change.
 
-**Recommended repo setting** (GitHub → Settings → Branches → Add branch ruleset for `main`): require the `CI / ci` status check to pass before merging, and require pull requests for changes to `main`. The open PR "Do not merge — WS-09 CI red proof" is the standing demonstration that boundary violations fail CI.
+**Branch protection (phased):** the `protect-main` ruleset (Settings → Rules) currently blocks force pushes and deletion of `main` — compatible with the direct-push workflow of the skeleton phase. When development moves to pull-request flow, extend the same ruleset with *Require a pull request* and *Require status checks* (`CI / ci`) — required checks block direct pushes by design, so they arrive together with PR flow, not before. The open PR "Do not merge — WS-09 CI red proof" remains the standing demonstration that boundary violations fail CI.
 
 ## Documents
 
