@@ -1,8 +1,10 @@
 # ADR-006 — KSA cloud provider selection
 
-- Status: **Accepted** (2026-07-19 — owner selected **AWS Riyadh, me-central-2** per the evaluation below)
-- Date: 2026-07-18 (evaluation 2026-07-19; decision 2026-07-19)
+- Status: **Accepted, rev. 2** (2026-07-19 — **Oracle OCI Saudi regions** via the fallback clause; see revision note)
+- Date: 2026-07-18 (evaluation 2026-07-19; AWS decision 2026-07-19; fallback invoked same day)
 - Owner: Ahmed Alshubbar
+
+> **Revision note (2026-07-19):** The AWS choice failed provisioning-day verification at step zero: **me-central-2 does not exist in the standard AWS account partition.** The owner's live console offers only Bahrain/UAE in the Middle East, and AWS's authoritative regions documentation confirms it — the January 2026 "GA" reports were third-party claims about what appears to be a restricted/sovereign-partner launch (HUMAIN collaboration), not self-service availability. Bahrain/UAE violate the KSA-residency principle and were not considered. Per this ADR's own fallback clause, the decision moves to the runner-up: **OCI, home region Saudi Arabia Central (Riyadh), with Jeddah as the second in-Kingdom region.** Subject to the same at-signup service verification (managed PostgreSQL, cache, object storage) before provisioning. The dormant AWS account is kept (zero resources, zero cost) in case me-central-2 opens to standard accounts later.
 
 ## Context
 All production data, backups, and logs must remain in Saudi Arabia (PDPL/residency principle). The provider choice determines whether we get **managed** PostgreSQL, Redis, and S3-compatible storage — or operate our own stateful services, a major hidden cost and reliability risk for a small team. It also determines pooler behavior relevant to ADR-001 (now moot per SPIKE-001: in-process pool, no external pooler needed at launch).

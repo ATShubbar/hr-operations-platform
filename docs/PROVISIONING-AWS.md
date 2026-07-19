@@ -1,3 +1,6 @@
+# ⛔ SUPERSEDED — see PROVISIONING-OCI.md and ADR-006 rev. 2
+# (me-central-2 proved inaccessible to standard AWS accounts, 2026-07-19)
+
 # AWS Riyadh (me-central-2) provisioning guide — WS-20/21
 
 The owner-side steps to stand up the KSA environment per ADR-006. Do them in
