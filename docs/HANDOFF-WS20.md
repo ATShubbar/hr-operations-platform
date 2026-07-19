@@ -68,3 +68,10 @@ verification). A local background retry ran attempts every 5 min on
 - Budget alarm $50/mo active; raise deliberately when services go live.
 - Root email is personal (interim) — rotate when company address exists.
 - Cost meter currently: ALB only (~$0.03/h). RDS/Fargate add ~$40-55/mo when up.
+
+## Retry outcome (2026-07-19 ~14:25)
+
+Background retry: 36 attempts / 3 hours + manual attempt — RDS and ECS
+creation still blocked ~4h after account creation. **Support case is the
+critical path.** On pickup: check the support case reply first (root email
+inbox / Support Center), then rerun step 1 of the sequence above.
