@@ -7,6 +7,33 @@ datasource db {
   provider = "postgresql"
 }
 
+// Identity model (ADR-002, AUTH-01): staff and client-rep principals in one
+// SYSTEM table — staff users have no client, login precedes client scope, so
+// auth_users is app_staff-only and deliberately NOT client-scoped/RLS'd.
+model AuthUser {
+  id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email         String        @unique
+  passwordHash  String        @map("password_hash")
+  principalType PrincipalType @map("principal_type")
+  clientId      String?       @map("client_id") @db.Uuid
+  status        UserStatus    @default(active)
+  mfaSecret     String?       @map("mfa_secret")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  @@map("auth_users")
+}
+
+enum PrincipalType {
+  staff
+  client_rep
+}
+
+enum UserStatus {
+  active
+  disabled
+}
+
 // Pattern exemplar for client-scoped tables (ADR-001). Every client-owned
 // table carries client_id and ships RLS policies in its migration — see the
 // checklist in src/modules/README.md. This table exists to keep the RLS

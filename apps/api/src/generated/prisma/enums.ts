@@ -9,7 +9,17 @@
 * 🟢 You can import this file directly.
 */
 
+export const PrincipalType = {
+  staff: 'staff',
+  client_rep: 'client_rep'
+} as const
+
+export type PrincipalType = (typeof PrincipalType)[keyof typeof PrincipalType]
 
 
-// This file is empty because there are no enums in the schema.
-export {}
+export const UserStatus = {
+  active: 'active',
+  disabled: 'disabled'
+} as const
+
+export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus]

@@ -8,5 +8,6 @@
  *
  * 🟢 You can import this file directly.
  */
+export type * from './models/AuthUser'
 export type * from './models/CoreScopeCheck'
 export type * from './commonInputTypes'

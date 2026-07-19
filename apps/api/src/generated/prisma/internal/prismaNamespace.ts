@@ -384,6 +384,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 
 export const ModelName = {
+  AuthUser: 'AuthUser',
   CoreScopeCheck: 'CoreScopeCheck'
 } as const
 
@@ -400,10 +401,84 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "coreScopeCheck"
+    modelProps: "authUser" | "coreScopeCheck"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
+    AuthUser: {
+      payload: Prisma.$AuthUserPayload<ExtArgs>
+      fields: Prisma.AuthUserFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AuthUserFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthUserPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AuthUserFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthUserPayload>
+        }
+        findFirst: {
+          args: Prisma.AuthUserFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthUserPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AuthUserFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthUserPayload>
+        }
+        findMany: {
+          args: Prisma.AuthUserFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthUserPayload>[]
+        }
+        create: {
+          args: Prisma.AuthUserCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthUserPayload>
+        }
+        createMany: {
+          args: Prisma.AuthUserCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AuthUserCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthUserPayload>[]
+        }
+        delete: {
+          args: Prisma.AuthUserDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthUserPayload>
+        }
+        update: {
+          args: Prisma.AuthUserUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthUserPayload>
+        }
+        deleteMany: {
+          args: Prisma.AuthUserDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AuthUserUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AuthUserUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthUserPayload>[]
+        }
+        upsert: {
+          args: Prisma.AuthUserUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuthUserPayload>
+        }
+        aggregate: {
+          args: Prisma.AuthUserAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAuthUser>
+        }
+        groupBy: {
+          args: Prisma.AuthUserGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AuthUserGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AuthUserCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AuthUserCountAggregateOutputType> | number
+        }
+      }
+    }
     CoreScopeCheck: {
       payload: Prisma.$CoreScopeCheckPayload<ExtArgs>
       fields: Prisma.CoreScopeCheckFieldRefs
@@ -517,6 +592,21 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
+export const AuthUserScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  passwordHash: 'passwordHash',
+  principalType: 'principalType',
+  clientId: 'clientId',
+  status: 'status',
+  mfaSecret: 'mfaSecret',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AuthUserScalarFieldEnum = (typeof AuthUserScalarFieldEnum)[keyof typeof AuthUserScalarFieldEnum]
+
+
 export const CoreScopeCheckScalarFieldEnum = {
   id: 'id',
   clientId: 'clientId',
@@ -542,24 +632,18 @@ export const QueryMode = {
 export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
 
 
+export const NullsOrder = {
+  first: 'first',
+  last: 'last'
+} as const
+
+export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
 
 /**
  * Field references
  */
-
-
-/**
- * Reference to a field of type 'Int'
- */
-export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
-    
-
-
-/**
- * Reference to a field of type 'Int[]'
- */
-export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
-    
 
 
 /**
@@ -573,6 +657,62 @@ export type StringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 
  * Reference to a field of type 'String[]'
  */
 export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'String[]'>
+    
+
+
+/**
+ * Reference to a field of type 'PrincipalType'
+ */
+export type EnumPrincipalTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PrincipalType'>
+    
+
+
+/**
+ * Reference to a field of type 'PrincipalType[]'
+ */
+export type ListEnumPrincipalTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PrincipalType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'UserStatus'
+ */
+export type EnumUserStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'UserStatus[]'
+ */
+export type ListEnumUserStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'UserStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'DateTime'
+ */
+export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
+    
+
+
+/**
+ * Reference to a field of type 'DateTime[]'
+ */
+export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Int'
+ */
+export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+    
+
+
+/**
+ * Reference to a field of type 'Int[]'
+ */
+export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
     
 
 
@@ -699,6 +839,7 @@ export type PrismaClientOptions = ({
   queryPlanCacheMaxSize?: number
 }
 export type GlobalOmitConfig = {
+  authUser?: Prisma.AuthUserOmit
   coreScopeCheck?: Prisma.CoreScopeCheckOmit
 }
 
