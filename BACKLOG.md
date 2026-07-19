@@ -35,7 +35,7 @@
 | WS-19 | Seed script (2 clients, all roles) | WS-13 | done ([evidence](evidence/skeleton/WS-19.md)) |
 | WS-20 | Finalize ADR-006 + deploy pipeline to KSA host | WS-09 | in progress — ADR-006 **rev. 4: interim staging on AWS UAE** (no-production-data guard, [guide](docs/PROVISIONING-AWS.md)); KSA cutover tracked follow-up |
 | WS-21 | Backups + restore test | WS-20 | todo |
-| WS-22 | Skeleton exit review (evidence walkthrough) | WS-01…WS-21 | todo |
+| WS-22 | Skeleton exit review (evidence walkthrough) | WS-01…WS-21 | done with recorded gaps ([review](evidence/skeleton/WS-22-exit-review.md)) — WS-20/21 remain open, external-blocked |
 
 ---
 
@@ -218,6 +218,51 @@
 - **Risks:** review theater — the rule stands: any box without evidence is open, regardless of who says otherwise.
 
 ---
+
+## Priority 2 — Authentication epic (ACTION-PLAN 2.1/2.2, ADR-002)
+
+Same rules, same loop. Evidence goes to `evidence/auth/AUTH-XX.md`.
+
+| ID | Task | Depends on | Status |
+|---|---|---|---|
+| AUTH-01 | Auth module + users table + migration | skeleton | todo |
+| AUTH-02 | Password hashing + login endpoint + Redis sessions | AUTH-01 | todo |
+| AUTH-03 | Session guard: actor into request context, 401 semantics | AUTH-02 | todo |
+| AUTH-04 | Permission catalog + role mapping + policy service (fills the guard seam) | AUTH-03 | todo |
+| AUTH-05 | Logout + session revocation + TTL policy | AUTH-02 | todo |
+| AUTH-06 | MFA (TOTP) — required for admin roles | AUTH-02 | todo |
+| AUTH-07 | Role/user seeding + harness update (staff endpoints → 401 unauthenticated) | AUTH-04 | todo |
+
+### AUTH-01 — Auth module + users table
+- **Objective:** the `auth` module (ADR-003 layout) owning the user identity model: staff and client-rep principals in one table per ADR-002 (`principal_type`, nullable `client_id` binding for client reps), statuses, unique email.
+- **Files:** `apps/api/src/modules/auth/` (module, domain types, `public-api.ts`), Prisma schema `auth_users` model + migration. **Design note:** `auth_users` is a *system* table (staff users have no client), so it gets `app_staff` grants only — client-rep rows are readable by the auth flow (staff-path service), never by the `app_client` DB role; documented in the migration.
+- **DoD:** migration applies to fresh DB; model + module compile; boundary lint green; endpoint registry untouched (no endpoints yet); e2e smoke: service creates/reads a user via staff path.
+- **Evidence:** migration log + test output → `evidence/auth/AUTH-01.md`.
+- **Dependencies:** skeleton. **Risks:** schema decisions here ripple (password hash column sized for argon2; `mfa_secret` nullable now to avoid an AUTH-06 migration churn — included but unused).
+
+### AUTH-02 — Login + sessions
+- **Objective:** `POST /auth/login` (contracts-validated), argon2 password verify, server-side session in Redis (httpOnly, SameSite=Lax cookie, TTL), per ADR-002/ADR-008 (Redis never source of truth — sessions are revocable cache).
+- **Files:** auth module application/api layers; Redis client wiring (first runtime Redis use — REDIS_URL, local 6380); `@hr/contracts` login schemas; cookie config.
+- **DoD:** e2e: valid login sets cookie + creates session; wrong password → 401 with no user-enumeration leak; rate-limit note recorded (throttler arrives with ADR-007 work); lint/typecheck/tests green.
+- **Evidence:** e2e output + Redis session inspection → `evidence/auth/AUTH-02.md`.
+- **Dependencies:** AUTH-01. **Risks:** ElastiCache still deferred in staging — local Redis only until WS-20 completes (flagged in HANDOFF).
+
+### AUTH-03 — Session guard + request context
+- **Objective:** authenticated requests resolve the actor (id, principal type, client binding) from the session cookie into the WS-14 request context; unauthenticated requests to non-`@Public` endpoints → **401** (guard's deny-by-default 403 stays for missing metadata).
+- **Files:** auth session middleware/guard; `PermissionsGuard` seam update; logging now carries real `actorId`/`clientId`.
+- **DoD:** e2e: no cookie → 401; valid session → 200 with actorId in logs; client-rep session → `clientId` set in context (feeds `ScopedPrismaService` selection); isolation harness updated expectations green.
+- **Evidence:** `evidence/auth/AUTH-03.md`.
+- **Dependencies:** AUTH-02. **Risks:** ordering with context middleware — session resolution must run after context creation (same pattern as harness's test middleware).
+
+### AUTH-04 — Permission catalog + policy service
+- **Objective:** the ADR-002 core: catalog of `resource.action` permissions (seeded from the architecture matrix), static role→permission mapping, `PolicyService.can(actor, permission)`; `PermissionsGuard` finally delegates instead of allow-listing.
+- **Files:** auth module (catalog constants typed against the naming convention, role map, policy service); guard update; matrix cross-check test (catalog ⊇ every `@RequirePermission` in the codebase — registry-style coverage).
+- **DoD:** e2e per role class: staff role with permission → 200, without → 403; client-rep hitting staff-only endpoint → 403; coverage test fails on an undeclared permission (red-path proven, reverted).
+- **Evidence:** `evidence/auth/AUTH-04.md`.
+- **Dependencies:** AUTH-03. **Risks:** matrix drift vs architecture.md — the cross-check test is the mechanism.
+
+### AUTH-05 — Logout + revocation · AUTH-06 — MFA (TOTP) · AUTH-07 — Seeding + harness
+Cards detailed at their gates (objective summaries in the status board; scope per ACTION-PLAN 2.1).
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

@@ -33,12 +33,13 @@ build contract. Changes go through ADRs (adr/), never through drift.
 | docs/HANDOFF-WS20.md | In-flight infra state + exact next commands |
 | apps/api/src/modules/README.md | Module layout contract + RLS table checklist |
 
-## Current state (2026-07-19)
+## Current state (2026-07-20)
 
-Walking skeleton: WS-01..WS-19 done with evidence. WS-20 in progress —
-AWS UAE interim staging half-provisioned, RDS/ECS blocked on new-account
-limits (support case raised); see docs/HANDOFF-WS20.md for exact pickup.
-WS-21, WS-22 pending. Then Priority-2 modules (BACKLOG epics).
+Walking skeleton **CLOSED** (WS-22 exit review done; evidence/skeleton/).
+Two open external-blocked items: WS-20 cloud deploy + WS-21 backup drill —
+AWS new-account limits, support case active, exact pickup in
+docs/HANDOFF-WS20.md (~1h once unblocked). **Priority 2 in progress:
+Authentication epic** — task cards in BACKLOG.md, same approval-gated loop.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
