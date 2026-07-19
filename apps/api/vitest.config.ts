@@ -6,6 +6,8 @@ export default defineConfig({
     include: ['test/**/*.e2e-spec.ts'],
     environment: 'node',
     setupFiles: ['dotenv/config'],
+    // Specs share the core_scope_check table; run files sequentially.
+    fileParallelism: false,
   },
   plugins: [
     swc.vite({

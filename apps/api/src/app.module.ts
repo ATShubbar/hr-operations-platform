@@ -7,9 +7,10 @@ import { HealthModule } from './health/health.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ExampleModule } from './modules/example/public-api';
 import { ExampleConsumerModule } from './modules/example-consumer/public-api';
+import { ScopeCheckModule } from './modules/scope-check/public-api';
 
 @Module({
-  imports: [PrismaModule, HealthModule, ExampleModule, ExampleConsumerModule],
+  imports: [PrismaModule, HealthModule, ExampleModule, ExampleConsumerModule, ScopeCheckModule],
   providers: [
     { provide: APP_GUARD, useClass: PermissionsGuard },
     { provide: APP_INTERCEPTOR, useClass: AccessLogInterceptor },
