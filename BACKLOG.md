@@ -31,7 +31,7 @@
 | WS-15 | Deny-by-default authorization guard | WS-14 | done ([evidence](evidence/skeleton/WS-15.md)) |
 | WS-16 | i18n scaffold (ar/en, runtime RTL switch) | WS-06 | done ([evidence](evidence/skeleton/WS-16.md)) |
 | WS-17 | Hijri/Gregorian shared date utility | WS-04 | done ([evidence](evidence/skeleton/WS-17.md)) |
-| WS-18 | Cross-client isolation test harness in CI | WS-13, WS-15, WS-09 | todo |
+| WS-18 | Cross-client isolation test harness in CI | WS-13, WS-15, WS-09 | done ([evidence](evidence/skeleton/WS-18.md)) |
 | WS-19 | Seed script (2 clients, all roles) | WS-13 | todo |
 | WS-20 | Finalize ADR-006 + deploy pipeline to KSA host | WS-09 | todo |
 | WS-21 | Backups + restore test | WS-20 | todo |
