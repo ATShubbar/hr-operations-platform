@@ -1,5 +1,13 @@
-import { CanActivate, ExecutionContext, ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  Injectable,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { requestContext } from '../context/request-context';
 import { PERMISSION_KEY, PUBLIC_KEY } from './permissions.decorator';
 
 // Deny by default (ADR-002): an endpoint with NEITHER @Public() NOR
@@ -25,12 +33,14 @@ export class PermissionsGuard implements CanActivate {
       throw new ForbiddenException('Endpoint has no declared permission');
     }
 
-    // SEAM (Priority 2, ACTION-PLAN 2.2): resolve the actor from the request
-    // context and delegate to the policy service:
+    // AUTH-03: declared endpoints require an authenticated actor — 401 when
+    // the session middleware resolved nobody. (403 above = endpoint
+    // misconfigured; 401 here = caller not logged in.)
+    const actor = requestContext.get()?.actorId;
+    if (!actor) throw new UnauthorizedException('Authentication required');
+
+    // SEAM (AUTH-04): delegate to the policy service —
     //   return this.policy.can(actor, permission)
-    // Until authentication exists there is no actor to evaluate, so declared
-    // endpoints pass. The deny-by-default mechanism above is what this task
-    // ships and what the isolation harness (WS-18) relies on.
     return true;
   }
 }

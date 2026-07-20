@@ -1,38 +1,22 @@
-import {
-  INestApplication,
-  MiddlewareConsumer,
-  Module,
-  NestModule,
-} from '@nestjs/common';
+import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
-import type { NextFunction, Request, Response } from 'express';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AppModule } from '../../src/app.module';
-import { requestContext } from '../../src/context/request-context';
 import { PrismaService } from '../../src/prisma/prisma.service';
+import {
+  cleanupHelperUsers,
+  loginAsClientRep,
+  type TestPrincipal,
+} from '../helpers/login';
 import { ENDPOINT_REGISTRY } from './endpoint-registry';
 
 const CLIENT_A = '11111111-1111-4111-8111-111111111111';
 const CLIENT_B = '22222222-2222-4222-8222-222222222222';
 
-// Test-only identity injection: sets clientId on the ALREADY-CREATED request
-// context from an x-test-client-id header. Registered as a Nest module so it
-// runs AFTER AppModule's context middleware. This module exists only in this
-// spec — nothing like it ships in src/.
-@Module({})
-class TestIdentityModule implements NestModule {
-  configure(consumer: MiddlewareConsumer): void {
-    consumer
-      .apply((req: Request, _res: Response, next: NextFunction) => {
-        const cid = req.header('x-test-client-id');
-        const ctx = requestContext.get();
-        if (cid && ctx) ctx.clientId = cid;
-        next();
-      })
-      .forRoutes('*');
-  }
-}
+// AUTH-03: the harness now authenticates through REAL sessions — the former
+// test-only identity middleware is retired. Client identity flows
+// login → Redis session → session middleware → request context → RLS scope.
 
 interface RouteInfo {
   method: string;
@@ -59,18 +43,22 @@ function liveRoutes(app: INestApplication): RouteInfo[] {
 
 describe('Cross-client isolation harness (e2e)', () => {
   let app: INestApplication;
-  let staff: PrismaService;
+  let prisma: PrismaService;
+  let repA: TestPrincipal;
+  let repB: TestPrincipal;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [AppModule, TestIdentityModule],
+      imports: [AppModule],
     }).compile();
     app = moduleRef.createNestApplication();
     await app.init();
-    staff = app.get(PrismaService);
+    prisma = app.get(PrismaService);
+    repA = await loginAsClientRep(app, CLIENT_A);
+    repB = await loginAsClientRep(app, CLIENT_B);
 
-    await staff.coreScopeCheck.deleteMany();
-    await staff.coreScopeCheck.createMany({
+    await prisma.coreScopeCheck.deleteMany();
+    await prisma.coreScopeCheck.createMany({
       data: [
         { clientId: CLIENT_A, note: 'A-secret-1' },
         { clientId: CLIENT_A, note: 'A-secret-2' },
@@ -80,7 +68,8 @@ describe('Cross-client isolation harness (e2e)', () => {
   });
 
   afterAll(async () => {
-    await staff.coreScopeCheck.deleteMany();
+    await prisma.coreScopeCheck.deleteMany();
+    await cleanupHelperUsers(app);
     await app.close();
   });
 
@@ -104,7 +93,7 @@ describe('Cross-client isolation harness (e2e)', () => {
 
     it(`${route}: caller sees ONLY their own client's rows`, async () => {
       const res = await request(app.getHttpServer())[method.toLowerCase() as 'get'](path)
-        .set('x-test-client-id', CLIENT_A)
+        .set('Cookie', repA.cookie)
         .expect(200);
       const rows = res.body as Array<{ clientId: string; note: string }>;
       expect(rows.length).toBeGreaterThan(0);
@@ -113,18 +102,26 @@ describe('Cross-client isolation harness (e2e)', () => {
 
     it(`${route}: wrong-client probe leaks NOTHING of client A`, async () => {
       const res = await request(app.getHttpServer())[method.toLowerCase() as 'get'](path)
-        .set('x-test-client-id', CLIENT_B)
+        .set('Cookie', repB.cookie)
         .expect(200);
       const rows = res.body as Array<{ clientId: string; note: string }>;
       expect(rows.some((r) => r.clientId === CLIENT_A)).toBe(false);
       expect(JSON.stringify(res.body)).not.toContain('A-secret');
     });
 
-    it(`${route}: NO client identity -> 403, never data`, async () => {
+    it(`${route}: unauthenticated -> 401, never data`, async () => {
       await request(app.getHttpServer())[method.toLowerCase() as 'get'](path)
-        .expect(403);
+        .expect(401);
     });
   }
+
+  it('staff-scoped endpoints reject unauthenticated requests (401)', async () => {
+    for (const [route, scope] of Object.entries(ENDPOINT_REGISTRY)) {
+      if (scope !== 'staff') continue;
+      const [method, path] = route.split(' ') as [string, string];
+      await request(app.getHttpServer())[method.toLowerCase() as 'get'](path).expect(401);
+    }
+  });
 
   it('public endpoints are reachable unauthenticated (never 401/403)', async () => {
     for (const [route, scope] of Object.entries(ENDPOINT_REGISTRY)) {
@@ -133,8 +130,6 @@ describe('Cross-client isolation harness (e2e)', () => {
       const res = await request(app.getHttpServer())[
         method.toLowerCase() as 'get' | 'post'
       ](path);
-      // Public means the guard lets it through; a 400 (e.g. empty login
-      // payload) is fine, an auth rejection is not.
       expect([401, 403]).not.toContain(res.status);
     }
   });

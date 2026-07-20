@@ -7,4 +7,5 @@ export {
   SessionsService,
   type SessionData,
 } from './application/sessions.service';
+export { SessionMiddleware } from './api/session.middleware';
 export type { CreateClientRepUserInput, CreateStaffUserInput } from './domain/user';

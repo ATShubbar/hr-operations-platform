@@ -3,10 +3,11 @@ import { randomUUID } from 'node:crypto';
 
 export interface RequestContext {
   requestId: string;
-  // Populated by authentication (Priority 2). Until then they stay null and
-  // the fields exist so logging and DB-path selection have one stable shape.
+  // Populated by the auth session middleware (AUTH-03) for authenticated
+  // requests; null means unauthenticated.
   actorId: string | null;
   clientId: string | null;
+  principalType: 'staff' | 'client_rep' | null;
 }
 
 const storage = new AsyncLocalStorage<RequestContext>();
@@ -19,6 +20,11 @@ export const requestContext = {
     return storage.getStore();
   },
   create(requestId?: string): RequestContext {
-    return { requestId: requestId ?? randomUUID(), actorId: null, clientId: null };
+    return {
+      requestId: requestId ?? randomUUID(),
+      actorId: null,
+      clientId: null,
+      principalType: null,
+    };
   },
 };
