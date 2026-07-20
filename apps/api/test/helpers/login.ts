@@ -2,7 +2,12 @@ import type { INestApplication } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { PrismaService } from '../../src/prisma/prisma.service';
-import { PasswordService, UsersService } from '../../src/modules/auth/public-api';
+import {
+  PasswordService,
+  UsersService,
+  type ClientRole,
+  type StaffRole,
+} from '../../src/modules/auth/public-api';
 
 // Shared e2e helper (AUTH-03): creates a real user and logs in through the
 // real endpoint, returning the session cookie. Prefix all helper users so
@@ -17,20 +22,25 @@ export interface TestPrincipal {
   email: string;
 }
 
-export async function loginAsStaff(app: INestApplication): Promise<TestPrincipal> {
-  return createAndLogin(app, null);
+export async function loginAsStaff(
+  app: INestApplication,
+  role: StaffRole = 'company_admin',
+): Promise<TestPrincipal> {
+  return createAndLogin(app, null, role);
 }
 
 export async function loginAsClientRep(
   app: INestApplication,
   clientId: string,
+  role: ClientRole = 'client_admin',
 ): Promise<TestPrincipal> {
-  return createAndLogin(app, clientId);
+  return createAndLogin(app, clientId, role);
 }
 
 async function createAndLogin(
   app: INestApplication,
   clientId: string | null,
+  role: StaffRole | ClientRole,
 ): Promise<TestPrincipal> {
   const users = app.get(UsersService);
   const passwords = app.get(PasswordService);
@@ -38,8 +48,13 @@ async function createAndLogin(
   const passwordHash = await passwords.hash(HELPER_PASSWORD);
 
   const user = clientId
-    ? await users.createClientRepUser({ email, passwordHash, clientId })
-    : await users.createStaffUser({ email, passwordHash });
+    ? await users.createClientRepUser({
+        email,
+        passwordHash,
+        clientId,
+        role: role as ClientRole,
+      })
+    : await users.createStaffUser({ email, passwordHash, role: role as StaffRole });
 
   const res = await request(app.getHttpServer())
     .post('/auth/login')

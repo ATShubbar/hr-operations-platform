@@ -29,6 +29,7 @@ export class SessionMiddleware implements NestMiddleware {
         ctx.actorId = session.userId;
         ctx.clientId = session.clientId;
         ctx.principalType = session.principalType;
+        ctx.role = session.role;
       }
     }
     next();

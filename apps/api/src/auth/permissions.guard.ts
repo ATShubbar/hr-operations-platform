@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { requestContext } from '../context/request-context';
+import { PolicyService } from '../modules/auth/public-api';
 import { PERMISSION_KEY, PUBLIC_KEY } from './permissions.decorator';
 
 // Deny by default (ADR-002): an endpoint with NEITHER @Public() NOR
@@ -17,7 +18,10 @@ import { PERMISSION_KEY, PUBLIC_KEY } from './permissions.decorator';
 export class PermissionsGuard implements CanActivate {
   private readonly logger = new Logger(PermissionsGuard.name);
 
-  constructor(private readonly reflector: Reflector) {}
+  constructor(
+    private readonly reflector: Reflector,
+    private readonly policy: PolicyService,
+  ) {}
 
   canActivate(context: ExecutionContext): boolean {
     const targets = [context.getHandler(), context.getClass()];
@@ -36,11 +40,13 @@ export class PermissionsGuard implements CanActivate {
     // AUTH-03: declared endpoints require an authenticated actor — 401 when
     // the session middleware resolved nobody. (403 above = endpoint
     // misconfigured; 401 here = caller not logged in.)
-    const actor = requestContext.get()?.actorId;
-    if (!actor) throw new UnauthorizedException('Authentication required');
+    const ctx = requestContext.get();
+    if (!ctx?.actorId) throw new UnauthorizedException('Authentication required');
 
-    // SEAM (AUTH-04): delegate to the policy service —
-    //   return this.policy.can(actor, permission)
+    // AUTH-04: the single policy decision point (ADR-002).
+    if (!this.policy.can(ctx.role, permission)) {
+      throw new ForbiddenException('Permission denied');
+    }
     return true;
   }
 }

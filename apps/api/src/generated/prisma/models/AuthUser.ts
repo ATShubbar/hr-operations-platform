@@ -29,6 +29,7 @@ export type AuthUserMinAggregateOutputType = {
   email: string | null
   passwordHash: string | null
   principalType: $Enums.PrincipalType | null
+  role: $Enums.Role | null
   clientId: string | null
   status: $Enums.UserStatus | null
   mfaSecret: string | null
@@ -41,6 +42,7 @@ export type AuthUserMaxAggregateOutputType = {
   email: string | null
   passwordHash: string | null
   principalType: $Enums.PrincipalType | null
+  role: $Enums.Role | null
   clientId: string | null
   status: $Enums.UserStatus | null
   mfaSecret: string | null
@@ -53,6 +55,7 @@ export type AuthUserCountAggregateOutputType = {
   email: number
   passwordHash: number
   principalType: number
+  role: number
   clientId: number
   status: number
   mfaSecret: number
@@ -67,6 +70,7 @@ export type AuthUserMinAggregateInputType = {
   email?: true
   passwordHash?: true
   principalType?: true
+  role?: true
   clientId?: true
   status?: true
   mfaSecret?: true
@@ -79,6 +83,7 @@ export type AuthUserMaxAggregateInputType = {
   email?: true
   passwordHash?: true
   principalType?: true
+  role?: true
   clientId?: true
   status?: true
   mfaSecret?: true
@@ -91,6 +96,7 @@ export type AuthUserCountAggregateInputType = {
   email?: true
   passwordHash?: true
   principalType?: true
+  role?: true
   clientId?: true
   status?: true
   mfaSecret?: true
@@ -176,6 +182,7 @@ export type AuthUserGroupByOutputType = {
   email: string
   passwordHash: string
   principalType: $Enums.PrincipalType
+  role: $Enums.Role
   clientId: string | null
   status: $Enums.UserStatus
   mfaSecret: string | null
@@ -209,6 +216,7 @@ export type AuthUserWhereInput = {
   email?: Prisma.StringFilter<"AuthUser"> | string
   passwordHash?: Prisma.StringFilter<"AuthUser"> | string
   principalType?: Prisma.EnumPrincipalTypeFilter<"AuthUser"> | $Enums.PrincipalType
+  role?: Prisma.EnumRoleFilter<"AuthUser"> | $Enums.Role
   clientId?: Prisma.UuidNullableFilter<"AuthUser"> | string | null
   status?: Prisma.EnumUserStatusFilter<"AuthUser"> | $Enums.UserStatus
   mfaSecret?: Prisma.StringNullableFilter<"AuthUser"> | string | null
@@ -221,6 +229,7 @@ export type AuthUserOrderByWithRelationInput = {
   email?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
   principalType?: Prisma.SortOrder
+  role?: Prisma.SortOrder
   clientId?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   mfaSecret?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -236,6 +245,7 @@ export type AuthUserWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.AuthUserWhereInput | Prisma.AuthUserWhereInput[]
   passwordHash?: Prisma.StringFilter<"AuthUser"> | string
   principalType?: Prisma.EnumPrincipalTypeFilter<"AuthUser"> | $Enums.PrincipalType
+  role?: Prisma.EnumRoleFilter<"AuthUser"> | $Enums.Role
   clientId?: Prisma.UuidNullableFilter<"AuthUser"> | string | null
   status?: Prisma.EnumUserStatusFilter<"AuthUser"> | $Enums.UserStatus
   mfaSecret?: Prisma.StringNullableFilter<"AuthUser"> | string | null
@@ -248,6 +258,7 @@ export type AuthUserOrderByWithAggregationInput = {
   email?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
   principalType?: Prisma.SortOrder
+  role?: Prisma.SortOrder
   clientId?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
   mfaSecret?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -266,6 +277,7 @@ export type AuthUserScalarWhereWithAggregatesInput = {
   email?: Prisma.StringWithAggregatesFilter<"AuthUser"> | string
   passwordHash?: Prisma.StringWithAggregatesFilter<"AuthUser"> | string
   principalType?: Prisma.EnumPrincipalTypeWithAggregatesFilter<"AuthUser"> | $Enums.PrincipalType
+  role?: Prisma.EnumRoleWithAggregatesFilter<"AuthUser"> | $Enums.Role
   clientId?: Prisma.UuidNullableWithAggregatesFilter<"AuthUser"> | string | null
   status?: Prisma.EnumUserStatusWithAggregatesFilter<"AuthUser"> | $Enums.UserStatus
   mfaSecret?: Prisma.StringNullableWithAggregatesFilter<"AuthUser"> | string | null
@@ -278,6 +290,7 @@ export type AuthUserCreateInput = {
   email: string
   passwordHash: string
   principalType: $Enums.PrincipalType
+  role?: $Enums.Role
   clientId?: string | null
   status?: $Enums.UserStatus
   mfaSecret?: string | null
@@ -290,6 +303,7 @@ export type AuthUserUncheckedCreateInput = {
   email: string
   passwordHash: string
   principalType: $Enums.PrincipalType
+  role?: $Enums.Role
   clientId?: string | null
   status?: $Enums.UserStatus
   mfaSecret?: string | null
@@ -302,6 +316,7 @@ export type AuthUserUpdateInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   principalType?: Prisma.EnumPrincipalTypeFieldUpdateOperationsInput | $Enums.PrincipalType
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   clientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -314,6 +329,7 @@ export type AuthUserUncheckedUpdateInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   principalType?: Prisma.EnumPrincipalTypeFieldUpdateOperationsInput | $Enums.PrincipalType
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   clientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -326,6 +342,7 @@ export type AuthUserCreateManyInput = {
   email: string
   passwordHash: string
   principalType: $Enums.PrincipalType
+  role?: $Enums.Role
   clientId?: string | null
   status?: $Enums.UserStatus
   mfaSecret?: string | null
@@ -338,6 +355,7 @@ export type AuthUserUpdateManyMutationInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   principalType?: Prisma.EnumPrincipalTypeFieldUpdateOperationsInput | $Enums.PrincipalType
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   clientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -350,6 +368,7 @@ export type AuthUserUncheckedUpdateManyInput = {
   email?: Prisma.StringFieldUpdateOperationsInput | string
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   principalType?: Prisma.EnumPrincipalTypeFieldUpdateOperationsInput | $Enums.PrincipalType
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   clientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
   mfaSecret?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -362,6 +381,7 @@ export type AuthUserCountOrderByAggregateInput = {
   email?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
   principalType?: Prisma.SortOrder
+  role?: Prisma.SortOrder
   clientId?: Prisma.SortOrder
   status?: Prisma.SortOrder
   mfaSecret?: Prisma.SortOrder
@@ -374,6 +394,7 @@ export type AuthUserMaxOrderByAggregateInput = {
   email?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
   principalType?: Prisma.SortOrder
+  role?: Prisma.SortOrder
   clientId?: Prisma.SortOrder
   status?: Prisma.SortOrder
   mfaSecret?: Prisma.SortOrder
@@ -386,6 +407,7 @@ export type AuthUserMinOrderByAggregateInput = {
   email?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
   principalType?: Prisma.SortOrder
+  role?: Prisma.SortOrder
   clientId?: Prisma.SortOrder
   status?: Prisma.SortOrder
   mfaSecret?: Prisma.SortOrder
@@ -399,6 +421,10 @@ export type StringFieldUpdateOperationsInput = {
 
 export type EnumPrincipalTypeFieldUpdateOperationsInput = {
   set?: $Enums.PrincipalType
+}
+
+export type EnumRoleFieldUpdateOperationsInput = {
+  set?: $Enums.Role
 }
 
 export type NullableStringFieldUpdateOperationsInput = {
@@ -420,6 +446,7 @@ export type AuthUserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   email?: boolean
   passwordHash?: boolean
   principalType?: boolean
+  role?: boolean
   clientId?: boolean
   status?: boolean
   mfaSecret?: boolean
@@ -432,6 +459,7 @@ export type AuthUserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   email?: boolean
   passwordHash?: boolean
   principalType?: boolean
+  role?: boolean
   clientId?: boolean
   status?: boolean
   mfaSecret?: boolean
@@ -444,6 +472,7 @@ export type AuthUserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   email?: boolean
   passwordHash?: boolean
   principalType?: boolean
+  role?: boolean
   clientId?: boolean
   status?: boolean
   mfaSecret?: boolean
@@ -456,6 +485,7 @@ export type AuthUserSelectScalar = {
   email?: boolean
   passwordHash?: boolean
   principalType?: boolean
+  role?: boolean
   clientId?: boolean
   status?: boolean
   mfaSecret?: boolean
@@ -463,7 +493,7 @@ export type AuthUserSelectScalar = {
   updatedAt?: boolean
 }
 
-export type AuthUserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "passwordHash" | "principalType" | "clientId" | "status" | "mfaSecret" | "createdAt" | "updatedAt", ExtArgs["result"]["authUser"]>
+export type AuthUserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "passwordHash" | "principalType" | "role" | "clientId" | "status" | "mfaSecret" | "createdAt" | "updatedAt", ExtArgs["result"]["authUser"]>
 
 export type $AuthUserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "AuthUser"
@@ -473,6 +503,7 @@ export type $AuthUserPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     email: string
     passwordHash: string
     principalType: $Enums.PrincipalType
+    role: $Enums.Role
     clientId: string | null
     status: $Enums.UserStatus
     mfaSecret: string | null
@@ -905,6 +936,7 @@ export interface AuthUserFieldRefs {
   readonly email: Prisma.FieldRef<"AuthUser", 'String'>
   readonly passwordHash: Prisma.FieldRef<"AuthUser", 'String'>
   readonly principalType: Prisma.FieldRef<"AuthUser", 'PrincipalType'>
+  readonly role: Prisma.FieldRef<"AuthUser", 'Role'>
   readonly clientId: Prisma.FieldRef<"AuthUser", 'String'>
   readonly status: Prisma.FieldRef<"AuthUser", 'UserStatus'>
   readonly mfaSecret: Prisma.FieldRef<"AuthUser", 'String'>

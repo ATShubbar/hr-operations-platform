@@ -38,16 +38,22 @@ describe('Login + sessions (AUTH-02, e2e)', () => {
 
     await prisma.authUser.deleteMany({ where: { email: { startsWith: 'auth02-' } } });
     const hash = await passwords.hash(PASSWORD);
-    const staff = await users.createStaffUser({ email: 'auth02-staff@example.com', passwordHash: hash });
+    const staff = await users.createStaffUser({
+      email: 'auth02-staff@example.com',
+      passwordHash: hash,
+      role: 'company_admin',
+    });
     staffUserId = staff.id;
     await users.createClientRepUser({
       email: 'auth02-rep@example.com',
       passwordHash: hash,
       clientId: CLIENT_A,
+      role: 'client_admin',
     });
     const disabled = await users.createStaffUser({
       email: 'auth02-disabled@example.com',
       passwordHash: hash,
+      role: 'company_admin',
     });
     await prisma.authUser.update({ where: { id: disabled.id }, data: { status: 'disabled' } });
   });

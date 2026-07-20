@@ -15,6 +15,7 @@ export class UsersService {
         email: input.email.toLowerCase(),
         passwordHash: input.passwordHash,
         principalType: 'staff',
+        role: input.role,
       },
     });
   }
@@ -26,6 +27,7 @@ export class UsersService {
         passwordHash: input.passwordHash,
         principalType: 'client_rep',
         clientId: input.clientId,
+        role: input.role,
       },
     });
   }

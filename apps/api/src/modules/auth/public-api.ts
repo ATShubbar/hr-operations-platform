@@ -8,4 +8,13 @@ export {
   type SessionData,
 } from './application/sessions.service';
 export { SessionMiddleware } from './api/session.middleware';
+export { PolicyService } from './application/policy.service';
+export {
+  PERMISSIONS,
+  ROLE_PERMISSIONS,
+  type ClientRole,
+  type Permission,
+  type RoleName,
+  type StaffRole,
+} from './domain/permissions';
 export type { CreateClientRepUserInput, CreateStaffUserInput } from './domain/user';

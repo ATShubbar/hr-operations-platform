@@ -76,6 +76,7 @@ export const AuthUserScalarFieldEnum = {
   email: 'email',
   passwordHash: 'passwordHash',
   principalType: 'principalType',
+  role: 'role',
   clientId: 'clientId',
   status: 'status',
   mfaSecret: 'mfaSecret',

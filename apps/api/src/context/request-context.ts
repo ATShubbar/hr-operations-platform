@@ -8,6 +8,7 @@ export interface RequestContext {
   actorId: string | null;
   clientId: string | null;
   principalType: 'staff' | 'client_rep' | null;
+  role: string | null;
 }
 
 const storage = new AsyncLocalStorage<RequestContext>();
@@ -25,6 +26,7 @@ export const requestContext = {
       actorId: null,
       clientId: null,
       principalType: null,
+      role: null,
     };
   },
 };

@@ -15,6 +15,7 @@ model AuthUser {
   email         String        @unique
   passwordHash  String        @map("password_hash")
   principalType PrincipalType @map("principal_type")
+  role          Role          @default(read_only)
   clientId      String?       @map("client_id") @db.Uuid
   status        UserStatus    @default(active)
   mfaSecret     String?       @map("mfa_secret")
@@ -27,6 +28,20 @@ model AuthUser {
 enum PrincipalType {
   staff
   client_rep
+}
+
+// The nine roles from the frozen architecture's permission matrix.
+// Least-privilege default: read_only.
+enum Role {
+  system_admin
+  company_admin
+  recruiter
+  hr_officer
+  gro_officer
+  finance
+  read_only
+  client_admin
+  client_user
 }
 
 enum UserStatus {

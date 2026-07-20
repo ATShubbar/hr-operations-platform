@@ -55,6 +55,7 @@ export class AuthController {
     const sessionId = await this.sessions.create({
       userId: user.id,
       principalType: user.principalType,
+      role: user.role,
       clientId: user.clientId,
     });
     res.cookie(SESSION_COOKIE, sessionId, {

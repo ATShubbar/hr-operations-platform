@@ -32,6 +32,7 @@ describe('Auth users (AUTH-01, e2e)', () => {
     const user = await users.createStaffUser({
       email: 'AUTH01-staff@example.com',
       passwordHash: 'argon2id$placeholder-until-auth-02',
+      role: 'hr_officer',
     });
     expect(user.principalType).toBe('staff');
     expect(user.clientId).toBeNull();
@@ -44,9 +45,11 @@ describe('Auth users (AUTH-01, e2e)', () => {
       email: 'auth01-rep@example.com',
       passwordHash: 'argon2id$placeholder-until-auth-02',
       clientId: CLIENT_A,
+      role: 'client_admin',
     });
     expect(user.principalType).toBe('client_rep');
     expect(user.clientId).toBe(CLIENT_A);
+    expect(user.role).toBe('client_admin');
   });
 
   it('finds by email case-insensitively', async () => {
@@ -59,6 +62,7 @@ describe('Auth users (AUTH-01, e2e)', () => {
       users.createStaffUser({
         email: 'auth01-staff@example.com',
         passwordHash: 'x',
+        role: 'read_only',
       }),
     ).rejects.toThrow(/unique/i);
   });
