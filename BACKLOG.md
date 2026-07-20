@@ -226,7 +226,7 @@ Same rules, same loop. Evidence goes to `evidence/auth/AUTH-XX.md`.
 | ID | Task | Depends on | Status |
 |---|---|---|---|
 | AUTH-01 | Auth module + users table + migration | skeleton | done ([evidence](evidence/auth/AUTH-01.md)) |
-| AUTH-02 | Password hashing + login endpoint + Redis sessions | AUTH-01 | todo |
+| AUTH-02 | Password hashing + login endpoint + Redis sessions | AUTH-01 | done ([evidence](evidence/auth/AUTH-02.md)) |
 | AUTH-03 | Session guard: actor into request context, 401 semantics | AUTH-02 | todo |
 | AUTH-04 | Permission catalog + role mapping + policy service (fills the guard seam) | AUTH-03 | todo |
 | AUTH-05 | Logout + session revocation + TTL policy | AUTH-02 | todo |
