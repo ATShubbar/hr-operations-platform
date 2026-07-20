@@ -126,11 +126,16 @@ describe('Cross-client isolation harness (e2e)', () => {
     });
   }
 
-  it('public endpoints respond unauthenticated', async () => {
+  it('public endpoints are reachable unauthenticated (never 401/403)', async () => {
     for (const [route, scope] of Object.entries(ENDPOINT_REGISTRY)) {
       if (scope !== 'public') continue;
-      const [, path] = route.split(' ');
-      await request(app.getHttpServer()).get(path as string).expect(200);
+      const [method, path] = route.split(' ') as [string, string];
+      const res = await request(app.getHttpServer())[
+        method.toLowerCase() as 'get' | 'post'
+      ](path);
+      // Public means the guard lets it through; a 400 (e.g. empty login
+      // payload) is fine, an auth rejection is not.
+      expect([401, 403]).not.toContain(res.status);
     }
   });
 });

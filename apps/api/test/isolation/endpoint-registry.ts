@@ -13,6 +13,7 @@ export type ScopeClass = 'public' | 'staff' | 'client-scoped';
 export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'GET /health': 'public',
   'GET /ready': 'public',
+  'POST /auth/login': 'public',
   'GET /example/greeting': 'staff',
   'GET /example-consumer/relay': 'staff',
   'GET /scope-check': 'client-scoped',
