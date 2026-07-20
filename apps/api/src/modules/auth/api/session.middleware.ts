@@ -3,7 +3,7 @@ import type { NextFunction, Request, Response } from 'express';
 import { requestContext } from '../../../context/request-context';
 import { SESSION_COOKIE, SessionsService } from '../application/sessions.service';
 
-function readCookie(header: string | undefined, name: string): string | null {
+export function readCookie(header: string | undefined, name: string): string | null {
   if (!header) return null;
   for (const part of header.split(';')) {
     const [key, ...rest] = part.trim().split('=');

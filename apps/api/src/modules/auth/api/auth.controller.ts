@@ -4,12 +4,14 @@ import {
   Controller,
   HttpCode,
   Post,
+  Req,
   Res,
   UnauthorizedException,
 } from '@nestjs/common';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import { loginRequestSchema, type LoginResponse } from '@hr/contracts';
-import { Public } from '../../../auth/permissions.decorator';
+import { Public, RequirePermission } from '../../../auth/permissions.decorator';
+import { readCookie } from './session.middleware';
 import { PasswordService } from '../application/password.service';
 import {
   SESSION_COOKIE,
@@ -66,5 +68,20 @@ export class AuthController {
       path: '/',
     });
     return { userId: user.id, principalType: user.principalType };
+  }
+
+  // Real revocation (the point of server-side sessions): after this, the
+  // cookie is worthless everywhere, immediately.
+  @RequirePermission('session.end')
+  @Post('logout')
+  @HttpCode(200)
+  async logout(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<{ loggedOut: true }> {
+    const sessionId = readCookie(req.headers.cookie, SESSION_COOKIE);
+    if (sessionId) await this.sessions.destroy(sessionId);
+    res.clearCookie(SESSION_COOKIE, { path: '/' });
+    return { loggedOut: true };
   }
 }
