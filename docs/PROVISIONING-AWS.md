@@ -83,3 +83,8 @@ this paragraph is never used.
   locally; deploy pipeline committed (gated). RDS/ECS creation blocked by
   new-account restrictions ~2h; background retry running; AWS support case
   raised (Account and billing → verification) to lift limits.
+- 2026-07-20: AWS support says "fixed" but RDS create, ECS create AND ECR
+  push (KMS AccessDenied) all still blocked — same restriction family.
+  Images rebuilt at 8ca9a8f and tagged for ECR locally; retry loop running
+  every 2 min. If nothing clears within ~1h of the support reply, respond
+  on the case: "restrictions still active after your fix".
