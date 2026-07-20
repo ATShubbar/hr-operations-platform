@@ -230,7 +230,7 @@ Same rules, same loop. Evidence goes to `evidence/auth/AUTH-XX.md`.
 | AUTH-03 | Session guard: actor into request context, 401 semantics | AUTH-02 | done ([evidence](evidence/auth/AUTH-03.md)) |
 | AUTH-04 | Permission catalog + role mapping + policy service (fills the guard seam) | AUTH-03 | done ([evidence](evidence/auth/AUTH-04.md)) |
 | AUTH-05 | Logout + session revocation + TTL policy | AUTH-02 | done ([evidence](evidence/auth/AUTH-05.md)) |
-| AUTH-06 | MFA (TOTP) — required for admin roles | AUTH-02 | todo |
+| AUTH-06 | MFA (TOTP) — required for admin roles | AUTH-02 | done ([evidence](evidence/auth/AUTH-06.md)) |
 | AUTH-07 | Role/user seeding + harness update (staff endpoints → 401 unauthenticated) | AUTH-04 | todo |
 
 ### AUTH-01 — Auth module + users table
