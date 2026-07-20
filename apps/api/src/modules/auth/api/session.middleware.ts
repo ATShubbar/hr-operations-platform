@@ -25,7 +25,10 @@ export class SessionMiddleware implements NestMiddleware {
     if (sessionId) {
       const session = await this.sessions.get(sessionId);
       const ctx = requestContext.get();
-      if (session && ctx) {
+      // Only FULL sessions authenticate the request. Limited sessions (MFA
+      // challenge / forced enrollment) stay unauthenticated here — the MFA
+      // endpoints read the cookie themselves and check the state.
+      if (session && ctx && session.mfa === 'full') {
         ctx.actorId = session.userId;
         ctx.clientId = session.clientId;
         ctx.principalType = session.principalType;

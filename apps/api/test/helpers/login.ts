@@ -22,9 +22,12 @@ export interface TestPrincipal {
   email: string;
 }
 
+// Default is hr_officer: admin roles (system_admin/company_admin) require
+// MFA enrollment (AUTH-06) and get limited sessions until enrolled — use an
+// explicit admin role only when testing that flow.
 export async function loginAsStaff(
   app: INestApplication,
-  role: StaffRole = 'company_admin',
+  role: StaffRole = 'hr_officer',
 ): Promise<TestPrincipal> {
   return createAndLogin(app, null, role);
 }

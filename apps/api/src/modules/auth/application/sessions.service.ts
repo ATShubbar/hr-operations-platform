@@ -8,12 +8,20 @@ import Redis from 'ioredis';
 
 export const SESSION_COOKIE = 'hr_session';
 export const SESSION_TTL_SECONDS = 12 * 60 * 60;
+// Limited sessions (MFA challenge / forced enrollment) are short-lived.
+export const PENDING_TTL_SECONDS = 5 * 60;
+
+export type SessionMfaState = 'full' | 'enroll_required' | 'challenge';
 
 export interface SessionData {
   userId: string;
   principalType: 'staff' | 'client_rep';
   role: string;
   clientId: string | null;
+  mfa: SessionMfaState;
+  // Secret generated at enroll time; promoted to auth_users.mfa_secret only
+  // after a successful verify — never persisted unverified.
+  pendingSecret?: string;
 }
 
 @Injectable()
@@ -22,8 +30,14 @@ export class SessionsService implements OnModuleDestroy {
 
   async create(data: SessionData): Promise<string> {
     const id = randomUUID();
-    await this.redis.set(this.key(id), JSON.stringify(data), 'EX', SESSION_TTL_SECONDS);
+    const ttl = data.mfa === 'full' ? SESSION_TTL_SECONDS : PENDING_TTL_SECONDS;
+    await this.redis.set(this.key(id), JSON.stringify(data), 'EX', ttl);
     return id;
+  }
+
+  async update(id: string, data: SessionData): Promise<void> {
+    const ttl = data.mfa === 'full' ? SESSION_TTL_SECONDS : PENDING_TTL_SECONDS;
+    await this.redis.set(this.key(id), JSON.stringify(data), 'EX', ttl);
   }
 
   async get(id: string): Promise<SessionData | null> {

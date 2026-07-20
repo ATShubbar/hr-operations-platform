@@ -35,4 +35,12 @@ export class UsersService {
   findByEmail(email: string): Promise<AuthUser | null> {
     return this.prisma.authUser.findUnique({ where: { email: email.toLowerCase() } });
   }
+
+  findById(id: string): Promise<AuthUser | null> {
+    return this.prisma.authUser.findUnique({ where: { id } });
+  }
+
+  setMfaSecret(id: string, secret: string): Promise<AuthUser> {
+    return this.prisma.authUser.update({ where: { id }, data: { mfaSecret: secret } });
+  }
 }

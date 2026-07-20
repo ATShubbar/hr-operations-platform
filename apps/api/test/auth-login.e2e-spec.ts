@@ -41,7 +41,7 @@ describe('Login + sessions (AUTH-02, e2e)', () => {
     const staff = await users.createStaffUser({
       email: 'auth02-staff@example.com',
       passwordHash: hash,
-      role: 'company_admin',
+      role: 'hr_officer',
     });
     staffUserId = staff.id;
     await users.createClientRepUser({
@@ -53,7 +53,7 @@ describe('Login + sessions (AUTH-02, e2e)', () => {
     const disabled = await users.createStaffUser({
       email: 'auth02-disabled@example.com',
       passwordHash: hash,
-      role: 'company_admin',
+      role: 'hr_officer',
     });
     await prisma.authUser.update({ where: { id: disabled.id }, data: { status: 'disabled' } });
   });

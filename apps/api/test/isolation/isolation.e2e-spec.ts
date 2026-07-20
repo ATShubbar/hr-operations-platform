@@ -123,6 +123,16 @@ describe('Cross-client isolation harness (e2e)', () => {
     }
   });
 
+  it('session-flow endpoints self-reject unauthenticated requests (401)', async () => {
+    for (const [route, scope] of Object.entries(ENDPOINT_REGISTRY)) {
+      if (scope !== 'session') continue;
+      const [method, path] = route.split(' ') as [string, string];
+      await request(app.getHttpServer())[method.toLowerCase() as 'post'](path)
+        .send({ code: '000000' })
+        .expect(401);
+    }
+  });
+
   it('public endpoints are reachable unauthenticated (never 401/403)', async () => {
     for (const [route, scope] of Object.entries(ENDPOINT_REGISTRY)) {
       if (scope !== 'public') continue;

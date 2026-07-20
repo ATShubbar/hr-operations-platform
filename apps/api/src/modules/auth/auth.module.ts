@@ -5,10 +5,18 @@ import { SessionsService } from './application/sessions.service';
 import { AuthController } from './api/auth.controller';
 import { SessionMiddleware } from './api/session.middleware';
 import { PolicyService } from './application/policy.service';
+import { MfaService } from './application/mfa.service';
 
 @Module({
   controllers: [AuthController],
-  providers: [UsersService, PasswordService, SessionsService, SessionMiddleware, PolicyService],
+  providers: [
+    UsersService,
+    PasswordService,
+    SessionsService,
+    SessionMiddleware,
+    PolicyService,
+    MfaService,
+  ],
   exports: [
     UsersService,
     PasswordService,

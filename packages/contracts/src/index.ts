@@ -7,6 +7,10 @@ export {
 export {
   loginRequestSchema,
   loginResponseSchema,
+  mfaCodeRequestSchema,
+  mfaEnrollResponseSchema,
   type LoginRequest,
   type LoginResponse,
+  type MfaCodeRequest,
+  type MfaEnrollResponse,
 } from './auth.js';

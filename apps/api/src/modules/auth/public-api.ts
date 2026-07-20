@@ -9,6 +9,7 @@ export {
 } from './application/sessions.service';
 export { SessionMiddleware } from './api/session.middleware';
 export { PolicyService } from './application/policy.service';
+export { MfaService } from './application/mfa.service';
 export {
   PERMISSIONS,
   ROLE_PERMISSIONS,

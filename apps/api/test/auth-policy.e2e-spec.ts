@@ -17,7 +17,7 @@ const CLIENT_A = '11111111-1111-4111-8111-111111111111';
 
 describe('Policy service + permission catalog (AUTH-04, e2e)', () => {
   let app: INestApplication;
-  let staff: TestPrincipal; // company_admin — holds example.read
+  let staff: TestPrincipal; // hr_officer — holds example.read
   let rep: TestPrincipal; // client_admin — holds scope-check.read
 
   beforeAll(async () => {
@@ -26,7 +26,7 @@ describe('Policy service + permission catalog (AUTH-04, e2e)', () => {
     }).compile();
     app = moduleRef.createNestApplication();
     await app.init();
-    staff = await loginAsStaff(app, 'company_admin');
+    staff = await loginAsStaff(app, 'hr_officer');
     rep = await loginAsClientRep(app, CLIENT_A, 'client_admin');
   });
 
