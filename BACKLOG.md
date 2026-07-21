@@ -275,9 +275,17 @@ the outbox, which stays reserved for cross-module async effects.
 | ID | Task | Depends on | Status |
 |---|---|---|---|
 | AUDIT-01 | Audit module + append-only `aud_entries` table (SELECT/INSERT grants only) + transactional write API | AUTH epic | done ([evidence](evidence/audit/AUDIT-01.md)) |
-| AUDIT-02 | Automatic mutation logging (actor/client/before-after from request context) proven on a real write path; **client-rep write grant (app_client INSERT + RLS WITH CHECK)** | AUDIT-01 | todo |
-| AUDIT-03 | `audit.read` permission + read/filter API, gated to System/Company Admin only; register in isolation harness | AUDIT-02 | todo |
-| AUDIT-04 | Admin read UI (Next.js, ar/en + RTL) over the audit read API | AUDIT-03 | todo |
+| AUDIT-02 | Client-rep audit write path: `app_client` INSERT grant + RLS `WITH CHECK` (own-client only; still no read/update/delete) | AUDIT-01 | done ([evidence](evidence/audit/AUDIT-02.md)) |
+| AUDIT-03 | Automatic mutation logging (actor/client/before-after) composed with the scoped `set_config` tx, proven on a write path | AUDIT-02 | todo |
+| AUDIT-04 | `audit.read` permission + read/filter API, gated to System/Company Admin only; register in isolation harness | AUDIT-03 | todo |
+| AUDIT-05 | Admin read UI (Next.js, ar/en + RTL) over the audit read API | AUDIT-04 | todo |
+
+> **AUDIT-02 split note (2026-07-21):** the original AUDIT-02 bundled the
+> client-rep write grant with the automatic-logging mechanism. Split because the
+> mechanism is a data-layer design (before-image capture, composing with the
+> scoped `set_config` transaction) with no real write path to prove it on yet;
+> the grant is small and testable now. Grant → AUDIT-02; mechanism → AUDIT-03;
+> read API → AUDIT-04; UI → AUDIT-05.
 
 ### AUDIT-01 — Audit module + append-only table + transactional write API
 - **Objective:** stand up the `audit` module (ADR-003 layout) owning an
@@ -293,7 +301,28 @@ the outbox, which stays reserved for cross-module async effects.
   endpoint registry untouched (no endpoints yet).
 - **Evidence:** `evidence/audit/AUDIT-01.md`.
 - **Dependencies:** AUTH epic (done). **Risks:** `before/after` capturing
-  sensitive fields — redaction is AUDIT-02; read path already SysAdmin/CompanyAdmin-only.
+  sensitive fields — redaction is AUDIT-03; read path already SysAdmin/CompanyAdmin-only.
+
+### AUDIT-02 — Client-rep audit write path (grant + RLS)
+- **Objective:** make `aud_entries` writable by the client-representative DB
+  role (`app_client`) but only for the rep's own client, while it stays
+  unreadable/unmodifiable to that role — extending AUDIT-01's write path from
+  `app_staff` to `app_client` so client-rep mutations can be audited in AUDIT-03.
+- **Files:** Prisma raw-SQL migration — `GRANT INSERT ON aud_entries TO
+  app_client`; `ENABLE ROW LEVEL SECURITY`; `staff_full_access` (`FOR ALL TO
+  app_staff USING(true) WITH CHECK(true)`) + `client_insert` (`FOR INSERT TO
+  app_client WITH CHECK (client_id = NULLIF(current_setting('app.client_id',
+  true), '')::uuid)`).
+- **DoD:** migration applies; `app_client` INSERT with own `client_id` (in a
+  `set_config` tx) succeeds, with another client's id → RLS rejects;
+  `app_client` SELECT/UPDATE/DELETE → denied; `app_staff` unaffected (AUDIT-01
+  tests green); suite + lint green; registry untouched.
+- **Evidence:** migration log; per-role grant/RLS probe matrix → `evidence/audit/AUDIT-02.md`.
+- **Dependencies:** AUDIT-01. **Risks:** Prisma `.create()` emits `RETURNING`
+  which needs SELECT — the client-rep write must use raw `INSERT` without
+  `RETURNING` (finding recorded in AUDIT-02 evidence, applied in AUDIT-03);
+  enabling RLS makes `app_staff` policy-subject → permissive staff policy
+  mandatory; NULLIF load-bearing (SPIKE-001).
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 
