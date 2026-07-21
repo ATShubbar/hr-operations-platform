@@ -277,7 +277,7 @@ the outbox, which stays reserved for cross-module async effects.
 | AUDIT-01 | Audit module + append-only `aud_entries` table (SELECT/INSERT grants only) + transactional write API | AUTH epic | done ([evidence](evidence/audit/AUDIT-01.md)) |
 | AUDIT-02 | Client-rep audit write path: `app_client` INSERT grant + RLS `WITH CHECK` (own-client only; still no read/update/delete) | AUDIT-01 | done ([evidence](evidence/audit/AUDIT-02.md)) |
 | AUDIT-03 | Automatic mutation logging (actor/client/before-after) composed with the scoped `set_config` tx, proven on a write path | AUDIT-02 | done ([evidence](evidence/audit/AUDIT-03.md)) |
-| AUDIT-04 | `audit.read` permission + read/filter API, gated to System/Company Admin only; register in isolation harness | AUDIT-03 | todo |
+| AUDIT-04 | `audit.read` permission + read/filter API, gated to System/Company Admin only; register in isolation harness | AUDIT-03 | done ([evidence](evidence/audit/AUDIT-04.md)) |
 | AUDIT-05 | Admin read UI (Next.js, ar/en + RTL) over the audit read API | AUDIT-04 | todo |
 
 > **AUDIT-02 split note (2026-07-21):** the original AUDIT-02 bundled the
@@ -342,6 +342,20 @@ the outbox, which stays reserved for cross-module async effects.
 - **Dependencies:** AUDIT-02. **Risks:** `before/after` redaction of sensitive
   fields deferred to the first module writing them; auth-event audit (login/
   MFA) is a separate stream, exempted with reasons now.
+
+### AUDIT-04 — Audit read API (admin-only)
+- **Objective:** `audit.read` permission (System/Company Admin only) + `GET
+  /audit` read/filter/paginate API over `aud_entries`, for the AUDIT-05 UI.
+- **Files:** `@hr/contracts` audit schemas; `audit/api/audit.controller.ts` +
+  `application/audit-query.service.ts`; `audit.read` in the permission catalog
+  (`ADMIN_STAFF`); `GET /audit` registered `staff` in the isolation harness;
+  `loginAsEnrolledStaff()` test helper.
+- **DoD:** both admins → 200, other staff/client → 403, unauth → 401; filters
+  (resource/action/actor/client/time) + cursor pagination; BigInt id as string;
+  catalog + isolation coverage green; suite + lint green.
+- **Evidence:** `evidence/audit/AUDIT-04.md`.
+- **Dependencies:** AUDIT-03. **Risks:** admin roles are MFA-required (tests
+  enroll via the new helper); BigInt has no JSON form (serialized as string).
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

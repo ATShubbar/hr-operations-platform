@@ -29,6 +29,7 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'POST /auth/mfa/enroll': 'session',
   'POST /auth/mfa/verify': 'session',
   'POST /auth/mfa/challenge': 'session',
+  'GET /audit': 'staff',
   'GET /example/greeting': 'staff',
   'GET /example-consumer/relay': 'staff',
   'GET /scope-check': 'client-scoped',

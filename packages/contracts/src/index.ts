@@ -14,3 +14,11 @@ export {
   type MfaCodeRequest,
   type MfaEnrollResponse,
 } from './auth.js';
+export {
+  auditQuerySchema,
+  auditEntrySchema,
+  auditListResponseSchema,
+  type AuditQuery,
+  type AuditEntry,
+  type AuditListResponse,
+} from './audit.js';

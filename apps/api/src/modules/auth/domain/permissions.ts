@@ -14,6 +14,8 @@ export const PERMISSIONS = [
   'example.read',
   'scope-check.read',
   'scope-check.create',
+  // Audit log read — admins only (permission matrix: System/Company Admin).
+  'audit.read',
   // Session lifecycle — every authenticated principal may end their session.
   'session.end',
 ] as const;
@@ -37,6 +39,9 @@ export type ClientRole = (typeof CLIENT_ROLES)[number];
 export type RoleName = StaffRole | ClientRole;
 
 const ALL_STAFF: readonly Permission[] = ['example.read', 'session.end'];
+// Admin-only staff superset: System/Company Admin additionally read audit logs
+// (permission matrix — no other role, staff or client, has audit.read).
+const ADMIN_STAFF: readonly Permission[] = [...ALL_STAFF, 'audit.read'];
 const ALL_CLIENT: readonly Permission[] = [
   'scope-check.read',
   'scope-check.create',
@@ -47,8 +52,8 @@ const ALL_CLIENT: readonly Permission[] = [
 // client roles; staff cross-client access is granted per matrix row as real
 // modules land.
 export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
-  system_admin: ALL_STAFF,
-  company_admin: ALL_STAFF,
+  system_admin: ADMIN_STAFF,
+  company_admin: ADMIN_STAFF,
   recruiter: ALL_STAFF,
   hr_officer: ALL_STAFF,
   gro_officer: ALL_STAFF,

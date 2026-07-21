@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import {
+  MfaService,
   PasswordService,
   UsersService,
   type ClientRole,
@@ -67,6 +68,36 @@ async function createAndLogin(
   const setCookie = res.headers['set-cookie'] as unknown as string[];
   const cookie = setCookie.find((c) => c.startsWith('hr_session=')) ?? '';
   return { cookie: cookie.split(';')[0] ?? '', userId: user.id, email };
+}
+
+// Full-session admin principal: logs in (limited enroll_required session),
+// enrolls MFA with a real TOTP code, and returns the upgraded FULL session.
+// Use for admin roles (system_admin/company_admin) that cannot reach a full
+// session without MFA enrollment (AUTH-06).
+export async function loginAsEnrolledStaff(
+  app: INestApplication,
+  role: StaffRole,
+): Promise<TestPrincipal> {
+  const limited = await createAndLogin(app, null, role);
+  const mfa = app.get(MfaService);
+  const http = app.getHttpServer();
+
+  const enroll = await request(http)
+    .post('/auth/mfa/enroll')
+    .set('Cookie', limited.cookie)
+    .expect(200);
+  const secret = new URL((enroll.body as { otpauthUri: string }).otpauthUri).searchParams.get(
+    'secret',
+  );
+  const verified = await request(http)
+    .post('/auth/mfa/verify')
+    .set('Cookie', limited.cookie)
+    .send({ code: mfa.generateCode(secret ?? '') })
+    .expect(200);
+
+  const setCookie = verified.headers['set-cookie'] as unknown as string[];
+  const cookie = setCookie.find((c) => c.startsWith('hr_session=')) ?? '';
+  return { ...limited, cookie: cookie.split(';')[0] ?? '' };
 }
 
 export async function cleanupHelperUsers(app: INestApplication): Promise<void> {
