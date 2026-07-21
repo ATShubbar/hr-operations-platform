@@ -1,8 +1,18 @@
 export {
   bilingualTextSchema,
+  clientStatusSchema,
   clientCompanySchema,
+  createClientRequestSchema,
+  updateClientRequestSchema,
+  clientResponseSchema,
+  clientListResponseSchema,
   type BilingualText,
+  type ClientStatus,
   type ClientCompany,
+  type CreateClientRequest,
+  type UpdateClientRequest,
+  type ClientResponse,
+  type ClientListResponse,
 } from './client-company.js';
 export {
   loginRequestSchema,

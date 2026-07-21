@@ -381,7 +381,7 @@ CRUD own). Bilingual names (ADR-005). Depends on Auth + Authz + Audit (done).
 | ID | Task | Depends on | Status |
 |---|---|---|---|
 | CLIENT-01 | Clients module + `cli_clients` registry (bilingual, status) + RLS (staff full; rep reads own, keyed on the PK) + `ClientsService` + seed the two companies | Auth/Audit | done ([evidence](evidence/clients/CLIENT-01.md)) |
-| CLIENT-02 | Client management API (staff): `client.*` endpoints, audited (AUDIT-03), isolation-harness + audited-writes registration, contracts | CLIENT-01 | todo |
+| CLIENT-02 | Client management API (staff): `client.*` endpoints, audited (AUDIT-03), isolation-harness + audited-writes registration, contracts | CLIENT-01 | done ([evidence](evidence/clients/CLIENT-02.md)) |
 | CLIENT-03 | Client portal users: Client Admin invites Client Users → `client_rep` auth_users bound to the client (app-layer, no cross-module FK); client-scoped + audited | CLIENT-02 | todo |
 | CLIENT-04 | Web UI: clients list + create/edit in the console (staff), ar/en + RTL, over the API | CLIENT-02 | todo |
 
@@ -401,6 +401,21 @@ CRUD own). Bilingual names (ADR-005). Depends on Auth + Authz + Audit (done).
 - **Evidence:** `evidence/clients/CLIENT-01.md`.
 - **Dependencies:** Auth + Audit epics (done). **Risks:** PK-as-scope-key
   variation (documented in the migration); NULLIF load-bearing (SPIKE-001).
+
+### CLIENT-02 — Client management API (staff)
+- **Objective:** staff CRUD over `cli_clients` — `GET/POST/PATCH/DELETE
+  /clients` — audited, permission-gated per the matrix (all staff read; admins
+  create/update/archive), `DELETE` = soft-archive.
+- **Files:** `clients/api/clients.controller.ts`; `ClientsService` mutations
+  refactored to transactional + audited; `@hr/contracts` client request/response
+  schemas; `client.*` in the permission catalog (`ALL_STAFF` read, `ADMIN_STAFF`
+  CUD); 5 routes in the isolation harness (`staff`); 3 mutations in audited-writes.
+- **DoD:** authorization matrix; CRUD + response shape; soft-archive; mutations
+  audited (create/update/archive) scoped to the client; 404/400; all coverage
+  gates + suite + lint green.
+- **Evidence:** `evidence/clients/CLIENT-02.md`.
+- **Dependencies:** CLIENT-01. **Risks:** granting reps `client.read` before the
+  scoped rep endpoint exists would leak the staff list — deferred to CLIENT-03.
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

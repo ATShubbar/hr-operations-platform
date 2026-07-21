@@ -16,6 +16,12 @@ export const PERMISSIONS = [
   'scope-check.create',
   // Audit log read — admins only (permission matrix: System/Company Admin).
   'audit.read',
+  // Client companies (permission matrix): all staff read; admins create/update/
+  // archive. Client-rep "read own" (scoped) is granted when its endpoint lands.
+  'client.read',
+  'client.create',
+  'client.update',
+  'client.delete',
   // Session lifecycle — every authenticated principal may end their session.
   'session.end',
 ] as const;
@@ -38,10 +44,18 @@ export type StaffRole = (typeof STAFF_ROLES)[number];
 export type ClientRole = (typeof CLIENT_ROLES)[number];
 export type RoleName = StaffRole | ClientRole;
 
-const ALL_STAFF: readonly Permission[] = ['example.read', 'session.end'];
+// Every staff role: example capability, session end, and reading client
+// companies (matrix — all staff have R on client companies).
+const ALL_STAFF: readonly Permission[] = ['example.read', 'session.end', 'client.read'];
 // Admin-only staff superset: System/Company Admin additionally read audit logs
-// (permission matrix — no other role, staff or client, has audit.read).
-const ADMIN_STAFF: readonly Permission[] = [...ALL_STAFF, 'audit.read'];
+// and create/update/archive client companies (matrix — no other role has these).
+const ADMIN_STAFF: readonly Permission[] = [
+  ...ALL_STAFF,
+  'audit.read',
+  'client.create',
+  'client.update',
+  'client.delete',
+];
 const ALL_CLIENT: readonly Permission[] = [
   'scope-check.read',
   'scope-check.create',

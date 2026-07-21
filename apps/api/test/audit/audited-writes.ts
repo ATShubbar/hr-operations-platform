@@ -19,6 +19,9 @@
 
 export const AUDITED_WRITES: Record<string, string> = {
   'POST /scope-check': 'scope-check.create',
+  'POST /clients': 'client.create',
+  'PATCH /clients/:id': 'client.update',
+  'DELETE /clients/:id': 'client.delete',
 };
 
 export const AUDIT_EXEMPT_WRITES: Record<string, string> = {
