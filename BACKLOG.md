@@ -276,7 +276,7 @@ the outbox, which stays reserved for cross-module async effects.
 |---|---|---|---|
 | AUDIT-01 | Audit module + append-only `aud_entries` table (SELECT/INSERT grants only) + transactional write API | AUTH epic | done ([evidence](evidence/audit/AUDIT-01.md)) |
 | AUDIT-02 | Client-rep audit write path: `app_client` INSERT grant + RLS `WITH CHECK` (own-client only; still no read/update/delete) | AUDIT-01 | done ([evidence](evidence/audit/AUDIT-02.md)) |
-| AUDIT-03 | Automatic mutation logging (actor/client/before-after) composed with the scoped `set_config` tx, proven on a write path | AUDIT-02 | todo |
+| AUDIT-03 | Automatic mutation logging (actor/client/before-after) composed with the scoped `set_config` tx, proven on a write path | AUDIT-02 | done ([evidence](evidence/audit/AUDIT-03.md)) |
 | AUDIT-04 | `audit.read` permission + read/filter API, gated to System/Company Admin only; register in isolation harness | AUDIT-03 | todo |
 | AUDIT-05 | Admin read UI (Next.js, ar/en + RTL) over the audit read API | AUDIT-04 | todo |
 
@@ -323,6 +323,25 @@ the outbox, which stays reserved for cross-module async effects.
   `RETURNING` (finding recorded in AUDIT-02 evidence, applied in AUDIT-03);
   enabling RLS makes `app_staff` policy-subject → permissive staff policy
   mandatory; NULLIF load-bearing (SPIKE-001).
+
+### AUDIT-03 — Automatic mutation logging (write path)
+- **Mechanism (owner-deferred to recommendation):** explicit `AuditService.
+  record()` at the write site in the mutation's transaction, enforced by a CI
+  coverage test (`test/audit/audited-writes.ts` — every mutating route is
+  audited-or-exempt, else red). Satisfies "every mutation logged" via CI, not
+  interception.
+- **Files:** `ScopedPrismaService.transaction()` (interactive scoped tx);
+  `AuditService.record()` unified on raw `INSERT` (no RETURNING); `POST
+  /scope-check` write + `scope-check.create` permission; `client-write` scope
+  class + registration in the isolation harness; `test/audit/audited-writes.ts`
+  + `write-coverage.e2e-spec.ts`; module README checklist item 5.
+- **DoD:** row + audit committed atomically on a real write path; rollback
+  rolls both back; RLS bars cross-client writes; can't-forget coverage RED on
+  an undeclared write (proven, reverted); harness + suite + lint green.
+- **Evidence:** `evidence/audit/AUDIT-03.md`.
+- **Dependencies:** AUDIT-02. **Risks:** `before/after` redaction of sensitive
+  fields deferred to the first module writing them; auth-event audit (login/
+  MFA) is a separate stream, exempted with reasons now.
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

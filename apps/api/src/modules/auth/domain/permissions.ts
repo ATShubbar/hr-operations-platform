@@ -13,6 +13,7 @@ export const PERMISSIONS = [
   // added here in the same commit as their endpoints.
   'example.read',
   'scope-check.read',
+  'scope-check.create',
   // Session lifecycle — every authenticated principal may end their session.
   'session.end',
 ] as const;
@@ -36,7 +37,11 @@ export type ClientRole = (typeof CLIENT_ROLES)[number];
 export type RoleName = StaffRole | ClientRole;
 
 const ALL_STAFF: readonly Permission[] = ['example.read', 'session.end'];
-const ALL_CLIENT: readonly Permission[] = ['scope-check.read', 'session.end'];
+const ALL_CLIENT: readonly Permission[] = [
+  'scope-check.read',
+  'scope-check.create',
+  'session.end',
+];
 
 // Seeded from the architecture matrix. Client-scoped capabilities belong to
 // client roles; staff cross-client access is granted per matrix row as real

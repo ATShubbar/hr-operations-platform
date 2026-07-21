@@ -45,5 +45,6 @@ Every table holding client-owned data MUST, in the migration that creates it:
      WITH CHECK (client_id = NULLIF(current_setting('app.client_id', true), '')::uuid);
    ```
 4. Register the table's endpoints in the isolation test harness (WS-18) — unregistered endpoints fail CI.
+5. Audit every mutation (AUDIT-03): write the row and its `AuditService.record()` in ONE transaction (`ScopedPrismaService.transaction(clientId, …)` for the client-rep path), and declare each write route in `test/audit/audited-writes.ts` (as `AUDITED_WRITES` with its `resource.action`, or `AUDIT_EXEMPT_WRITES` with a reason) — undeclared mutating routes fail CI.
 
-Data access: staff-path code uses `PrismaService`; client-representative-path code uses `ScopedPrismaService.forClient(clientId)` and never the raw client. The reference implementation and its tests: `src/prisma/` and `test/rls.e2e-spec.ts`; migration exemplar: `prisma/migrations/*rls_roles_and_policies`.
+Data access: staff-path code uses `PrismaService`; client-representative-path code uses `ScopedPrismaService.forClient(clientId)` for reads and `ScopedPrismaService.transaction(clientId, …)` for multi-statement writes (mutation + audit), never the raw client. The reference implementation and its tests: `src/prisma/` and `test/rls.e2e-spec.ts`; write+audit exemplar: `modules/scope-check/` and `test/audit/audit-mutation.e2e-spec.ts`; migration exemplar: `prisma/migrations/*rls_roles_and_policies`.

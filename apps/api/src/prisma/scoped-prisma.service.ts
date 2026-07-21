@@ -1,6 +1,6 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '../generated/prisma/client';
+import { PrismaClient, type Prisma } from '../generated/prisma/client';
 
 // Client-representative path (ADR-001, validated by SPIKE-001): connects as
 // the RLS-enforced app_client DB role. Every operation obtained via
@@ -22,6 +22,22 @@ export class ScopedPrismaService implements OnModuleDestroy {
         max: 10,
       }),
       transactionOptions: { maxWait: 10000, timeout: 30000 },
+    });
+  }
+
+  // Interactive client-scoped transaction (AUDIT-03): opens ONE transaction as
+  // app_client, sets the transaction-local scope, then runs the callback with
+  // that transaction handle. Use this when a mutation and its audit entry (or
+  // several statements) must commit or roll back together under RLS — the
+  // per-operation forClient() wrapper cannot span multiple statements. The GUC
+  // is transaction-local (TRUE), so pooled reuse cannot leak scope.
+  async transaction<T>(
+    clientId: string,
+    fn: (tx: Prisma.TransactionClient) => Promise<T>,
+  ): Promise<T> {
+    return this.base.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT set_config('app.client_id', ${clientId}, TRUE)`;
+      return fn(tx);
     });
   }
 

@@ -13,17 +13,24 @@ import type { AuditRecordInput } from '../domain/audit-entry';
 export class AuditService {
   async record(tx: Prisma.TransactionClient, input: AuditRecordInput): Promise<void> {
     const ctx = requestContext.get();
-    await tx.auditEntry.create({
-      data: {
-        actorId: input.actorId ?? ctx?.actorId ?? null,
-        actorRole: input.actorRole ?? ctx?.role ?? null,
-        clientId: input.clientId ?? ctx?.clientId ?? null,
-        resource: input.resource,
-        action: input.action,
-        before: input.before,
-        after: input.after,
-        requestId: ctx?.requestId ?? null,
-      },
-    });
+    const actorId = input.actorId ?? ctx?.actorId ?? null;
+    const actorRole = input.actorRole ?? ctx?.role ?? null;
+    const clientId = input.clientId ?? ctx?.clientId ?? null;
+    const requestId = ctx?.requestId ?? null;
+    const before = input.before === undefined ? null : JSON.stringify(input.before);
+    const after = input.after === undefined ? null : JSON.stringify(input.after);
+
+    // Raw INSERT WITHOUT RETURNING on purpose: the client-rep DB role
+    // (app_client) has INSERT but no SELECT on aud_entries, and RETURNING
+    // requires SELECT (AUDIT-02 finding). A no-RETURNING insert works for both
+    // the staff and client-rep paths, so audit logging is uniform regardless
+    // of which role owns the caller's transaction.
+    await tx.$executeRaw`
+      INSERT INTO aud_entries
+        (actor_id, actor_role, client_id, resource, action, "before", "after", request_id)
+      VALUES
+        (${actorId}::uuid, ${actorRole}, ${clientId}::uuid, ${input.resource},
+         ${input.action}, ${before}::jsonb, ${after}::jsonb, ${requestId})
+    `;
   }
 }
