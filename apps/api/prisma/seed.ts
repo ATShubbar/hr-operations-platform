@@ -92,6 +92,73 @@ async function seedClients(prisma: PrismaClient): Promise<number> {
   return clients.length;
 }
 
+// EMP-01: a few seed employees across the two clients, spanning the sensitivity
+// groups (Saudi with national id + salary; non-Saudi with iqama/work permit/
+// expiry; GOSI/WPS status). Fixed ids so upsert stays idempotent.
+async function seedEmployees(prisma: PrismaClient): Promise<number> {
+  const employees = [
+    {
+      id: 'e0000001-0000-4000-8000-000000000001',
+      clientId: SEED_CLIENT_A,
+      nameAr: 'محمد العبدالله',
+      nameEn: 'Mohammed Alabdullah',
+      nationality: 'SA',
+      gender: 'male' as const,
+      department: 'Operations',
+      jobTitleEn: 'Site Supervisor',
+      contractType: 'unlimited' as const,
+      employmentStatus: 'active' as const,
+      countsTowardSaudization: true,
+      nationalId: '1012345678',
+      basicSalary: 9000,
+      housingAllowance: 2250,
+      gosiRegistrationStatus: 'registered' as const,
+    },
+    {
+      id: 'e0000001-0000-4000-8000-000000000002',
+      clientId: SEED_CLIENT_A,
+      nameAr: 'أحمد حسن',
+      nameEn: 'Ahmed Hassan',
+      nationality: 'EG',
+      gender: 'male' as const,
+      department: 'Finance',
+      jobTitleEn: 'Accountant',
+      contractType: 'fixed_term' as const,
+      employmentStatus: 'active' as const,
+      countsTowardSaudization: false,
+      iqamaNumber: '2456789012',
+      workPermitNumber: 'WP-2024-118',
+      iqamaExpiry: new Date('2027-03-15'),
+      workPermitExpiry: new Date('2027-03-15'),
+      exitReentryStatus: 'single' as const,
+      basicSalary: 7000,
+      gosiRegistrationStatus: 'registered' as const,
+      wpsStatus: 'compliant' as const,
+    },
+    {
+      id: 'e0000002-0000-4000-8000-000000000001',
+      clientId: SEED_CLIENT_B,
+      nameAr: 'راجيش كومار',
+      nameEn: 'Rajesh Kumar',
+      nationality: 'IN',
+      gender: 'male' as const,
+      department: 'Maintenance',
+      jobTitleEn: 'Electrician',
+      contractType: 'unlimited' as const,
+      employmentStatus: 'active' as const,
+      countsTowardSaudization: false,
+      iqamaNumber: '2987654321',
+      iqamaExpiry: new Date('2026-11-01'),
+      basicSalary: 4500,
+      gosiRegistrationStatus: 'pending' as const,
+    },
+  ];
+  for (const { id, ...rest } of employees) {
+    await prisma.employee.upsert({ where: { id }, create: { id, ...rest }, update: rest });
+  }
+  return employees.length;
+}
+
 async function main(): Promise<void> {
   if (process.env.NODE_ENV === 'production') {
     throw new Error('Refusing to seed: NODE_ENV=production. The seed is development-only.');
@@ -105,6 +172,7 @@ async function main(): Promise<void> {
     // Client companies first — they originate the client_ids everything else
     // references (no FK across modules, so order is for clarity, not integrity).
     const clientCount = await seedClients(prisma);
+    const employeeCount = await seedEmployees(prisma);
 
     const fixtures = [
       { clientId: SEED_CLIENT_A, note: 'seed:client-a:sample-1' },
@@ -124,7 +192,7 @@ async function main(): Promise<void> {
     });
     const roleCount = STAFF_ROLES.length + CLIENT_REP_ASSIGNMENTS.length;
     process.stdout.write(
-      `Seed complete: ${clientCount} client companies; ${rowCount} scope-check rows ` +
+      `Seed complete: ${clientCount} client companies; ${employeeCount} employees; ${rowCount} scope-check rows ` +
         `across clients A (${SEED_CLIENT_A}) and B (${SEED_CLIENT_B}); ${userCount} auth users ` +
         `(${STAFF_ROLES.length} staff roles + ${CLIENT_REP_ASSIGNMENTS.length} client reps, ` +
         `${roleCount}/${STAFF_ROLES.length + CLIENT_ROLES.length} distinct roles covered).\n`,

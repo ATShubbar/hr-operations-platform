@@ -54,7 +54,8 @@ export const ModelName = {
   AuthUser: 'AuthUser',
   CoreScopeCheck: 'CoreScopeCheck',
   AuditEntry: 'AuditEntry',
-  Client: 'Client'
+  Client: 'Client',
+  Employee: 'Employee'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -124,6 +125,51 @@ export const ClientScalarFieldEnum = {
 } as const
 
 export type ClientScalarFieldEnum = (typeof ClientScalarFieldEnum)[keyof typeof ClientScalarFieldEnum]
+
+
+export const EmployeeScalarFieldEnum = {
+  id: 'id',
+  clientId: 'clientId',
+  nameAr: 'nameAr',
+  nameEn: 'nameEn',
+  nationality: 'nationality',
+  gender: 'gender',
+  dateOfBirth: 'dateOfBirth',
+  jobTitleAr: 'jobTitleAr',
+  jobTitleEn: 'jobTitleEn',
+  department: 'department',
+  hireDate: 'hireDate',
+  employmentStatus: 'employmentStatus',
+  contractType: 'contractType',
+  contractEndDate: 'contractEndDate',
+  countsTowardSaudization: 'countsTowardSaudization',
+  currency: 'currency',
+  basicSalary: 'basicSalary',
+  housingAllowance: 'housingAllowance',
+  transportAllowance: 'transportAllowance',
+  otherAllowances: 'otherAllowances',
+  gosiWage: 'gosiWage',
+  gosiContributionBasis: 'gosiContributionBasis',
+  bankIban: 'bankIban',
+  wpsStatus: 'wpsStatus',
+  iqamaNumber: 'iqamaNumber',
+  nationalId: 'nationalId',
+  borderNumber: 'borderNumber',
+  passportNumber: 'passportNumber',
+  workPermitNumber: 'workPermitNumber',
+  gosiRegistrationNumber: 'gosiRegistrationNumber',
+  absherServiceRef: 'absherServiceRef',
+  iqamaExpiry: 'iqamaExpiry',
+  passportExpiry: 'passportExpiry',
+  workPermitExpiry: 'workPermitExpiry',
+  exitReentryStatus: 'exitReentryStatus',
+  exitReentryExpiry: 'exitReentryExpiry',
+  gosiRegistrationStatus: 'gosiRegistrationStatus',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EmployeeScalarFieldEnum = (typeof EmployeeScalarFieldEnum)[keyof typeof EmployeeScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -110,3 +110,108 @@ enum ClientStatus {
   active
   inactive
 }
+
+// Employee record (EMP-01; ACTION-PLAN 3.1, built from docs/FIELD-MAPPING.md).
+// The domain core. Client-scoped via a STANDARD client_id column (RLS keys on
+// it — unlike cli_clients' PK-scoped variant). All three sensitivity groups
+// (core / salary / govdata) live as columns on ONE table; field-level
+// authorization (redacting salary/govdata per capability) is enforced at the
+// API layer in EMP-02, not by separate tables. Dates are stored Gregorian UTC
+// and rendered Hijri via @hr/dates (ADR-005). v1 is manual entry: everything
+// except identity/employment basics is nullable.
+model Employee {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clientId String @map("client_id") @db.Uuid
+
+  // --- core (employee.*) ---
+  nameAr                  String           @map("name_ar")
+  nameEn                  String           @map("name_en")
+  nationality             String // ISO 3166-1 alpha-2
+  gender                  Gender?
+  dateOfBirth             DateTime?         @map("date_of_birth") @db.Date
+  jobTitleAr              String?           @map("job_title_ar")
+  jobTitleEn              String?           @map("job_title_en")
+  department              String?
+  hireDate                DateTime?         @map("hire_date") @db.Date
+  employmentStatus        EmploymentStatus @default(active) @map("employment_status")
+  contractType            ContractType     @map("contract_type")
+  contractEndDate         DateTime?         @map("contract_end_date") @db.Date
+  countsTowardSaudization Boolean?          @map("counts_toward_saudization")
+
+  // --- salary (salary.*) ---
+  currency               String   @default("SAR")
+  basicSalary            Decimal? @map("basic_salary") @db.Decimal(12, 2)
+  housingAllowance       Decimal? @map("housing_allowance") @db.Decimal(12, 2)
+  transportAllowance     Decimal? @map("transport_allowance") @db.Decimal(12, 2)
+  otherAllowances        Decimal? @map("other_allowances") @db.Decimal(12, 2)
+  gosiWage               Decimal? @map("gosi_wage") @db.Decimal(12, 2)
+  gosiContributionBasis  GosiContributionBasis? @map("gosi_contribution_basis")
+  bankIban               String?  @map("bank_iban")
+  wpsStatus              WpsStatus? @map("wps_status")
+
+  // --- govdata:id — identifiers (staff only) ---
+  iqamaNumber            String? @map("iqama_number")
+  nationalId             String? @map("national_id")
+  borderNumber           String? @map("border_number")
+  passportNumber         String? @map("passport_number")
+  workPermitNumber       String? @map("work_permit_number")
+  gosiRegistrationNumber String? @map("gosi_registration_number")
+  absherServiceRef       String? @map("absher_service_ref")
+
+  // --- govdata:status — expiry/status (client-rep may see own) ---
+  iqamaExpiry            DateTime?               @map("iqama_expiry") @db.Date
+  passportExpiry         DateTime?               @map("passport_expiry") @db.Date
+  workPermitExpiry       DateTime?               @map("work_permit_expiry") @db.Date
+  exitReentryStatus      ExitReentryStatus?      @map("exit_reentry_status")
+  exitReentryExpiry      DateTime?               @map("exit_reentry_expiry") @db.Date
+  gosiRegistrationStatus GosiRegistrationStatus? @map("gosi_registration_status")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([clientId])
+  @@map("emp_employees")
+}
+
+enum Gender {
+  male
+  female
+}
+
+enum EmploymentStatus {
+  active
+  on_leave
+  suspended
+  terminated
+}
+
+enum ContractType {
+  unlimited
+  fixed_term
+  part_time
+  temporary
+  seasonal
+}
+
+enum GosiContributionBasis {
+  basic
+  basic_plus_housing
+}
+
+enum WpsStatus {
+  compliant
+  pending
+  non_compliant
+}
+
+enum ExitReentryStatus {
+  none
+  single
+  multiple
+}
+
+enum GosiRegistrationStatus {
+  registered
+  pending
+  not_registered
+}

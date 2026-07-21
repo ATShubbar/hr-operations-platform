@@ -387,7 +387,8 @@ export const ModelName = {
   AuthUser: 'AuthUser',
   CoreScopeCheck: 'CoreScopeCheck',
   AuditEntry: 'AuditEntry',
-  Client: 'Client'
+  Client: 'Client',
+  Employee: 'Employee'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -403,7 +404,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "authUser" | "coreScopeCheck" | "auditEntry" | "client"
+    modelProps: "authUser" | "coreScopeCheck" | "auditEntry" | "client" | "employee"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -703,6 +704,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Employee: {
+      payload: Prisma.$EmployeePayload<ExtArgs>
+      fields: Prisma.EmployeeFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.EmployeeFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmployeePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.EmployeeFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmployeePayload>
+        }
+        findFirst: {
+          args: Prisma.EmployeeFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmployeePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.EmployeeFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmployeePayload>
+        }
+        findMany: {
+          args: Prisma.EmployeeFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmployeePayload>[]
+        }
+        create: {
+          args: Prisma.EmployeeCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmployeePayload>
+        }
+        createMany: {
+          args: Prisma.EmployeeCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.EmployeeCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmployeePayload>[]
+        }
+        delete: {
+          args: Prisma.EmployeeDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmployeePayload>
+        }
+        update: {
+          args: Prisma.EmployeeUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmployeePayload>
+        }
+        deleteMany: {
+          args: Prisma.EmployeeDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.EmployeeUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.EmployeeUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmployeePayload>[]
+        }
+        upsert: {
+          args: Prisma.EmployeeUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EmployeePayload>
+        }
+        aggregate: {
+          args: Prisma.EmployeeAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateEmployee>
+        }
+        groupBy: {
+          args: Prisma.EmployeeGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EmployeeGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.EmployeeCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EmployeeCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -793,6 +868,51 @@ export const ClientScalarFieldEnum = {
 } as const
 
 export type ClientScalarFieldEnum = (typeof ClientScalarFieldEnum)[keyof typeof ClientScalarFieldEnum]
+
+
+export const EmployeeScalarFieldEnum = {
+  id: 'id',
+  clientId: 'clientId',
+  nameAr: 'nameAr',
+  nameEn: 'nameEn',
+  nationality: 'nationality',
+  gender: 'gender',
+  dateOfBirth: 'dateOfBirth',
+  jobTitleAr: 'jobTitleAr',
+  jobTitleEn: 'jobTitleEn',
+  department: 'department',
+  hireDate: 'hireDate',
+  employmentStatus: 'employmentStatus',
+  contractType: 'contractType',
+  contractEndDate: 'contractEndDate',
+  countsTowardSaudization: 'countsTowardSaudization',
+  currency: 'currency',
+  basicSalary: 'basicSalary',
+  housingAllowance: 'housingAllowance',
+  transportAllowance: 'transportAllowance',
+  otherAllowances: 'otherAllowances',
+  gosiWage: 'gosiWage',
+  gosiContributionBasis: 'gosiContributionBasis',
+  bankIban: 'bankIban',
+  wpsStatus: 'wpsStatus',
+  iqamaNumber: 'iqamaNumber',
+  nationalId: 'nationalId',
+  borderNumber: 'borderNumber',
+  passportNumber: 'passportNumber',
+  workPermitNumber: 'workPermitNumber',
+  gosiRegistrationNumber: 'gosiRegistrationNumber',
+  absherServiceRef: 'absherServiceRef',
+  iqamaExpiry: 'iqamaExpiry',
+  passportExpiry: 'passportExpiry',
+  workPermitExpiry: 'workPermitExpiry',
+  exitReentryStatus: 'exitReentryStatus',
+  exitReentryExpiry: 'exitReentryExpiry',
+  gosiRegistrationStatus: 'gosiRegistrationStatus',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EmployeeScalarFieldEnum = (typeof EmployeeScalarFieldEnum)[keyof typeof EmployeeScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -969,6 +1089,125 @@ export type ListEnumClientStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
 
 
 /**
+ * Reference to a field of type 'Gender'
+ */
+export type EnumGenderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Gender'>
+    
+
+
+/**
+ * Reference to a field of type 'Gender[]'
+ */
+export type ListEnumGenderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Gender[]'>
+    
+
+
+/**
+ * Reference to a field of type 'EmploymentStatus'
+ */
+export type EnumEmploymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EmploymentStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'EmploymentStatus[]'
+ */
+export type ListEnumEmploymentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EmploymentStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ContractType'
+ */
+export type EnumContractTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContractType'>
+    
+
+
+/**
+ * Reference to a field of type 'ContractType[]'
+ */
+export type ListEnumContractTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContractType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
+ * Reference to a field of type 'Decimal'
+ */
+export type DecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal'>
+    
+
+
+/**
+ * Reference to a field of type 'Decimal[]'
+ */
+export type ListDecimalFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Decimal[]'>
+    
+
+
+/**
+ * Reference to a field of type 'GosiContributionBasis'
+ */
+export type EnumGosiContributionBasisFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GosiContributionBasis'>
+    
+
+
+/**
+ * Reference to a field of type 'GosiContributionBasis[]'
+ */
+export type ListEnumGosiContributionBasisFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GosiContributionBasis[]'>
+    
+
+
+/**
+ * Reference to a field of type 'WpsStatus'
+ */
+export type EnumWpsStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WpsStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'WpsStatus[]'
+ */
+export type ListEnumWpsStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WpsStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ExitReentryStatus'
+ */
+export type EnumExitReentryStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ExitReentryStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'ExitReentryStatus[]'
+ */
+export type ListEnumExitReentryStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ExitReentryStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'GosiRegistrationStatus'
+ */
+export type EnumGosiRegistrationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GosiRegistrationStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'GosiRegistrationStatus[]'
+ */
+export type ListEnumGosiRegistrationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GosiRegistrationStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -1095,6 +1334,7 @@ export type GlobalOmitConfig = {
   coreScopeCheck?: Prisma.CoreScopeCheckOmit
   auditEntry?: Prisma.AuditEntryOmit
   client?: Prisma.ClientOmit
+  employee?: Prisma.EmployeeOmit
 }
 
 /* Types for Logging */

@@ -59,3 +59,8 @@ export type AuditEntry = Prisma.AuditEntryModel
  * 
  */
 export type Client = Prisma.ClientModel
+/**
+ * Model Employee
+ * 
+ */
+export type Employee = Prisma.EmployeeModel

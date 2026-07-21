@@ -466,7 +466,7 @@ Built from the 0.8 field mapping. Depends on Clients (done) + 0.8 (done).
 | ID | Task | Depends on | Status |
 |---|---|---|---|
 | 0.8 | Reference-system field-mapping doc — the schema's source of truth | — | done ([doc](docs/FIELD-MAPPING.md)) |
-| EMP-01 | Employees module + `emp_employees` table (client-scoped RLS) from the mapping + `EmployeesService` + seed | Clients, 0.8 | todo |
+| EMP-01 | Employees module + `emp_employees` table (client-scoped RLS) from the mapping + `EmployeesService` + seed | Clients, 0.8 | done ([evidence](evidence/employees/EMP-01.md)) |
 | EMP-02 | Employees HTTP API + **field-level authorization** (`salary`/`govdata` redacted per capability; rep govdata = expiry/status only) + audited + harness | EMP-01 | todo |
 | EMP-03 | Web UI: employees list + detail/edit (staff), ar/en + RTL, Hijri dates | EMP-02 | todo |
 
@@ -480,6 +480,22 @@ Built from the 0.8 field mapping. Depends on Clients (done) + 0.8 (done).
   Employee fields + enums; each tagged by sensitivity + rep visibility; Hijri
   date fields marked; ZATCA deferred to Billing; no code.
 - **Evidence:** the doc itself. **Done.**
+
+### EMP-01 — Employees module + registry + RLS + service
+- **Objective:** the `emp_employees` domain-core table (built from 0.8), all
+  sensitivity groups as columns, client-scoped via standard `client_id` RLS, +
+  `EmployeesService` (staff path) + seed employees.
+- **Files:** `apps/api/src/modules/employees/`; Prisma `Employee` model + 7
+  enums + migration `20260721184243_employees` (grants + RLS); `prisma/seed.ts`
+  employees.
+- **Design note:** standard `client_id`-column RLS (staff full; rep SELECT-own);
+  field-level authorization deferred to EMP-02; no cross-module FK.
+- **DoD:** migration applies; grant/RLS matrix (staff CRUD, rep SELECT-own-only,
+  no rep writes); service create/list/get round-trips core+salary+govdata; seed
+  idempotent; suite + lint green; registry untouched.
+- **Evidence:** `evidence/employees/EMP-01.md`.
+- **Dependencies:** Clients, 0.8 (done). **Risks:** many nullable v1 fields;
+  enums must match the doc; NULLIF load-bearing (SPIKE-001).
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

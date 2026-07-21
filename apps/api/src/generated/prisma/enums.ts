@@ -46,3 +46,67 @@ export const ClientStatus = {
 } as const
 
 export type ClientStatus = (typeof ClientStatus)[keyof typeof ClientStatus]
+
+
+export const Gender = {
+  male: 'male',
+  female: 'female'
+} as const
+
+export type Gender = (typeof Gender)[keyof typeof Gender]
+
+
+export const EmploymentStatus = {
+  active: 'active',
+  on_leave: 'on_leave',
+  suspended: 'suspended',
+  terminated: 'terminated'
+} as const
+
+export type EmploymentStatus = (typeof EmploymentStatus)[keyof typeof EmploymentStatus]
+
+
+export const ContractType = {
+  unlimited: 'unlimited',
+  fixed_term: 'fixed_term',
+  part_time: 'part_time',
+  temporary: 'temporary',
+  seasonal: 'seasonal'
+} as const
+
+export type ContractType = (typeof ContractType)[keyof typeof ContractType]
+
+
+export const GosiContributionBasis = {
+  basic: 'basic',
+  basic_plus_housing: 'basic_plus_housing'
+} as const
+
+export type GosiContributionBasis = (typeof GosiContributionBasis)[keyof typeof GosiContributionBasis]
+
+
+export const WpsStatus = {
+  compliant: 'compliant',
+  pending: 'pending',
+  non_compliant: 'non_compliant'
+} as const
+
+export type WpsStatus = (typeof WpsStatus)[keyof typeof WpsStatus]
+
+
+export const ExitReentryStatus = {
+  none: 'none',
+  single: 'single',
+  multiple: 'multiple'
+} as const
+
+export type ExitReentryStatus = (typeof ExitReentryStatus)[keyof typeof ExitReentryStatus]
+
+
+export const GosiRegistrationStatus = {
+  registered: 'registered',
+  pending: 'pending',
+  not_registered: 'not_registered'
+} as const
+
+export type GosiRegistrationStatus = (typeof GosiRegistrationStatus)[keyof typeof GosiRegistrationStatus]
