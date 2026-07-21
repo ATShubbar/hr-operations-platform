@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
+import type { MeResponse } from '@hr/contracts';
 import { apiFetch, ApiError } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import {
@@ -41,7 +42,16 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
-  const goToApp = () => router.replace('/audit');
+  // Land on the first section the actor can actually use (role-aware, AUTH-08):
+  // admins → audit; other staff → clients. Falls back to clients.
+  async function goToApp() {
+    try {
+      const me = await apiFetch<MeResponse>('/auth/me');
+      router.replace(me.permissions.includes('audit.read') ? '/audit' : '/clients');
+    } catch {
+      router.replace('/clients');
+    }
+  }
 
   async function submitCredentials(e: FormEvent) {
     e.preventDefault();
@@ -61,7 +71,7 @@ export default function LoginPage() {
       } else if (res.mfaRequired) {
         setStep('challenge');
       } else {
-        goToApp();
+        void goToApp();
       }
     } catch (err) {
       setError(
@@ -80,7 +90,7 @@ export default function LoginPage() {
     setBusy(true);
     try {
       await apiFetch(path, { method: 'POST', body: JSON.stringify({ code }) });
-      goToApp();
+      void goToApp();
     } catch (err) {
       setError(
         err instanceof ApiError && err.status === 401 ? t('invalidCode') : t('genericError'),

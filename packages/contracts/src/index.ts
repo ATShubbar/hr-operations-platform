@@ -33,10 +33,12 @@ export {
   loginResponseSchema,
   mfaCodeRequestSchema,
   mfaEnrollResponseSchema,
+  meResponseSchema,
   type LoginRequest,
   type LoginResponse,
   type MfaCodeRequest,
   type MfaEnrollResponse,
+  type MeResponse,
 } from './auth.js';
 export {
   auditQuerySchema,

@@ -59,6 +59,7 @@ docs/HANDOFF-WS20.md.
 - Physical Tailwind utilities (pl-/pr-/left-…) are lint errors — logical only.
 - Every new client-scoped table follows the checklist in apps/api/src/modules/README.md and registers in the isolation harness (unregistered endpoints fail CI).
 - Local ports: Postgres 5433, Redis 6380 (5432/6379 belong to another project).
+- Do NOT run `next build` (prod) while the web dev/preview server is running — it clobbers `.next` and the dev server then throws `Cannot find module './NNN.js'`. Stop the dev server first, or verify only via the dev server (AUTH-08).
 
 ## Commands
 

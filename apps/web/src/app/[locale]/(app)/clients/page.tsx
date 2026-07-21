@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import type { ClientListResponse, ClientResponse } from '@hr/contracts';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
+import { useCan } from '@/lib/session';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -49,6 +50,9 @@ export default function ClientsPage() {
   const t = useTranslations('clients');
   const locale = useLocale();
   const router = useRouter();
+  const canCreate = useCan('client.create');
+  const canUpdate = useCan('client.update');
+  const canDelete = useCan('client.delete');
 
   const [clients, setClients] = useState<ClientResponse[]>([]);
   const [loading, setLoading] = useState(false);
@@ -139,7 +143,7 @@ export default function ClientsPage() {
           <h1 className="text-2xl font-semibold">{t('title')}</h1>
           <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
         </div>
-        <Button onClick={openCreate}>{t('new')}</Button>
+        {canCreate && <Button onClick={openCreate}>{t('new')}</Button>}
       </div>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
@@ -150,7 +154,9 @@ export default function ClientsPage() {
             <TableRow>
               <TableHead>{t('colName')}</TableHead>
               <TableHead>{t('colStatus')}</TableHead>
-              <TableHead className="text-end">{t('colActions')}</TableHead>
+              {(canUpdate || canDelete) && (
+                <TableHead className="text-end">{t('colActions')}</TableHead>
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -162,23 +168,30 @@ export default function ClientsPage() {
                     {c.status === 'active' ? t('statusActive') : t('statusInactive')}
                   </Badge>
                 </TableCell>
-                <TableCell>
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" size="sm" onClick={() => openEdit(c)}>
-                      {t('edit')}
-                    </Button>
-                    {c.status === 'active' && (
-                      <Button variant="ghost" size="sm" onClick={() => void archive(c)}>
-                        {t('archive')}
-                      </Button>
-                    )}
-                  </div>
-                </TableCell>
+                {(canUpdate || canDelete) && (
+                  <TableCell>
+                    <div className="flex justify-end gap-2">
+                      {canUpdate && (
+                        <Button variant="outline" size="sm" onClick={() => openEdit(c)}>
+                          {t('edit')}
+                        </Button>
+                      )}
+                      {canDelete && c.status === 'active' && (
+                        <Button variant="ghost" size="sm" onClick={() => void archive(c)}>
+                          {t('archive')}
+                        </Button>
+                      )}
+                    </div>
+                  </TableCell>
+                )}
               </TableRow>
             ))}
             {clients.length === 0 && !loading && (
               <TableRow>
-                <TableCell colSpan={3} className="text-center text-sm text-muted-foreground">
+                <TableCell
+                  colSpan={canUpdate || canDelete ? 3 : 2}
+                  className="text-center text-sm text-muted-foreground"
+                >
                   {t('empty')}
                 </TableCell>
               </TableRow>

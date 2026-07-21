@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Get,
   HttpCode,
   Post,
   Req,
@@ -13,12 +14,15 @@ import {
   loginRequestSchema,
   mfaCodeRequestSchema,
   type LoginResponse,
+  type MeResponse,
   type MfaEnrollResponse,
 } from '@hr/contracts';
 import { Public, RequirePermission } from '../../../auth/permissions.decorator';
+import { requestContext } from '../../../context/request-context';
 import { readCookie } from './session.middleware';
 import { PasswordService } from '../application/password.service';
 import { MfaService } from '../application/mfa.service';
+import { PolicyService } from '../application/policy.service';
 import {
   SESSION_COOKIE,
   SESSION_TTL_SECONDS,
@@ -44,7 +48,28 @@ export class AuthController {
     private readonly passwords: PasswordService,
     private readonly sessions: SessionsService,
     private readonly mfa: MfaService,
+    private readonly policy: PolicyService,
   ) {}
+
+  // Current authenticated actor (AUTH-08). @Public to the guard, but returns
+  // 401 unless the session middleware resolved a FULL session into the context
+  // (same self-checking shape as the MFA endpoints). Feeds the web session
+  // provider: route guard + role-aware UI.
+  @Public()
+  @Get('me')
+  me(): MeResponse {
+    const ctx = requestContext.get();
+    if (!ctx?.actorId || !ctx.role || !ctx.principalType) {
+      throw new UnauthorizedException('Authentication required');
+    }
+    return {
+      userId: ctx.actorId,
+      principalType: ctx.principalType,
+      role: ctx.role,
+      clientId: ctx.clientId,
+      permissions: this.policy.permissionsFor(ctx.role),
+    };
+  }
 
   @Public()
   @Post('login')

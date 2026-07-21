@@ -30,6 +30,7 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'GET /health': 'public',
   'GET /ready': 'public',
   'POST /auth/login': 'public',
+  'GET /auth/me': 'session',
   'POST /auth/logout': 'staff',
   'POST /auth/mfa/enroll': 'session',
   'POST /auth/mfa/verify': 'session',

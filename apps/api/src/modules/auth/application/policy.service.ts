@@ -11,4 +11,12 @@ export class PolicyService {
     const granted = ROLE_PERMISSIONS[role as RoleName];
     return granted ? (granted as readonly string[]).includes(permission) : false;
   }
+
+  // The full permission set for a role — the capability list the UI uses to
+  // show/hide actions (AUTH-08). Unknown role → no permissions.
+  permissionsFor(role: string | null | undefined): string[] {
+    if (!role) return [];
+    const granted = ROLE_PERMISSIONS[role as RoleName];
+    return granted ? [...granted] : [];
+  }
 }
