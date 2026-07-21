@@ -11,6 +11,10 @@
 //   client-write  — client-scoped MUTATION; must reject unauthenticated
 //                   callers (401). Cross-client write leakage is barred by RLS
 //                   WITH CHECK and proven per-endpoint (e.g. AUDIT-03 e2e).
+//   client-read   — client-scoped READ whose response is not the bare
+//                   scope-check row shape (e.g. {users:[...]}); must reject
+//                   unauthenticated callers (401). Own-client scoping is proven
+//                   per-endpoint (e.g. CLIENT-03 e2e), not by this harness.
 //
 // The coverage spec diffs this registry against the app's live route map in
 // BOTH directions — an unregistered route (or a stale entry) fails CI.
@@ -19,7 +23,8 @@ export type ScopeClass =
   | 'session'
   | 'staff'
   | 'client-scoped'
-  | 'client-write';
+  | 'client-write'
+  | 'client-read';
 
 export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'GET /health': 'public',
@@ -39,4 +44,9 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'GET /example-consumer/relay': 'staff',
   'GET /scope-check': 'client-scoped',
   'POST /scope-check': 'client-write',
+  'GET /client-users': 'client-read',
+  'GET /client-users/:id': 'client-read',
+  'POST /client-users': 'client-write',
+  'PATCH /client-users/:id': 'client-write',
+  'DELETE /client-users/:id': 'client-write',
 };

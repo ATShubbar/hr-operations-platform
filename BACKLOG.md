@@ -382,8 +382,13 @@ CRUD own). Bilingual names (ADR-005). Depends on Auth + Authz + Audit (done).
 |---|---|---|---|
 | CLIENT-01 | Clients module + `cli_clients` registry (bilingual, status) + RLS (staff full; rep reads own, keyed on the PK) + `ClientsService` + seed the two companies | Auth/Audit | done ([evidence](evidence/clients/CLIENT-01.md)) |
 | CLIENT-02 | Client management API (staff): `client.*` endpoints, audited (AUDIT-03), isolation-harness + audited-writes registration, contracts | CLIENT-01 | done ([evidence](evidence/clients/CLIENT-02.md)) |
-| CLIENT-03 | Client portal users: Client Admin invites Client Users → `client_rep` auth_users bound to the client (app-layer, no cross-module FK); client-scoped + audited | CLIENT-02 | todo |
+| CLIENT-03 | Client portal users: Client Admin invites Client Users → `client_rep` auth_users bound to the client (app-layer, no cross-module FK); client-scoped + audited | CLIENT-02 | done ([evidence](evidence/clients/CLIENT-03.md)) |
 | CLIENT-04 | Web UI: clients list + create/edit in the console (staff), ar/en + RTL, over the API | CLIENT-02 | todo |
+
+> **Scope note (CLIENT-03):** the client-rep "read own company" endpoint —
+> earlier slated for CLIENT-03 — moved to the **Client Portal epic (5.1)**: it
+> needs `GET /clients` to become principal-aware + `client.read` granted to
+> reps, a delivery-surface concern better built with the portal.
 
 ### CLIENT-01 — Clients module + registry + RLS + service
 - **Objective:** the authoritative client-company registry (`cli_clients`) that
@@ -416,6 +421,25 @@ CRUD own). Bilingual names (ADR-005). Depends on Auth + Authz + Audit (done).
 - **Evidence:** `evidence/clients/CLIENT-02.md`.
 - **Dependencies:** CLIENT-01. **Risks:** granting reps `client.read` before the
   scoped rep endpoint exists would leak the staff list — deferred to CLIENT-03.
+
+### CLIENT-03 — Client portal user management
+- **Objective:** a Client Admin manages the `client_rep` users of its own
+  client — invite/list/get/update/deactivate — client-scoped and audited.
+- **Files:** `clients/api/client-users.controller.ts` +
+  `application/client-users.service.ts`; auth `UsersService` scoped/tx-aware
+  methods (`listClientReps`/`findClientRep`/`updateClientRep`); `client-user.*`
+  in the catalog (Client Admin only); `@hr/contracts` client-user schemas; new
+  `client-read` harness class + registrations; audited-writes.
+- **Design note:** `auth_users` is app-scoped (no RLS); isolation is
+  application-enforced — every query filtered by the caller's context clientId,
+  never request input. Cross-client → 404. Soft-deactivate only.
+- **DoD:** invite + scoped list/get; cross-client isolation (404); update/
+  deactivate; permission matrix (Client User 403, staff 403, unauth 401);
+  duplicate email 400; mutations audited; all coverage gates + suite + lint green.
+- **Evidence:** `evidence/clients/CLIENT-03.md`.
+- **Dependencies:** CLIENT-02. **Risks:** app-enforced scoping must be airtight
+  (context clientId only) — covered by the isolation test; invite-token/email
+  flow deferred to Notifications (Priority 3).
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

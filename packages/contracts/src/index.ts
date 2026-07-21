@@ -15,6 +15,20 @@ export {
   type ClientListResponse,
 } from './client-company.js';
 export {
+  clientUserRoleSchema,
+  clientUserStatusSchema,
+  createClientUserRequestSchema,
+  updateClientUserRequestSchema,
+  clientUserResponseSchema,
+  clientUserListResponseSchema,
+  type ClientUserRole,
+  type ClientUserStatus,
+  type CreateClientUserRequest,
+  type UpdateClientUserRequest,
+  type ClientUserResponse,
+  type ClientUserListResponse,
+} from './client-user.js';
+export {
   loginRequestSchema,
   loginResponseSchema,
   mfaCodeRequestSchema,

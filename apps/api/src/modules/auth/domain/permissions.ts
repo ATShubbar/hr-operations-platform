@@ -22,6 +22,12 @@ export const PERMISSIONS = [
   'client.create',
   'client.update',
   'client.delete',
+  // Client portal users (permission matrix): Client Admin manages its own
+  // client's users (CRUD own). Client User has none of these.
+  'client-user.read',
+  'client-user.create',
+  'client-user.update',
+  'client-user.delete',
   // Session lifecycle — every authenticated principal may end their session.
   'session.end',
 ] as const;
@@ -56,10 +62,20 @@ const ADMIN_STAFF: readonly Permission[] = [
   'client.update',
   'client.delete',
 ];
+// Both client roles: the scope-check exemplar + session end.
 const ALL_CLIENT: readonly Permission[] = [
   'scope-check.read',
   'scope-check.create',
   'session.end',
+];
+// Client Admin additionally manages its own client's portal users (matrix —
+// Client User does NOT).
+const CLIENT_ADMIN: readonly Permission[] = [
+  ...ALL_CLIENT,
+  'client-user.read',
+  'client-user.create',
+  'client-user.update',
+  'client-user.delete',
 ];
 
 // Seeded from the architecture matrix. Client-scoped capabilities belong to
@@ -73,6 +89,6 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
   gro_officer: ALL_STAFF,
   finance: ALL_STAFF,
   read_only: ALL_STAFF,
-  client_admin: ALL_CLIENT,
+  client_admin: CLIENT_ADMIN,
   client_user: ALL_CLIENT,
 };

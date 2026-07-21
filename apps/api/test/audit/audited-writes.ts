@@ -22,6 +22,9 @@ export const AUDITED_WRITES: Record<string, string> = {
   'POST /clients': 'client.create',
   'PATCH /clients/:id': 'client.update',
   'DELETE /clients/:id': 'client.delete',
+  'POST /client-users': 'client-user.create',
+  'PATCH /client-users/:id': 'client-user.update',
+  'DELETE /client-users/:id': 'client-user.delete',
 };
 
 export const AUDIT_EXEMPT_WRITES: Record<string, string> = {

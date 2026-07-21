@@ -1,6 +1,6 @@
 // Public surface of the auth module (ADR-003).
 export { AuthModule } from './auth.module';
-export { UsersService } from './application/users.service';
+export { UsersService, type ClientRepStatus } from './application/users.service';
 export { PasswordService } from './application/password.service';
 export {
   SESSION_COOKIE,
