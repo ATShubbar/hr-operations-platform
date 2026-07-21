@@ -88,3 +88,9 @@ this paragraph is never used.
   Images rebuilt at 8ca9a8f and tagged for ECR locally; retry loop running
   every 2 min. If nothing clears within ~1h of the support reply, respond
   on the case: "restrictions still active after your fix".
+- 2026-07-21: STILL fully restricted ~2 days post-signup, 1 day after
+  support's "fixed" reply: ECS ThrottlingException, RDS InvalidAction,
+  ECR push KMS AccessDenied, and the ALB stuck in "provisioning" since
+  creation. Escalation reply sent on the case (evidence list + chat
+  contact requested). Decision point recorded: if not lifted within
+  ~48h, evaluate fresh-account or OCI-fallback paths per ADR-006.
