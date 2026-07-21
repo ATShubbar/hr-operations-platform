@@ -19,7 +19,7 @@ Draft records already exist in `adr/` (see `adr/README.md` for the index): the P
 | 0.5 | 🔴 **ADR-005: Localization.** i18n library choice, string externalization workflow, RTL lint rule (block physical left/right utilities), Hijri↔Gregorian utility ownership, bilingual field convention (`name_ar`/`name_en`) | — | ADR + shared date/i18n utility spec |
 | 0.6 | 🔴 **ADR-006: KSA cloud provider.** Evaluate Google Cloud (Dammam), Oracle (Riyadh/Jeddah), STC Cloud, current AWS/Azure KSA status. Deciding factor: **managed** Postgres/Redis/object storage availability | — | ADR + provider account |
 | 0.7 | 🟡 **ADR-007: API conventions.** REST + OpenAPI from NestJS, error envelope, cursor pagination, idempotency keys, per-client rate limiting | 0.3 | ADR |
-| 0.8 | 🟡 **Reference-system field mapping.** For Qiwa, GOSI, Muqeem, Mudad, ZATCA: list the exact fields/enums the Employee, GRO, and (future) Billing schemas must carry. Manual-entry v1, connector-ready shape | — | Field-mapping doc feeding Phase 3/6 schemas |
+| 0.8 | 🟡 **Reference-system field mapping.** For Qiwa, GOSI, Muqeem, Mudad, ZATCA: list the exact fields/enums the Employee, GRO, and (future) Billing schemas must carry. Manual-entry v1, connector-ready shape | — | ✅ **DONE** → `docs/FIELD-MAPPING.md` (feeds Phase 3/6 schemas) |
 | 0.9 | 🟢 **PDPL compliance checklist.** Consent basis, data-subject rights, retention/erasure with legal holds, breach procedure. Legal review of Google Calendar under the no-PII payload constraint | — | Compliance checklist; go/no-go on Calendar guardrails |
 
 ## Priority 1 — Walking skeleton (Week 2–3)

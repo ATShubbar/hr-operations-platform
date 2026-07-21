@@ -455,6 +455,32 @@ CRUD own). Bilingual names (ADR-005). Depends on Auth + Authz + Audit (done).
   admin-only actions) + server route guard pending `/auth/me`; TanStack Query;
   client-users management UI.
 
+## Priority 3 — Employees module epic (ACTION-PLAN 3.1, architecture.md)
+
+Same rules, same loop. Evidence goes to `evidence/employees/EMP-XX.md`. The
+domain core — "the gravitational center of the domain." Client-scoped (standard
+`client_id` RLS). Three permission-gated field groups (`employee`/`salary`/
+`govdata`) with field-level sensitivity; bilingual names; Hijri-rendered dates.
+Built from the 0.8 field mapping. Depends on Clients (done) + 0.8 (done).
+
+| ID | Task | Depends on | Status |
+|---|---|---|---|
+| 0.8 | Reference-system field-mapping doc — the schema's source of truth | — | done ([doc](docs/FIELD-MAPPING.md)) |
+| EMP-01 | Employees module + `emp_employees` table (client-scoped RLS) from the mapping + `EmployeesService` + seed | Clients, 0.8 | todo |
+| EMP-02 | Employees HTTP API + **field-level authorization** (`salary`/`govdata` redacted per capability; rep govdata = expiry/status only) + audited + harness | EMP-01 | todo |
+| EMP-03 | Web UI: employees list + detail/edit (staff), ar/en + RTL, Hijri dates | EMP-02 | todo |
+
+### 0.8 — Reference-system field mapping (doc)
+- **Objective:** author `docs/FIELD-MAPPING.md` — the exact Employee fields/enums
+  per reference system, tagged by sensitivity group (`core`/`salary`/`govdata:id`
+  /`govdata:status`), manual-entry v1 + connector-ready. The source EMP-01 builds
+  from.
+- **Files:** `docs/FIELD-MAPPING.md`; `ACTION-PLAN.md` 0.8 → done; CLAUDE.md map.
+- **DoD:** every in-scope system (Qiwa/GOSI/Muqeem/Mudad/Absher) has its
+  Employee fields + enums; each tagged by sensitivity + rep visibility; Hijri
+  date fields marked; ZATCA deferred to Billing; no code.
+- **Evidence:** the doc itself. **Done.**
+
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 
 | Epic | Source | Gate |

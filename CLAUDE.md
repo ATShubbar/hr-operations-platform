@@ -29,6 +29,7 @@ build contract. Changes go through ADRs (adr/), never through drift.
 | BACKLOG.md | Task board + cards + working rules |
 | ACTION-PLAN.md | Phased plan, DoD checklists with evidence rule |
 | evidence/skeleton/ | Per-task proof (WS-01..) |
+| docs/FIELD-MAPPING.md | ACTIVE: reference-system (Qiwa/GOSI/Muqeem/Mudad/Absher) Employee fields, sensitivity-tagged (0.8) — source for the Employees schema |
 | docs/PROVISIONING-AWS.md | ACTIVE: AWS UAE interim staging + status log |
 | docs/HANDOFF-WS20.md | In-flight infra state + exact next commands |
 | apps/api/src/modules/README.md | Module layout contract + RLS table checklist |
