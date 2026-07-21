@@ -383,7 +383,7 @@ CRUD own). Bilingual names (ADR-005). Depends on Auth + Authz + Audit (done).
 | CLIENT-01 | Clients module + `cli_clients` registry (bilingual, status) + RLS (staff full; rep reads own, keyed on the PK) + `ClientsService` + seed the two companies | Auth/Audit | done ([evidence](evidence/clients/CLIENT-01.md)) |
 | CLIENT-02 | Client management API (staff): `client.*` endpoints, audited (AUDIT-03), isolation-harness + audited-writes registration, contracts | CLIENT-01 | done ([evidence](evidence/clients/CLIENT-02.md)) |
 | CLIENT-03 | Client portal users: Client Admin invites Client Users → `client_rep` auth_users bound to the client (app-layer, no cross-module FK); client-scoped + audited | CLIENT-02 | done ([evidence](evidence/clients/CLIENT-03.md)) |
-| CLIENT-04 | Web UI: clients list + create/edit in the console (staff), ar/en + RTL, over the API | CLIENT-02 | todo |
+| CLIENT-04 | Web UI: clients list + create/edit in the console (staff), ar/en + RTL, over the API | CLIENT-02 | done ([evidence](evidence/clients/CLIENT-04.md)) |
 
 > **Scope note (CLIENT-03):** the client-rep "read own company" endpoint —
 > earlier slated for CLIENT-03 — moved to the **Client Portal epic (5.1)**: it
@@ -440,6 +440,19 @@ CRUD own). Bilingual names (ADR-005). Depends on Auth + Authz + Audit (done).
 - **Dependencies:** CLIENT-02. **Risks:** app-enforced scoping must be airtight
   (context clientId only) — covered by the isolation test; invite-token/email
   flow deferred to Notifications (Priority 3).
+
+### CLIENT-04 — Clients console UI (staff)
+- **Objective:** the staff clients console — list + create/edit/archive over
+  the `client.*` API — the second product screen, inside the AUDIT-05 shell.
+- **Files:** `web/app/[locale]/(app)/clients/page.tsx`; sidebar Clients nav
+  link; `clients` + `nav.clients` i18n (ar+en).
+- **DoD:** list from API; create/edit dialog (bilingual name + status);
+  soft-archive; localized names; ar/en + RTL; 401→login; web lint (RTL rule)/
+  typecheck/build green. Verified end-to-end in the browser.
+- **Evidence:** `evidence/clients/CLIENT-04.md`.
+- **Dependencies:** CLIENT-02. **Deferred (in evidence):** role-aware UI (hide
+  admin-only actions) + server route guard pending `/auth/me`; TanStack Query;
+  client-users management UI.
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

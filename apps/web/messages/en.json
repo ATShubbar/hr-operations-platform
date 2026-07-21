@@ -61,7 +61,33 @@
   },
   "nav": {
     "console": "Console",
+    "clients": "Clients",
     "auditLog": "Audit log"
+  },
+  "clients": {
+    "title": "Clients",
+    "subtitle": "Client companies managed by the consultancy.",
+    "new": "New client",
+    "colName": "Name",
+    "colStatus": "Status",
+    "colActions": "Actions",
+    "edit": "Edit",
+    "archive": "Archive",
+    "statusActive": "Active",
+    "statusInactive": "Inactive",
+    "empty": "No clients yet.",
+    "loading": "Loading…",
+    "error": "Could not load clients.",
+    "createTitle": "New client",
+    "editTitle": "Edit client",
+    "nameAr": "Name (Arabic)",
+    "nameEn": "Name (English)",
+    "status": "Status",
+    "save": "Save",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "saveError": "Could not save — you may not have permission.",
+    "archiveError": "Could not archive — you may not have permission."
   },
   "audit": {
     "title": "Audit log",

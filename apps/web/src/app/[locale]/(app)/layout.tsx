@@ -15,7 +15,13 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
     <div className="flex min-h-dvh">
       <aside className="hidden w-60 shrink-0 border-e bg-sidebar text-sidebar-foreground md:flex md:flex-col">
         <div className="flex h-14 items-center px-4 text-sm font-semibold">{t('common.appName')}</div>
-        <nav className="px-2 py-2">
+        <nav className="flex flex-col gap-1 px-2 py-2">
+          <Link
+            href="/clients"
+            className="flex items-center rounded-md px-3 py-2 text-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+          >
+            {t('nav.clients')}
+          </Link>
           <Link
             href="/audit"
             className="flex items-center rounded-md px-3 py-2 text-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
