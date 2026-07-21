@@ -35,5 +35,51 @@
     "tableRow1Role": "HR Officer",
     "tableRow2Name": "Sara",
     "tableRow2Role": "Recruiter"
+  },
+  "auth": {
+    "signInTitle": "Sign in",
+    "signInSubtitle": "HR Operations Platform",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "password": "Password",
+    "passwordPlaceholder": "Your password",
+    "signIn": "Sign in",
+    "signingIn": "Signing in…",
+    "signOut": "Sign out",
+    "invalidCredentials": "Invalid email or password",
+    "genericError": "Something went wrong. Please try again.",
+    "mfaEnrollTitle": "Set up two-factor authentication",
+    "mfaEnrollSubtitle": "Admin accounts require an authenticator app. Add this setup key, then enter the 6-digit code.",
+    "mfaSecretLabel": "Setup key",
+    "mfaChallengeTitle": "Two-factor verification",
+    "mfaChallengeSubtitle": "Enter the 6-digit code from your authenticator app.",
+    "code": "Verification code",
+    "codePlaceholder": "123456",
+    "verify": "Verify",
+    "verifying": "Verifying…",
+    "invalidCode": "Invalid code. Please try again."
+  },
+  "nav": {
+    "console": "Console",
+    "auditLog": "Audit log"
+  },
+  "audit": {
+    "title": "Audit log",
+    "subtitle": "Every recorded mutation, most recent first.",
+    "filterResource": "Resource",
+    "filterAction": "Action",
+    "filterApply": "Filter",
+    "filterClear": "Clear",
+    "colTime": "Time",
+    "colActor": "Actor",
+    "colRole": "Role",
+    "colClient": "Client",
+    "colResource": "Resource",
+    "colAction": "Action",
+    "loadMore": "Load more",
+    "empty": "No audit entries match.",
+    "loading": "Loading…",
+    "error": "Could not load the audit log.",
+    "none": "—"
   }
 }

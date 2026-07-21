@@ -278,7 +278,7 @@ the outbox, which stays reserved for cross-module async effects.
 | AUDIT-02 | Client-rep audit write path: `app_client` INSERT grant + RLS `WITH CHECK` (own-client only; still no read/update/delete) | AUDIT-01 | done ([evidence](evidence/audit/AUDIT-02.md)) |
 | AUDIT-03 | Automatic mutation logging (actor/client/before-after) composed with the scoped `set_config` tx, proven on a write path | AUDIT-02 | done ([evidence](evidence/audit/AUDIT-03.md)) |
 | AUDIT-04 | `audit.read` permission + read/filter API, gated to System/Company Admin only; register in isolation harness | AUDIT-03 | done ([evidence](evidence/audit/AUDIT-04.md)) |
-| AUDIT-05 | Admin read UI (Next.js, ar/en + RTL) over the audit read API | AUDIT-04 | todo |
+| AUDIT-05 | Admin read UI (Next.js, ar/en + RTL) over the audit read API — incl. login + MFA + app shell | AUDIT-04 | done ([evidence](evidence/audit/AUDIT-05.md)) |
 
 > **AUDIT-02 split note (2026-07-21):** the original AUDIT-02 bundled the
 > client-rep write grant with the automatic-logging mechanism. Split because the
@@ -356,6 +356,20 @@ the outbox, which stays reserved for cross-module async effects.
 - **Evidence:** `evidence/audit/AUDIT-04.md`.
 - **Dependencies:** AUDIT-03. **Risks:** admin roles are MFA-required (tests
   enroll via the new helper); BigInt has no JSON form (serialized as string).
+
+### AUDIT-05 — First UI: login + app shell + audit viewer
+- **Objective:** the first product UI — an admin audit viewer over `GET /audit`,
+  reachable through a real login (incl. the admin MFA flow) inside an app shell.
+- **Files:** `next.config.ts` `/api/*` proxy; `lib/api.ts`; `[locale]/login`
+  (login + MFA enroll/challenge); `[locale]/(app)/layout.tsx` shell +
+  `sign-out-button.tsx`; `[locale]/(app)/audit` viewer; `auth`/`nav`/`audit`
+  i18n namespaces (ar+en).
+- **DoD:** login→MFA→audit works end-to-end (verified in-browser with a real
+  TOTP); viewer shows real pipeline-generated entries; ar/en + RTL; 401→login;
+  lint (RTL rule)/typecheck/test/build green.
+- **Evidence:** `evidence/audit/AUDIT-05.md`.
+- **Dependencies:** AUDIT-04. **Deferred (stated in evidence):** TanStack Query
+  (plain fetch for now), QR for MFA enroll, server-side route guard (`/auth/me`).
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 
