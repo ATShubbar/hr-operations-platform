@@ -36,11 +36,13 @@ build contract. Changes go through ADRs (adr/), never through drift.
 ## Current state (2026-07-21)
 
 Walking skeleton **CLOSED** (WS-22 exit review; evidence/skeleton/).
-**Auth epic: AUTH-01..06 done with evidence** (identity, login+Redis
+**Auth epic: AUTH-01..07 done with evidence** (identity, login+Redis
 sessions, session guard 401/403, permission catalog+policy service,
-logout/revocation, TOTP MFA with admin-must-enroll). **Next: present
-the AUTH-07 gate** (role seeding + role×endpoint matrix probe — card in
-BACKLOG.md). WS-20/21 still blocked: AWS account fully restricted 2 days
+logout/revocation, TOTP MFA with admin-must-enroll, all-role seeding +
+harness staff→401). This closes ACTION-PLAN 2.1 (Authentication) and 2.2
+(Authorization). **Next: Audit Logs (ACTION-PLAN 2.3)** — the critical-path
+module before Clients (2.5); first card to be authored/presented in
+BACKLOG.md. WS-20/21 still blocked: AWS account fully restricted 2 days
 post-signup (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck
 "provisioning"); escalation sent on the support case; decision point
 ~48h → fresh account or OCI fallback (ADR-006). Infra pickup:
