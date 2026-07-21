@@ -11,8 +11,10 @@ export { SessionMiddleware } from './api/session.middleware';
 export { PolicyService } from './application/policy.service';
 export { MfaService } from './application/mfa.service';
 export {
+  CLIENT_ROLES,
   PERMISSIONS,
   ROLE_PERMISSIONS,
+  STAFF_ROLES,
   type ClientRole,
   type Permission,
   type RoleName,
