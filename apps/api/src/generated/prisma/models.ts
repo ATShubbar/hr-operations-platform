@@ -10,4 +10,5 @@
  */
 export type * from './models/AuthUser'
 export type * from './models/CoreScopeCheck'
+export type * from './models/AuditEntry'
 export type * from './commonInputTypes'

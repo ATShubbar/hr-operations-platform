@@ -52,7 +52,8 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   AuthUser: 'AuthUser',
-  CoreScopeCheck: 'CoreScopeCheck'
+  CoreScopeCheck: 'CoreScopeCheck',
+  AuditEntry: 'AuditEntry'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -96,12 +97,36 @@ export const CoreScopeCheckScalarFieldEnum = {
 export type CoreScopeCheckScalarFieldEnum = (typeof CoreScopeCheckScalarFieldEnum)[keyof typeof CoreScopeCheckScalarFieldEnum]
 
 
+export const AuditEntryScalarFieldEnum = {
+  id: 'id',
+  actorId: 'actorId',
+  actorRole: 'actorRole',
+  clientId: 'clientId',
+  resource: 'resource',
+  action: 'action',
+  before: 'before',
+  after: 'after',
+  requestId: 'requestId',
+  createdAt: 'createdAt'
+} as const
+
+export type AuditEntryScalarFieldEnum = (typeof AuditEntryScalarFieldEnum)[keyof typeof AuditEntryScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {
@@ -118,4 +143,13 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 

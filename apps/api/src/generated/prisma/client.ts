@@ -49,3 +49,8 @@ export type AuthUser = Prisma.AuthUserModel
  * 
  */
 export type CoreScopeCheck = Prisma.CoreScopeCheckModel
+/**
+ * Model AuditEntry
+ * 
+ */
+export type AuditEntry = Prisma.AuditEntryModel

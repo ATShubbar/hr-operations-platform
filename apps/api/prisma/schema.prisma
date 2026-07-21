@@ -60,3 +60,30 @@ model CoreScopeCheck {
 
   @@map("core_scope_check")
 }
+
+// Append-only audit trail (AUDIT-01; architecture.md Shared Modules, ADR-004).
+// SYSTEM table: only System/Company Admin hold `audit.read` (permission
+// matrix) — NO client role reads it, so like auth_users it is app_staff-read
+// and deliberately NOT RLS-read-scoped. No UPDATE/DELETE grants to ANY role:
+// append-only is enforced at the GRANT level (see the migration), not by
+// convention. `client_id` is nullable (system actions have no client) and is
+// DATA for filtering, not an RLS scope key. Grants for the client-rep write
+// path (app_client INSERT + its RLS WITH CHECK) arrive in AUDIT-02, when
+// client-rep mutations are wired and testable.
+model AuditEntry {
+  id        BigInt   @id @default(autoincrement())
+  actorId   String?  @map("actor_id") @db.Uuid
+  actorRole String?  @map("actor_role")
+  clientId  String?  @map("client_id") @db.Uuid
+  resource  String
+  action    String
+  before    Json?    @db.JsonB
+  after     Json?    @db.JsonB
+  requestId String?  @map("request_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([resource, action])
+  @@index([clientId])
+  @@index([createdAt])
+  @@map("aud_entries")
+}

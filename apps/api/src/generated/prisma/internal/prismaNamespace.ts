@@ -385,7 +385,8 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 export const ModelName = {
   AuthUser: 'AuthUser',
-  CoreScopeCheck: 'CoreScopeCheck'
+  CoreScopeCheck: 'CoreScopeCheck',
+  AuditEntry: 'AuditEntry'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -401,7 +402,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "authUser" | "coreScopeCheck"
+    modelProps: "authUser" | "coreScopeCheck" | "auditEntry"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -553,6 +554,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AuditEntry: {
+      payload: Prisma.$AuditEntryPayload<ExtArgs>
+      fields: Prisma.AuditEntryFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AuditEntryFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditEntryPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AuditEntryFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditEntryPayload>
+        }
+        findFirst: {
+          args: Prisma.AuditEntryFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditEntryPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AuditEntryFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditEntryPayload>
+        }
+        findMany: {
+          args: Prisma.AuditEntryFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditEntryPayload>[]
+        }
+        create: {
+          args: Prisma.AuditEntryCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditEntryPayload>
+        }
+        createMany: {
+          args: Prisma.AuditEntryCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AuditEntryCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditEntryPayload>[]
+        }
+        delete: {
+          args: Prisma.AuditEntryDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditEntryPayload>
+        }
+        update: {
+          args: Prisma.AuditEntryUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditEntryPayload>
+        }
+        deleteMany: {
+          args: Prisma.AuditEntryDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AuditEntryUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AuditEntryUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditEntryPayload>[]
+        }
+        upsert: {
+          args: Prisma.AuditEntryUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditEntryPayload>
+        }
+        aggregate: {
+          args: Prisma.AuditEntryAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAuditEntry>
+        }
+        groupBy: {
+          args: Prisma.AuditEntryGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AuditEntryGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AuditEntryCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AuditEntryCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -617,12 +692,36 @@ export const CoreScopeCheckScalarFieldEnum = {
 export type CoreScopeCheckScalarFieldEnum = (typeof CoreScopeCheckScalarFieldEnum)[keyof typeof CoreScopeCheckScalarFieldEnum]
 
 
+export const AuditEntryScalarFieldEnum = {
+  id: 'id',
+  actorId: 'actorId',
+  actorRole: 'actorRole',
+  clientId: 'clientId',
+  resource: 'resource',
+  action: 'action',
+  before: 'before',
+  after: 'after',
+  requestId: 'requestId',
+  createdAt: 'createdAt'
+} as const
+
+export type AuditEntryScalarFieldEnum = (typeof AuditEntryScalarFieldEnum)[keyof typeof AuditEntryScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {
@@ -639,6 +738,15 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
 
 
@@ -728,6 +836,34 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
  * Reference to a field of type 'Int[]'
  */
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
+ * Reference to a field of type 'BigInt'
+ */
+export type BigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt'>
+    
+
+
+/**
+ * Reference to a field of type 'BigInt[]'
+ */
+export type ListBigIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BigInt[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Json'
+ */
+export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+/**
+ * Reference to a field of type 'QueryMode'
+ */
+export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
 
@@ -856,6 +992,7 @@ export type PrismaClientOptions = ({
 export type GlobalOmitConfig = {
   authUser?: Prisma.AuthUserOmit
   coreScopeCheck?: Prisma.CoreScopeCheckOmit
+  auditEntry?: Prisma.AuditEntryOmit
 }
 
 /* Types for Logging */

@@ -264,6 +264,37 @@ Same rules, same loop. Evidence goes to `evidence/auth/AUTH-XX.md`.
 ### AUTH-05 — Logout + revocation · AUTH-06 — MFA (TOTP) · AUTH-07 — Seeding + harness
 Cards detailed at their gates (objective summaries in the status board; scope per ACTION-PLAN 2.1).
 
+## Priority 2 — Audit Logs epic (ACTION-PLAN 2.3, architecture.md Shared Modules)
+
+Same rules, same loop. Evidence goes to `evidence/audit/AUDIT-XX.md`. Audit must
+exist before the first business mutation (architecture.md phasing). Write
+mechanism is **synchronous + transactional** (ADR-004 hardening; owner-approved
+2026-07-21) — audit rows are written inside the caller's transaction, not via
+the outbox, which stays reserved for cross-module async effects.
+
+| ID | Task | Depends on | Status |
+|---|---|---|---|
+| AUDIT-01 | Audit module + append-only `aud_entries` table (SELECT/INSERT grants only) + transactional write API | AUTH epic | done ([evidence](evidence/audit/AUDIT-01.md)) |
+| AUDIT-02 | Automatic mutation logging (actor/client/before-after from request context) proven on a real write path; **client-rep write grant (app_client INSERT + RLS WITH CHECK)** | AUDIT-01 | todo |
+| AUDIT-03 | `audit.read` permission + read/filter API, gated to System/Company Admin only; register in isolation harness | AUDIT-02 | todo |
+| AUDIT-04 | Admin read UI (Next.js, ar/en + RTL) over the audit read API | AUDIT-03 | todo |
+
+### AUDIT-01 — Audit module + append-only table + transactional write API
+- **Objective:** stand up the `audit` module (ADR-003 layout) owning an
+  append-only `aud_entries` table, with `AuditService.record(tx, input)` that
+  records `{actor, client scope, resource, action, before, after, requestId}`
+  **inside the caller's transaction** — the foundation every mutation calls.
+- **Files:** `apps/api/src/modules/audit/` (module, `public-api.ts`,
+  `application/audit.service.ts`, `domain/audit-entry.ts`); Prisma `AuditEntry`
+  model + migration `20260721154941_audit_entries` (table + append-only grants).
+- **DoD:** migration applies to fresh DB; grant check proves no role holds
+  UPDATE/DELETE; commit + rollback atomicity both proven; append-only enforced
+  at the grant (runtime UPDATE/DELETE → permission denied); suite + lint green;
+  endpoint registry untouched (no endpoints yet).
+- **Evidence:** `evidence/audit/AUDIT-01.md`.
+- **Dependencies:** AUTH epic (done). **Risks:** `before/after` capturing
+  sensitive fields — redaction is AUDIT-02; read path already SysAdmin/CompanyAdmin-only.
+
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 
 | Epic | Source | Gate |

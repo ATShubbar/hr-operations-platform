@@ -53,7 +53,7 @@ docs/HANDOFF-WS20.md.
 - RLS policies MUST use `NULLIF(current_setting('app.client_id', true), '')::uuid` — pooled connections leave the GUC as '' not NULL (SPIKE-001).
 - Turbo v2 strict env: env vars must be declared in turbo.json `globalEnv` or tasks won't see them (CI broke on this).
 - NestJS DI needs VALUE imports; `consistent-type-imports` is off for the API only.
-- Prisma 7: URL lives in prisma.config.ts, runtime needs the pg driver adapter, `CHECKPOINT_DISABLE=1` on all db scripts (telemetry hangs).
+- Prisma 7: URL lives in prisma.config.ts, runtime needs the pg driver adapter, `CHECKPOINT_DISABLE=1` on all db scripts (telemetry hangs). `migrate dev` does NOT reliably regenerate the client here — run `db:generate` explicitly after a migration or the new model's delegate is missing (AUDIT-01).
 - pnpm v10: `pnpm deploy` needs `--legacy`; corepack shims live in ~/.local/bin (no sudo on this machine).
 - shadcn here is Base UI (`render` prop), NOT Radix (`asChild`); init was run with `--rtl`.
 - Physical Tailwind utilities (pl-/pr-/left-…) are lint errors — logical only.

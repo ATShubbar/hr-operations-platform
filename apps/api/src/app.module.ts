@@ -6,6 +6,7 @@ import { AccessLogInterceptor } from './logging/access-log.interceptor';
 import { HealthModule } from './health/health.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule, SessionMiddleware } from './modules/auth/public-api';
+import { AuditModule } from './modules/audit/public-api';
 import { ExampleModule } from './modules/example/public-api';
 import { ExampleConsumerModule } from './modules/example-consumer/public-api';
 import { ScopeCheckModule } from './modules/scope-check/public-api';
@@ -15,6 +16,7 @@ import { ScopeCheckModule } from './modules/scope-check/public-api';
     PrismaModule,
     HealthModule,
     AuthModule,
+    AuditModule,
     ExampleModule,
     ExampleConsumerModule,
     ScopeCheckModule,
