@@ -73,6 +73,25 @@ async function seedUsers(prisma: PrismaClient): Promise<number> {
   return data.length;
 }
 
+// CLIENT-01: the two seed client companies. Their ids are the well-known
+// SEED_CLIENT_A/B used everywhere (client-rep users, scope-check rows), so the
+// registry and everything referencing a client_id stay consistent. Upsert by
+// id keeps it idempotent without disturbing manually-created clients.
+async function seedClients(prisma: PrismaClient): Promise<number> {
+  const clients = [
+    { id: SEED_CLIENT_A, nameAr: 'شركة الألف التجارية', nameEn: 'Alpha Trading Co.' },
+    { id: SEED_CLIENT_B, nameAr: 'مؤسسة الباء للمقاولات', nameEn: 'Beta Contracting Est.' },
+  ];
+  for (const c of clients) {
+    await prisma.client.upsert({
+      where: { id: c.id },
+      create: { id: c.id, nameAr: c.nameAr, nameEn: c.nameEn, status: 'active' },
+      update: { nameAr: c.nameAr, nameEn: c.nameEn },
+    });
+  }
+  return clients.length;
+}
+
 async function main(): Promise<void> {
   if (process.env.NODE_ENV === 'production') {
     throw new Error('Refusing to seed: NODE_ENV=production. The seed is development-only.');
@@ -83,6 +102,10 @@ async function main(): Promise<void> {
   });
 
   try {
+    // Client companies first — they originate the client_ids everything else
+    // references (no FK across modules, so order is for clarity, not integrity).
+    const clientCount = await seedClients(prisma);
+
     const fixtures = [
       { clientId: SEED_CLIENT_A, note: 'seed:client-a:sample-1' },
       { clientId: SEED_CLIENT_A, note: 'seed:client-a:sample-2' },
@@ -101,8 +124,8 @@ async function main(): Promise<void> {
     });
     const roleCount = STAFF_ROLES.length + CLIENT_REP_ASSIGNMENTS.length;
     process.stdout.write(
-      `Seed complete: ${rowCount} scope-check rows across clients A (${SEED_CLIENT_A}) ` +
-        `and B (${SEED_CLIENT_B}); ${userCount} auth users ` +
+      `Seed complete: ${clientCount} client companies; ${rowCount} scope-check rows ` +
+        `across clients A (${SEED_CLIENT_A}) and B (${SEED_CLIENT_B}); ${userCount} auth users ` +
         `(${STAFF_ROLES.length} staff roles + ${CLIENT_REP_ASSIGNMENTS.length} client reps, ` +
         `${roleCount}/${STAFF_ROLES.length + CLIENT_ROLES.length} distinct roles covered).\n`,
     );

@@ -32,3 +32,8 @@ export type CoreScopeCheck = Prisma.CoreScopeCheckModel
  * 
  */
 export type AuditEntry = Prisma.AuditEntryModel
+/**
+ * Model Client
+ * 
+ */
+export type Client = Prisma.ClientModel

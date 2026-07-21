@@ -371,6 +371,37 @@ the outbox, which stays reserved for cross-module async effects.
 - **Dependencies:** AUDIT-04. **Deferred (stated in evidence):** TanStack Query
   (plain fetch for now), QR for MFA enroll, server-side route guard (`/auth/me`).
 
+## Priority 2 — Clients module epic (ACTION-PLAN 2.5, architecture.md)
+
+Same rules, same loop. Evidence goes to `evidence/clients/CLIENT-XX.md`. The
+first real business module: it originates `client_id` (the isolation boundary).
+Resources `client` (staff CRUD, reps R own) and `client-user` (Client Admin
+CRUD own). Bilingual names (ADR-005). Depends on Auth + Authz + Audit (done).
+
+| ID | Task | Depends on | Status |
+|---|---|---|---|
+| CLIENT-01 | Clients module + `cli_clients` registry (bilingual, status) + RLS (staff full; rep reads own, keyed on the PK) + `ClientsService` + seed the two companies | Auth/Audit | done ([evidence](evidence/clients/CLIENT-01.md)) |
+| CLIENT-02 | Client management API (staff): `client.*` endpoints, audited (AUDIT-03), isolation-harness + audited-writes registration, contracts | CLIENT-01 | todo |
+| CLIENT-03 | Client portal users: Client Admin invites Client Users → `client_rep` auth_users bound to the client (app-layer, no cross-module FK); client-scoped + audited | CLIENT-02 | todo |
+| CLIENT-04 | Web UI: clients list + create/edit in the console (staff), ar/en + RTL, over the API | CLIENT-02 | todo |
+
+### CLIENT-01 — Clients module + registry + RLS + service
+- **Objective:** the authoritative client-company registry (`cli_clients`) that
+  originates `client_id`, with staff-full / rep-read-own RLS and a
+  `ClientsService`, plus the two seed companies.
+- **Files:** `apps/api/src/modules/clients/` (module, `public-api.ts`,
+  `application/clients.service.ts`, `domain/client.ts`); Prisma `Client` model +
+  migration `20260721173628_clients` (grants + RLS); `prisma/seed.ts` client seed.
+- **Design note:** RLS scope key is the row's **own PK** (a client *is* the
+  client — no denormalized `client_id` column); no cross-module FK from
+  `auth_users`.
+- **DoD:** migration applies; grant/RLS matrix (staff CRUD, rep SELECT-own-only,
+  no rep writes); service create/list/get; seed idempotent with the seed ids;
+  suite + lint green; registry untouched (endpoints are CLIENT-02).
+- **Evidence:** `evidence/clients/CLIENT-01.md`.
+- **Dependencies:** Auth + Audit epics (done). **Risks:** PK-as-scope-key
+  variation (documented in the migration); NULLIF load-bearing (SPIKE-001).
+
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 
 | Epic | Source | Gate |

@@ -87,3 +87,26 @@ model AuditEntry {
   @@index([createdAt])
   @@map("aud_entries")
 }
+
+// Client-company registry (CLIENT-01; ADR-002 isolation boundary). This table
+// ORIGINATES client_id: every client-owned row elsewhere references one of
+// these ids. It is itself client-scoped, but UNLIKE the boilerplate pattern
+// the RLS scope key is the row's OWN primary key (a client IS the client) —
+// there is no denormalized client_id column. Staff have full access; a
+// client-rep may read ONLY its own company row (SELECT), never write. See the
+// migration for grants + policies. Bilingual names per ADR-005.
+model Client {
+  id        String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nameAr    String       @map("name_ar")
+  nameEn    String       @map("name_en")
+  status    ClientStatus @default(active)
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+
+  @@map("cli_clients")
+}
+
+enum ClientStatus {
+  active
+  inactive
+}
