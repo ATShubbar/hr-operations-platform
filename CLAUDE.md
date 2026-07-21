@@ -33,13 +33,18 @@ build contract. Changes go through ADRs (adr/), never through drift.
 | docs/HANDOFF-WS20.md | In-flight infra state + exact next commands |
 | apps/api/src/modules/README.md | Module layout contract + RLS table checklist |
 
-## Current state (2026-07-20)
+## Current state (2026-07-21)
 
-Walking skeleton **CLOSED** (WS-22 exit review done; evidence/skeleton/).
-Two open external-blocked items: WS-20 cloud deploy + WS-21 backup drill —
-AWS new-account limits, support case active, exact pickup in
-docs/HANDOFF-WS20.md (~1h once unblocked). **Priority 2 in progress:
-Authentication epic** — task cards in BACKLOG.md, same approval-gated loop.
+Walking skeleton **CLOSED** (WS-22 exit review; evidence/skeleton/).
+**Auth epic: AUTH-01..06 done with evidence** (identity, login+Redis
+sessions, session guard 401/403, permission catalog+policy service,
+logout/revocation, TOTP MFA with admin-must-enroll). **Next: present
+the AUTH-07 gate** (role seeding + role×endpoint matrix probe — card in
+BACKLOG.md). WS-20/21 still blocked: AWS account fully restricted 2 days
+post-signup (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck
+"provisioning"); escalation sent on the support case; decision point
+~48h → fresh account or OCI fallback (ADR-006). Infra pickup:
+docs/HANDOFF-WS20.md.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
