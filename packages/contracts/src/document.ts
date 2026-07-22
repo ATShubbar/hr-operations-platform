@@ -57,6 +57,30 @@ export const uploadIssueResponseSchema = z.object({
   }),
 });
 
+// List query (DOC-03) — all optional filters; `expiringBefore` drives the
+// expiry view (documents due on/before a date).
+export const documentQuerySchema = z.object({
+  clientId: z.uuid().optional(),
+  employeeId: z.uuid().optional(),
+  category: documentCategorySchema.optional(),
+  status: documentStatusSchema.optional(),
+  expiringBefore: z.coerce.date().optional(),
+});
+
+export const documentListResponseSchema = z.object({
+  documents: z.array(documentResponseSchema),
+});
+
+// Presigned download (DOC-03) — a short-lived GET URL for the blob.
+export const downloadResponseSchema = z.object({
+  url: z.string(),
+  method: z.literal('GET'),
+  expiresInSeconds: z.number(),
+});
+
+export type DocumentQuery = z.infer<typeof documentQuerySchema>;
+export type DocumentListResponse = z.infer<typeof documentListResponseSchema>;
+export type DownloadResponse = z.infer<typeof downloadResponseSchema>;
 export type DocumentCategory = z.infer<typeof documentCategorySchema>;
 export type DocumentStatus = z.infer<typeof documentStatusSchema>;
 export type DocumentResponse = z.infer<typeof documentResponseSchema>;

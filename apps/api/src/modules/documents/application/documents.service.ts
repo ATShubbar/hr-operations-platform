@@ -73,6 +73,48 @@ export class DocumentsService {
     return this.list(clientId);
   }
 
+  // Filtered list (DOC-03). Deleted documents are excluded unless a status
+  // filter explicitly asks for them; `expiringBefore` powers the expiry view.
+  find(filters: {
+    clientId?: string;
+    employeeId?: string;
+    category?: Prisma.DocumentWhereInput['category'];
+    status?: Prisma.DocumentWhereInput['status'];
+    expiringBefore?: Date;
+  }): Promise<DocumentRecord[]> {
+    return this.prisma.document.findMany({
+      where: {
+        ...(filters.clientId ? { clientId: filters.clientId } : {}),
+        ...(filters.employeeId ? { employeeId: filters.employeeId } : {}),
+        ...(filters.category ? { category: filters.category } : {}),
+        status: filters.status ?? { not: 'deleted' },
+        ...(filters.expiringBefore
+          ? { expiryDate: { not: null, lte: filters.expiringBefore } }
+          : {}),
+      },
+      orderBy: filters.expiringBefore ? { expiryDate: 'asc' } : { createdAt: 'desc' },
+    });
+  }
+
+  // Soft-delete (DOC-03): mark the record deleted, keeping it for audit/
+  // retention. The caller removes the blob from storage first — the metadata row
+  // survives (it holds no PII blob, only category/expiry). Audited.
+  softDelete(id: string): Promise<DocumentRecord | null> {
+    return this.prisma.$transaction(async (tx) => {
+      const before = await tx.document.findUnique({ where: { id } });
+      if (!before) return null;
+      const row = await tx.document.update({ where: { id }, data: { status: 'deleted' } });
+      await this.audit.record(tx, {
+        resource: 'document',
+        action: 'delete',
+        clientId: row.clientId,
+        before: snapshot(before),
+        after: snapshot(row),
+      });
+      return row;
+    });
+  }
+
   getById(id: string): Promise<DocumentRecord | null> {
     return this.prisma.document.findUnique({ where: { id } });
   }

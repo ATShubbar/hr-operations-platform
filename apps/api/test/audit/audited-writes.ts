@@ -32,6 +32,7 @@ export const AUDITED_WRITES: Record<string, string> = {
   'DELETE /employees/:id': 'employee.delete',
   'POST /documents': 'document.create',
   'POST /documents/:id/confirm': 'document.confirm',
+  'DELETE /documents/:id': 'document.delete',
   'PATCH /config/system/:key': 'config.system-set',
   'PATCH /config/client/:clientId/:key': 'config.client-set',
   'DELETE /config/client/:clientId/:key': 'config.client-clear',

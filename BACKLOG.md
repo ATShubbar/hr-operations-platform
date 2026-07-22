@@ -676,7 +676,7 @@ metadata with **expiry as first-class data**). Depends on Clients (done).
 | STOR-01 | Storage shared module — S3-compatible adapter (provider-agnostic, presigned PUT/GET + delete, per-client prefixes) + MinIO in docker-compose | Clients | done ([evidence](evidence/documents/STOR-01.md)) |
 | DOC-01 | Documents module + `doc_documents` client-scoped table (RLS checklist) — metadata + `expiryDate` first-class + `DocumentsService` (staff path) + seed | STOR-01 | done ([evidence](evidence/documents/DOC-01.md)) |
 | DOC-02 | Upload flow — presigned-PUT issue (`POST /documents` → pending metadata + upload URL) + confirm; `document.upload`; audited; harness | DOC-01 | done ([evidence](evidence/documents/DOC-02.md)) |
-| DOC-03 | Download (presigned GET) + delete (`document.delete` + object removal) + list/filter incl. by expiry; audited | DOC-02 | todo |
+| DOC-03 | Download (presigned GET) + delete (`document.delete` + object removal) + list/filter incl. by expiry; audited | DOC-02 | done ([evidence](evidence/documents/DOC-03.md)) |
 | DOC-04 | Virus-scan hook (pluggable interface, dev pass-through; ClamAV deferred to infra) + retention/PDPL hooks (0.9) | DOC-02 | todo |
 | DOC-05 | Web UI — documents list + upload + download (per client/employee) | DOC-03 | todo |
 
@@ -736,6 +736,23 @@ metadata with **expiry as first-class data**). Depends on Clients (done).
 - **Evidence:** `evidence/documents/DOC-02.md`.
 - **Dependencies:** DOC-01 (+ STOR-01). **Risks:** confirm is an update → needs
   `@HttpCode(200)` (POST defaults 201); requires MinIO up for the e2e.
+
+### DOC-03 — Documents read / download / delete
+- **Objective:** the read side — filtered list (incl. by expiry), get, presigned
+  GET download, and delete (blob removal + soft-delete).
+- **Files:** `@hr/contracts` (documentQuery/list/download schemas);
+  `DocumentsService.find` + `softDelete`; controller `GET /documents`,
+  `GET /documents/:id`, `GET /documents/:id/download`, `DELETE /documents/:id`;
+  `document.read` (all staff) + `document.delete` (CRUD roles, category-scoped);
+  4 routes in isolation (`staff`) + `DELETE` in audited-writes (`document.delete`);
+  `test/documents-read.e2e-spec.ts`.
+- **DoD:** list filters (client/category/expiry, deleted excluded); get 404 on
+  unknown; presigned download serves bytes, non-available → 409; delete removes
+  blob + soft-deletes + category-scoped + audited; read broad, unauth 401;
+  coverage + suite + lint + typecheck + build green.
+- **Evidence:** `evidence/documents/DOC-03.md`.
+- **Dependencies:** DOC-02. **Risks:** download only for `available` (409 else);
+  delete keeps the row (retention) — hard-delete/legal-hold is DOC-04/PDPL.
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

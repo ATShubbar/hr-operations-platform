@@ -39,10 +39,12 @@ export const PERMISSIONS = [
   'salary.update',
   'govdata.read',
   'govdata.update',
-  // Documents (DOC-02; permission matrix): CRUD roles upload; category scope
-  // (recruiter → recruitment, GRO → gov, admin/HR → all) is a finer in-handler
-  // check. Read/delete perms land with their endpoints (DOC-03).
+  // Documents (DOC-02/03; permission matrix): all staff read; CRUD roles upload
+  // and delete (category scope — recruiter → recruitment, GRO → gov, admin/HR →
+  // all — is a finer in-handler check on upload + delete).
+  'document.read',
   'document.upload',
+  'document.delete',
   // Configuration (CONF-01/02; permission matrix): all staff read effective
   // settings + catalog; only System Admin writes the SYSTEM level (deployment-
   // wide defaults); Company Admin writes PER-CLIENT overrides (never the client
@@ -87,6 +89,7 @@ const STAFF_BASE: readonly Permission[] = [
   'config.read',
   'config.read-self',
   'config.write-self',
+  'document.read',
 ];
 // System/Company Admin extra: audit read + client CRUD (matrix).
 const ADMIN_EXTRA: readonly Permission[] = [
@@ -134,9 +137,10 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'govdata.read',
     'config.write-client',
     'document.upload',
+    'document.delete',
   ],
   // core R · salary – · govdata – · documents: recruitment (category-scoped)
-  recruiter: [...STAFF_BASE, 'document.upload'],
+  recruiter: [...STAFF_BASE, 'document.upload', 'document.delete'],
   // core CRUD · salary RU · govdata R · documents: all
   hr_officer: [
     ...STAFF_BASE,
@@ -147,6 +151,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'salary.update',
     'govdata.read',
     'document.upload',
+    'document.delete',
   ],
   // core RU · salary – · govdata CRUD · documents: government (category-scoped)
   gro_officer: [
@@ -155,6 +160,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'govdata.read',
     'govdata.update',
     'document.upload',
+    'document.delete',
   ],
   // core R · salary RU · govdata –
   finance: [...STAFF_BASE, 'salary.read', 'salary.update'],

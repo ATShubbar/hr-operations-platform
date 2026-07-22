@@ -80,6 +80,10 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   // is deferred (portal); the table still ships RLS.
   'POST /documents': 'staff',
   'POST /documents/:id/confirm': 'staff',
+  'GET /documents': 'staff',
+  'GET /documents/:id': 'staff',
+  'GET /documents/:id/download': 'staff',
+  'DELETE /documents/:id': 'staff',
   'GET /example/greeting': 'staff',
   'GET /example-consumer/relay': 'staff',
   'GET /scope-check': 'client-scoped',
