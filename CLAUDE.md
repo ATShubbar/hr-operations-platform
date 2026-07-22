@@ -48,14 +48,15 @@ authz redacting salary/govdata per capability, console UI with redaction
 reflected). **Configuration 2.4 COMPLETE (CONF-01..05)** — three-level settings model
 (system/client/user, resolve user→client→system), feature flags on the same
 substrate, and the settings web UI. This closes all Priority-2 foundation
-modules (2.1–2.5). **Documents+Storage epic (3.2): STOR-01 + DOC-01/02/03/05 done** — S3-compatible
+modules (2.1–2.5). **Documents+Storage epic (3.2) COMPLETE (STOR-01 + DOC-01..05)** — S3-compatible
 Storage module (MinIO local), `doc_documents` registry (expiry first-class),
-presigned upload flow (category-scoped), read/download/delete, and the documents
-web UI (list + expiry view + browser-presigned upload/download, verified). DOC-04
-(virus-scan hook + retention/PDPL) is the remaining enhancement. API suite
-**165/165**; web typecheck+lint green. **Seven product screens** (login, audit,
-clients, employees, settings, documents). **Next: DOC-04, or 3.3 Notifications +
-BullMQ → 3.4 expiry engine (scan target ready). AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup
+presigned upload flow (category-scoped), read/download/delete, virus-scan hook
+(pluggable, EICAR dev scanner → quarantine; ClamAV deferred) + legal-hold
+retention, and the documents web UI. API suite **169/169**; web typecheck+lint
+green. **Seven product screens** (login, audit,
+clients, employees, settings, documents). **Next: 3.3 Notifications + BullMQ →
+3.4 expiry engine (scan target ready — the last prerequisite), or 3.1/3.2
+fast-follows. AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback
 (ADR-006). Infra pickup: docs/HANDOFF-WS20.md.
