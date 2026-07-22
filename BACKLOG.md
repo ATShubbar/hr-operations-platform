@@ -468,7 +468,7 @@ Built from the 0.8 field mapping. Depends on Clients (done) + 0.8 (done).
 | 0.8 | Reference-system field-mapping doc — the schema's source of truth | — | done ([doc](docs/FIELD-MAPPING.md)) |
 | EMP-01 | Employees module + `emp_employees` table (client-scoped RLS) from the mapping + `EmployeesService` + seed | Clients, 0.8 | done ([evidence](evidence/employees/EMP-01.md)) |
 | EMP-02 | Employees HTTP API + **field-level authorization** (`salary`/`govdata` redacted per capability; rep govdata = expiry/status only) + audited + harness | EMP-01 | done ([evidence](evidence/employees/EMP-02.md)) |
-| EMP-03 | Web UI: employees list + detail/edit (staff), ar/en + RTL, Hijri dates | EMP-02 | todo |
+| EMP-03 | Web UI: employees list + detail/edit (staff), ar/en + RTL, Hijri dates | EMP-02 | done ([evidence](evidence/employees/EMP-03.md)) |
 
 ### 0.8 — Reference-system field mapping (doc)
 - **Objective:** author `docs/FIELD-MAPPING.md` — the exact Employee fields/enums
@@ -513,6 +513,27 @@ Built from the 0.8 field mapping. Depends on Clients (done) + 0.8 (done).
 - **Dependencies:** EMP-01. **Risks:** per-role permission restructure could
   regress auth tests (it didn't — auth-policy/auth-me green); sub-resource
   endpoints chosen so Finance/GRO can write their group without employee.update.
+
+### EMP-03 — Employees web UI (list + detail/edit)
+- **Objective:** the staff employees console — a list + a detail/edit view where
+  the SAME server-side field redaction (null `salary`/`govdata` per capability)
+  drives what the screen shows, and `useCan` gates every edit affordance.
+- **Files:** `(app)/employees/page.tsx` (list + core-only create dialog);
+  `(app)/employees/[id]/page.tsx` (three group cards + per-group edit dialogs +
+  terminate); `lib/employee-format.ts` (dual-calendar dates + enum-label maps);
+  `app-shell.tsx` (`employee.read`-gated nav); `messages/{en,ar}.json`
+  (`nav.employees` + `employees` namespace).
+- **DoD:** list core columns + Hijri hire date; detail shows a group only when
+  the API returns it (else a 🔒 restricted notice); edits gated core→employee.update,
+  salary→salary.update, govdata→govdata.update, terminate→employee.delete; dual
+  calendar (Hijri · Gregorian) per ADR-005; ar/en + RTL; logical Tailwind only;
+  typecheck + lint green; verified in-browser across finance/gro/hr roles.
+- **Evidence:** `evidence/employees/EMP-03.md`.
+- **Dependencies:** EMP-02. **Risks:** create form kept core-only (salary/govdata
+  via detail per-group edit) to mirror the API and keep the form sane; prod
+  `next build` deferred (dev-server-clobber landmine) — typecheck+lint stand in.
+- **Deferred:** client-rep read-own view → Client Portal (5.1); TanStack Query
+  (standing).
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

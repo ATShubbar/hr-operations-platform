@@ -16,6 +16,7 @@ const NAV_LINK =
 export function AppShell({ children }: { children: ReactNode }) {
   const t = useTranslations();
   const canClients = useCan('client.read');
+  const canEmployees = useCan('employee.read');
   const canAudit = useCan('audit.read');
 
   return (
@@ -28,6 +29,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           {canClients && (
             <Link href="/clients" className={NAV_LINK}>
               {t('nav.clients')}
+            </Link>
+          )}
+          {canEmployees && (
+            <Link href="/employees" className={NAV_LINK}>
+              {t('nav.employees')}
             </Link>
           )}
           {canAudit && (
