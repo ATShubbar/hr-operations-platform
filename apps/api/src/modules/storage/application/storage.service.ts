@@ -4,6 +4,7 @@ import {
   DeleteObjectCommand,
   GetObjectCommand,
   HeadBucketCommand,
+  HeadObjectCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
@@ -64,6 +65,18 @@ export class StorageService {
 
   async deleteObject(key: string): Promise<void> {
     await this.client.send(new DeleteObjectCommand({ Bucket: this.bucket, Key: key }));
+  }
+
+  // Object metadata, or null if the object does not exist — used to CONFIRM a
+  // presigned upload actually landed (and to read its real size) before marking
+  // a document available (DOC-02).
+  async statObject(key: string): Promise<{ size: number } | null> {
+    try {
+      const res = await this.client.send(new HeadObjectCommand({ Bucket: this.bucket, Key: key }));
+      return { size: res.ContentLength ?? 0 };
+    } catch {
+      return null;
+    }
   }
 
   // Server-side put/get — used by the future virus-scan hook (DOC-04) and by

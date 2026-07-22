@@ -75,6 +75,11 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'PATCH /employees/:id/salary': 'staff',
   'PATCH /employees/:id/govdata': 'staff',
   'DELETE /employees/:id': 'staff',
+  // Documents upload flow (DOC-02): staff issue/confirm for an explicit client
+  // in the body — cross-client by permission, so 'staff'. Client-rep upload-own
+  // is deferred (portal); the table still ships RLS.
+  'POST /documents': 'staff',
+  'POST /documents/:id/confirm': 'staff',
   'GET /example/greeting': 'staff',
   'GET /example-consumer/relay': 'staff',
   'GET /scope-check': 'client-scoped',

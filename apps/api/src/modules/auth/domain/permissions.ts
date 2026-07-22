@@ -39,6 +39,10 @@ export const PERMISSIONS = [
   'salary.update',
   'govdata.read',
   'govdata.update',
+  // Documents (DOC-02; permission matrix): CRUD roles upload; category scope
+  // (recruiter → recruitment, GRO → gov, admin/HR → all) is a finer in-handler
+  // check. Read/delete perms land with their endpoints (DOC-03).
+  'document.upload',
   // Configuration (CONF-01/02; permission matrix): all staff read effective
   // settings + catalog; only System Admin writes the SYSTEM level (deployment-
   // wide defaults); Company Admin writes PER-CLIENT overrides (never the client
@@ -129,10 +133,11 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'salary.read',
     'govdata.read',
     'config.write-client',
+    'document.upload',
   ],
-  // core R · salary – · govdata –
-  recruiter: [...STAFF_BASE],
-  // core CRUD · salary RU · govdata R
+  // core R · salary – · govdata – · documents: recruitment (category-scoped)
+  recruiter: [...STAFF_BASE, 'document.upload'],
+  // core CRUD · salary RU · govdata R · documents: all
   hr_officer: [
     ...STAFF_BASE,
     'employee.create',
@@ -141,9 +146,16 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'salary.read',
     'salary.update',
     'govdata.read',
+    'document.upload',
   ],
-  // core RU · salary – · govdata CRUD
-  gro_officer: [...STAFF_BASE, 'employee.update', 'govdata.read', 'govdata.update'],
+  // core RU · salary – · govdata CRUD · documents: government (category-scoped)
+  gro_officer: [
+    ...STAFF_BASE,
+    'employee.update',
+    'govdata.read',
+    'govdata.update',
+    'document.upload',
+  ],
   // core R · salary RU · govdata –
   finance: [...STAFF_BASE, 'salary.read', 'salary.update'],
   // core R · salary – · govdata R

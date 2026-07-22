@@ -92,3 +92,15 @@ export {
   type SettingValueResponse,
   type ConfigFlagsResponse,
 } from './config.js';
+export {
+  documentCategorySchema,
+  documentStatusSchema,
+  documentResponseSchema,
+  createDocumentRequestSchema,
+  uploadIssueResponseSchema,
+  type DocumentCategory,
+  type DocumentStatus,
+  type DocumentResponse,
+  type CreateDocumentRequest,
+  type UploadIssueResponse,
+} from './document.js';

@@ -675,7 +675,7 @@ metadata with **expiry as first-class data**). Depends on Clients (done).
 |---|---|---|---|
 | STOR-01 | Storage shared module — S3-compatible adapter (provider-agnostic, presigned PUT/GET + delete, per-client prefixes) + MinIO in docker-compose | Clients | done ([evidence](evidence/documents/STOR-01.md)) |
 | DOC-01 | Documents module + `doc_documents` client-scoped table (RLS checklist) — metadata + `expiryDate` first-class + `DocumentsService` (staff path) + seed | STOR-01 | done ([evidence](evidence/documents/DOC-01.md)) |
-| DOC-02 | Upload flow — presigned-PUT issue (`POST /documents` → pending metadata + upload URL) + confirm; `document.upload`; audited; harness | DOC-01 | todo |
+| DOC-02 | Upload flow — presigned-PUT issue (`POST /documents` → pending metadata + upload URL) + confirm; `document.upload`; audited; harness | DOC-01 | done ([evidence](evidence/documents/DOC-02.md)) |
 | DOC-03 | Download (presigned GET) + delete (`document.delete` + object removal) + list/filter incl. by expiry; audited | DOC-02 | todo |
 | DOC-04 | Virus-scan hook (pluggable interface, dev pass-through; ClamAV deferred to infra) + retention/PDPL hooks (0.9) | DOC-02 | todo |
 | DOC-05 | Web UI — documents list + upload + download (per client/employee) | DOC-03 | todo |
@@ -717,6 +717,25 @@ metadata with **expiry as first-class data**). Depends on Clients (done).
 - **Dependencies:** STOR-01. **Risks:** audit rows carry a BigInt id (serialize
   before/after only in assertions); no HTTP yet (like EMP-01 → no harness);
   client-rep create-own deferred (SELECT-only for now).
+
+### DOC-02 — Documents upload flow (presigned issue + confirm)
+- **Objective:** the presigned, direct-to-store upload flow — issue (pending
+  metadata + PUT URL) → client transfers bytes → confirm (blob verified →
+  available). The module's first HTTP surface.
+- **Files:** `@hr/contracts` document schemas; `StorageService.statObject`
+  (HeadObject); `domain/document-policy.ts` (`canWriteCategory`);
+  `DocumentsService.confirm`; `api/documents.controller.ts` (`POST /documents`,
+  `POST /documents/:id/confirm`); module wires the controller + ClientsModule;
+  `document.upload` perm → company_admin/hr_officer/recruiter/gro_officer;
+  2 routes in isolation (`staff`) + audited-writes (`document.create`/`confirm`);
+  `test/documents-api.e2e-spec.ts`.
+- **DoD:** issue→PUT→confirm round-trip (confirm sets real size); confirm before
+  upload → 400; category scope (recruiter recruitment, GRO gov, admin/HR all);
+  finance no upload → 403; unknown client 400 / bad payload 400 / unauth 401;
+  audited; coverage + suite + lint + typecheck + build green.
+- **Evidence:** `evidence/documents/DOC-02.md`.
+- **Dependencies:** DOC-01 (+ STOR-01). **Risks:** confirm is an update → needs
+  `@HttpCode(200)` (POST defaults 201); requires MinIO up for the e2e.
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

@@ -41,6 +41,27 @@ export class DocumentsService {
     });
   }
 
+  // Confirm a presigned upload landed (DOC-02): mark the pending document
+  // available and record its real size. Audited (action 'confirm').
+  confirm(id: string, sizeBytes: number): Promise<DocumentRecord | null> {
+    return this.prisma.$transaction(async (tx) => {
+      const before = await tx.document.findUnique({ where: { id } });
+      if (!before) return null;
+      const row = await tx.document.update({
+        where: { id },
+        data: { status: 'available', sizeBytes },
+      });
+      await this.audit.record(tx, {
+        resource: 'document',
+        action: 'confirm',
+        clientId: row.clientId,
+        before: snapshot(before),
+        after: snapshot(row),
+      });
+      return row;
+    });
+  }
+
   list(clientId?: string): Promise<DocumentRecord[]> {
     return this.prisma.document.findMany({
       where: clientId ? { clientId } : undefined,
