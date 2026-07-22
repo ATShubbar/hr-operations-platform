@@ -268,3 +268,52 @@ enum GosiRegistrationStatus {
   pending
   not_registered
 }
+
+// Document metadata (DOC-01; ACTION-PLAN 3.2). The Documents module's registry —
+// metadata ONLY; the blob lives in object storage (STOR-01) under storageKey.
+// Client-scoped via a STANDARD client_id column (RLS keyed on it; staff full,
+// client-rep read-own). `expiryDate` is FIRST-CLASS (architecture.md: "document
+// metadata with expiry as first-class data") — indexed, so the document-expiry
+// engine (3.4) can scan it cheaply. Optional `employeeId` links a document to an
+// employee (no cross-module FK — validated app-side when set). Dates stored
+// Gregorian UTC, rendered Hijri via @hr/dates (ADR-005).
+model Document {
+  id               String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clientId         String           @map("client_id") @db.Uuid
+  category         DocumentCategory
+  title            String
+  fileName         String           @map("file_name")
+  contentType      String           @map("content_type")
+  sizeBytes        Int?             @map("size_bytes")
+  storageKey       String           @map("storage_key")
+  status           DocumentStatus   @default(pending)
+  issueDate        DateTime?        @map("issue_date") @db.Date
+  expiryDate       DateTime?        @map("expiry_date") @db.Date
+  employeeId       String?          @map("employee_id") @db.Uuid
+  uploadedByUserId String?          @map("uploaded_by_user_id") @db.Uuid
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+
+  @@index([clientId])
+  @@index([expiryDate])
+  @@index([employeeId])
+  @@map("doc_documents")
+}
+
+enum DocumentCategory {
+  iqama
+  passport
+  visa
+  contract
+  gosi
+  national_id
+  cv
+  other
+}
+
+enum DocumentStatus {
+  pending
+  available
+  quarantined
+  deleted
+}

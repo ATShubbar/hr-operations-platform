@@ -159,6 +159,59 @@ async function seedEmployees(prisma: PrismaClient): Promise<number> {
   return employees.length;
 }
 
+async function seedDocuments(prisma: PrismaClient): Promise<number> {
+  // Metadata-only fixtures (the blob layer is exercised by the upload flow,
+  // DOC-02+). Each carries a first-class expiryDate so the document-expiry
+  // engine (3.4) has data to scan. Linked to the seed employees.
+  const AHMED = 'e0000001-0000-4000-8000-000000000002';
+  const RAJESH = 'e0000002-0000-4000-8000-000000000001';
+  const documents = [
+    {
+      id: 'd0000001-0000-4000-8000-000000000001',
+      clientId: SEED_CLIENT_A,
+      employeeId: AHMED,
+      category: 'iqama' as const,
+      title: 'Iqama — Ahmed Hassan',
+      fileName: 'iqama-ahmed.pdf',
+      contentType: 'application/pdf',
+      status: 'available' as const,
+      issueDate: new Date('2024-03-15'),
+      expiryDate: new Date('2027-03-15'),
+    },
+    {
+      id: 'd0000001-0000-4000-8000-000000000002',
+      clientId: SEED_CLIENT_A,
+      employeeId: AHMED,
+      category: 'contract' as const,
+      title: 'Employment Contract — Ahmed Hassan',
+      fileName: 'contract-ahmed.pdf',
+      contentType: 'application/pdf',
+      status: 'available' as const,
+      expiryDate: new Date('2026-12-31'),
+    },
+    {
+      id: 'd0000002-0000-4000-8000-000000000001',
+      clientId: SEED_CLIENT_B,
+      employeeId: RAJESH,
+      category: 'iqama' as const,
+      title: 'Iqama — Rajesh Kumar',
+      fileName: 'iqama-rajesh.pdf',
+      contentType: 'application/pdf',
+      status: 'available' as const,
+      expiryDate: new Date('2026-11-01'),
+    },
+  ];
+  for (const { id, ...rest } of documents) {
+    const storageKey = `clients/${rest.clientId}/documents/${id}/${rest.fileName}`;
+    await prisma.document.upsert({
+      where: { id },
+      create: { id, storageKey, ...rest },
+      update: { storageKey, ...rest },
+    });
+  }
+  return documents.length;
+}
+
 async function main(): Promise<void> {
   if (process.env.NODE_ENV === 'production') {
     throw new Error('Refusing to seed: NODE_ENV=production. The seed is development-only.');
@@ -173,6 +226,7 @@ async function main(): Promise<void> {
     // references (no FK across modules, so order is for clarity, not integrity).
     const clientCount = await seedClients(prisma);
     const employeeCount = await seedEmployees(prisma);
+    const documentCount = await seedDocuments(prisma);
 
     const fixtures = [
       { clientId: SEED_CLIENT_A, note: 'seed:client-a:sample-1' },
@@ -192,7 +246,7 @@ async function main(): Promise<void> {
     });
     const roleCount = STAFF_ROLES.length + CLIENT_REP_ASSIGNMENTS.length;
     process.stdout.write(
-      `Seed complete: ${clientCount} client companies; ${employeeCount} employees; ${rowCount} scope-check rows ` +
+      `Seed complete: ${clientCount} client companies; ${employeeCount} employees; ${documentCount} documents; ${rowCount} scope-check rows ` +
         `across clients A (${SEED_CLIENT_A}) and B (${SEED_CLIENT_B}); ${userCount} auth users ` +
         `(${STAFF_ROLES.length} staff roles + ${CLIENT_REP_ASSIGNMENTS.length} client reps, ` +
         `${roleCount}/${STAFF_ROLES.length + CLIENT_ROLES.length} distinct roles covered).\n`,

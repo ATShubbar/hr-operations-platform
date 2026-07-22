@@ -11,6 +11,7 @@ import { StorageModule } from './modules/storage/public-api';
 import { ConfigurationModule } from './modules/configuration/public-api';
 import { ClientsModule } from './modules/clients/public-api';
 import { EmployeesModule } from './modules/employees/public-api';
+import { DocumentsModule } from './modules/documents/public-api';
 import { ExampleModule } from './modules/example/public-api';
 import { ExampleConsumerModule } from './modules/example-consumer/public-api';
 import { ScopeCheckModule } from './modules/scope-check/public-api';
@@ -25,6 +26,7 @@ import { ScopeCheckModule } from './modules/scope-check/public-api';
     ConfigurationModule,
     ClientsModule,
     EmployeesModule,
+    DocumentsModule,
     ExampleModule,
     ExampleConsumerModule,
     ScopeCheckModule,

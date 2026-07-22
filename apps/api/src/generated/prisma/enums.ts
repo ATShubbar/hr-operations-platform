@@ -110,3 +110,27 @@ export const GosiRegistrationStatus = {
 } as const
 
 export type GosiRegistrationStatus = (typeof GosiRegistrationStatus)[keyof typeof GosiRegistrationStatus]
+
+
+export const DocumentCategory = {
+  iqama: 'iqama',
+  passport: 'passport',
+  visa: 'visa',
+  contract: 'contract',
+  gosi: 'gosi',
+  national_id: 'national_id',
+  cv: 'cv',
+  other: 'other'
+} as const
+
+export type DocumentCategory = (typeof DocumentCategory)[keyof typeof DocumentCategory]
+
+
+export const DocumentStatus = {
+  pending: 'pending',
+  available: 'available',
+  quarantined: 'quarantined',
+  deleted: 'deleted'
+} as const
+
+export type DocumentStatus = (typeof DocumentStatus)[keyof typeof DocumentStatus]

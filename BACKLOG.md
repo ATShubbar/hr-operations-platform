@@ -674,7 +674,7 @@ metadata with **expiry as first-class data**). Depends on Clients (done).
 | ID | Task | Depends on | Status |
 |---|---|---|---|
 | STOR-01 | Storage shared module — S3-compatible adapter (provider-agnostic, presigned PUT/GET + delete, per-client prefixes) + MinIO in docker-compose | Clients | done ([evidence](evidence/documents/STOR-01.md)) |
-| DOC-01 | Documents module + `doc_documents` client-scoped table (RLS checklist) — metadata + `expiryDate` first-class + `DocumentsService` (staff path) + seed | STOR-01 | todo |
+| DOC-01 | Documents module + `doc_documents` client-scoped table (RLS checklist) — metadata + `expiryDate` first-class + `DocumentsService` (staff path) + seed | STOR-01 | done ([evidence](evidence/documents/DOC-01.md)) |
 | DOC-02 | Upload flow — presigned-PUT issue (`POST /documents` → pending metadata + upload URL) + confirm; `document.upload`; audited; harness | DOC-01 | todo |
 | DOC-03 | Download (presigned GET) + delete (`document.delete` + object removal) + list/filter incl. by expiry; audited | DOC-02 | todo |
 | DOC-04 | Virus-scan hook (pluggable interface, dev pass-through; ClamAV deferred to infra) + retention/PDPL hooks (0.9) | DOC-02 | todo |
@@ -697,6 +697,26 @@ metadata with **expiry as first-class data**). Depends on Clients (done).
 - **Dependencies:** Clients (2.5). **Risks:** new MinIO infra; Turbo globalEnv
   landmine; `forcePathStyle` for MinIO; prod provider still ADR-006-open (adapter
   written provider-agnostic so it's config, not code).
+
+### DOC-01 — Documents module + registry table
+- **Objective:** the metadata layer — `doc_documents` (client-scoped, RLS
+  checklist) with `expiryDate` first-class + `DocumentsService` (staff path) +
+  seed. Registry over the STOR-01 blobs; foundation for DOC-02/03 and 3.4.
+- **Files:** `Document` model + 2 enums (DocumentCategory/Status) + migration
+  (grants staff-full/rep-SELECT, RLS both policies, expiry+employee indexes);
+  `modules/documents/{documents.module.ts, public-api.ts, domain/document.ts,
+  application/documents.service.ts}` (`create` audited + service-derived
+  per-client `storageKey`, `list`/`listByClient`/`getById`,
+  `expiringOnOrBefore`); AppModule registration; `seedDocuments` (3 fixtures w/
+  expiry, linked to seed employees); `test/documents.e2e-spec.ts`.
+- **DoD:** checklist satisfied; staff create round-trips metadata+expiry;
+  per-client sanitized storage key; `expiringOnOrBefore` excludes null/later/
+  deleted; audited non-sensitive; rep reads own only + cannot write; seed
+  idempotent; suite + lint + typecheck + build green.
+- **Evidence:** `evidence/documents/DOC-01.md`.
+- **Dependencies:** STOR-01. **Risks:** audit rows carry a BigInt id (serialize
+  before/after only in assertions); no HTTP yet (like EMP-01 → no harness);
+  client-rep create-own deferred (SELECT-only for now).
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 
