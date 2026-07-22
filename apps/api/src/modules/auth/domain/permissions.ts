@@ -28,6 +28,17 @@ export const PERMISSIONS = [
   'client-user.create',
   'client-user.update',
   'client-user.delete',
+  // Employees (permission matrix) — three independently-grantable groups:
+  // core profile, salary/financial, government data (each its own resource so
+  // field-level sensitivity is enforced separately — EMP-02).
+  'employee.read',
+  'employee.create',
+  'employee.update',
+  'employee.delete',
+  'salary.read',
+  'salary.update',
+  'govdata.read',
+  'govdata.update',
   // Session lifecycle — every authenticated principal may end their session.
   'session.end',
 ] as const;
@@ -50,13 +61,16 @@ export type StaffRole = (typeof STAFF_ROLES)[number];
 export type ClientRole = (typeof CLIENT_ROLES)[number];
 export type RoleName = StaffRole | ClientRole;
 
-// Every staff role: example capability, session end, and reading client
-// companies (matrix — all staff have R on client companies).
-const ALL_STAFF: readonly Permission[] = ['example.read', 'session.end', 'client.read'];
-// Admin-only staff superset: System/Company Admin additionally read audit logs
-// and create/update/archive client companies (matrix — no other role has these).
-const ADMIN_STAFF: readonly Permission[] = [
-  ...ALL_STAFF,
+// Every staff role: example capability, session end, reading client companies,
+// and reading the employee core profile (matrix — all staff have R on both).
+const STAFF_BASE: readonly Permission[] = [
+  'example.read',
+  'session.end',
+  'client.read',
+  'employee.read',
+];
+// System/Company Admin extra: audit read + client CRUD (matrix).
+const ADMIN_EXTRA: readonly Permission[] = [
   'audit.read',
   'client.create',
   'client.update',
@@ -78,17 +92,40 @@ const CLIENT_ADMIN: readonly Permission[] = [
   'client-user.delete',
 ];
 
-// Seeded from the architecture matrix. Client-scoped capabilities belong to
-// client roles; staff cross-client access is granted per matrix row as real
-// modules land.
+// Seeded straight from the architecture permission matrix (rows: employee core,
+// salary, govdata). Each staff role diverges — field-level sensitivity means
+// e.g. Finance updates salary but never govdata, GRO the reverse.
 export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
-  system_admin: ADMIN_STAFF,
-  company_admin: ADMIN_STAFF,
-  recruiter: ALL_STAFF,
-  hr_officer: ALL_STAFF,
-  gro_officer: ALL_STAFF,
-  finance: ALL_STAFF,
-  read_only: ALL_STAFF,
+  // core R · salary R · govdata R (read-only on employee data; power is config)
+  system_admin: [...STAFF_BASE, ...ADMIN_EXTRA, 'salary.read', 'govdata.read'],
+  // core CRUD · salary R · govdata R
+  company_admin: [
+    ...STAFF_BASE,
+    ...ADMIN_EXTRA,
+    'employee.create',
+    'employee.update',
+    'employee.delete',
+    'salary.read',
+    'govdata.read',
+  ],
+  // core R · salary – · govdata –
+  recruiter: [...STAFF_BASE],
+  // core CRUD · salary RU · govdata R
+  hr_officer: [
+    ...STAFF_BASE,
+    'employee.create',
+    'employee.update',
+    'employee.delete',
+    'salary.read',
+    'salary.update',
+    'govdata.read',
+  ],
+  // core RU · salary – · govdata CRUD
+  gro_officer: [...STAFF_BASE, 'employee.update', 'govdata.read', 'govdata.update'],
+  // core R · salary RU · govdata –
+  finance: [...STAFF_BASE, 'salary.read', 'salary.update'],
+  // core R · salary – · govdata R
+  read_only: [...STAFF_BASE, 'govdata.read'],
   client_admin: CLIENT_ADMIN,
   client_user: ALL_CLIENT,
 };

@@ -467,7 +467,7 @@ Built from the 0.8 field mapping. Depends on Clients (done) + 0.8 (done).
 |---|---|---|---|
 | 0.8 | Reference-system field-mapping doc — the schema's source of truth | — | done ([doc](docs/FIELD-MAPPING.md)) |
 | EMP-01 | Employees module + `emp_employees` table (client-scoped RLS) from the mapping + `EmployeesService` + seed | Clients, 0.8 | done ([evidence](evidence/employees/EMP-01.md)) |
-| EMP-02 | Employees HTTP API + **field-level authorization** (`salary`/`govdata` redacted per capability; rep govdata = expiry/status only) + audited + harness | EMP-01 | todo |
+| EMP-02 | Employees HTTP API + **field-level authorization** (`salary`/`govdata` redacted per capability; rep govdata = expiry/status only) + audited + harness | EMP-01 | done ([evidence](evidence/employees/EMP-02.md)) |
 | EMP-03 | Web UI: employees list + detail/edit (staff), ar/en + RTL, Hijri dates | EMP-02 | todo |
 
 ### 0.8 — Reference-system field mapping (doc)
@@ -496,6 +496,23 @@ Built from the 0.8 field mapping. Depends on Clients (done) + 0.8 (done).
 - **Evidence:** `evidence/employees/EMP-01.md`.
 - **Dependencies:** Clients, 0.8 (done). **Risks:** many nullable v1 fields;
   enums must match the doc; NULLIF load-bearing (SPIKE-001).
+
+### EMP-02 — Employees API + field-level authorization
+- **Objective:** the employee HTTP API where the policy service gates FIELDS
+  (salary/govdata) not just endpoints — reads redact groups per capability;
+  each group's write is its own sub-resource endpoint.
+- **Files:** `employees/api/employees.controller.ts` (redaction mapper +
+  write-gating); `EmployeesService` transactional+audited update; `@hr/contracts`
+  employee schemas (nested nullable groups); `ROLE_PERMISSIONS` restructured to
+  per-role sets + `employee/salary/govdata.*` in the catalog; 7 routes in the
+  isolation harness; 5 mutations in audited-writes.
+- **DoD:** redaction per role; write-gating per group; soft-terminate; mutations
+  audited with NO sensitive values; client_id validated; all coverage gates +
+  suite + lint green.
+- **Evidence:** `evidence/employees/EMP-02.md`.
+- **Dependencies:** EMP-01. **Risks:** per-role permission restructure could
+  regress auth tests (it didn't — auth-policy/auth-me green); sub-resource
+  endpoints chosen so Finance/GRO can write their group without employee.update.
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 
