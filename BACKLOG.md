@@ -662,6 +662,42 @@ Authz (done) + Audit (done).
   function for labels; array-typed settings (working.week/ui.languages) shown
   read-only (editors are a fast-follow).
 
+## Priority 3 — Documents + Storage epic (ACTION-PLAN 3.2, architecture.md)
+
+Same rules, same loop. Evidence goes to `evidence/documents/`. The last
+critical-path module (Clients → Employees → **Documents**); unblocks the
+document-expiry engine (3.4), GRO (4.2), and the Client Portal (5.1). Split per
+the architecture into **Storage** (shared: S3-compatible object store, presigned
+uploads, per-client key prefixes) + **Documents** (business: client-scoped
+metadata with **expiry as first-class data**). Depends on Clients (done).
+
+| ID | Task | Depends on | Status |
+|---|---|---|---|
+| STOR-01 | Storage shared module — S3-compatible adapter (provider-agnostic, presigned PUT/GET + delete, per-client prefixes) + MinIO in docker-compose | Clients | done ([evidence](evidence/documents/STOR-01.md)) |
+| DOC-01 | Documents module + `doc_documents` client-scoped table (RLS checklist) — metadata + `expiryDate` first-class + `DocumentsService` (staff path) + seed | STOR-01 | todo |
+| DOC-02 | Upload flow — presigned-PUT issue (`POST /documents` → pending metadata + upload URL) + confirm; `document.upload`; audited; harness | DOC-01 | todo |
+| DOC-03 | Download (presigned GET) + delete (`document.delete` + object removal) + list/filter incl. by expiry; audited | DOC-02 | todo |
+| DOC-04 | Virus-scan hook (pluggable interface, dev pass-through; ClamAV deferred to infra) + retention/PDPL hooks (0.9) | DOC-02 | todo |
+| DOC-05 | Web UI — documents list + upload + download (per client/employee) | DOC-03 | todo |
+
+### STOR-01 — Storage shared module (S3-compatible adapter)
+- **Objective:** provider-agnostic `StorageService` — S3-compatible via AWS SDK
+  v3, endpoint-configurable (MinIO local / KSA store prod), per-client key
+  prefixes, presigned PUT/GET + delete. Foundation for the Documents cards.
+- **Files:** `docker-compose.yml` (minio service, ports 9002/9003);
+  `apps/api` deps `@aws-sdk/client-s3` + `@aws-sdk/s3-request-presigner`;
+  `modules/storage/{storage.module.ts (@Global), public-api.ts, application/storage.service.ts}`
+  (`keyFor`/`presignUpload`/`presignDownload`/`deleteObject`/`putObject`/`getObject`,
+  lazy `ensureBucket`); `STORAGE_*` in `.env.example`/`apps/api/.env` +
+  `turbo.json globalEnv`; `test/storage.e2e-spec.ts` (real MinIO round-trip).
+- **DoD:** presigned upload+download round-trip against MinIO; per-client prefix;
+  delete → 404; SigV4 signed URLs; endpoint-agnostic; env in globalEnv; lint +
+  typecheck + test + build green. No HTTP endpoints (pure adapter → no harness).
+- **Evidence:** `evidence/documents/STOR-01.md`.
+- **Dependencies:** Clients (2.5). **Risks:** new MinIO infra; Turbo globalEnv
+  landmine; `forcePathStyle` for MinIO; prod provider still ADR-006-open (adapter
+  written provider-agnostic so it's config, not code).
+
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 
 | Epic | Source | Gate |

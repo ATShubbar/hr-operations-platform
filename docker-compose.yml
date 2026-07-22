@@ -32,6 +32,27 @@ services:
       timeout: 3s
       retries: 10
 
+  # S3-compatible object storage (STOR-01). Local stand-in for the KSA-hosted
+  # object store (provider is ADR-006's open item); the Storage adapter is
+  # endpoint-configurable, so only STORAGE_ENDPOINT changes for prod. Host ports
+  # 9002/9003: 9000/9001 may be taken by other local tooling.
+  minio:
+    image: minio/minio
+    container_name: hr-platform-minio
+    command: ['server', '/data', '--console-address', ':9001']
+    environment:
+      MINIO_ROOT_USER: hr_minio
+      MINIO_ROOT_PASSWORD: hr_minio_dev_pw
+    ports:
+      - '9002:9000'
+      - '9003:9001'
+    volumes:
+      - hr_miniodata:/data
+    # No healthcheck: the MinIO image ships neither curl nor a configured `mc`
+    # alias, so any check would false-fail. Nothing in compose gates on MinIO;
+    # the Storage adapter ensures the bucket lazily on first use.
+
 volumes:
   hr_pgdata:
   hr_redisdata:
+  hr_miniodata:
