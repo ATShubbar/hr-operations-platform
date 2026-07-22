@@ -790,6 +790,41 @@ metadata with **expiry as first-class data**). Depends on Clients (done).
   memory (ClamAV would stream — infra); deep test import must go via public-api
   (module-boundary lint rule).
 
+## Priority 3 — Notifications epic (ACTION-PLAN 3.3, architecture.md)
+
+Same rules, same loop. Evidence goes to `evidence/notifications/`. In-app + email
+(v1), ar/en templates, per-user preferences, **BullMQ dispatch**; cross-module
+side effects flow through in-process domain events (ADR-004, still Proposed — its
+acceptance point is NOTIF-05). The last prerequisite before the document-expiry
+engine (3.4). Depends on 2.1 (Redis, live).
+
+| ID | Task | Depends on | Status |
+|---|---|---|---|
+| NOTIF-01 | BullMQ dispatch infra (`@nestjs/bullmq` + `bullmq`, Redis root, producer/worker split, graceful shutdown, roundtrip e2e) | Redis | done ([evidence](evidence/notifications/NOTIF-01.md)) |
+| NOTIF-02 | Notifications module + `notif_notifications` (in-app, per-user, app-enforced) + `NotificationsService.notify()` + read/mark-read API (`self`) | NOTIF-01 | todo |
+| NOTIF-03 | Email channel — pluggable transport (dev capture / SMTP deferred) + ar/en templates + dispatch worker send | NOTIF-02 | todo |
+| NOTIF-04 | Per-user notification preferences (`notification-pref.update`) gating email dispatch | NOTIF-02, CONF-03 | todo |
+| NOTIF-05 | Domain-event bus (ADR-004 acceptance) + Notifications subscribes (else producers call `notify()`) | NOTIF-02 | todo |
+| NOTIF-06 | Web UI — notification bell/list + mark-read + preferences | NOTIF-02/03/04 | todo |
+
+### NOTIF-01 — BullMQ dispatch infra
+- **Objective:** the async-dispatch backbone — BullMQ over the existing Redis via
+  `@nestjs/bullmq`, with graceful worker shutdown and a proven enqueue→process
+  roundtrip. Foundation NOTIF-02+ enqueue onto.
+- **Files:** `apps/api` deps `@nestjs/bullmq` + `bullmq`;
+  `modules/queue/{queue.module.ts (@Global, forRoot + registerQueue),
+  dispatch.processor.ts, dispatch-worker.module.ts, queue.constants.ts,
+  public-api.ts}`; `main.module.ts` (AppModule + worker) + `main.ts` points at it
+  + `enableShutdownHooks`; `test/queue.e2e-spec.ts`.
+- **DoD:** job enqueued → worker processes it (roundtrip vs Redis :6380); env-driven
+  connection; clean shutdown (suite exit 0, no unhandled rejections); lint +
+  typecheck + test + build green. Pure infra → no harness.
+- **Evidence:** `evidence/notifications/NOTIF-01.md`.
+- **Dependencies:** Redis (2.1). **Risks:** BullMQ needs `maxRetriesPerRequest: null`;
+  the worker's blocking connection emits benign "Connection is closed" on teardown
+  in every app-creating spec → SPLIT producer (AppModule) from worker (MainModule +
+  queue e2e) so it's only started where needed.
+
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 
 | Epic | Source | Gate |
