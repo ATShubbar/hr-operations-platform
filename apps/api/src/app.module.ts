@@ -7,6 +7,7 @@ import { HealthModule } from './health/health.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule, SessionMiddleware } from './modules/auth/public-api';
 import { AuditModule } from './modules/audit/public-api';
+import { ConfigurationModule } from './modules/configuration/public-api';
 import { ClientsModule } from './modules/clients/public-api';
 import { EmployeesModule } from './modules/employees/public-api';
 import { ExampleModule } from './modules/example/public-api';
@@ -19,6 +20,7 @@ import { ScopeCheckModule } from './modules/scope-check/public-api';
     HealthModule,
     AuthModule,
     AuditModule,
+    ConfigurationModule,
     ClientsModule,
     EmployeesModule,
     ExampleModule,

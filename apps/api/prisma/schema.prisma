@@ -88,6 +88,22 @@ model AuditEntry {
   @@map("aud_entries")
 }
 
+// System-level configuration overrides (CONF-01; ACTION-PLAN 2.4). The SYSTEM
+// level of the three-level settings model (system → client → user precedence).
+// Deployment-wide and managed by System Admin, so — like auth_users — it is a
+// SYSTEM table with NO RLS (not client-owned data). The setting CATALOG
+// (permitted levels + validation + coded defaults) lives in code
+// (modules/configuration/domain/catalog.ts); this table holds only overrides of
+// a coded default. Per-client (cfg_client_settings) / per-user
+// (cfg_user_settings) tables arrive in CONF-02/03.
+model SystemSetting {
+  key       String   @id
+  value     Json     @db.JsonB
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("cfg_system_settings")
+}
+
 // Client-company registry (CLIENT-01; ADR-002 isolation boundary). This table
 // ORIGINATES client_id: every client-owned row elsewhere references one of
 // these ids. It is itself client-scoped, but UNLIKE the boilerplate pattern

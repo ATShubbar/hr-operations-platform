@@ -55,6 +55,11 @@ export type CoreScopeCheck = Prisma.CoreScopeCheckModel
  */
 export type AuditEntry = Prisma.AuditEntryModel
 /**
+ * Model SystemSetting
+ * 
+ */
+export type SystemSetting = Prisma.SystemSettingModel
+/**
  * Model Client
  * 
  */

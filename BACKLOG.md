@@ -535,6 +535,49 @@ Built from the 0.8 field mapping. Depends on Clients (done) + 0.8 (done).
 - **Deferred:** client-rep read-own view → Client Portal (5.1); TanStack Query
   (standing).
 
+## Priority 2 — Configuration module epic (ACTION-PLAN 2.4, architecture.md §Localization)
+
+Same rules, same loop. Evidence goes to `evidence/configuration/CONF-XX.md`. The
+three-level settings substrate — **system / per-client / per-user**, resolved
+user → client → system (most specific wins). Every setting *declares* which
+levels it permits; an override of a non-permitted level (or unknown key) is a
+Configuration API error, never a silent fallback. The dual-calendar utility
+already exists (`@hr/dates`); this epic is settings + feature flags. Depends on
+Authz (done) + Audit (done).
+
+| ID | Task | Depends on | Status |
+|---|---|---|---|
+| CONF-01 | Settings **catalog** + system-level resolution + system settings API (System Admin, audited) | 2.2, 2.3 | done ([evidence](evidence/configuration/CONF-01.md)) |
+| CONF-02 | **Per-client** overrides (`cfg_client_settings`, RLS + harness) + client→system precedence + Company-Admin API | CONF-01 | todo |
+| CONF-03 | **Per-user** preferences (`cfg_user_settings`, app-enforced) + full user→client→system resolution + `/config/me` | CONF-02 | todo |
+| CONF-04 | **Feature flags** on the same substrate (`isEnabled`, system + per-client) + admin API | CONF-01 | todo |
+| CONF-05 | **Web**: system-settings admin page + per-user preferences (wires the language switch into `ui.language`) | CONF-03 | todo |
+
+### CONF-01 — Settings catalog + system-level resolution + system API
+- **Objective:** stand up the Configuration module — a typed settings **catalog**
+  (each setting declares permitted levels + zod validator + coded default), the
+  system-level store, `ConfigService.get/getAll` resolving `system-override ??
+  default`, and a System-Admin write API. The catalog is the contract CONF-02/03
+  layer resolution onto, so the level declarations are set here, once.
+- **Files:** `modules/configuration/{domain/catalog.ts, application/config.service.ts,
+  api/config.controller.ts, configuration.module.ts, public-api.ts}`;
+  `cfg_system_settings` model + migration (no RLS — deployment-wide system table;
+  SELECT to both roles, INSERT/UPDATE to app_staff); `config.read`/`config.write`
+  in the catalog (read = all staff, write = System Admin only); `@hr/contracts`
+  config schemas; routes in the isolation harness (`staff`) + `config.system-set`
+  in audited-writes; `test/configuration-api.e2e-spec.ts`.
+- **API (owner decision):** per-key `PATCH /config/system/:key` (one validated
+  value, one audit entry); CONF-02/03 mirror at `/config/client/:key`, `/config/me/:key`.
+- **DoD:** catalog drives validation; system get/set works; **unknown key → 404
+  and invalid value → 400** (never silent); write **System-Admin-only + audited**
+  (non-sensitive — value recorded); `config.read` broad; coverage gates (isolation,
+  catalog, audited-writes) + suite + lint + typecheck green. No per-client/per-user.
+- **Evidence:** `evidence/configuration/CONF-01.md`.
+- **Dependencies:** 2.2, 2.3. **Risks:** `config.write` holders are MFA-required
+  (System Admin) → tests use `loginAsEnrolledStaff`; `cfg_system_settings` is a
+  non-client-scoped system table (registered `staff` in the harness — no RLS);
+  added `zod` as a direct API dependency (the catalog defines validators).
+
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 
 | Epic | Source | Gate |

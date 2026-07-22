@@ -76,3 +76,17 @@ export {
   type AuditEntry,
   type AuditListResponse,
 } from './audit.js';
+export {
+  settingLevelSchema,
+  configSettingDescriptorSchema,
+  configCatalogResponseSchema,
+  configEffectiveResponseSchema,
+  setSettingRequestSchema,
+  settingValueResponseSchema,
+  type SettingLevel,
+  type ConfigSettingDescriptor,
+  type ConfigCatalogResponse,
+  type ConfigEffectiveResponse,
+  type SetSettingRequest,
+  type SettingValueResponse,
+} from './config.js';

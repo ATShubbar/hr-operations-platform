@@ -54,6 +54,7 @@ export const ModelName = {
   AuthUser: 'AuthUser',
   CoreScopeCheck: 'CoreScopeCheck',
   AuditEntry: 'AuditEntry',
+  SystemSetting: 'SystemSetting',
   Client: 'Client',
   Employee: 'Employee'
 } as const
@@ -113,6 +114,15 @@ export const AuditEntryScalarFieldEnum = {
 } as const
 
 export type AuditEntryScalarFieldEnum = (typeof AuditEntryScalarFieldEnum)[keyof typeof AuditEntryScalarFieldEnum]
+
+
+export const SystemSettingScalarFieldEnum = {
+  key: 'key',
+  value: 'value',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SystemSettingScalarFieldEnum = (typeof SystemSettingScalarFieldEnum)[keyof typeof SystemSettingScalarFieldEnum]
 
 
 export const ClientScalarFieldEnum = {
@@ -186,6 +196,13 @@ export const NullableJsonNullValueInput = {
 } as const
 
 export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {

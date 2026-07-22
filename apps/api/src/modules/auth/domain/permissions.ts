@@ -39,6 +39,11 @@ export const PERMISSIONS = [
   'salary.update',
   'govdata.read',
   'govdata.update',
+  // Configuration (CONF-01; permission matrix): all staff read effective
+  // settings + catalog; only System Admin writes the SYSTEM level (deployment-
+  // wide defaults). Per-client/per-user write perms land with CONF-02/03.
+  'config.read',
+  'config.write',
   // Session lifecycle — every authenticated principal may end their session.
   'session.end',
 ] as const;
@@ -62,12 +67,14 @@ export type ClientRole = (typeof CLIENT_ROLES)[number];
 export type RoleName = StaffRole | ClientRole;
 
 // Every staff role: example capability, session end, reading client companies,
-// and reading the employee core profile (matrix — all staff have R on both).
+// reading the employee core profile, and reading configuration (all staff read
+// effective settings — matrix).
 const STAFF_BASE: readonly Permission[] = [
   'example.read',
   'session.end',
   'client.read',
   'employee.read',
+  'config.read',
 ];
 // System/Company Admin extra: audit read + client CRUD (matrix).
 const ADMIN_EXTRA: readonly Permission[] = [
@@ -96,8 +103,9 @@ const CLIENT_ADMIN: readonly Permission[] = [
 // salary, govdata). Each staff role diverges — field-level sensitivity means
 // e.g. Finance updates salary but never govdata, GRO the reverse.
 export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
-  // core R · salary R · govdata R (read-only on employee data; power is config)
-  system_admin: [...STAFF_BASE, ...ADMIN_EXTRA, 'salary.read', 'govdata.read'],
+  // core R · salary R · govdata R (read-only on employee data; power is config):
+  // the ONLY holder of config.write — writes deployment-wide system settings.
+  system_admin: [...STAFF_BASE, ...ADMIN_EXTRA, 'salary.read', 'govdata.read', 'config.write'],
   // core CRUD · salary R · govdata R
   company_admin: [
     ...STAFF_BASE,

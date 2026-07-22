@@ -34,20 +34,25 @@ build contract. Changes go through ADRs (adr/), never through drift.
 | docs/HANDOFF-WS20.md | In-flight infra state + exact next commands |
 | apps/api/src/modules/README.md | Module layout contract + RLS table checklist |
 
-## Current state (2026-07-21)
+## Current state (2026-07-22)
 
-Walking skeleton **CLOSED** (WS-22 exit review; evidence/skeleton/).
-**Auth epic: AUTH-01..07 done with evidence** (identity, login+Redis
-sessions, session guard 401/403, permission catalog+policy service,
-logout/revocation, TOTP MFA with admin-must-enroll, all-role seeding +
-harness staff→401). This closes ACTION-PLAN 2.1 (Authentication) and 2.2
-(Authorization). **Next: Audit Logs (ACTION-PLAN 2.3)** — the critical-path
-module before Clients (2.5); first card to be authored/presented in
-BACKLOG.md. WS-20/21 still blocked: AWS account fully restricted 2 days
-post-signup (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck
-"provisioning"); escalation sent on the support case; decision point
-~48h → fresh account or OCI fallback (ADR-006). Infra pickup:
-docs/HANDOFF-WS20.md.
+Walking skeleton **CLOSED** (WS-22). Priority-2 foundation modules built with
+evidence: **Auth AUTH-01..08** (2.1+2.2 — identity, login+Redis sessions,
+session guard, permission catalog+policy, logout/revocation, TOTP MFA
+admin-must-enroll, /auth/me + role-aware web UI). **Audit AUDIT-01..05** (2.3 —
+append-only `aud_entries`, synchronous transactional `AuditService.record`,
+CI write-audit coverage, admin read API + viewer UI). **Clients CLIENT-01..04**
+(2.5 — `cli_clients` PK-scoped registry, staff CRUD, client-rep user mgmt,
+console UI). **Employees 0.8 + EMP-01..03** (3.1 — `emp_employees`, field-level
+authz redacting salary/govdata per capability, console UI with redaction
+reflected). **Configuration 2.4 STARTED: CONF-01 done** (settings catalog +
+system-level resolution + System-Admin API + `cfg_system_settings`; three-level
+model's system tier — CONF-02 per-client / CONF-03 per-user next). Suite
+**122/122**. **Next candidates: CONF-02 (per-client overrides) or the AWS
+decision.** WS-20/21 still blocked: AWS account fully restricted since signup
+(ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
+support case escalated; decision point → fresh account or OCI fallback
+(ADR-006). Infra pickup: docs/HANDOFF-WS20.md.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

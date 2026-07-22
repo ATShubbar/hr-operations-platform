@@ -30,6 +30,7 @@ export const AUDITED_WRITES: Record<string, string> = {
   'PATCH /employees/:id/salary': 'salary.update',
   'PATCH /employees/:id/govdata': 'govdata.update',
   'DELETE /employees/:id': 'employee.delete',
+  'PATCH /config/system/:key': 'config.system-set',
 };
 
 export const AUDIT_EXEMPT_WRITES: Record<string, string> = {
