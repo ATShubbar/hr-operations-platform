@@ -44,6 +44,7 @@ export type DocumentMinAggregateOutputType = {
   sizeBytes: number | null
   storageKey: string | null
   status: $Enums.DocumentStatus | null
+  legalHold: boolean | null
   issueDate: Date | null
   expiryDate: Date | null
   employeeId: string | null
@@ -62,6 +63,7 @@ export type DocumentMaxAggregateOutputType = {
   sizeBytes: number | null
   storageKey: string | null
   status: $Enums.DocumentStatus | null
+  legalHold: boolean | null
   issueDate: Date | null
   expiryDate: Date | null
   employeeId: string | null
@@ -80,6 +82,7 @@ export type DocumentCountAggregateOutputType = {
   sizeBytes: number
   storageKey: number
   status: number
+  legalHold: number
   issueDate: number
   expiryDate: number
   employeeId: number
@@ -108,6 +111,7 @@ export type DocumentMinAggregateInputType = {
   sizeBytes?: true
   storageKey?: true
   status?: true
+  legalHold?: true
   issueDate?: true
   expiryDate?: true
   employeeId?: true
@@ -126,6 +130,7 @@ export type DocumentMaxAggregateInputType = {
   sizeBytes?: true
   storageKey?: true
   status?: true
+  legalHold?: true
   issueDate?: true
   expiryDate?: true
   employeeId?: true
@@ -144,6 +149,7 @@ export type DocumentCountAggregateInputType = {
   sizeBytes?: true
   storageKey?: true
   status?: true
+  legalHold?: true
   issueDate?: true
   expiryDate?: true
   employeeId?: true
@@ -249,6 +255,7 @@ export type DocumentGroupByOutputType = {
   sizeBytes: number | null
   storageKey: string
   status: $Enums.DocumentStatus
+  legalHold: boolean
   issueDate: Date | null
   expiryDate: Date | null
   employeeId: string | null
@@ -290,6 +297,7 @@ export type DocumentWhereInput = {
   sizeBytes?: Prisma.IntNullableFilter<"Document"> | number | null
   storageKey?: Prisma.StringFilter<"Document"> | string
   status?: Prisma.EnumDocumentStatusFilter<"Document"> | $Enums.DocumentStatus
+  legalHold?: Prisma.BoolFilter<"Document"> | boolean
   issueDate?: Prisma.DateTimeNullableFilter<"Document"> | Date | string | null
   expiryDate?: Prisma.DateTimeNullableFilter<"Document"> | Date | string | null
   employeeId?: Prisma.UuidNullableFilter<"Document"> | string | null
@@ -308,6 +316,7 @@ export type DocumentOrderByWithRelationInput = {
   sizeBytes?: Prisma.SortOrderInput | Prisma.SortOrder
   storageKey?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  legalHold?: Prisma.SortOrder
   issueDate?: Prisma.SortOrderInput | Prisma.SortOrder
   expiryDate?: Prisma.SortOrderInput | Prisma.SortOrder
   employeeId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -329,6 +338,7 @@ export type DocumentWhereUniqueInput = Prisma.AtLeast<{
   sizeBytes?: Prisma.IntNullableFilter<"Document"> | number | null
   storageKey?: Prisma.StringFilter<"Document"> | string
   status?: Prisma.EnumDocumentStatusFilter<"Document"> | $Enums.DocumentStatus
+  legalHold?: Prisma.BoolFilter<"Document"> | boolean
   issueDate?: Prisma.DateTimeNullableFilter<"Document"> | Date | string | null
   expiryDate?: Prisma.DateTimeNullableFilter<"Document"> | Date | string | null
   employeeId?: Prisma.UuidNullableFilter<"Document"> | string | null
@@ -347,6 +357,7 @@ export type DocumentOrderByWithAggregationInput = {
   sizeBytes?: Prisma.SortOrderInput | Prisma.SortOrder
   storageKey?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  legalHold?: Prisma.SortOrder
   issueDate?: Prisma.SortOrderInput | Prisma.SortOrder
   expiryDate?: Prisma.SortOrderInput | Prisma.SortOrder
   employeeId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -373,6 +384,7 @@ export type DocumentScalarWhereWithAggregatesInput = {
   sizeBytes?: Prisma.IntNullableWithAggregatesFilter<"Document"> | number | null
   storageKey?: Prisma.StringWithAggregatesFilter<"Document"> | string
   status?: Prisma.EnumDocumentStatusWithAggregatesFilter<"Document"> | $Enums.DocumentStatus
+  legalHold?: Prisma.BoolWithAggregatesFilter<"Document"> | boolean
   issueDate?: Prisma.DateTimeNullableWithAggregatesFilter<"Document"> | Date | string | null
   expiryDate?: Prisma.DateTimeNullableWithAggregatesFilter<"Document"> | Date | string | null
   employeeId?: Prisma.UuidNullableWithAggregatesFilter<"Document"> | string | null
@@ -391,6 +403,7 @@ export type DocumentCreateInput = {
   sizeBytes?: number | null
   storageKey: string
   status?: $Enums.DocumentStatus
+  legalHold?: boolean
   issueDate?: Date | string | null
   expiryDate?: Date | string | null
   employeeId?: string | null
@@ -409,6 +422,7 @@ export type DocumentUncheckedCreateInput = {
   sizeBytes?: number | null
   storageKey: string
   status?: $Enums.DocumentStatus
+  legalHold?: boolean
   issueDate?: Date | string | null
   expiryDate?: Date | string | null
   employeeId?: string | null
@@ -427,6 +441,7 @@ export type DocumentUpdateInput = {
   sizeBytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   storageKey?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
+  legalHold?: Prisma.BoolFieldUpdateOperationsInput | boolean
   issueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -445,6 +460,7 @@ export type DocumentUncheckedUpdateInput = {
   sizeBytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   storageKey?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
+  legalHold?: Prisma.BoolFieldUpdateOperationsInput | boolean
   issueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -463,6 +479,7 @@ export type DocumentCreateManyInput = {
   sizeBytes?: number | null
   storageKey: string
   status?: $Enums.DocumentStatus
+  legalHold?: boolean
   issueDate?: Date | string | null
   expiryDate?: Date | string | null
   employeeId?: string | null
@@ -481,6 +498,7 @@ export type DocumentUpdateManyMutationInput = {
   sizeBytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   storageKey?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
+  legalHold?: Prisma.BoolFieldUpdateOperationsInput | boolean
   issueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -499,6 +517,7 @@ export type DocumentUncheckedUpdateManyInput = {
   sizeBytes?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   storageKey?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumDocumentStatusFieldUpdateOperationsInput | $Enums.DocumentStatus
+  legalHold?: Prisma.BoolFieldUpdateOperationsInput | boolean
   issueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   expiryDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -517,6 +536,7 @@ export type DocumentCountOrderByAggregateInput = {
   sizeBytes?: Prisma.SortOrder
   storageKey?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  legalHold?: Prisma.SortOrder
   issueDate?: Prisma.SortOrder
   expiryDate?: Prisma.SortOrder
   employeeId?: Prisma.SortOrder
@@ -539,6 +559,7 @@ export type DocumentMaxOrderByAggregateInput = {
   sizeBytes?: Prisma.SortOrder
   storageKey?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  legalHold?: Prisma.SortOrder
   issueDate?: Prisma.SortOrder
   expiryDate?: Prisma.SortOrder
   employeeId?: Prisma.SortOrder
@@ -557,6 +578,7 @@ export type DocumentMinOrderByAggregateInput = {
   sizeBytes?: Prisma.SortOrder
   storageKey?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  legalHold?: Prisma.SortOrder
   issueDate?: Prisma.SortOrder
   expiryDate?: Prisma.SortOrder
   employeeId?: Prisma.SortOrder
@@ -585,6 +607,10 @@ export type EnumDocumentStatusFieldUpdateOperationsInput = {
   set?: $Enums.DocumentStatus
 }
 
+export type BoolFieldUpdateOperationsInput = {
+  set?: boolean
+}
+
 
 
 export type DocumentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -597,6 +623,7 @@ export type DocumentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   sizeBytes?: boolean
   storageKey?: boolean
   status?: boolean
+  legalHold?: boolean
   issueDate?: boolean
   expiryDate?: boolean
   employeeId?: boolean
@@ -615,6 +642,7 @@ export type DocumentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   sizeBytes?: boolean
   storageKey?: boolean
   status?: boolean
+  legalHold?: boolean
   issueDate?: boolean
   expiryDate?: boolean
   employeeId?: boolean
@@ -633,6 +661,7 @@ export type DocumentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   sizeBytes?: boolean
   storageKey?: boolean
   status?: boolean
+  legalHold?: boolean
   issueDate?: boolean
   expiryDate?: boolean
   employeeId?: boolean
@@ -651,6 +680,7 @@ export type DocumentSelectScalar = {
   sizeBytes?: boolean
   storageKey?: boolean
   status?: boolean
+  legalHold?: boolean
   issueDate?: boolean
   expiryDate?: boolean
   employeeId?: boolean
@@ -659,7 +689,7 @@ export type DocumentSelectScalar = {
   updatedAt?: boolean
 }
 
-export type DocumentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clientId" | "category" | "title" | "fileName" | "contentType" | "sizeBytes" | "storageKey" | "status" | "issueDate" | "expiryDate" | "employeeId" | "uploadedByUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["document"]>
+export type DocumentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clientId" | "category" | "title" | "fileName" | "contentType" | "sizeBytes" | "storageKey" | "status" | "legalHold" | "issueDate" | "expiryDate" | "employeeId" | "uploadedByUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["document"]>
 
 export type $DocumentPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Document"
@@ -674,6 +704,7 @@ export type $DocumentPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     sizeBytes: number | null
     storageKey: string
     status: $Enums.DocumentStatus
+    legalHold: boolean
     issueDate: Date | null
     expiryDate: Date | null
     employeeId: string | null
@@ -1112,6 +1143,7 @@ export interface DocumentFieldRefs {
   readonly sizeBytes: Prisma.FieldRef<"Document", 'Int'>
   readonly storageKey: Prisma.FieldRef<"Document", 'String'>
   readonly status: Prisma.FieldRef<"Document", 'DocumentStatus'>
+  readonly legalHold: Prisma.FieldRef<"Document", 'Boolean'>
   readonly issueDate: Prisma.FieldRef<"Document", 'DateTime'>
   readonly expiryDate: Prisma.FieldRef<"Document", 'DateTime'>
   readonly employeeId: Prisma.FieldRef<"Document", 'String'>

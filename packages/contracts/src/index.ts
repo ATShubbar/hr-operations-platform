@@ -101,6 +101,8 @@ export {
   documentQuerySchema,
   documentListResponseSchema,
   downloadResponseSchema,
+  legalHoldRequestSchema,
+  type LegalHoldRequest,
   type DocumentCategory,
   type DocumentStatus,
   type DocumentResponse,

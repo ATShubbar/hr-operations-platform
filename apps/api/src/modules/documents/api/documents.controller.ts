@@ -7,6 +7,7 @@ import {
   ForbiddenException,
   Get,
   HttpCode,
+  Inject,
   NotFoundException,
   Param,
   Post,
@@ -15,6 +16,7 @@ import {
 import {
   createDocumentRequestSchema,
   documentQuerySchema,
+  legalHoldRequestSchema,
   type DocumentListResponse,
   type DocumentResponse,
   type DownloadResponse,
@@ -27,6 +29,7 @@ import { ClientsService } from '../../clients/public-api';
 import { StorageService } from '../../storage/public-api';
 import { DocumentsService } from '../application/documents.service';
 import { canWriteCategory } from '../domain/document-policy';
+import { DOCUMENT_SCANNER, type DocumentScanner } from '../domain/scanner';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const UPLOAD_TTL_SECONDS = 900;
@@ -43,6 +46,7 @@ export class DocumentsController {
     private readonly documents: DocumentsService,
     private readonly clients: ClientsService,
     private readonly storage: StorageService,
+    @Inject(DOCUMENT_SCANNER) private readonly scanner: DocumentScanner,
   ) {}
 
   @RequirePermission('document.upload')
@@ -100,6 +104,16 @@ export class DocumentsController {
     const stat = await this.storage.statObject(doc.storageKey);
     if (!stat) throw new BadRequestException('Upload not found in storage');
 
+    // Virus scan (DOC-04) — between upload and `available`. An infected blob is
+    // removed and the record quarantined (never served).
+    const scan = await this.scanner.scan(await this.storage.getObject(doc.storageKey));
+    if (!scan.clean) {
+      await this.storage.deleteObject(doc.storageKey);
+      const quarantined = await this.documents.quarantine(id);
+      if (!quarantined) throw new NotFoundException('Document not found');
+      return toResponse(quarantined);
+    }
+
     const updated = await this.documents.confirm(id, stat.size);
     if (!updated) throw new NotFoundException('Document not found');
     return toResponse(updated);
@@ -146,10 +160,28 @@ export class DocumentsController {
     if (!canWriteCategory(role, doc.category)) {
       throw new ForbiddenException(`Your role may not delete '${doc.category}' documents`);
     }
+    // Retention (DOC-04): a document under legal hold cannot be deleted.
+    if (doc.legalHold) {
+      throw new ConflictException('Document is under legal hold and cannot be deleted');
+    }
     // Remove the blob first (idempotent), then soft-delete the record — the
     // metadata row survives for audit/retention, but the PII blob is gone.
     await this.storage.deleteObject(doc.storageKey);
     const updated = await this.documents.softDelete(id);
+    if (!updated) throw new NotFoundException('Document not found');
+    return toResponse(updated);
+  }
+
+  // ---- legal hold (DOC-04 retention/PDPL) ----
+
+  @RequirePermission('document.delete')
+  @Post(':id/legal-hold')
+  @HttpCode(200)
+  async legalHold(@Param('id') id: string, @Body() body: unknown): Promise<DocumentResponse> {
+    await this.require(id);
+    const parsed = legalHoldRequestSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException('Invalid payload (expected { held })');
+    const updated = await this.documents.setLegalHold(id, parsed.data.held);
     if (!updated) throw new NotFoundException('Document not found');
     return toResponse(updated);
   }
@@ -176,6 +208,7 @@ function toResponse(d: DocumentRecord): DocumentResponse {
     contentType: d.contentType,
     sizeBytes: d.sizeBytes,
     status: d.status,
+    legalHold: d.legalHold,
     issueDate: iso(d.issueDate),
     expiryDate: iso(d.expiryDate),
     employeeId: d.employeeId,

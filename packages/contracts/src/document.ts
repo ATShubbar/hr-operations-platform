@@ -26,12 +26,18 @@ export const documentResponseSchema = z.object({
   contentType: z.string(),
   sizeBytes: z.number().nullable(),
   status: documentStatusSchema,
+  legalHold: z.boolean(),
   issueDate: z.string().nullable(),
   expiryDate: z.string().nullable(),
   employeeId: z.uuid().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
+
+// Legal-hold set/release (DOC-04) — a held document cannot be deleted (PDPL
+// legal-hold semantics for records tied to government obligations).
+export const legalHoldRequestSchema = z.object({ held: z.boolean() });
+export type LegalHoldRequest = z.infer<typeof legalHoldRequestSchema>;
 
 export const createDocumentRequestSchema = z.object({
   clientId: z.uuid(),

@@ -84,6 +84,7 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'GET /documents/:id': 'staff',
   'GET /documents/:id/download': 'staff',
   'DELETE /documents/:id': 'staff',
+  'POST /documents/:id/legal-hold': 'staff',
   'GET /example/greeting': 'staff',
   'GET /example-consumer/relay': 'staff',
   'GET /scope-check': 'client-scoped',

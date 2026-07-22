@@ -677,7 +677,7 @@ metadata with **expiry as first-class data**). Depends on Clients (done).
 | DOC-01 | Documents module + `doc_documents` client-scoped table (RLS checklist) — metadata + `expiryDate` first-class + `DocumentsService` (staff path) + seed | STOR-01 | done ([evidence](evidence/documents/DOC-01.md)) |
 | DOC-02 | Upload flow — presigned-PUT issue (`POST /documents` → pending metadata + upload URL) + confirm; `document.upload`; audited; harness | DOC-01 | done ([evidence](evidence/documents/DOC-02.md)) |
 | DOC-03 | Download (presigned GET) + delete (`document.delete` + object removal) + list/filter incl. by expiry; audited | DOC-02 | done ([evidence](evidence/documents/DOC-03.md)) |
-| DOC-04 | Virus-scan hook (pluggable interface, dev pass-through; ClamAV deferred to infra) + retention/PDPL hooks (0.9) | DOC-02 | todo |
+| DOC-04 | Virus-scan hook (pluggable interface, dev pass-through; ClamAV deferred to infra) + retention/PDPL hooks (0.9) | DOC-02 | done ([evidence](evidence/documents/DOC-04.md)) |
 | DOC-05 | Web UI — documents list + upload + download (per client/employee) | DOC-03 | done ([evidence](evidence/documents/DOC-05.md)) |
 
 ### STOR-01 — Storage shared module (S3-compatible adapter)
@@ -770,6 +770,25 @@ metadata with **expiry as first-class data**). Depends on Clients (done).
 - **Dependencies:** DOC-03. **Risks:** browser→object-store CORS (fine on MinIO
   default; prod store needs CORS for the web origin); seed docs are metadata-only
   (their download 404s — real blobs come via upload).
+
+### DOC-04 — Virus-scan hook + legal-hold retention
+- **Objective:** a pluggable virus-scan hook on confirm (dev pass-through flags
+  EICAR; ClamAV deferred) — infected → quarantined + blob removed — plus a
+  legal-hold retention hook that blocks deletion.
+- **Files:** `domain/scanner.ts` (interface + `DOCUMENT_SCANNER` token + EICAR
+  const); `infra/passthrough-scanner.ts` (EICAR-aware, bound via provider);
+  `Document.legalHold` column + additive migration; `DocumentsService.quarantine`
+  + `setLegalHold`; controller (scan in `confirm`, `POST /documents/:id/legal-hold`,
+  DELETE 409 when held); `document.legal-hold` in write-audit + route in isolation
+  (`staff`); public-api exports the scanner seam + EICAR; `test/documents-scan.e2e-spec.ts`.
+- **DoD:** clean→available, EICAR→quarantined+blob-removed (download 409); scanner
+  pluggable (token); legal hold blocks delete (409) until released; audited
+  (quarantine/legal-hold/legal-release); coverage + suite + lint + typecheck +
+  build green.
+- **Evidence:** `evidence/documents/DOC-04.md`.
+- **Dependencies:** DOC-02 (+DOC-03). **Risks:** dev scan reads whole blob into
+  memory (ClamAV would stream — infra); deep test import must go via public-api
+  (module-boundary lint rule).
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

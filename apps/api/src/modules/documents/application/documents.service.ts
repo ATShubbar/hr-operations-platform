@@ -62,6 +62,42 @@ export class DocumentsService {
     });
   }
 
+  // A confirmed upload failed the virus scan (DOC-04): the blob has been removed;
+  // mark the record quarantined. Audited (action 'quarantine').
+  quarantine(id: string): Promise<DocumentRecord | null> {
+    return this.prisma.$transaction(async (tx) => {
+      const before = await tx.document.findUnique({ where: { id } });
+      if (!before) return null;
+      const row = await tx.document.update({ where: { id }, data: { status: 'quarantined' } });
+      await this.audit.record(tx, {
+        resource: 'document',
+        action: 'quarantine',
+        clientId: row.clientId,
+        before: snapshot(before),
+        after: snapshot(row),
+      });
+      return row;
+    });
+  }
+
+  // Set/release a legal hold (DOC-04). A held document cannot be deleted (PDPL
+  // legal-hold semantics). Audited (action 'legal-hold' / 'legal-release').
+  setLegalHold(id: string, held: boolean): Promise<DocumentRecord | null> {
+    return this.prisma.$transaction(async (tx) => {
+      const before = await tx.document.findUnique({ where: { id } });
+      if (!before) return null;
+      const row = await tx.document.update({ where: { id }, data: { legalHold: held } });
+      await this.audit.record(tx, {
+        resource: 'document',
+        action: held ? 'legal-hold' : 'legal-release',
+        clientId: row.clientId,
+        before: snapshot(before),
+        after: snapshot(row),
+      });
+      return row;
+    });
+  }
+
   list(clientId?: string): Promise<DocumentRecord[]> {
     return this.prisma.document.findMany({
       where: clientId ? { clientId } : undefined,
@@ -146,6 +182,7 @@ function snapshot(d: DocumentRecord): Prisma.InputJsonValue {
     category: d.category,
     title: d.title,
     status: d.status,
+    legalHold: d.legalHold,
     expiryDate: d.expiryDate ? d.expiryDate.toISOString().slice(0, 10) : null,
   };
 }

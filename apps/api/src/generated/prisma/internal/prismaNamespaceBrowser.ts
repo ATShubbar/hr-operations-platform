@@ -215,6 +215,7 @@ export const DocumentScalarFieldEnum = {
   sizeBytes: 'sizeBytes',
   storageKey: 'storageKey',
   status: 'status',
+  legalHold: 'legalHold',
   issueDate: 'issueDate',
   expiryDate: 'expiryDate',
   employeeId: 'employeeId',

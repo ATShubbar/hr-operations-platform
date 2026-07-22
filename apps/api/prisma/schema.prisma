@@ -287,6 +287,7 @@ model Document {
   sizeBytes        Int?             @map("size_bytes")
   storageKey       String           @map("storage_key")
   status           DocumentStatus   @default(pending)
+  legalHold        Boolean          @default(false) @map("legal_hold")
   issueDate        DateTime?        @map("issue_date") @db.Date
   expiryDate       DateTime?        @map("expiry_date") @db.Date
   employeeId       String?          @map("employee_id") @db.Uuid
