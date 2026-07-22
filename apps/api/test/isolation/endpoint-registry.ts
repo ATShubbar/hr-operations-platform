@@ -63,6 +63,11 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'GET /config/me': 'self',
   'PATCH /config/me/:key': 'self',
   'DELETE /config/me/:key': 'self',
+  // In-app notifications (NOTIF-02): the caller's OWN, any authenticated
+  // principal; actor from the session, never the URL.
+  'GET /notifications': 'self',
+  'POST /notifications/:id/read': 'self',
+  'POST /notifications/read-all': 'self',
   'GET /clients': 'staff',
   'GET /clients/:id': 'staff',
   'POST /clients': 'staff',

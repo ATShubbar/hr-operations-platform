@@ -134,3 +134,14 @@ export const DocumentStatus = {
 } as const
 
 export type DocumentStatus = (typeof DocumentStatus)[keyof typeof DocumentStatus]
+
+
+export const NotificationCategory = {
+  document_expiry: 'document_expiry',
+  task: 'task',
+  request: 'request',
+  general: 'general',
+  system: 'system'
+} as const
+
+export type NotificationCategory = (typeof NotificationCategory)[keyof typeof NotificationCategory]

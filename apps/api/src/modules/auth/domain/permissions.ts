@@ -56,6 +56,9 @@ export const PERMISSIONS = [
   // OWN preferences (ui.language, …) — resolved user → client → system.
   'config.read-self',
   'config.write-self',
+  // Notifications (NOTIF-02): every authenticated principal reads + marks read
+  // their OWN in-app notifications. Preference management is notification-pref.* (NOTIF-04).
+  'notification.read',
   // Session lifecycle — every authenticated principal may end their session.
   'session.end',
 ] as const;
@@ -90,6 +93,7 @@ const STAFF_BASE: readonly Permission[] = [
   'config.read-self',
   'config.write-self',
   'document.read',
+  'notification.read',
 ];
 // System/Company Admin extra: audit read + client CRUD (matrix).
 const ADMIN_EXTRA: readonly Permission[] = [
@@ -106,6 +110,7 @@ const ALL_CLIENT: readonly Permission[] = [
   'session.end',
   'config.read-self',
   'config.write-self',
+  'notification.read',
 ];
 // Client Admin additionally manages its own client's portal users (matrix —
 // Client User does NOT).

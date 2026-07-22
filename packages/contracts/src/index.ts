@@ -112,3 +112,11 @@ export {
   type DocumentListResponse,
   type DownloadResponse,
 } from './document.js';
+export {
+  notificationCategorySchema,
+  notificationResponseSchema,
+  notificationListResponseSchema,
+  type NotificationCategory,
+  type NotificationResponse,
+  type NotificationListResponse,
+} from './notification.js';

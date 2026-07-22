@@ -84,3 +84,8 @@ export type Employee = Prisma.EmployeeModel
  * 
  */
 export type Document = Prisma.DocumentModel
+/**
+ * Model Notification
+ * 
+ */
+export type Notification = Prisma.NotificationModel

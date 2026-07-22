@@ -801,7 +801,7 @@ engine (3.4). Depends on 2.1 (Redis, live).
 | ID | Task | Depends on | Status |
 |---|---|---|---|
 | NOTIF-01 | BullMQ dispatch infra (`@nestjs/bullmq` + `bullmq`, Redis root, producer/worker split, graceful shutdown, roundtrip e2e) | Redis | done ([evidence](evidence/notifications/NOTIF-01.md)) |
-| NOTIF-02 | Notifications module + `notif_notifications` (in-app, per-user, app-enforced) + `NotificationsService.notify()` + read/mark-read API (`self`) | NOTIF-01 | todo |
+| NOTIF-02 | Notifications module + `notif_notifications` (in-app, per-user, app-enforced) + `NotificationsService.notify()` + read/mark-read API (`self`) | NOTIF-01 | done ([evidence](evidence/notifications/NOTIF-02.md)) |
 | NOTIF-03 | Email channel — pluggable transport (dev capture / SMTP deferred) + ar/en templates + dispatch worker send | NOTIF-02 | todo |
 | NOTIF-04 | Per-user notification preferences (`notification-pref.update`) gating email dispatch | NOTIF-02, CONF-03 | todo |
 | NOTIF-05 | Domain-event bus (ADR-004 acceptance) + Notifications subscribes (else producers call `notify()`) | NOTIF-02 | todo |
@@ -824,6 +824,24 @@ engine (3.4). Depends on 2.1 (Redis, live).
   the worker's blocking connection emits benign "Connection is closed" on teardown
   in every app-creating spec → SPLIT producer (AppModule) from worker (MainModule +
   queue e2e) so it's only started where needed.
+
+### NOTIF-02 — Notifications module + in-app notifications
+- **Objective:** the in-app substrate — `notif_notifications` (recipient-owned,
+  app-enforced, no RLS) + `NotificationsService.notify()` (in-app record +
+  enqueues dispatch) + self-service read/mark-read API.
+- **Files:** `Notification` model + `NotificationCategory` enum + migration
+  (app_staff grant, no RLS, indexes); `modules/notifications/{...}`
+  (`notify`/`listForActor`/`unreadCount`/`markRead`/`markAllRead`; controller
+  `GET /notifications`, `POST /:id/read`, `POST /read-all`); `notification.read`
+  perm → all roles; `@hr/contracts` notification schemas; 3 routes `self` in
+  isolation + 2 mark-read routes AUDIT_EXEMPT; `test/notifications.e2e-spec.ts`.
+- **DoD:** notify delivers in-app + enqueues; recipient reads own, others don't;
+  unread count + filter; mark one/all read; cross-user mark → 404; unauth 401;
+  coverage + suite (exit 0) + lint + typecheck + build green.
+- **Evidence:** `evidence/notifications/NOTIF-02.md`.
+- **Dependencies:** NOTIF-01. **Risks:** in-app is source of truth, email
+  best-effort (outbox is ADR-004/NOTIF-05); `TestPrincipal` exposes `userId` not
+  `id`.
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 
