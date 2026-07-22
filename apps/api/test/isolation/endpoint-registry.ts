@@ -48,6 +48,7 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   // client-scoped. config.read for the reads; config.write (System Admin) writes.
   'GET /config': 'staff',
   'GET /config/catalog': 'staff',
+  'GET /config/flags': 'staff',
   'PATCH /config/system/:key': 'staff',
   // Per-client config (CONF-02): staff-managed (Company Admin) for an EXPLICIT
   // client id in the path — staff cross-client by permission, so 'staff' (not

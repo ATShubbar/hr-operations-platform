@@ -83,10 +83,12 @@ export {
   configEffectiveResponseSchema,
   setSettingRequestSchema,
   settingValueResponseSchema,
+  configFlagsResponseSchema,
   type SettingLevel,
   type ConfigSettingDescriptor,
   type ConfigCatalogResponse,
   type ConfigEffectiveResponse,
   type SetSettingRequest,
   type SettingValueResponse,
+  type ConfigFlagsResponse,
 } from './config.js';

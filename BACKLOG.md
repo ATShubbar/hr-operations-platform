@@ -550,7 +550,7 @@ Authz (done) + Audit (done).
 | CONF-01 | Settings **catalog** + system-level resolution + system settings API (System Admin, audited) | 2.2, 2.3 | done ([evidence](evidence/configuration/CONF-01.md)) |
 | CONF-02 | **Per-client** overrides (`cfg_client_settings`, RLS + harness) + client→system precedence + Company-Admin API | CONF-01 | done ([evidence](evidence/configuration/CONF-02.md)) |
 | CONF-03 | **Per-user** preferences (`cfg_user_settings`, app-enforced) + full user→client→system resolution + `/config/me` | CONF-02 | done ([evidence](evidence/configuration/CONF-03.md)) |
-| CONF-04 | **Feature flags** on the same substrate (`isEnabled`, system + per-client) + admin API | CONF-01 | todo |
+| CONF-04 | **Feature flags** on the same substrate (`isEnabled`, system + per-client) + admin API | CONF-01 | done ([evidence](evidence/configuration/CONF-04.md)) |
 | CONF-05 | **Web**: system-settings admin page + per-user preferences (wires the language switch into `ui.language`) | CONF-03 | todo |
 
 ### CONF-01 — Settings catalog + system-level resolution + system API
@@ -622,6 +622,26 @@ Authz (done) + Audit (done).
   (no RLS, like auth_users); added the `self` harness class rather than mislabel
   per-user endpoints `staff`; no catalog setting declares both client+user levels
   yet, so user>client precedence is implemented but not exercised on one key.
+
+### CONF-04 — Feature flags
+- **Objective:** feature flags on the SAME substrate — a flag is a boolean
+  setting under the `flag.` namespace, so it resolves/validates/toggles through
+  the existing settings machinery. `ConfigService.isEnabled(flag,{clientId})` is
+  the read sugar other modules gate on.
+- **Files:** `domain/catalog.ts` (FLAG_DEFS with `z.boolean()`, levels
+  [system,client], default false; `isFlagKey`; merged into CATALOG);
+  `ConfigService.isEnabled/flagsFor`; controller `GET /config/flags`;
+  `@hr/contracts` `configFlagsResponseSchema`; +1 harness route; NO new tables,
+  write endpoints, or permissions (toggles reuse `PATCH /config/{system,client}`);
+  `test/configuration-flags.e2e-spec.ts`.
+- **DoD:** flags default off + listed; toggle via existing system/client
+  endpoints; `isEnabled` reflects it + rejects non-flag keys; boolean-only (400);
+  per-client resolution; audited via existing actions; coverage + suite + lint +
+  typecheck + build green.
+- **Evidence:** `evidence/configuration/CONF-04.md`.
+- **Dependencies:** CONF-01 (+CONF-02 for per-client). **Risks:** flags surface in
+  `/config` + `/config/catalog` alongside settings (they ARE settings) — filtered
+  boolean view is `/config/flags`; no user tier for flags.
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

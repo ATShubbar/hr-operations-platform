@@ -12,6 +12,7 @@ import {
   setSettingRequestSchema,
   type ConfigCatalogResponse,
   type ConfigEffectiveResponse,
+  type ConfigFlagsResponse,
   type SettingValueResponse,
 } from '@hr/contracts';
 import { RequirePermission } from '../../../auth/permissions.decorator';
@@ -51,6 +52,15 @@ export class ConfigController {
         description: d.description,
       })),
     };
+  }
+
+  @RequirePermission('config.read')
+  @Get('flags')
+  async flags(): Promise<ConfigFlagsResponse> {
+    // System-level flags. Per-client resolution rides the existing
+    // /config/client/:clientId effective (flags are settings); other modules use
+    // ConfigService.isEnabled(flag, { clientId }) programmatically.
+    return { flags: await this.config.flagsFor(null) };
   }
 
   @RequirePermission('config.write')

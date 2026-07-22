@@ -40,9 +40,16 @@ export const settingValueResponseSchema = z.object({
   value: z.unknown(),
 });
 
+// Feature flags (CONF-04) — resolved boolean map. Flags are boolean settings
+// under the `flag.` namespace; this is the convenience read for consumers.
+export const configFlagsResponseSchema = z.object({
+  flags: z.record(z.string(), z.boolean()),
+});
+
 export type SettingLevel = z.infer<typeof settingLevelSchema>;
 export type ConfigSettingDescriptor = z.infer<typeof configSettingDescriptorSchema>;
 export type ConfigCatalogResponse = z.infer<typeof configCatalogResponseSchema>;
 export type ConfigEffectiveResponse = z.infer<typeof configEffectiveResponseSchema>;
 export type SetSettingRequest = z.infer<typeof setSettingRequestSchema>;
 export type SettingValueResponse = z.infer<typeof settingValueResponseSchema>;
+export type ConfigFlagsResponse = z.infer<typeof configFlagsResponseSchema>;

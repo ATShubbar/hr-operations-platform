@@ -42,7 +42,7 @@ const ianaTimezoneSchema = z.string().refine(
 
 const localeSchema = z.enum(['ar', 'en']);
 
-const DEFS: readonly SettingDef[] = [
+const SETTING_DEFS: readonly SettingDef[] = [
   {
     key: 'calendar.display',
     schema: z.enum(['hijri', 'gregorian', 'dual']),
@@ -80,9 +80,38 @@ const DEFS: readonly SettingDef[] = [
   },
 ] as const;
 
-const BY_KEY: ReadonlyMap<string, SettingDef> = new Map(DEFS.map((d) => [d.key, d]));
+// Feature flags (CONF-04) are boolean settings under the `flag.` namespace —
+// SAME substrate: they resolve, validate, and are toggled through the exact
+// system/per-client settings machinery. Flags are operational, not personal, so
+// their levels are [system, client] (a flag may be enabled globally, or per
+// client), never [user]. `ConfigService.isEnabled()` is the read sugar.
+export const FLAG_DEFS: readonly SettingDef[] = [
+  {
+    key: 'flag.document-expiry-alerts',
+    schema: z.boolean(),
+    default: false,
+    levels: ['system', 'client'],
+    description: 'Gate the document-expiry alert engine (ACTION-PLAN 3.4) — off until it ships.',
+  },
+  {
+    key: 'flag.client-self-service',
+    schema: z.boolean(),
+    default: false,
+    levels: ['system', 'client'],
+    description: 'Gate client-portal self-service features (ACTION-PLAN 5.1), per client.',
+  },
+] as const;
 
-export const CATALOG: readonly SettingDef[] = DEFS;
+const CATALOG_DEFS: readonly SettingDef[] = [...SETTING_DEFS, ...FLAG_DEFS];
+
+const BY_KEY: ReadonlyMap<string, SettingDef> = new Map(CATALOG_DEFS.map((d) => [d.key, d]));
+
+export const CATALOG: readonly SettingDef[] = CATALOG_DEFS;
+
+// A feature flag is any setting under the `flag.` namespace.
+export function isFlagKey(key: string): boolean {
+  return key.startsWith('flag.');
+}
 
 export function getSettingDef(key: string): SettingDef | undefined {
   return BY_KEY.get(key);

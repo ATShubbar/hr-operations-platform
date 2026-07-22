@@ -9,7 +9,14 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import { requestContext } from '../../../context/request-context';
 import type { Prisma } from '../../../generated/prisma/client';
 import { AuditService } from '../../audit/public-api';
-import { CATALOG, getSettingDef, settingAllowsLevel, type SettingDef } from '../domain/catalog';
+import {
+  CATALOG,
+  FLAG_DEFS,
+  getSettingDef,
+  isFlagKey,
+  settingAllowsLevel,
+  type SettingDef,
+} from '../domain/catalog';
 
 // Configuration read/resolve + system-level write (CONF-01). Resolution here is
 // the system level only: effective value = stored system override ?? the
@@ -266,6 +273,32 @@ export class ConfigService {
       if (c) return { level: 'client', value: c.value as unknown };
     }
     return { level: 'system', value: await this.get(key) };
+  }
+
+  // ---- feature flags (CONF-04) — flags are boolean settings under `flag.`,
+  // resolved through the same client → system machinery (no user tier). This is
+  // the read surface other modules use to gate features. ----
+
+  // Is a feature flag on? Resolves the flag's effective boolean at the given
+  // client scope (or system when no clientId). Non-flag key → error (a caller
+  // asking `isEnabled('calendar.display')` is a bug, not a false).
+  async isEnabled(flagKey: string, opts?: { clientId?: string | null }): Promise<boolean> {
+    if (!isFlagKey(flagKey)) {
+      throw new BadRequestException(`'${flagKey}' is not a feature flag`);
+    }
+    this.requireDef(flagKey);
+    const { value } = await this.effectiveBelowUser(flagKey, opts?.clientId ?? null);
+    return value === true;
+  }
+
+  // All flags resolved to booleans at the given scope (system when null).
+  async flagsFor(clientId: string | null): Promise<Record<string, boolean>> {
+    const out: Record<string, boolean> = {};
+    for (const def of FLAG_DEFS) {
+      const { value } = await this.effectiveBelowUser(def.key, clientId);
+      out[def.key] = value === true;
+    }
+    return out;
   }
 
   private actor(): { actorId: string; clientId: string | null } {
