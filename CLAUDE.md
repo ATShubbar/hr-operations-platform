@@ -48,10 +48,12 @@ authz redacting salary/govdata per capability, console UI with redaction
 reflected). **Configuration 2.4 COMPLETE (CONF-01..05)** — three-level settings model
 (system/client/user, resolve user→client→system), feature flags on the same
 substrate, and the settings web UI. This closes all Priority-2 foundation
-modules (2.1–2.5). API suite **144/144**; web typecheck+lint green.
-**Next candidates: Priority-3 domain (3.2 Storage+Documents; 3.4 doc-expiry
-engine, already flag-gated), Config fast-follows (per-client settings admin UI;
-array-setting editors), or the AWS decision.** WS-20/21 still blocked: AWS account fully restricted since signup
+modules (2.1–2.5). **Documents+Storage epic (3.2) STARTED: STOR-01 done** — the
+S3-compatible Storage shared module (provider-agnostic adapter, presigned
+PUT/GET, per-client key prefixes; MinIO for local dev). DOC-01 (documents table +
+metadata w/ expiry-as-first-class) is next. API suite **148/148**; web
+typecheck+lint green. **Next: DOC-01, then DOC-02+; then the doc-expiry engine
+(3.4) rests on real foundations. AWS/OCI provider decision (ADR-006) still open.** WS-20/21 still blocked: AWS account fully restricted since signup
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback
 (ADR-006). Infra pickup: docs/HANDOFF-WS20.md.
@@ -66,7 +68,7 @@ support case escalated; decision point → fresh account or OCI fallback
 - shadcn here is Base UI (`render` prop), NOT Radix (`asChild`); init was run with `--rtl`.
 - Physical Tailwind utilities (pl-/pr-/left-…) are lint errors — logical only.
 - Every new client-scoped table follows the checklist in apps/api/src/modules/README.md and registers in the isolation harness (unregistered endpoints fail CI).
-- Local ports: Postgres 5433, Redis 6380 (5432/6379 belong to another project).
+- Local ports: Postgres 5433, Redis 6380, MinIO 9002 (API) / 9003 (console) — non-default because 5432/6379/9000 belong to other local tooling. `docker compose up -d` now includes MinIO; storage e2e (STOR-01) requires it up. StorageService is endpoint-configurable + `forcePathStyle` (MinIO); prod object-store provider is still ADR-006-open.
 - Do NOT run `next build` (prod) while the web dev/preview server is running — it clobbers `.next` and the dev server then throws `Cannot find module './NNN.js'`. Stop the dev server first, or verify only via the dev server (AUTH-08).
 
 ## Commands
