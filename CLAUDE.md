@@ -52,11 +52,12 @@ modules (2.1–2.5). **Documents+Storage epic (3.2) COMPLETE (STOR-01 + DOC-01..
 Storage module (MinIO local), `doc_documents` registry (expiry first-class),
 presigned upload flow (category-scoped), read/download/delete, virus-scan hook
 (pluggable, EICAR dev scanner → quarantine; ClamAV deferred) + legal-hold
-retention, and the documents web UI. API suite **169/169**; web typecheck+lint
-green. **Seven product screens** (login, audit,
-clients, employees, settings, documents). **Next: 3.3 Notifications + BullMQ →
-3.4 expiry engine (scan target ready — the last prerequisite), or 3.1/3.2
-fast-follows. AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup
+retention, and the documents web UI. **Notifications epic (3.3) STARTED:
+NOTIF-01 done** — BullMQ dispatch infra (`@nestjs/bullmq`, producer/worker split,
+graceful shutdown, roundtrip proven). API suite **171/171**; web typecheck+lint
+green. **Seven product screens** (login, audit, clients, employees, settings,
+documents). **Next: NOTIF-02 (in-app notifications) → NOTIF-03/04, then 3.4
+expiry engine. AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback
 (ADR-006). Infra pickup: docs/HANDOFF-WS20.md.
@@ -73,6 +74,7 @@ support case escalated; decision point → fresh account or OCI fallback
 - Every new client-scoped table follows the checklist in apps/api/src/modules/README.md and registers in the isolation harness (unregistered endpoints fail CI).
 - Local ports: Postgres 5433, Redis 6380, MinIO 9002 (API) / 9003 (console) — non-default because 5432/6379/9000 belong to other local tooling. `docker compose up -d` now includes MinIO; storage e2e (STOR-01) requires it up. StorageService is endpoint-configurable + `forcePathStyle` (MinIO); prod object-store provider is still ADR-006-open. Presigned uploads go browser→object-store DIRECTLY (never through the API); this works on MinIO's default CORS locally — a stricter production object store must have CORS configured for the web origin (DOC-05).
 - Do NOT run `next build` (prod) while the web dev/preview server is running — it clobbers `.next` and the dev server then throws `Cannot find module './NNN.js'`. Stop the dev server first, or verify only via the dev server (AUTH-08).
+- BullMQ (NOTIF-01): the connection needs `maxRetriesPerRequest: null`. A Worker holds a blocking Redis connection whose teardown emits a benign "Connection is closed" unhandled rejection in EVERY app-creating spec → suite exit 1. Fix in place: producer (`QueueModule` in `AppModule`) is split from the worker (`DispatchWorkerModule`), which runs only in `MainModule` (main.ts) + the queue e2e. Keep workers out of `AppModule`.
 
 ## Commands
 
