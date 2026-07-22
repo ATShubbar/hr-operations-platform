@@ -43,6 +43,11 @@ export type SystemSetting = Prisma.SystemSettingModel
  */
 export type ClientSetting = Prisma.ClientSettingModel
 /**
+ * Model UserSetting
+ * 
+ */
+export type UserSetting = Prisma.UserSettingModel
+/**
  * Model Client
  * 
  */

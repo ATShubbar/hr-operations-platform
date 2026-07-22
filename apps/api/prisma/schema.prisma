@@ -123,6 +123,24 @@ model ClientSetting {
   @@map("cfg_client_settings")
 }
 
+// Per-user preferences (CONF-03; ACTION-PLAN 2.4). The USER level of the
+// three-level model — personal preferences (e.g. ui.language) for settings that
+// declare a 'user' level, winning over client and system. Keyed by user_id;
+// user-OWNED, not client-owned, so — like auth_users — it is a SYSTEM table with
+// NO RLS: isolation is APPLICATION-enforced (every query filters by the caller's
+// CONTEXT actorId, never request input). The staff connection (app_staff) owns
+// all access regardless of the caller's principal type, since the row is scoped
+// by actor, not client. Composite PK (user_id, key).
+model UserSetting {
+  userId    String   @map("user_id") @db.Uuid
+  key       String
+  value     Json     @db.JsonB
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@id([userId, key])
+  @@map("cfg_user_settings")
+}
+
 // Client-company registry (CLIENT-01; ADR-002 isolation boundary). This table
 // ORIGINATES client_id: every client-owned row elsewhere references one of
 // these ids. It is itself client-scoped, but UNLIKE the boilerplate pattern

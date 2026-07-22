@@ -1,5 +1,12 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import type { SettingLevel } from '@hr/contracts';
 import { PrismaService } from '../../../prisma/prisma.service';
+import { requestContext } from '../../../context/request-context';
 import type { Prisma } from '../../../generated/prisma/client';
 import { AuditService } from '../../audit/public-api';
 import { CATALOG, getSettingDef, settingAllowsLevel, type SettingDef } from '../domain/catalog';
@@ -157,6 +164,114 @@ export class ConfigService {
       });
     }
     return { key, level: 'system', value: await this.get(key) };
+  }
+
+  // ---- per-user level (CONF-03) — the caller's OWN preferences ----
+  //
+  // Actor identity comes from the request context, NEVER from input — a user can
+  // only ever read/write their own preferences. clientId (present for a client-
+  // rep, null for staff) drives the middle resolution tier.
+
+  // Fully-resolved effective settings for the caller: user → client → system.
+  async getEffectiveForActor(): Promise<Record<string, unknown>> {
+    const { actorId, clientId } = this.actor();
+    // client → system (or just system when the caller has no client)
+    const effective = clientId ? await this.getAllForClient(clientId) : await this.getAll();
+    const overrides = await this.prisma.userSetting.findMany({ where: { userId: actorId } });
+    const map = new Map(overrides.map((o) => [o.key, o.value as unknown]));
+    for (const def of CATALOG) {
+      if (settingAllowsLevel(def, 'user') && map.has(def.key)) {
+        effective[def.key] = map.get(def.key);
+      }
+    }
+    return effective;
+  }
+
+  // Set (upsert) one of the caller's own preferences. A setting without a user
+  // level → 400; unknown key → 404; bad value → 400. Audited (actor/client
+  // default from the request context).
+  async setUser(key: string, value: unknown): Promise<{ key: string; value: unknown }> {
+    const { actorId } = this.actor();
+    const def = this.requireDef(key);
+    if (!settingAllowsLevel(def, 'user')) {
+      throw new BadRequestException(`Setting '${key}' has no user level`);
+    }
+    const parsed = def.schema.safeParse(value);
+    if (!parsed.success) {
+      throw new BadRequestException(`Invalid value for setting '${key}'`);
+    }
+    const nextValue = parsed.data as Prisma.InputJsonValue;
+
+    return this.prisma.$transaction(async (tx) => {
+      const before = await tx.userSetting.findUnique({
+        where: { userId_key: { userId: actorId, key } },
+      });
+      const row = await tx.userSetting.upsert({
+        where: { userId_key: { userId: actorId, key } },
+        create: { userId: actorId, key, value: nextValue },
+        update: { value: nextValue },
+      });
+      await this.audit.record(tx, {
+        resource: 'config',
+        action: 'user-set',
+        before: before
+          ? { userId: actorId, key, level: 'user', value: before.value as Prisma.InputJsonValue }
+          : undefined,
+        after: { userId: actorId, key, level: 'user', value: row.value as Prisma.InputJsonValue },
+      });
+      return { key: row.key, value: row.value as unknown };
+    });
+  }
+
+  // Clear one of the caller's own preferences, reverting to the lower tier
+  // (client if the caller has a client override, else system). Unknown key →
+  // 404; absent → idempotent no-op (no audit).
+  async clearUser(
+    key: string,
+  ): Promise<{ key: string; level: SettingLevel; value: unknown }> {
+    const { actorId, clientId } = this.actor();
+    this.requireDef(key);
+    const existing = await this.prisma.userSetting.findUnique({
+      where: { userId_key: { userId: actorId, key } },
+    });
+    if (existing) {
+      await this.prisma.$transaction(async (tx) => {
+        await tx.userSetting.delete({ where: { userId_key: { userId: actorId, key } } });
+        await this.audit.record(tx, {
+          resource: 'config',
+          action: 'user-clear',
+          before: {
+            userId: actorId,
+            key,
+            level: 'user',
+            value: existing.value as Prisma.InputJsonValue,
+          },
+        });
+      });
+    }
+    return { key, ...(await this.effectiveBelowUser(key, clientId)) };
+  }
+
+  // The effective {level, value} of a setting ignoring the user tier — i.e. what
+  // a cleared user preference reverts to (client override if any, else system).
+  private async effectiveBelowUser(
+    key: string,
+    clientId: string | null,
+  ): Promise<{ level: SettingLevel; value: unknown }> {
+    const def = this.requireDef(key);
+    if (clientId && settingAllowsLevel(def, 'client')) {
+      const c = await this.prisma.clientSetting.findUnique({
+        where: { clientId_key: { clientId, key } },
+      });
+      if (c) return { level: 'client', value: c.value as unknown };
+    }
+    return { level: 'system', value: await this.get(key) };
+  }
+
+  private actor(): { actorId: string; clientId: string | null } {
+    const ctx = requestContext.get();
+    if (!ctx?.actorId) throw new UnauthorizedException('No authenticated actor');
+    return { actorId: ctx.actorId, clientId: ctx.clientId ?? null };
   }
 
   private requireDef(key: string): SettingDef {

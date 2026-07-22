@@ -56,6 +56,7 @@ export const ModelName = {
   AuditEntry: 'AuditEntry',
   SystemSetting: 'SystemSetting',
   ClientSetting: 'ClientSetting',
+  UserSetting: 'UserSetting',
   Client: 'Client',
   Employee: 'Employee'
 } as const
@@ -134,6 +135,16 @@ export const ClientSettingScalarFieldEnum = {
 } as const
 
 export type ClientSettingScalarFieldEnum = (typeof ClientSettingScalarFieldEnum)[keyof typeof ClientSettingScalarFieldEnum]
+
+
+export const UserSettingScalarFieldEnum = {
+  userId: 'userId',
+  key: 'key',
+  value: 'value',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserSettingScalarFieldEnum = (typeof UserSettingScalarFieldEnum)[keyof typeof UserSettingScalarFieldEnum]
 
 
 export const ClientScalarFieldEnum = {

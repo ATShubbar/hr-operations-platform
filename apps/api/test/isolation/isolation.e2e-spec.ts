@@ -141,6 +141,16 @@ describe('Cross-client isolation harness (e2e)', () => {
     }
   });
 
+  it('self-service endpoints reject unauthenticated requests (401)', async () => {
+    for (const [route, scope] of Object.entries(ENDPOINT_REGISTRY)) {
+      if (scope !== 'self') continue;
+      const [method, path] = route.split(' ') as [string, string];
+      await request(app.getHttpServer())[method.toLowerCase() as 'get' | 'patch' | 'delete'](
+        path,
+      ).expect(401);
+    }
+  });
+
   it('session-flow endpoints self-reject unauthenticated requests (401)', async () => {
     for (const [route, scope] of Object.entries(ENDPOINT_REGISTRY)) {
       if (scope !== 'session') continue;

@@ -33,6 +33,8 @@ export const AUDITED_WRITES: Record<string, string> = {
   'PATCH /config/system/:key': 'config.system-set',
   'PATCH /config/client/:clientId/:key': 'config.client-set',
   'DELETE /config/client/:clientId/:key': 'config.client-clear',
+  'PATCH /config/me/:key': 'config.user-set',
+  'DELETE /config/me/:key': 'config.user-clear',
 };
 
 export const AUDIT_EXEMPT_WRITES: Record<string, string> = {

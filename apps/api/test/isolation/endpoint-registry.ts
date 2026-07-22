@@ -15,6 +15,12 @@
 //                   scope-check row shape (e.g. {users:[...]}); must reject
 //                   unauthenticated callers (401). Own-client scoping is proven
 //                   per-endpoint (e.g. CLIENT-03 e2e), not by this harness.
+//   self          — self-service endpoints operating on the caller's OWN
+//                   identity (any authenticated principal — staff or client
+//                   rep), e.g. per-user preferences. Must reject unauthenticated
+//                   callers (401). Own-actor scoping is enforced in-app via the
+//                   request context (actorId is never taken from input) and
+//                   proven per-endpoint (e.g. CONF-03 e2e), not by this harness.
 //
 // The coverage spec diffs this registry against the app's live route map in
 // BOTH directions — an unregistered route (or a stale entry) fails CI.
@@ -24,7 +30,8 @@ export type ScopeClass =
   | 'staff'
   | 'client-scoped'
   | 'client-write'
-  | 'client-read';
+  | 'client-read'
+  | 'self';
 
 export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'GET /health': 'public',
@@ -49,6 +56,12 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'GET /config/client/:clientId': 'staff',
   'PATCH /config/client/:clientId/:key': 'staff',
   'DELETE /config/client/:clientId/:key': 'staff',
+  // Per-user preferences (CONF-03): the caller's OWN, any authenticated
+  // principal; actor from the session, never the URL (own-actor scoping proven
+  // in configuration-me.e2e-spec).
+  'GET /config/me': 'self',
+  'PATCH /config/me/:key': 'self',
+  'DELETE /config/me/:key': 'self',
   'GET /clients': 'staff',
   'GET /clients/:id': 'staff',
   'POST /clients': 'staff',

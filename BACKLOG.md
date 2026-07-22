@@ -549,7 +549,7 @@ Authz (done) + Audit (done).
 |---|---|---|---|
 | CONF-01 | Settings **catalog** + system-level resolution + system settings API (System Admin, audited) | 2.2, 2.3 | done ([evidence](evidence/configuration/CONF-01.md)) |
 | CONF-02 | **Per-client** overrides (`cfg_client_settings`, RLS + harness) + client→system precedence + Company-Admin API | CONF-01 | done ([evidence](evidence/configuration/CONF-02.md)) |
-| CONF-03 | **Per-user** preferences (`cfg_user_settings`, app-enforced) + full user→client→system resolution + `/config/me` | CONF-02 | todo |
+| CONF-03 | **Per-user** preferences (`cfg_user_settings`, app-enforced) + full user→client→system resolution + `/config/me` | CONF-02 | done ([evidence](evidence/configuration/CONF-03.md)) |
 | CONF-04 | **Feature flags** on the same substrate (`isEnabled`, system + per-client) + admin API | CONF-01 | todo |
 | CONF-05 | **Web**: system-settings admin page + per-user preferences (wires the language switch into `ui.language`) | CONF-03 | todo |
 
@@ -601,6 +601,27 @@ Authz (done) + Audit (done).
 - **Dependencies:** CONF-01. **Risks:** first client-scoped table here — RLS
   shipped now, exercised by the future portal path (defence in depth); staff path
   means explicit `:clientId`, not request context.
+
+### CONF-03 — Per-user preferences + full three-level resolution
+- **Objective:** add the USER tier and close the model — `cfg_user_settings`
+  (user-owned, app-enforced by context actorId, no RLS — the auth_users pattern)
+  + full `user → client → system` resolution + `/config/me` for any principal.
+- **Files:** `cfg_user_settings` model + migration (app_staff grants, NO RLS);
+  `ConfigService.getEffectiveForActor/setUser/clearUser` (+ `effectiveBelowUser`
+  for clear-reverts; actor from `requestContext`, never input); controller `GET
+  /config/me`, `PATCH`/`DELETE /config/me/:key`; `config.read-self`/`config.write-self`
+  perms → ALL roles (STAFF_BASE + ALL_CLIENT); NEW harness scope class `self`
+  (any principal, own data, 401-on-unauth) + 3 routes; 2 audited writes
+  (`config.user-set`/`config.user-clear`); `test/configuration-me.e2e-spec.ts`.
+- **DoD:** user override wins; three-tier compose for a client-rep; staff = user→system;
+  non-user-level → 400; invalid/unknown → 400/404; per-user isolation (app-enforced);
+  actor from session not URL; clear reverts to lower tier; audited + actor-attributed;
+  coverage gates + suite + lint + typecheck + build green.
+- **Evidence:** `evidence/configuration/CONF-03.md`.
+- **Dependencies:** CONF-02. **Risks:** user-owned data → app-enforced isolation
+  (no RLS, like auth_users); added the `self` harness class rather than mislabel
+  per-user endpoints `staff`; no catalog setting declares both client+user levels
+  yet, so user>client precedence is implemented but not exercised on one key.
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

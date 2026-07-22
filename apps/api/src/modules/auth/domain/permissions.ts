@@ -46,6 +46,10 @@ export const PERMISSIONS = [
   'config.read',
   'config.write',
   'config.write-client',
+  // Per-user preferences (CONF-03): every authenticated principal manages their
+  // OWN preferences (ui.language, …) — resolved user → client → system.
+  'config.read-self',
+  'config.write-self',
   // Session lifecycle — every authenticated principal may end their session.
   'session.end',
 ] as const;
@@ -77,6 +81,8 @@ const STAFF_BASE: readonly Permission[] = [
   'client.read',
   'employee.read',
   'config.read',
+  'config.read-self',
+  'config.write-self',
 ];
 // System/Company Admin extra: audit read + client CRUD (matrix).
 const ADMIN_EXTRA: readonly Permission[] = [
@@ -85,11 +91,14 @@ const ADMIN_EXTRA: readonly Permission[] = [
   'client.update',
   'client.delete',
 ];
-// Both client roles: the scope-check exemplar + session end.
+// Both client roles: the scope-check exemplar + session end + managing their
+// own per-user preferences (CONF-03 — every authenticated principal).
 const ALL_CLIENT: readonly Permission[] = [
   'scope-check.read',
   'scope-check.create',
   'session.end',
+  'config.read-self',
+  'config.write-self',
 ];
 // Client Admin additionally manages its own client's portal users (matrix —
 // Client User does NOT).

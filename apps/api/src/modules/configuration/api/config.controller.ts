@@ -101,4 +101,29 @@ export class ConfigController {
       throw new NotFoundException('Unknown client');
     }
   }
+
+  // ---- per-user level (CONF-03) — the caller's OWN preferences. Any
+  // authenticated principal; actor identity comes from the session, never the
+  // URL, so a user can only ever touch their own preferences. ----
+
+  @RequirePermission('config.read-self')
+  @Get('me')
+  async myEffective(): Promise<ConfigEffectiveResponse> {
+    return { settings: await this.config.getEffectiveForActor() };
+  }
+
+  @RequirePermission('config.write-self')
+  @Patch('me/:key')
+  async setMine(@Param('key') key: string, @Body() body: unknown): Promise<SettingValueResponse> {
+    const parsed = setSettingRequestSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException('Invalid payload (expected { value })');
+    const row = await this.config.setUser(key, parsed.data.value);
+    return { key: row.key, level: 'user', value: row.value };
+  }
+
+  @RequirePermission('config.write-self')
+  @Delete('me/:key')
+  async clearMine(@Param('key') key: string): Promise<SettingValueResponse> {
+    return this.config.clearUser(key);
+  }
 }
