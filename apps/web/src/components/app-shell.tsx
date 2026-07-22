@@ -17,6 +17,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const t = useTranslations();
   const canClients = useCan('client.read');
   const canEmployees = useCan('employee.read');
+  const canDocuments = useCan('document.read');
   const canAudit = useCan('audit.read');
   const canSettings = useCan('config.read-self'); // every authenticated principal
 
@@ -35,6 +36,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           {canEmployees && (
             <Link href="/employees" className={NAV_LINK}>
               {t('nav.employees')}
+            </Link>
+          )}
+          {canDocuments && (
+            <Link href="/documents" className={NAV_LINK}>
+              {t('nav.documents')}
             </Link>
           )}
           {canAudit && (

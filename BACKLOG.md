@@ -678,7 +678,7 @@ metadata with **expiry as first-class data**). Depends on Clients (done).
 | DOC-02 | Upload flow — presigned-PUT issue (`POST /documents` → pending metadata + upload URL) + confirm; `document.upload`; audited; harness | DOC-01 | done ([evidence](evidence/documents/DOC-02.md)) |
 | DOC-03 | Download (presigned GET) + delete (`document.delete` + object removal) + list/filter incl. by expiry; audited | DOC-02 | done ([evidence](evidence/documents/DOC-03.md)) |
 | DOC-04 | Virus-scan hook (pluggable interface, dev pass-through; ClamAV deferred to infra) + retention/PDPL hooks (0.9) | DOC-02 | todo |
-| DOC-05 | Web UI — documents list + upload + download (per client/employee) | DOC-03 | todo |
+| DOC-05 | Web UI — documents list + upload + download (per client/employee) | DOC-03 | done ([evidence](evidence/documents/DOC-05.md)) |
 
 ### STOR-01 — Storage shared module (S3-compatible adapter)
 - **Objective:** provider-agnostic `StorageService` — S3-compatible via AWS SDK
@@ -753,6 +753,23 @@ metadata with **expiry as first-class data**). Depends on Clients (done).
 - **Evidence:** `evidence/documents/DOC-03.md`.
 - **Dependencies:** DOC-02. **Risks:** download only for `available` (409 else);
   delete keeps the row (retention) — hard-delete/legal-hold is DOC-04/PDPL.
+
+### DOC-05 — Documents web UI
+- **Objective:** the documents console — list + expiry view + presigned upload +
+  download, over the DOC-02/03 API.
+- **Files:** `(app)/documents/page.tsx` (list w/ dual-calendar expiry + status
+  badges; filters client/category/expiring; upload dialog running the presigned
+  flow from the browser; download + delete); `app-shell.tsx` (Documents nav,
+  `document.read`); `messages/{en,ar}.json` (`nav.documents` + `documents`
+  namespace).
+- **DoD:** list + dual-calendar expiry; filters wired to the DOC-03 query; upload
+  issue→PUT-direct-to-store→confirm from the browser (CORS ok on MinIO); download
+  serves the blob; delete works; capability-gated; ar/en + RTL; typecheck + lint
+  green; verified in-browser (full round-trip + Arabic RTL).
+- **Evidence:** `evidence/documents/DOC-05.md`.
+- **Dependencies:** DOC-03. **Risks:** browser→object-store CORS (fine on MinIO
+  default; prod store needs CORS for the web origin); seed docs are metadata-only
+  (their download 404s — real blobs come via upload).
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 
