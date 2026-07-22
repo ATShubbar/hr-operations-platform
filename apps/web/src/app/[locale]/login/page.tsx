@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
-import type { MeResponse } from '@hr/contracts';
+import type { ConfigEffectiveResponse, MeResponse } from '@hr/contracts';
 import { apiFetch, ApiError } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import {
@@ -43,11 +43,21 @@ export default function LoginPage() {
   const [busy, setBusy] = useState(false);
 
   // Land on the first section the actor can actually use (role-aware, AUTH-08):
-  // admins → audit; other staff → clients. Falls back to clients.
+  // admins → audit; other staff → clients. Falls back to clients. Also honor the
+  // actor's stored ui.language preference (CONF-05) — land in their language.
   async function goToApp() {
     try {
       const me = await apiFetch<MeResponse>('/auth/me');
-      router.replace(me.permissions.includes('audit.read') ? '/audit' : '/clients');
+      const target = me.permissions.includes('audit.read') ? '/audit' : '/clients';
+      let preferred: 'ar' | 'en' | undefined;
+      try {
+        const cfg = await apiFetch<ConfigEffectiveResponse>('/config/me');
+        const lang = cfg.settings['ui.language'];
+        if (lang === 'ar' || lang === 'en') preferred = lang;
+      } catch {
+        // No preference reachable — land in the current locale.
+      }
+      router.replace(target, preferred ? { locale: preferred } : undefined);
     } catch {
       router.replace('/clients');
     }

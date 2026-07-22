@@ -551,7 +551,7 @@ Authz (done) + Audit (done).
 | CONF-02 | **Per-client** overrides (`cfg_client_settings`, RLS + harness) + client→system precedence + Company-Admin API | CONF-01 | done ([evidence](evidence/configuration/CONF-02.md)) |
 | CONF-03 | **Per-user** preferences (`cfg_user_settings`, app-enforced) + full user→client→system resolution + `/config/me` | CONF-02 | done ([evidence](evidence/configuration/CONF-03.md)) |
 | CONF-04 | **Feature flags** on the same substrate (`isEnabled`, system + per-client) + admin API | CONF-01 | done ([evidence](evidence/configuration/CONF-04.md)) |
-| CONF-05 | **Web**: system-settings admin page + per-user preferences (wires the language switch into `ui.language`) | CONF-03 | todo |
+| CONF-05 | **Web**: system-settings admin page + per-user preferences (wires the language switch into `ui.language`) | CONF-03 | done ([evidence](evidence/configuration/CONF-05.md)) |
 
 ### CONF-01 — Settings catalog + system-level resolution + system API
 - **Objective:** stand up the Configuration module — a typed settings **catalog**
@@ -642,6 +642,25 @@ Authz (done) + Audit (done).
 - **Dependencies:** CONF-01 (+CONF-02 for per-client). **Risks:** flags surface in
   `/config` + `/config/catalog` alongside settings (they ARE settings) — filtered
   boolean view is `/config/flags`; no user tier for flags.
+
+### CONF-05 — Configuration settings web UI
+- **Objective:** the first user-visible surface of the three-level model — a
+  Settings page: everyone manages their own preferences (the language control
+  persists to `ui.language`); System Admins edit system settings + toggle flags.
+- **Files:** `(app)/settings/page.tsx` (My preferences + Applies-to-you +
+  System-settings/Flags gated on `config.write`); `app-shell.tsx` (Settings nav,
+  `config.read-self`); `language-switcher.tsx` (persist `ui.language` on switch);
+  `login/page.tsx` (land in the stored language); `messages/{en,ar}.json`
+  (`nav.settings` + `settings` namespace).
+- **DoD:** preferences for all + system section gated; language persists + applies
+  (switch + login landing); resolved settings shown; system enum/string edits +
+  flag toggles over the CONF-01/04 API; ar/en + RTL; typecheck + lint green;
+  verified in-browser as finance (no system section) and system_admin (full +
+  live flag toggle).
+- **Evidence:** `evidence/configuration/CONF-05.md`.
+- **Dependencies:** CONF-01..04. **Risks:** Base UI `SelectValue` needs a render
+  function for labels; array-typed settings (working.week/ui.languages) shown
+  read-only (editors are a fast-follow).
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

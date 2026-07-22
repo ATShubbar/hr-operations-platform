@@ -18,6 +18,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const canClients = useCan('client.read');
   const canEmployees = useCan('employee.read');
   const canAudit = useCan('audit.read');
+  const canSettings = useCan('config.read-self'); // every authenticated principal
 
   return (
     <div className="flex min-h-dvh">
@@ -39,6 +40,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           {canAudit && (
             <Link href="/audit" className={NAV_LINK}>
               {t('nav.auditLog')}
+            </Link>
+          )}
+          {canSettings && (
+            <Link href="/settings" className={NAV_LINK}>
+              {t('nav.settings')}
             </Link>
           )}
         </nav>
