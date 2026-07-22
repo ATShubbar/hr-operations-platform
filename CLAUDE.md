@@ -45,11 +45,13 @@ CI write-audit coverage, admin read API + viewer UI). **Clients CLIENT-01..04**
 (2.5 — `cli_clients` PK-scoped registry, staff CRUD, client-rep user mgmt,
 console UI). **Employees 0.8 + EMP-01..03** (3.1 — `emp_employees`, field-level
 authz redacting salary/govdata per capability, console UI with redaction
-reflected). **Configuration 2.4 STARTED: CONF-01 done** (settings catalog +
-system-level resolution + System-Admin API + `cfg_system_settings`; three-level
-model's system tier — CONF-02 per-client / CONF-03 per-user next). Suite
-**122/122**. **Next candidates: CONF-02 (per-client overrides) or the AWS
-decision.** WS-20/21 still blocked: AWS account fully restricted since signup
+reflected). **Configuration 2.4 COMPLETE (CONF-01..05)** — three-level settings model
+(system/client/user, resolve user→client→system), feature flags on the same
+substrate, and the settings web UI. This closes all Priority-2 foundation
+modules (2.1–2.5). API suite **144/144**; web typecheck+lint green.
+**Next candidates: Priority-3 domain (3.2 Storage+Documents; 3.4 doc-expiry
+engine, already flag-gated), Config fast-follows (per-client settings admin UI;
+array-setting editors), or the AWS decision.** WS-20/21 still blocked: AWS account fully restricted since signup
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback
 (ADR-006). Infra pickup: docs/HANDOFF-WS20.md.
