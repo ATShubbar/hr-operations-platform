@@ -802,7 +802,7 @@ engine (3.4). Depends on 2.1 (Redis, live).
 |---|---|---|---|
 | NOTIF-01 | BullMQ dispatch infra (`@nestjs/bullmq` + `bullmq`, Redis root, producer/worker split, graceful shutdown, roundtrip e2e) | Redis | done ([evidence](evidence/notifications/NOTIF-01.md)) |
 | NOTIF-02 | Notifications module + `notif_notifications` (in-app, per-user, app-enforced) + `NotificationsService.notify()` + read/mark-read API (`self`) | NOTIF-01 | done ([evidence](evidence/notifications/NOTIF-02.md)) |
-| NOTIF-03 | Email channel — pluggable transport (dev capture / SMTP deferred) + ar/en templates + dispatch worker send | NOTIF-02 | todo |
+| NOTIF-03 | Email channel — pluggable transport (dev capture / SMTP deferred) + ar/en templates + dispatch worker send | NOTIF-02 | done ([evidence](evidence/notifications/NOTIF-03.md)) |
 | NOTIF-04 | Per-user notification preferences (`notification-pref.update`) gating email dispatch | NOTIF-02, CONF-03 | todo |
 | NOTIF-05 | Domain-event bus (ADR-004 acceptance) + Notifications subscribes (else producers call `notify()`) | NOTIF-02 | todo |
 | NOTIF-06 | Web UI — notification bell/list + mark-read + preferences | NOTIF-02/03/04 | todo |
@@ -842,6 +842,27 @@ engine (3.4). Depends on 2.1 (Redis, live).
 - **Dependencies:** NOTIF-01. **Risks:** in-app is source of truth, email
   best-effort (outbox is ADR-004/NOTIF-05); `TestPrincipal` exposes `userId` not
   `id`.
+
+### NOTIF-03 — Email channel (pluggable transport + ar/en templates)
+- **Objective:** the email delivery channel — the dispatch worker renders +
+  sends, replacing the NOTIF-01 echo. Pluggable transport (dev capture / SMTP
+  deferred) + ar/en templates + recipient-language selection.
+- **Files:** `domain/email.ts` (EmailTransport + EMAIL_TRANSPORT token);
+  `infra/capture-email-transport.ts` (dev capture, bound via provider);
+  `application/notification-templates.ts` (ar/en framing);
+  `application/notification-dispatch.service.ts` (load notif → email via
+  UsersService, language via ConfigService.resolveLanguageForUser → render →
+  send); `api/notification-dispatch.processor.ts` (@Processor(DISPATCH_QUEUE),
+  handles 'notification' jobs); `notifications-worker.module.ts`; MainModule +
+  queue.e2e updated; removed the NOTIF-01 echo processor/module;
+  `ConfigService.resolveLanguageForUser`; `test/notification-email.e2e-spec.ts`.
+- **DoD:** transport pluggable; ar/en per recipient language; worker renders +
+  sends; missing notif → no-op; single dispatch consumer; suite (exit 0) + lint +
+  typecheck + build green.
+- **Evidence:** `evidence/notifications/NOTIF-03.md`.
+- **Dependencies:** NOTIF-02. **Risks:** shared-queue race with the running dev
+  worker → test the dispatch SERVICE directly (queue path covered by queue.e2e);
+  recipient language resolves OUT of request context.
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

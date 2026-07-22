@@ -2,5 +2,4 @@
 // modules register/inject BullMQ queues (via @nestjs/bullmq) and enqueue onto
 // the shared `dispatch` queue.
 export { QueueModule } from './queue.module';
-export { DispatchWorkerModule } from './dispatch-worker.module';
 export { DISPATCH_QUEUE } from './queue.constants';

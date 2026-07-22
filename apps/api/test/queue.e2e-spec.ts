@@ -4,7 +4,8 @@ import { getQueueToken } from '@nestjs/bullmq';
 import type { Queue } from 'bullmq';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AppModule } from '../src/app.module';
-import { DISPATCH_QUEUE, DispatchWorkerModule } from '../src/modules/queue/public-api';
+import { DISPATCH_QUEUE } from '../src/modules/queue/public-api';
+import { NotificationsWorkerModule } from '../src/modules/notifications/public-api';
 
 // NOTIF-01: the BullMQ dispatch backbone, proven end-to-end against the real
 // Redis (docker compose). A job enqueued on the dispatch queue is picked up and
@@ -18,7 +19,7 @@ describe('BullMQ dispatch infra (NOTIF-01, e2e)', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [AppModule, DispatchWorkerModule],
+      imports: [AppModule, NotificationsWorkerModule],
     }).compile();
     app = moduleRef.createNestApplication();
     app.enableShutdownHooks();
@@ -32,6 +33,7 @@ describe('BullMQ dispatch infra (NOTIF-01, e2e)', () => {
   });
 
   it('a job enqueued on the dispatch queue is processed by the worker', async () => {
+    // a non-'notification' job is acknowledged as a no-op by the dispatch worker
     const job = await queue.add('probe', { hello: 'notif-01' });
 
     // poll until the worker finishes the job
@@ -41,10 +43,6 @@ describe('BullMQ dispatch infra (NOTIF-01, e2e)', () => {
       state = await job.getState();
     }
     expect(state).toBe('completed');
-
-    // the worker ran with OUR payload (echoed back as the job return value)
-    const done = await queue.getJob(job.id!);
-    expect(done?.returnvalue).toEqual({ handled: true, echo: { hello: 'notif-01' } });
   });
 
   it('processes several jobs', async () => {

@@ -301,6 +301,17 @@ export class ConfigService {
     return out;
   }
 
+  // The effective UI language for a specific user (NOTIF-03) — their per-user
+  // override if set, else the system default. Resolves OUTSIDE a request context
+  // (a worker sending email to a recipient who is not the caller).
+  async resolveLanguageForUser(userId: string): Promise<'ar' | 'en'> {
+    const override = await this.prisma.userSetting.findUnique({
+      where: { userId_key: { userId, key: 'ui.language' } },
+    });
+    const value = override ? (override.value as unknown) : await this.get('ui.language');
+    return value === 'en' ? 'en' : 'ar';
+  }
+
   private actor(): { actorId: string; clientId: string | null } {
     const ctx = requestContext.get();
     if (!ctx?.actorId) throw new UnauthorizedException('No authenticated actor');
