@@ -71,6 +71,94 @@ export class ConfigService {
     });
   }
 
+  // ---- per-client level (CONF-02) ----
+
+  // Effective settings for a client: client override wins over the system value
+  // (client → system precedence), but only for settings that DECLARE a client
+  // level — a stray override on a system-only setting is ignored, never applied.
+  async getAllForClient(clientId: string): Promise<Record<string, unknown>> {
+    const effective = await this.getAll();
+    const overrides = await this.prisma.clientSetting.findMany({ where: { clientId } });
+    const map = new Map(overrides.map((o) => [o.key, o.value as unknown]));
+    for (const def of CATALOG) {
+      if (settingAllowsLevel(def, 'client') && map.has(def.key)) {
+        effective[def.key] = map.get(def.key);
+      }
+    }
+    return effective;
+  }
+
+  // Set (upsert) a per-client override. A setting that does not declare a client
+  // level → 400 (architecture.md: overriding a non-permitted level is an error,
+  // not a silent fallback); unknown key → 404; bad value → 400. Audited, scoped
+  // to the affected client.
+  async setClient(
+    clientId: string,
+    key: string,
+    value: unknown,
+  ): Promise<{ key: string; value: unknown }> {
+    const def = this.requireDef(key);
+    if (!settingAllowsLevel(def, 'client')) {
+      throw new BadRequestException(`Setting '${key}' has no client level`);
+    }
+    const parsed = def.schema.safeParse(value);
+    if (!parsed.success) {
+      throw new BadRequestException(`Invalid value for setting '${key}'`);
+    }
+    const nextValue = parsed.data as Prisma.InputJsonValue;
+
+    return this.prisma.$transaction(async (tx) => {
+      const before = await tx.clientSetting.findUnique({
+        where: { clientId_key: { clientId, key } },
+      });
+      const row = await tx.clientSetting.upsert({
+        where: { clientId_key: { clientId, key } },
+        create: { clientId, key, value: nextValue },
+        update: { value: nextValue },
+      });
+      await this.audit.record(tx, {
+        resource: 'config',
+        action: 'client-set',
+        clientId,
+        before: before
+          ? { clientId, key, level: 'client', value: before.value as Prisma.InputJsonValue }
+          : undefined,
+        after: { clientId, key, level: 'client', value: row.value as Prisma.InputJsonValue },
+      });
+      return { key: row.key, value: row.value as unknown };
+    });
+  }
+
+  // Clear a per-client override, reverting the setting to the system value.
+  // Unknown key → 404. Absent override → idempotent no-op (no audit). Returns
+  // the now-effective (system) value.
+  async clearClient(
+    clientId: string,
+    key: string,
+  ): Promise<{ key: string; level: 'system'; value: unknown }> {
+    this.requireDef(key);
+    const existing = await this.prisma.clientSetting.findUnique({
+      where: { clientId_key: { clientId, key } },
+    });
+    if (existing) {
+      await this.prisma.$transaction(async (tx) => {
+        await tx.clientSetting.delete({ where: { clientId_key: { clientId, key } } });
+        await this.audit.record(tx, {
+          resource: 'config',
+          action: 'client-clear',
+          clientId,
+          before: {
+            clientId,
+            key,
+            level: 'client',
+            value: existing.value as Prisma.InputJsonValue,
+          },
+        });
+      });
+    }
+    return { key, level: 'system', value: await this.get(key) };
+  }
+
   private requireDef(key: string): SettingDef {
     const def = getSettingDef(key);
     if (!def) throw new NotFoundException(`Unknown setting '${key}'`);

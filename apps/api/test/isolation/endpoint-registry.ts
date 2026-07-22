@@ -42,6 +42,13 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'GET /config': 'staff',
   'GET /config/catalog': 'staff',
   'PATCH /config/system/:key': 'staff',
+  // Per-client config (CONF-02): staff-managed (Company Admin) for an EXPLICIT
+  // client id in the path — staff cross-client by permission, so 'staff' (not
+  // client-scoped). The cfg_client_settings table still ships RLS for the
+  // future client-rep read path (portal).
+  'GET /config/client/:clientId': 'staff',
+  'PATCH /config/client/:clientId/:key': 'staff',
+  'DELETE /config/client/:clientId/:key': 'staff',
   'GET /clients': 'staff',
   'GET /clients/:id': 'staff',
   'POST /clients': 'staff',

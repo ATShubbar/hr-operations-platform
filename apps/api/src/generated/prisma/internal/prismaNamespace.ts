@@ -388,6 +388,7 @@ export const ModelName = {
   CoreScopeCheck: 'CoreScopeCheck',
   AuditEntry: 'AuditEntry',
   SystemSetting: 'SystemSetting',
+  ClientSetting: 'ClientSetting',
   Client: 'Client',
   Employee: 'Employee'
 } as const
@@ -405,7 +406,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "authUser" | "coreScopeCheck" | "auditEntry" | "systemSetting" | "client" | "employee"
+    modelProps: "authUser" | "coreScopeCheck" | "auditEntry" | "systemSetting" | "clientSetting" | "client" | "employee"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -705,6 +706,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ClientSetting: {
+      payload: Prisma.$ClientSettingPayload<ExtArgs>
+      fields: Prisma.ClientSettingFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ClientSettingFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientSettingPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ClientSettingFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientSettingPayload>
+        }
+        findFirst: {
+          args: Prisma.ClientSettingFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientSettingPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ClientSettingFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientSettingPayload>
+        }
+        findMany: {
+          args: Prisma.ClientSettingFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientSettingPayload>[]
+        }
+        create: {
+          args: Prisma.ClientSettingCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientSettingPayload>
+        }
+        createMany: {
+          args: Prisma.ClientSettingCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ClientSettingCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientSettingPayload>[]
+        }
+        delete: {
+          args: Prisma.ClientSettingDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientSettingPayload>
+        }
+        update: {
+          args: Prisma.ClientSettingUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientSettingPayload>
+        }
+        deleteMany: {
+          args: Prisma.ClientSettingDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ClientSettingUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ClientSettingUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientSettingPayload>[]
+        }
+        upsert: {
+          args: Prisma.ClientSettingUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ClientSettingPayload>
+        }
+        aggregate: {
+          args: Prisma.ClientSettingAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateClientSetting>
+        }
+        groupBy: {
+          args: Prisma.ClientSettingGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ClientSettingGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ClientSettingCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ClientSettingCountAggregateOutputType> | number
+        }
+      }
+    }
     Client: {
       payload: Prisma.$ClientPayload<ExtArgs>
       fields: Prisma.ClientFieldRefs
@@ -940,6 +1015,16 @@ export const SystemSettingScalarFieldEnum = {
 } as const
 
 export type SystemSettingScalarFieldEnum = (typeof SystemSettingScalarFieldEnum)[keyof typeof SystemSettingScalarFieldEnum]
+
+
+export const ClientSettingScalarFieldEnum = {
+  clientId: 'clientId',
+  key: 'key',
+  value: 'value',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ClientSettingScalarFieldEnum = (typeof ClientSettingScalarFieldEnum)[keyof typeof ClientSettingScalarFieldEnum]
 
 
 export const ClientScalarFieldEnum = {
@@ -1425,6 +1510,7 @@ export type GlobalOmitConfig = {
   coreScopeCheck?: Prisma.CoreScopeCheckOmit
   auditEntry?: Prisma.AuditEntryOmit
   systemSetting?: Prisma.SystemSettingOmit
+  clientSetting?: Prisma.ClientSettingOmit
   client?: Prisma.ClientOmit
   employee?: Prisma.EmployeeOmit
 }

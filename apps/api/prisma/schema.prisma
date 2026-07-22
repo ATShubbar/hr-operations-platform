@@ -104,6 +104,25 @@ model SystemSetting {
   @@map("cfg_system_settings")
 }
 
+// Per-client setting overrides (CONF-02; ACTION-PLAN 2.4). The CLIENT level of
+// the three-level model — overrides that win over the system default for
+// settings that declare a 'client' level (calendar.display, working.week,
+// timezone). UNLIKE cfg_system_settings this IS client-owned data, so it
+// follows the client-scoped checklist: a denormalized client_id column + RLS
+// (staff full; client-rep own-only). Managed by consultancy staff (Company
+// Admin), never by the client — the write path is staff (app_staff); the RLS
+// client policy is for the future client-rep read path (portal). Composite PK
+// (client_id, key): one override row per setting per client.
+model ClientSetting {
+  clientId  String   @map("client_id") @db.Uuid
+  key       String
+  value     Json     @db.JsonB
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@id([clientId, key])
+  @@map("cfg_client_settings")
+}
+
 // Client-company registry (CLIENT-01; ADR-002 isolation boundary). This table
 // ORIGINATES client_id: every client-owned row elsewhere references one of
 // these ids. It is itself client-scoped, but UNLIKE the boilerplate pattern

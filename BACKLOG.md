@@ -548,7 +548,7 @@ Authz (done) + Audit (done).
 | ID | Task | Depends on | Status |
 |---|---|---|---|
 | CONF-01 | Settings **catalog** + system-level resolution + system settings API (System Admin, audited) | 2.2, 2.3 | done ([evidence](evidence/configuration/CONF-01.md)) |
-| CONF-02 | **Per-client** overrides (`cfg_client_settings`, RLS + harness) + client→system precedence + Company-Admin API | CONF-01 | todo |
+| CONF-02 | **Per-client** overrides (`cfg_client_settings`, RLS + harness) + client→system precedence + Company-Admin API | CONF-01 | done ([evidence](evidence/configuration/CONF-02.md)) |
 | CONF-03 | **Per-user** preferences (`cfg_user_settings`, app-enforced) + full user→client→system resolution + `/config/me` | CONF-02 | todo |
 | CONF-04 | **Feature flags** on the same substrate (`isEnabled`, system + per-client) + admin API | CONF-01 | todo |
 | CONF-05 | **Web**: system-settings admin page + per-user preferences (wires the language switch into `ui.language`) | CONF-03 | todo |
@@ -577,6 +577,30 @@ Authz (done) + Audit (done).
   (System Admin) → tests use `loginAsEnrolledStaff`; `cfg_system_settings` is a
   non-client-scoped system table (registered `staff` in the harness — no RLS);
   added `zod` as a direct API dependency (the catalog defines validators).
+
+### CONF-02 — Per-client setting overrides
+- **Objective:** add the CLIENT tier — `cfg_client_settings` (first client-scoped
+  table in the module) + `client → system` resolution + a staff (Company Admin)
+  API to set/clear a client's overrides for an explicit `:clientId`.
+- **Files:** `cfg_client_settings` model + migration (client-scoped checklist:
+  client_id, GRANTs, RLS both policies w/ NULLIF; composite PK, no sequence);
+  `ConfigService.getAllForClient/setClient/clearClient`; controller `GET
+  /config/client/:clientId`, `PATCH`/`DELETE /config/client/:clientId/:key`
+  (validates client via ClientsService); `config.write-client` perm → Company
+  Admin; 3 routes in harness (`staff`) + 2 audited writes (`config.client-set`,
+  `config.client-clear`); `test/configuration-client.e2e-spec.ts`.
+- **Decision:** per-client is staff-managed (never the client), so the path
+  carries `:clientId` and the endpoints are `staff` class; the table still ships
+  RLS for the future client-rep read path. `config.write-client` (Company Admin)
+  is distinct from `config.write` (System Admin, system level).
+- **DoD:** client override wins over system, doesn't leak up, per-client isolated;
+  non-client-level setting → 400; invalid/unknown key/unknown client → 400/404/404;
+  Company-Admin-only (non-holder 403); clear reverts to system; audited + scoped
+  to the client; checklist satisfied; suite + lint + typecheck + build green.
+- **Evidence:** `evidence/configuration/CONF-02.md`.
+- **Dependencies:** CONF-01. **Risks:** first client-scoped table here — RLS
+  shipped now, exercised by the future portal path (defence in depth); staff path
+  means explicit `:clientId`, not request context.
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

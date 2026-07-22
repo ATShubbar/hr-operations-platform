@@ -39,11 +39,13 @@ export const PERMISSIONS = [
   'salary.update',
   'govdata.read',
   'govdata.update',
-  // Configuration (CONF-01; permission matrix): all staff read effective
+  // Configuration (CONF-01/02; permission matrix): all staff read effective
   // settings + catalog; only System Admin writes the SYSTEM level (deployment-
-  // wide defaults). Per-client/per-user write perms land with CONF-02/03.
+  // wide defaults); Company Admin writes PER-CLIENT overrides (never the client
+  // themselves). Per-user write lands with CONF-03.
   'config.read',
   'config.write',
+  'config.write-client',
   // Session lifecycle — every authenticated principal may end their session.
   'session.end',
 ] as const;
@@ -106,7 +108,9 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
   // core R · salary R · govdata R (read-only on employee data; power is config):
   // the ONLY holder of config.write — writes deployment-wide system settings.
   system_admin: [...STAFF_BASE, ...ADMIN_EXTRA, 'salary.read', 'govdata.read', 'config.write'],
-  // core CRUD · salary R · govdata R
+  // core CRUD · salary R · govdata R; manages PER-CLIENT config overrides
+  // (matrix — per-client settings are Company Admin's, distinct from the
+  // System Admin's system-level config.write).
   company_admin: [
     ...STAFF_BASE,
     ...ADMIN_EXTRA,
@@ -115,6 +119,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'employee.delete',
     'salary.read',
     'govdata.read',
+    'config.write-client',
   ],
   // core R · salary – · govdata –
   recruiter: [...STAFF_BASE],

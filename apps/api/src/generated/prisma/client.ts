@@ -60,6 +60,11 @@ export type AuditEntry = Prisma.AuditEntryModel
  */
 export type SystemSetting = Prisma.SystemSettingModel
 /**
+ * Model ClientSetting
+ * 
+ */
+export type ClientSetting = Prisma.ClientSettingModel
+/**
  * Model Client
  * 
  */

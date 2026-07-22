@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuditModule } from '../audit/public-api';
+import { ClientsModule } from '../clients/public-api';
 import { ConfigController } from './api/config.controller';
 import { ConfigService } from './application/config.service';
 
@@ -8,7 +9,7 @@ import { ConfigService } from './application/config.service';
 // reads settings through ConfigService (exported). PrismaService is global;
 // AuditModule provides the transactional audit for the system write.
 @Module({
-  imports: [AuditModule],
+  imports: [AuditModule, ClientsModule],
   controllers: [ConfigController],
   providers: [ConfigService],
   exports: [ConfigService],

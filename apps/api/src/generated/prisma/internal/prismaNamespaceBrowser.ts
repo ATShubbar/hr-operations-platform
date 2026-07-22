@@ -55,6 +55,7 @@ export const ModelName = {
   CoreScopeCheck: 'CoreScopeCheck',
   AuditEntry: 'AuditEntry',
   SystemSetting: 'SystemSetting',
+  ClientSetting: 'ClientSetting',
   Client: 'Client',
   Employee: 'Employee'
 } as const
@@ -123,6 +124,16 @@ export const SystemSettingScalarFieldEnum = {
 } as const
 
 export type SystemSettingScalarFieldEnum = (typeof SystemSettingScalarFieldEnum)[keyof typeof SystemSettingScalarFieldEnum]
+
+
+export const ClientSettingScalarFieldEnum = {
+  clientId: 'clientId',
+  key: 'key',
+  value: 'value',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ClientSettingScalarFieldEnum = (typeof ClientSettingScalarFieldEnum)[keyof typeof ClientSettingScalarFieldEnum]
 
 
 export const ClientScalarFieldEnum = {
