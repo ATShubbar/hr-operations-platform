@@ -393,7 +393,8 @@ export const ModelName = {
   Client: 'Client',
   Employee: 'Employee',
   Document: 'Document',
-  Notification: 'Notification'
+  Notification: 'Notification',
+  ExpiryAlert: 'ExpiryAlert'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -409,7 +410,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "authUser" | "coreScopeCheck" | "auditEntry" | "systemSetting" | "clientSetting" | "userSetting" | "client" | "employee" | "document" | "notification"
+    modelProps: "authUser" | "coreScopeCheck" | "auditEntry" | "systemSetting" | "clientSetting" | "userSetting" | "client" | "employee" | "document" | "notification" | "expiryAlert"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1153,6 +1154,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ExpiryAlert: {
+      payload: Prisma.$ExpiryAlertPayload<ExtArgs>
+      fields: Prisma.ExpiryAlertFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ExpiryAlertFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpiryAlertPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ExpiryAlertFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpiryAlertPayload>
+        }
+        findFirst: {
+          args: Prisma.ExpiryAlertFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpiryAlertPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ExpiryAlertFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpiryAlertPayload>
+        }
+        findMany: {
+          args: Prisma.ExpiryAlertFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpiryAlertPayload>[]
+        }
+        create: {
+          args: Prisma.ExpiryAlertCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpiryAlertPayload>
+        }
+        createMany: {
+          args: Prisma.ExpiryAlertCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ExpiryAlertCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpiryAlertPayload>[]
+        }
+        delete: {
+          args: Prisma.ExpiryAlertDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpiryAlertPayload>
+        }
+        update: {
+          args: Prisma.ExpiryAlertUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpiryAlertPayload>
+        }
+        deleteMany: {
+          args: Prisma.ExpiryAlertDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ExpiryAlertUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ExpiryAlertUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpiryAlertPayload>[]
+        }
+        upsert: {
+          args: Prisma.ExpiryAlertUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExpiryAlertPayload>
+        }
+        aggregate: {
+          args: Prisma.ExpiryAlertAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateExpiryAlert>
+        }
+        groupBy: {
+          args: Prisma.ExpiryAlertGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ExpiryAlertGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ExpiryAlertCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ExpiryAlertCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1355,6 +1430,17 @@ export const NotificationScalarFieldEnum = {
 } as const
 
 export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
+
+
+export const ExpiryAlertScalarFieldEnum = {
+  id: 'id',
+  clientId: 'clientId',
+  documentId: 'documentId',
+  threshold: 'threshold',
+  sentAt: 'sentAt'
+} as const
+
+export type ExpiryAlertScalarFieldEnum = (typeof ExpiryAlertScalarFieldEnum)[keyof typeof ExpiryAlertScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1831,6 +1917,7 @@ export type GlobalOmitConfig = {
   employee?: Prisma.EmployeeOmit
   document?: Prisma.DocumentOmit
   notification?: Prisma.NotificationOmit
+  expiryAlert?: Prisma.ExpiryAlertOmit
 }
 
 /* Types for Logging */

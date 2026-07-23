@@ -60,7 +60,8 @@ export const ModelName = {
   Client: 'Client',
   Employee: 'Employee',
   Document: 'Document',
-  Notification: 'Notification'
+  Notification: 'Notification',
+  ExpiryAlert: 'ExpiryAlert'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -242,6 +243,17 @@ export const NotificationScalarFieldEnum = {
 } as const
 
 export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
+
+
+export const ExpiryAlertScalarFieldEnum = {
+  id: 'id',
+  clientId: 'clientId',
+  documentId: 'documentId',
+  threshold: 'threshold',
+  sentAt: 'sentAt'
+} as const
+
+export type ExpiryAlertScalarFieldEnum = (typeof ExpiryAlertScalarFieldEnum)[keyof typeof ExpiryAlertScalarFieldEnum]
 
 
 export const SortOrder = {

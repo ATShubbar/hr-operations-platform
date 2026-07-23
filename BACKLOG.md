@@ -864,6 +864,43 @@ engine (3.4). Depends on 2.1 (Redis, live).
   worker → test the dispatch SERVICE directly (queue path covered by queue.e2e);
   recipient language resolves OUT of request context.
 
+## Priority 3 — Document-expiry engine epic (ACTION-PLAN 3.4, architecture.md)
+
+Same rules, same loop. Evidence goes to `evidence/expiry/`. The first real
+**cross-module consumer**: a daily scan reads `doc_documents` (expiry is
+first-class + indexed) and raises notifications via `NotificationsService.notify()`.
+The ADR-004 event bus is NOT built (NOTIF-05, todo) — the documented fallback
+applies (producers call `notify()` directly). Depends on 3.2 (Documents) + 3.3
+(Notifications), both done.
+
+| ID | Task | Depends on | Status |
+|---|---|---|---|
+| EXP-01 | Expiry scan engine + idempotent alert ledger (`exp_alerts`, tiers, category→staff recipients) | 3.2, NOTIF-02 | done ([evidence](evidence/expiry/EXP-01.md)) |
+| EXP-02 | Daily schedule — BullMQ repeatable job → scan (worker in MainModule, flag-gated `flag.document-expiry-alerts`) + manual `POST /expiry/scan` trigger | EXP-01, NOTIF-01 | todo |
+| EXP-03 | (optional) Web surfacing beyond the documents `expiringBefore` filter | EXP-02 | todo |
+
+### EXP-01 — Expiry scan engine + idempotent alert ledger
+- **Objective:** the engine core — given a scan date, find every non-deleted
+  document whose `expiryDate` falls within a warning tier and raise a
+  `document_expiry` notification **exactly once per (document, threshold)**. An
+  idempotent daily scan is the whole game.
+- **Files:** `ExpiryAlert` model + additive migration (`exp_alerts`,
+  client-scoped RLS/grants, unique `(document_id, threshold)`);
+  `modules/document-expiry/{domain/thresholds.ts, domain/recipients.ts,
+  domain/messages.ts, application/expiry-scan.service.ts, document-expiry.module.ts,
+  public-api.ts}`; `UsersService.findStaffByRoles()` (auth); AppModule registers
+  the module; `test/expiry-scan.e2e-spec.ts` (driven via the service directly).
+- **DoD:** one alert per (doc, tier) to each resolved staff recipient + ledger
+  row; idempotent (second scan same day → 0 new); escalates (next tier → exactly
+  one new, prior kept); expired → tier 0; deleted/beyond-window → none; recipient
+  resolution matches category→role; RLS ships; coverage + suite + lint + typecheck
+  + build green.
+- **Evidence:** `evidence/expiry/EXP-01.md`.
+- **Dependencies:** DOC-01 (`expiringOnOrBefore`), NOTIF-02 (`notify`).
+  **Risks:** claim-then-notify is at-most-once (crash drops one alert, not
+  duplicates); ledger keyed by (doc, tier) not recipient (coarse role fan-out, no
+  per-client assignment model yet); ADR-004 event bus deferred → direct notify().
+
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 
 | Epic | Source | Gate |

@@ -52,12 +52,17 @@ modules (2.1–2.5). **Documents+Storage epic (3.2) COMPLETE (STOR-01 + DOC-01..
 Storage module (MinIO local), `doc_documents` registry (expiry first-class),
 presigned upload flow (category-scoped), read/download/delete, virus-scan hook
 (pluggable, EICAR dev scanner → quarantine; ClamAV deferred) + legal-hold
-retention, and the documents web UI. **Notifications epic (3.3) STARTED:
-NOTIF-01 done** — BullMQ dispatch infra (`@nestjs/bullmq`, producer/worker split,
-graceful shutdown, roundtrip proven). API suite **171/171**; web typecheck+lint
-green. **Seven product screens** (login, audit, clients, employees, settings,
-documents). **Next: NOTIF-02 (in-app notifications) → NOTIF-03/04, then 3.4
-expiry engine. AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup
+retention, and the documents web UI. **Notifications epic (3.3): NOTIF-01..03 done** —
+BullMQ dispatch infra (producer/worker split), in-app notifications
+(`notify` + read/mark-read, per-user), email channel (pluggable transport, dev
+capture / SMTP deferred, ar/en templates, recipient-language). **Document-expiry
+engine (3.4) STARTED: EXP-01 done** — `exp_alerts` idempotency ledger + scan
+service (threshold tiers 60/30/14/7/1/0, category→staff recipients, bilingual
+alerts via `NotificationsService.notify`); the first real cross-module consumer.
+API suite **182/182**; web typecheck+lint green. **Seven product screens** (login,
+audit, clients, employees, settings, documents). **Next: EXP-02 (daily BullMQ
+schedule + trigger endpoint, flag-gated) → EXP-03. NOTIF-04/05/06 still open.
+AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback
 (ADR-006). Infra pickup: docs/HANDOFF-WS20.md.

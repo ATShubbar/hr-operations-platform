@@ -343,6 +343,27 @@ model Notification {
   @@map("notif_notifications")
 }
 
+// Expiry-alert ledger (EXP-01; ACTION-PLAN 3.4). The document-expiry engine
+// scans doc_documents daily and raises a notification once per (document,
+// threshold) tier crossed — this table is the idempotency ledger that makes a
+// DAILY scan safe (re-running, or scanning again after a tier already fired,
+// raises nothing new). Client-scoped (ADR-001 standard pattern) so a future
+// client portal can read its own document's alert history; the scan itself
+// writes via the staff path (system process, all clients). The unique
+// (document_id, threshold) is the claim that guarantees at-most-once per tier.
+model ExpiryAlert {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clientId   String   @map("client_id") @db.Uuid
+  documentId String   @map("document_id") @db.Uuid
+  threshold  Int
+  sentAt     DateTime @default(now()) @map("sent_at")
+
+  @@unique([documentId, threshold])
+  @@index([clientId])
+  @@index([documentId])
+  @@map("exp_alerts")
+}
+
 enum NotificationCategory {
   document_expiry
   task

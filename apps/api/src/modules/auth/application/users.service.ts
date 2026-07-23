@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import type { AuthUserModel as AuthUser } from '../../../generated/prisma/models';
 import type { Prisma } from '../../../generated/prisma/client';
-import type { ClientRole } from '../domain/permissions';
+import type { ClientRole, StaffRole } from '../domain/permissions';
 import type { CreateClientRepUserInput, CreateStaffUserInput } from '../domain/user';
 
 export type ClientRepStatus = 'active' | 'disabled';
@@ -85,6 +85,18 @@ export class UsersService {
 
   findById(id: string): Promise<AuthUser | null> {
     return this.prisma.authUser.findUnique({ where: { id } });
+  }
+
+  // Active STAFF users holding any of the given roles (EXP-01). The document-
+  // expiry engine fans an alert out to the consultancy staff who manage a
+  // document's category (GRO → gov docs, HR/admin → all, …). Staff only —
+  // client_reps are excluded — and disabled accounts are skipped.
+  findStaffByRoles(roles: readonly StaffRole[]): Promise<AuthUser[]> {
+    if (roles.length === 0) return Promise.resolve([]);
+    return this.prisma.authUser.findMany({
+      where: { principalType: 'staff', status: 'active', role: { in: [...roles] } },
+      orderBy: { email: 'asc' },
+    });
   }
 
   setMfaSecret(id: string, secret: string): Promise<AuthUser> {

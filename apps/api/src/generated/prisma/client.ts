@@ -89,3 +89,8 @@ export type Document = Prisma.DocumentModel
  * 
  */
 export type Notification = Prisma.NotificationModel
+/**
+ * Model ExpiryAlert
+ * 
+ */
+export type ExpiryAlert = Prisma.ExpiryAlertModel
