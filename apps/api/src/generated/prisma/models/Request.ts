@@ -34,6 +34,7 @@ export type RequestMinAggregateOutputType = {
   priority: $Enums.RequestPriority | null
   dueDate: Date | null
   createdByUserId: string | null
+  assigneeUserId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -48,6 +49,7 @@ export type RequestMaxAggregateOutputType = {
   priority: $Enums.RequestPriority | null
   dueDate: Date | null
   createdByUserId: string | null
+  assigneeUserId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -62,6 +64,7 @@ export type RequestCountAggregateOutputType = {
   priority: number
   dueDate: number
   createdByUserId: number
+  assigneeUserId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -78,6 +81,7 @@ export type RequestMinAggregateInputType = {
   priority?: true
   dueDate?: true
   createdByUserId?: true
+  assigneeUserId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -92,6 +96,7 @@ export type RequestMaxAggregateInputType = {
   priority?: true
   dueDate?: true
   createdByUserId?: true
+  assigneeUserId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -106,6 +111,7 @@ export type RequestCountAggregateInputType = {
   priority?: true
   dueDate?: true
   createdByUserId?: true
+  assigneeUserId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -193,6 +199,7 @@ export type RequestGroupByOutputType = {
   priority: $Enums.RequestPriority
   dueDate: Date | null
   createdByUserId: string
+  assigneeUserId: string | null
   createdAt: Date
   updatedAt: Date
   _count: RequestCountAggregateOutputType | null
@@ -228,6 +235,7 @@ export type RequestWhereInput = {
   priority?: Prisma.EnumRequestPriorityFilter<"Request"> | $Enums.RequestPriority
   dueDate?: Prisma.DateTimeNullableFilter<"Request"> | Date | string | null
   createdByUserId?: Prisma.UuidFilter<"Request"> | string
+  assigneeUserId?: Prisma.UuidNullableFilter<"Request"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Request"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Request"> | Date | string
 }
@@ -242,6 +250,7 @@ export type RequestOrderByWithRelationInput = {
   priority?: Prisma.SortOrder
   dueDate?: Prisma.SortOrderInput | Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
+  assigneeUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -259,6 +268,7 @@ export type RequestWhereUniqueInput = Prisma.AtLeast<{
   priority?: Prisma.EnumRequestPriorityFilter<"Request"> | $Enums.RequestPriority
   dueDate?: Prisma.DateTimeNullableFilter<"Request"> | Date | string | null
   createdByUserId?: Prisma.UuidFilter<"Request"> | string
+  assigneeUserId?: Prisma.UuidNullableFilter<"Request"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Request"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Request"> | Date | string
 }, "id">
@@ -273,6 +283,7 @@ export type RequestOrderByWithAggregationInput = {
   priority?: Prisma.SortOrder
   dueDate?: Prisma.SortOrderInput | Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
+  assigneeUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.RequestCountOrderByAggregateInput
@@ -293,6 +304,7 @@ export type RequestScalarWhereWithAggregatesInput = {
   priority?: Prisma.EnumRequestPriorityWithAggregatesFilter<"Request"> | $Enums.RequestPriority
   dueDate?: Prisma.DateTimeNullableWithAggregatesFilter<"Request"> | Date | string | null
   createdByUserId?: Prisma.UuidWithAggregatesFilter<"Request"> | string
+  assigneeUserId?: Prisma.UuidNullableWithAggregatesFilter<"Request"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Request"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Request"> | Date | string
 }
@@ -307,6 +319,7 @@ export type RequestCreateInput = {
   priority?: $Enums.RequestPriority
   dueDate?: Date | string | null
   createdByUserId: string
+  assigneeUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -321,6 +334,7 @@ export type RequestUncheckedCreateInput = {
   priority?: $Enums.RequestPriority
   dueDate?: Date | string | null
   createdByUserId: string
+  assigneeUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -335,6 +349,7 @@ export type RequestUpdateInput = {
   priority?: Prisma.EnumRequestPriorityFieldUpdateOperationsInput | $Enums.RequestPriority
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  assigneeUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -349,6 +364,7 @@ export type RequestUncheckedUpdateInput = {
   priority?: Prisma.EnumRequestPriorityFieldUpdateOperationsInput | $Enums.RequestPriority
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  assigneeUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -363,6 +379,7 @@ export type RequestCreateManyInput = {
   priority?: $Enums.RequestPriority
   dueDate?: Date | string | null
   createdByUserId: string
+  assigneeUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -377,6 +394,7 @@ export type RequestUpdateManyMutationInput = {
   priority?: Prisma.EnumRequestPriorityFieldUpdateOperationsInput | $Enums.RequestPriority
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  assigneeUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -391,6 +409,7 @@ export type RequestUncheckedUpdateManyInput = {
   priority?: Prisma.EnumRequestPriorityFieldUpdateOperationsInput | $Enums.RequestPriority
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  assigneeUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -405,6 +424,7 @@ export type RequestCountOrderByAggregateInput = {
   priority?: Prisma.SortOrder
   dueDate?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
+  assigneeUserId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -419,6 +439,7 @@ export type RequestMaxOrderByAggregateInput = {
   priority?: Prisma.SortOrder
   dueDate?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
+  assigneeUserId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -433,6 +454,7 @@ export type RequestMinOrderByAggregateInput = {
   priority?: Prisma.SortOrder
   dueDate?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
+  assigneeUserId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -461,6 +483,7 @@ export type RequestSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   priority?: boolean
   dueDate?: boolean
   createdByUserId?: boolean
+  assigneeUserId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["request"]>
@@ -475,6 +498,7 @@ export type RequestSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   priority?: boolean
   dueDate?: boolean
   createdByUserId?: boolean
+  assigneeUserId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["request"]>
@@ -489,6 +513,7 @@ export type RequestSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   priority?: boolean
   dueDate?: boolean
   createdByUserId?: boolean
+  assigneeUserId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["request"]>
@@ -503,11 +528,12 @@ export type RequestSelectScalar = {
   priority?: boolean
   dueDate?: boolean
   createdByUserId?: boolean
+  assigneeUserId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type RequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clientId" | "type" | "title" | "description" | "status" | "priority" | "dueDate" | "createdByUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["request"]>
+export type RequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clientId" | "type" | "title" | "description" | "status" | "priority" | "dueDate" | "createdByUserId" | "assigneeUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["request"]>
 
 export type $RequestPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Request"
@@ -522,6 +548,7 @@ export type $RequestPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     priority: $Enums.RequestPriority
     dueDate: Date | null
     createdByUserId: string
+    assigneeUserId: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["request"]>
@@ -956,6 +983,7 @@ export interface RequestFieldRefs {
   readonly priority: Prisma.FieldRef<"Request", 'RequestPriority'>
   readonly dueDate: Prisma.FieldRef<"Request", 'DateTime'>
   readonly createdByUserId: Prisma.FieldRef<"Request", 'String'>
+  readonly assigneeUserId: Prisma.FieldRef<"Request", 'String'>
   readonly createdAt: Prisma.FieldRef<"Request", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Request", 'DateTime'>
 }

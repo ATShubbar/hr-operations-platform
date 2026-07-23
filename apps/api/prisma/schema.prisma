@@ -406,6 +406,7 @@ model Request {
   priority        RequestPriority @default(normal)
   dueDate         DateTime?       @map("due_date") @db.Date
   createdByUserId String          @map("created_by_user_id") @db.Uuid
+  assigneeUserId  String?         @map("assignee_user_id") @db.Uuid
   createdAt       DateTime        @default(now()) @map("created_at")
   updatedAt       DateTime        @updatedAt @map("updated_at")
 

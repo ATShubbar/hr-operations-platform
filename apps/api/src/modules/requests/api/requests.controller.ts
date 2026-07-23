@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import {
   createRequestRequestSchema,
+  processRequestRequestSchema,
   requestQuerySchema,
   updateRequestRequestSchema,
   type RequestListResponse,
@@ -119,6 +120,24 @@ export class RequestsController {
     if (!row) throw new NotFoundException('Request not found');
     return toResponse(row);
   }
+
+  // Advance the workflow (REQ-03) — STAFF only (client reps lack request.process),
+  // cross-client. Validates the transition (illegal → 400) and notifies the
+  // creator via a domain event. Not a client-rep path.
+  @RequirePermission('request.process')
+  @Post(':id/process')
+  @HttpCode(200)
+  async process(@Param('id') id: string, @Body() body: unknown): Promise<RequestResponse> {
+    if (!UUID_RE.test(id)) throw new NotFoundException('Request not found');
+    const parsed = processRequestRequestSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException('Invalid process payload');
+    const row = await this.requests.process(id, {
+      status: parsed.data.status,
+      assigneeUserId: parsed.data.assigneeUserId,
+    });
+    if (!row) throw new NotFoundException('Request not found');
+    return toResponse(row);
+  }
 }
 
 function toResponse(r: RequestRecord): RequestResponse {
@@ -132,6 +151,7 @@ function toResponse(r: RequestRecord): RequestResponse {
     priority: r.priority,
     dueDate: r.dueDate ? r.dueDate.toISOString().slice(0, 10) : null,
     createdByUserId: r.createdByUserId,
+    assigneeUserId: r.assigneeUserId,
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   };

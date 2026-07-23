@@ -105,6 +105,9 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'GET /requests': 'client-read',
   'GET /requests/:id': 'client-read',
   'PATCH /requests/:id': 'client-write',
+  // Processing (REQ-03) is STAFF-only (request.process; client reps lack it) and
+  // cross-client — so 'staff', not a client-scoped class.
+  'POST /requests/:id/process': 'staff',
   'GET /example/greeting': 'staff',
   'GET /example-consumer/relay': 'staff',
   'GET /scope-check': 'client-scoped',

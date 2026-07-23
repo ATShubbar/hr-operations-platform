@@ -1,4 +1,4 @@
-import type { RequestPriority, RequestType } from '../../../generated/prisma/client';
+import type { RequestPriority, RequestStatus, RequestType } from '../../../generated/prisma/client';
 
 // Input to RequestsService.create (REQ-01). `status` is not accepted here — a new
 // request always starts `open`; advancing it is the processing concern (REQ-03).
@@ -21,4 +21,11 @@ export interface UpdateRequestInput {
   description?: string | null;
   priority?: RequestPriority;
   dueDate?: Date | null;
+}
+
+// Processing input (REQ-03) — advance the status (validated against the workflow)
+// and optionally set/clear the assignee. Staff path only (request.process).
+export interface ProcessRequestInput {
+  status: RequestStatus;
+  assigneeUserId?: string | null;
 }

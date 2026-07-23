@@ -71,6 +71,9 @@ export const PERMISSIONS = [
   'request.read',
   'request.create',
   'request.update',
+  // Advancing a request through its status workflow (REQ-03): Company Admin + HR
+  // Officer + GRO Officer (matrix — the RU-process roles). Staff-only.
+  'request.process',
   // Session lifecycle — every authenticated principal may end their session.
   'session.end',
 ] as const;
@@ -166,9 +169,11 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'config.write-client',
     'document.upload',
     'document.delete',
-    // Requests: Company Admin has full CRUD (create + update here; delete later).
+    // Requests: Company Admin has full CRUD (create + update here; delete later)
+    // and processes them.
     'request.create',
     'request.update',
+    'request.process',
   ],
   // core R · salary – · govdata – · documents: recruitment (category-scoped)
   recruiter: [...STAFF_BASE, 'document.upload', 'document.delete'],
@@ -183,6 +188,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'govdata.read',
     'document.upload',
     'document.delete',
+    'request.process',
   ],
   // core RU · salary – · govdata CRUD · documents: government (category-scoped)
   gro_officer: [
@@ -192,6 +198,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'govdata.update',
     'document.upload',
     'document.delete',
+    'request.process',
   ],
   // core R · salary RU · govdata –
   finance: [...STAFF_BASE, 'salary.read', 'salary.update'],

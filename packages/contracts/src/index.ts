@@ -135,6 +135,7 @@ export {
   requestResponseSchema,
   createRequestRequestSchema,
   updateRequestRequestSchema,
+  processRequestRequestSchema,
   requestListResponseSchema,
   requestQuerySchema,
   type RequestType,
@@ -143,6 +144,7 @@ export {
   type RequestResponse,
   type CreateRequestRequest,
   type UpdateRequestRequest,
+  type ProcessRequestRequest,
   type RequestListResponse,
   type RequestQuery,
 } from './request.js';

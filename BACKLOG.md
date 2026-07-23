@@ -1018,7 +1018,7 @@ domain event (second ADR-004 consumer). Requests-first (Tasks depends on it).
 |---|---|---|---|
 | REQ-01 | `req_requests` client-scoped table + `RequestsService` (staff path) + seed | 2.5, 3.1 | done ([evidence](evidence/requests/REQ-01.md)) |
 | REQ-02 | Requests HTTP API — staff + client-rep create/read/list/update (client-facing write path), `request.create`/`request.read`, isolation + audit | REQ-01, 3.3 | done ([evidence](evidence/requests/REQ-02.md)) |
-| REQ-03 | Request processing + SLA — `request.process` (staff status workflow, assignee), notify on status change | REQ-02 | todo |
+| REQ-03 | Request processing + SLA — `request.process` (staff status workflow, assignee), notify on status change | REQ-02 | done ([evidence](evidence/requests/REQ-03.md)) |
 | REQ-04 | Requests web UI (staff console; client view lands with Portal 5.1) | REQ-02 | todo |
 | TASK-01 | `task_tasks` staff-owned table + `TasksService` (assignment, Sun–Thu due dates) | REQ-01 | todo |
 | TASK-02 | Tasks HTTP API — CRU own/assigned, `task.update`, isolation + audit | TASK-01 | todo |
@@ -1063,6 +1063,28 @@ domain event (second ADR-004 consumer). Requests-first (Tasks depends on it).
   dual-path branch — rep clientId ALWAYS from context never input; client-rep
   writes go through ScopedPrismaService (raw Prisma would bypass RLS);
   request.update excludes status (that's request.process, REQ-03).
+
+### REQ-03 — Request processing (status workflow + notify)
+- **Objective:** staff advance a request through its status workflow (with
+  assignment); the creator is notified on every change — via a domain event
+  (Requests stays decoupled from Notifications, ADR-004). Closes the lifecycle.
+- **Files:** `Request.assigneeUserId` + additive migration;
+  `domain/status-workflow.ts` (transition map + canTransition),
+  `domain/request-status-changed.event.ts` (owned+exported),
+  `application/requests.service.ts` (`process` — validate/update/audit/publish),
+  `api/requests.controller.ts` (`POST /requests/:id/process`, request.process,
+  200); `notifications/{application/request-status.handler.ts (@OnEvent →
+  notify creator), domain/request-content.ts}` registered in NotificationsModule;
+  `permissions.ts` (request.process → company_admin/hr_officer/gro_officer);
+  `@hr/contracts` processRequestRequestSchema + assigneeUserId; isolation `staff`
+  + audited-writes; `test/requests-process.e2e-spec.ts`.
+- **DoD:** legal transitions advance; illegal 400; unknown 404; rep 403; assignee
+  set; every change notifies the creator (in-app via event→handler); Requests
+  does NOT import Notifications; coverage + suite + lint + typecheck + build green.
+- **Evidence:** `evidence/requests/REQ-03.md`.
+- **Dependencies:** REQ-02, NOTIF-05 (event bus). **Risks:** notify via domain
+  event not direct call (keeps edge one-directional); publish after commit
+  (awaited, deterministic); transition validation guards illegal jumps.
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

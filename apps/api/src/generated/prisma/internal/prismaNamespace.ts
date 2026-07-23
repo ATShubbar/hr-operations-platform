@@ -1613,6 +1613,7 @@ export const RequestScalarFieldEnum = {
   priority: 'priority',
   dueDate: 'dueDate',
   createdByUserId: 'createdByUserId',
+  assigneeUserId: 'assigneeUserId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

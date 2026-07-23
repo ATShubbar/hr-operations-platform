@@ -1,10 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { ScopedPrismaService } from '../../../prisma/scoped-prisma.service';
+import { requestContext } from '../../../context/request-context';
 import type { RequestModel as RequestRecord } from '../../../generated/prisma/models';
 import type { Prisma } from '../../../generated/prisma/client';
 import { AuditService } from '../../audit/public-api';
-import type { CreateRequestInput, UpdateRequestInput } from '../domain/request';
+import { EventBus } from '../../events/public-api';
+import type { CreateRequestInput, ProcessRequestInput, UpdateRequestInput } from '../domain/request';
+import { RequestStatusChangedEvent } from '../domain/request-status-changed.event';
+import { canTransition } from '../domain/status-workflow';
 
 // Requests registry access (REQ-01/02). TWO data paths, both owned here:
 //   - STAFF path (app_staff, cross-client) via PrismaService — create/list/find/update.
@@ -20,6 +24,7 @@ export class RequestsService {
     private readonly prisma: PrismaService,
     private readonly scoped: ScopedPrismaService,
     private readonly audit: AuditService,
+    private readonly events: EventBus,
   ) {}
 
   // ---- staff path (cross-client) ----
@@ -66,6 +71,52 @@ export class RequestsService {
       });
       return row;
     });
+  }
+
+  // Advance a request's status (REQ-03), staff path (cross-client). Validates the
+  // transition, sets/clears the assignee, audits — all in one tx — then PUBLISHES
+  // RequestStatusChangedEvent so Notifications can tell the creator (the producer
+  // stays decoupled from Notifications, ADR-004). Returns null if not found;
+  // throws 400 on an illegal transition.
+  async process(id: string, input: ProcessRequestInput): Promise<RequestRecord | null> {
+    const result = await this.prisma.$transaction(async (tx) => {
+      const before = await tx.request.findUnique({ where: { id } });
+      if (!before) return null;
+      if (!canTransition(before.status, input.status)) {
+        throw new BadRequestException(
+          `Cannot move a request from '${before.status}' to '${input.status}'`,
+        );
+      }
+      const row = await tx.request.update({
+        where: { id },
+        data: {
+          status: input.status,
+          ...(input.assigneeUserId !== undefined ? { assigneeUserId: input.assigneeUserId } : {}),
+        },
+      });
+      await this.audit.record(tx, {
+        resource: 'request',
+        action: 'process',
+        clientId: row.clientId,
+        before: snapshot(before),
+        after: snapshot(row),
+      });
+      return { before, row };
+    });
+    if (!result) return null;
+
+    await this.events.publish(
+      new RequestStatusChangedEvent(
+        result.row.id,
+        result.row.clientId,
+        result.row.title,
+        result.before.status,
+        result.row.status,
+        result.row.createdByUserId,
+        requestContext.get()?.requestId ?? null,
+      ),
+    );
+    return result.row;
   }
 
   // ---- client-representative path (own-client, RLS-enforced) ----
@@ -137,5 +188,6 @@ function snapshot(r: RequestRecord): Prisma.InputJsonValue {
     status: r.status,
     priority: r.priority,
     dueDate: r.dueDate ? r.dueDate.toISOString().slice(0, 10) : null,
+    assigneeUserId: r.assigneeUserId ?? null,
   };
 }

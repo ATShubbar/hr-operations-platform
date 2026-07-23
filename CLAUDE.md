@@ -75,13 +75,14 @@ expiry engine (3.4) COMPLETE (EXP-01..03).** API suite **195/195**; web typechec
 green. **Eight product screens** (login, audit, clients, employees, settings,
 documents, expiry) + a notification bell in the shell header. **Priority-3 domain
 core COMPLETE: 3.1 Employees, 3.2 Documents, 3.3 Notifications, 3.4 Document-expiry.**
-**Priority 4 — Requests + Tasks epic (REQ-01..02 done)** — `req_requests`
-client-scoped table (the FIRST table clients WRITE) + `RequestsService`, and the
-**dual-path HTTP API** (REQ-02): staff manage requests cross-client while client
-reps create/read/update only their OWN client's (RLS via `ScopedPrismaService`,
-`WITH CHECK` on writes) — the first real end-to-end client-rep write path,
-isolation proven per-endpoint. API suite **205/205**. **Next: REQ-03 (processing +
-SLA — `request.process` status workflow + notify) or TASK-01 (Tasks table).
+**Priority 4 — Requests + Tasks epic (REQ-01..03 done)** — `req_requests`
+client-scoped table (the FIRST table clients WRITE) + `RequestsService`, the
+**dual-path HTTP API** (REQ-02: staff cross-client, client reps own-client via
+`ScopedPrismaService` + RLS `WITH CHECK`), and **processing** (REQ-03:
+`request.process` staff status workflow + assignee, notify the creator on every
+status change via a `RequestStatusChangedEvent` domain event — Requests stays
+decoupled from Notifications, the SECOND ADR-004 event producer). API suite
+**208/208**. **Next: REQ-04 (Requests web UI) or TASK-01 (Tasks table).
 AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback

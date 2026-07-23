@@ -42,6 +42,7 @@ export const AUDITED_WRITES: Record<string, string> = {
   'PATCH /notifications/preferences/:category': 'notification-pref.update',
   'POST /requests': 'request.create',
   'PATCH /requests/:id': 'request.update',
+  'POST /requests/:id/process': 'request.process',
 };
 
 export const AUDIT_EXEMPT_WRITES: Record<string, string> = {

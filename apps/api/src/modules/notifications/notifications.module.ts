@@ -6,6 +6,7 @@ import { NotificationsController } from './api/notifications.controller';
 import { NotificationsService } from './application/notifications.service';
 import { NotificationPreferencesService } from './application/notification-preferences.service';
 import { DocumentExpiringHandler } from './application/document-expiring.handler';
+import { RequestStatusHandler } from './application/request-status.handler';
 
 // Notifications module (ACTION-PLAN 3.3; ADR-003 layout). NOTIF-02: in-app
 // notifications + notify() + read/mark-read API. Registers the shared `dispatch`
@@ -16,7 +17,12 @@ import { DocumentExpiringHandler } from './application/document-expiring.handler
 @Module({
   imports: [AuditModule, BullModule.registerQueue({ name: DISPATCH_QUEUE })],
   controllers: [NotificationsController],
-  providers: [NotificationsService, NotificationPreferencesService, DocumentExpiringHandler],
+  providers: [
+    NotificationsService,
+    NotificationPreferencesService,
+    DocumentExpiringHandler,
+    RequestStatusHandler,
+  ],
   exports: [NotificationsService, NotificationPreferencesService],
 })
 export class NotificationsModule {}

@@ -28,6 +28,7 @@ export const requestResponseSchema = z.object({
   priority: requestPrioritySchema,
   dueDate: z.string().nullable(), // Gregorian ISO date (YYYY-MM-DD)
   createdByUserId: z.uuid(),
+  assigneeUserId: z.uuid().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -52,6 +53,13 @@ export const updateRequestRequestSchema = z.object({
   dueDate: z.coerce.date().nullable().optional(),
 });
 
+// Process (REQ-03): advance status (validated server-side against the workflow)
+// and optionally set/clear the assignee. Staff only (request.process).
+export const processRequestRequestSchema = z.object({
+  status: requestStatusSchema,
+  assigneeUserId: z.uuid().nullable().optional(),
+});
+
 export const requestListResponseSchema = z.object({
   requests: z.array(requestResponseSchema),
 });
@@ -67,5 +75,6 @@ export type RequestPriority = z.infer<typeof requestPrioritySchema>;
 export type RequestResponse = z.infer<typeof requestResponseSchema>;
 export type CreateRequestRequest = z.infer<typeof createRequestRequestSchema>;
 export type UpdateRequestRequest = z.infer<typeof updateRequestRequestSchema>;
+export type ProcessRequestRequest = z.infer<typeof processRequestRequestSchema>;
 export type RequestListResponse = z.infer<typeof requestListResponseSchema>;
 export type RequestQuery = z.infer<typeof requestQuerySchema>;
