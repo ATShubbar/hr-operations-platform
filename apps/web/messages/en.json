@@ -65,7 +65,8 @@
     "employees": "Employees",
     "documents": "Documents",
     "auditLog": "Audit log",
-    "settings": "Settings"
+    "settings": "Settings",
+    "expiry": "Expiry"
   },
   "documents": {
     "title": "Documents",
@@ -230,7 +231,10 @@
       "suspended": "Suspended",
       "terminated": "Terminated"
     },
-    "gender": { "male": "Male", "female": "Female" },
+    "gender": {
+      "male": "Male",
+      "female": "Female"
+    },
     "contract": {
       "unlimited": "Unlimited",
       "fixed_term": "Fixed term",
@@ -238,9 +242,20 @@
       "temporary": "Temporary",
       "seasonal": "Seasonal"
     },
-    "gosiBasis": { "basic": "Basic", "basic_plus_housing": "Basic + housing" },
-    "wps": { "compliant": "Compliant", "pending": "Pending", "non_compliant": "Non-compliant" },
-    "exitReentry": { "none": "None", "single": "Single", "multiple": "Multiple" },
+    "gosiBasis": {
+      "basic": "Basic",
+      "basic_plus_housing": "Basic + housing"
+    },
+    "wps": {
+      "compliant": "Compliant",
+      "pending": "Pending",
+      "non_compliant": "Non-compliant"
+    },
+    "exitReentry": {
+      "none": "None",
+      "single": "Single",
+      "multiple": "Multiple"
+    },
     "gosiReg": {
       "registered": "Registered",
       "pending": "Pending",
@@ -290,5 +305,45 @@
     "loading": "Loading…",
     "error": "Could not load the audit log.",
     "none": "—"
+  },
+  "expiry": {
+    "title": "Document Expiry",
+    "subtitle": "Documents approaching or past their expiry date.",
+    "runScan": "Run scan now",
+    "running": "Scanning…",
+    "scanDone": "Scan complete — {scanned} scanned, {alerts} alerts raised, {notifications} notifications sent.",
+    "scanError": "Could not run the scan.",
+    "filterClient": "Client",
+    "filterCategory": "Category",
+    "filterAll": "All",
+    "apply": "Apply",
+    "clear": "Clear",
+    "empty": "Nothing expiring in the next 60 days.",
+    "error": "Could not load expiring documents.",
+    "loading": "Loading…",
+    "colTitle": "Title",
+    "colCategory": "Category",
+    "colClient": "Client",
+    "colExpiry": "Expiry",
+    "colDays": "Days left",
+    "daysOverdue": "{n}d overdue",
+    "daysLeft": "{n}d left",
+    "dueToday": "Due today",
+    "bucket": {
+      "expired": "Expired",
+      "d7": "Next 7 days",
+      "d30": "Next 30 days",
+      "d60": "Next 60 days"
+    },
+    "category": {
+      "iqama": "Iqama",
+      "passport": "Passport",
+      "visa": "Visa",
+      "contract": "Contract",
+      "gosi": "GOSI",
+      "national_id": "National ID",
+      "cv": "CV",
+      "other": "Other"
+    }
   }
 }

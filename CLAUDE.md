@@ -61,10 +61,12 @@ service (threshold tiers 60/30/14/7/1/0, category→staff recipients, bilingual
 alerts via `NotificationsService.notify`; the first real cross-module consumer),
 now on a **daily BullMQ repeatable job** (`0 6 * * *` Asia/Riyadh, worker in
 `MainModule` only, gated by `flag.document-expiry-alerts` — ships dormant) + a
-manual admin `POST /expiry/scan` trigger. API suite **186/186**; web typecheck+lint
-green. **Seven product screens** (login, audit, clients, employees, settings,
-documents). **Next: EXP-03 (optional web surfacing) or NOTIF-04/05/06.
-AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup
+manual admin `POST /expiry/scan` trigger + **EXP-03 the expiry dashboard web UI**
+(bucketed Expired/≤7/≤30/≤60d, dual-calendar, admin run-scan button). **Document-
+expiry engine (3.4) COMPLETE (EXP-01..03).** API suite **186/186**; web typecheck+lint
+green. **Eight product screens** (login, audit, clients, employees, settings,
+documents, expiry). **Next: NOTIF-04/05/06 (per-user prefs / ADR-004 event bus /
+notification bell UI). AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback
 (ADR-006). Infra pickup: docs/HANDOFF-WS20.md.

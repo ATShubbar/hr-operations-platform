@@ -43,6 +43,11 @@ export function AppShell({ children }: { children: ReactNode }) {
               {t('nav.documents')}
             </Link>
           )}
+          {canDocuments && (
+            <Link href="/expiry" className={NAV_LINK}>
+              {t('nav.expiry')}
+            </Link>
+          )}
           {canAudit && (
             <Link href="/audit" className={NAV_LINK}>
               {t('nav.auditLog')}

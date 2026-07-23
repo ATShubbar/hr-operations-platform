@@ -65,7 +65,8 @@
     "employees": "الموظفون",
     "documents": "المستندات",
     "auditLog": "سجل التدقيق",
-    "settings": "الإعدادات"
+    "settings": "الإعدادات",
+    "expiry": "الانتهاءات"
   },
   "documents": {
     "title": "المستندات",
@@ -230,7 +231,10 @@
       "suspended": "موقوف",
       "terminated": "منتهي"
     },
-    "gender": { "male": "ذكر", "female": "أنثى" },
+    "gender": {
+      "male": "ذكر",
+      "female": "أنثى"
+    },
     "contract": {
       "unlimited": "غير محدد",
       "fixed_term": "محدد المدة",
@@ -238,9 +242,20 @@
       "temporary": "مؤقت",
       "seasonal": "موسمي"
     },
-    "gosiBasis": { "basic": "الأساسي", "basic_plus_housing": "الأساسي + السكن" },
-    "wps": { "compliant": "ملتزم", "pending": "قيد المعالجة", "non_compliant": "غير ملتزم" },
-    "exitReentry": { "none": "لا يوجد", "single": "مفردة", "multiple": "متعددة" },
+    "gosiBasis": {
+      "basic": "الأساسي",
+      "basic_plus_housing": "الأساسي + السكن"
+    },
+    "wps": {
+      "compliant": "ملتزم",
+      "pending": "قيد المعالجة",
+      "non_compliant": "غير ملتزم"
+    },
+    "exitReentry": {
+      "none": "لا يوجد",
+      "single": "مفردة",
+      "multiple": "متعددة"
+    },
     "gosiReg": {
       "registered": "مسجّل",
       "pending": "قيد المعالجة",
@@ -290,5 +305,45 @@
     "loading": "جارٍ التحميل…",
     "error": "تعذّر تحميل سجل التدقيق.",
     "none": "—"
+  },
+  "expiry": {
+    "title": "انتهاء صلاحية المستندات",
+    "subtitle": "المستندات التي قاربت على الانتهاء أو انتهت صلاحيتها.",
+    "runScan": "تشغيل الفحص الآن",
+    "running": "جارٍ الفحص…",
+    "scanDone": "اكتمل الفحص — {scanned} مفحوص، {alerts} تنبيهات، {notifications} إشعارات.",
+    "scanError": "تعذّر تشغيل الفحص.",
+    "filterClient": "العميل",
+    "filterCategory": "الفئة",
+    "filterAll": "الكل",
+    "apply": "تطبيق",
+    "clear": "مسح",
+    "empty": "لا توجد مستندات تنتهي صلاحيتها خلال 60 يوماً.",
+    "error": "تعذّر تحميل المستندات.",
+    "loading": "جارٍ التحميل…",
+    "colTitle": "العنوان",
+    "colCategory": "الفئة",
+    "colClient": "العميل",
+    "colExpiry": "تاريخ الانتهاء",
+    "colDays": "الأيام المتبقية",
+    "daysOverdue": "متأخر {n} يوم",
+    "daysLeft": "متبقٍ {n} يوم",
+    "dueToday": "ينتهي اليوم",
+    "bucket": {
+      "expired": "منتهية",
+      "d7": "خلال 7 أيام",
+      "d30": "خلال 30 يوماً",
+      "d60": "خلال 60 يوماً"
+    },
+    "category": {
+      "iqama": "إقامة",
+      "passport": "جواز سفر",
+      "visa": "تأشيرة",
+      "contract": "عقد",
+      "gosi": "التأمينات",
+      "national_id": "هوية وطنية",
+      "cv": "سيرة ذاتية",
+      "other": "أخرى"
+    }
   }
 }

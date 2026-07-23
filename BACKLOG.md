@@ -877,7 +877,7 @@ applies (producers call `notify()` directly). Depends on 3.2 (Documents) + 3.3
 |---|---|---|---|
 | EXP-01 | Expiry scan engine + idempotent alert ledger (`exp_alerts`, tiers, category→staff recipients) | 3.2, NOTIF-02 | done ([evidence](evidence/expiry/EXP-01.md)) |
 | EXP-02 | Daily schedule — BullMQ repeatable job → scan (worker in MainModule, flag-gated `flag.document-expiry-alerts`) + manual `POST /expiry/scan` trigger | EXP-01, NOTIF-01 | done ([evidence](evidence/expiry/EXP-02.md)) |
-| EXP-03 | (optional) Web surfacing beyond the documents `expiringBefore` filter | EXP-02 | todo |
+| EXP-03 | Web surfacing — expiry dashboard (bucketed by urgency) + admin run-scan button | EXP-02 | done ([evidence](evidence/expiry/EXP-03.md)) |
 
 ### EXP-01 — Expiry scan engine + idempotent alert ledger
 - **Objective:** the engine core — given a scan date, find every non-deleted
@@ -922,6 +922,23 @@ applies (producers call `notify()` directly). Depends on 3.2 (Documents) + 3.3
   (worker only in MainModule); shared-queue race → drive the processor directly +
   hit the endpoint synchronously; dormant-by-default flag (nothing fires until an
   admin enables it — intended).
+
+### EXP-03 — Document-expiry dashboard (web)
+- **Objective:** a staff-facing dashboard surfacing what's expiring, bucketed by
+  urgency (Expired / ≤7 / ≤30 / ≤60 days), + an admin "run scan now" button. The
+  human-facing companion to the EXP-02 daily scan.
+- **Files (web only):** `(app)/expiry/page.tsx` (buckets from one
+  `GET /documents?expiringBefore=today+60d`, filters, dual-calendar, admin
+  `POST /expiry/scan` via `useCan('expiry.run')`); `app-shell.tsx` (Expiry nav,
+  gated `document.read`); `messages/{ar,en}.json`.
+- **DoD:** bucketed view + counts + dual-calendar + filters + empty state; admin
+  sees run-scan → summary + refresh, non-admin doesn't; nav gated; verified
+  in-browser (ar/en+RTL, buckets, admin round-trip incl. idempotency); web
+  typecheck + lint green (no prod `next build` while dev server runs).
+- **Evidence:** `evidence/expiry/EXP-03.md`.
+- **Dependencies:** EXP-02 (`POST /expiry/scan`, `expiry.run`), DOC-03
+  (`expiringBefore`). **Risks:** seed docs are >60d out → seeded near-expiry docs
+  for the in-browser proof; scan is idempotent so repeat clicks are safe.
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 
