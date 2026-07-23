@@ -1,6 +1,6 @@
 import { BullModule } from '@nestjs/bullmq';
 import { Global, Module } from '@nestjs/common';
-import { DISPATCH_QUEUE } from './queue.constants';
+import { DISPATCH_QUEUE, EXPIRY_QUEUE } from './queue.constants';
 
 // Async dispatch backbone (NOTIF-01). BullMQ over the existing Redis (Redis is
 // never a source of truth — sessions, cache, queues only). @Global so any module
@@ -24,7 +24,7 @@ function redisConnection() {
 @Module({
   imports: [
     BullModule.forRoot({ connection: redisConnection() }),
-    BullModule.registerQueue({ name: DISPATCH_QUEUE }),
+    BullModule.registerQueue({ name: DISPATCH_QUEUE }, { name: EXPIRY_QUEUE }),
   ],
   exports: [BullModule],
 })

@@ -59,6 +59,10 @@ export const PERMISSIONS = [
   // Notifications (NOTIF-02): every authenticated principal reads + marks read
   // their OWN in-app notifications. Preference management is notification-pref.* (NOTIF-04).
   'notification.read',
+  // Document-expiry engine (EXP-02): admins may trigger the system-wide scan on
+  // demand (POST /expiry/scan). The automatic daily run is scheduled, not a
+  // permissioned route.
+  'expiry.run',
   // Session lifecycle — every authenticated principal may end their session.
   'session.end',
 ] as const;
@@ -95,12 +99,14 @@ const STAFF_BASE: readonly Permission[] = [
   'document.read',
   'notification.read',
 ];
-// System/Company Admin extra: audit read + client CRUD (matrix).
+// System/Company Admin extra: audit read + client CRUD (matrix) + triggering
+// the document-expiry scan on demand (EXP-02).
 const ADMIN_EXTRA: readonly Permission[] = [
   'audit.read',
   'client.create',
   'client.update',
   'client.delete',
+  'expiry.run',
 ];
 // Both client roles: the scope-check exemplar + session end + managing their
 // own per-user preferences (CONF-03 — every authenticated principal).

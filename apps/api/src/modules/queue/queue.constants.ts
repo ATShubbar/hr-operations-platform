@@ -2,3 +2,8 @@
 // jobs here (NOTIF-02+); the DispatchProcessor consumes them. Kept as a constant
 // so producers and the processor agree on the name.
 export const DISPATCH_QUEUE = 'dispatch';
+
+// The document-expiry queue (EXP-02). Carries the daily repeatable scan job; the
+// ExpiryScanProcessor consumes it and runs the flag-gated scan. Registered as a
+// producer in the @Global QueueModule; the worker lives in MainModule only.
+export const EXPIRY_QUEUE = 'expiry';

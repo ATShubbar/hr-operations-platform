@@ -876,7 +876,7 @@ applies (producers call `notify()` directly). Depends on 3.2 (Documents) + 3.3
 | ID | Task | Depends on | Status |
 |---|---|---|---|
 | EXP-01 | Expiry scan engine + idempotent alert ledger (`exp_alerts`, tiers, category→staff recipients) | 3.2, NOTIF-02 | done ([evidence](evidence/expiry/EXP-01.md)) |
-| EXP-02 | Daily schedule — BullMQ repeatable job → scan (worker in MainModule, flag-gated `flag.document-expiry-alerts`) + manual `POST /expiry/scan` trigger | EXP-01, NOTIF-01 | todo |
+| EXP-02 | Daily schedule — BullMQ repeatable job → scan (worker in MainModule, flag-gated `flag.document-expiry-alerts`) + manual `POST /expiry/scan` trigger | EXP-01, NOTIF-01 | done ([evidence](evidence/expiry/EXP-02.md)) |
 | EXP-03 | (optional) Web surfacing beyond the documents `expiringBefore` filter | EXP-02 | todo |
 
 ### EXP-01 — Expiry scan engine + idempotent alert ledger
@@ -900,6 +900,28 @@ applies (producers call `notify()` directly). Depends on 3.2 (Documents) + 3.3
   **Risks:** claim-then-notify is at-most-once (crash drops one alert, not
   duplicates); ledger keyed by (doc, tier) not recipient (coarse role fan-out, no
   per-client assignment model yet); ADR-004 event bus deferred → direct notify().
+
+### EXP-02 — Daily schedule + manual trigger
+- **Objective:** put the scan on a daily BullMQ repeatable job (flag-gated) + an
+  admin trigger endpoint. The engine ships dormant; an admin flips
+  `flag.document-expiry-alerts` on to activate scheduled scanning.
+- **Files:** `queue/{queue.constants.ts (EXPIRY_QUEUE), queue.module.ts,
+  public-api.ts}`; `document-expiry/{api/expiry.controller.ts (POST /expiry/scan),
+  api/expiry-scan.processor.ts (@Processor, flag-gated),
+  application/expiry-scheduler.service.ts (upsert daily job on bootstrap),
+  domain/schedule.ts, expiry-worker.module.ts, public-api.ts}`; `main.module.ts`
+  (+ExpiryWorkerModule); `permissions.ts` (`expiry.run` → admin);
+  `@hr/contracts` expiryScanResponse; isolation `staff` + AUDIT_EXEMPT;
+  `test/expiry-schedule.e2e-spec.ts`.
+- **DoD:** daily job registered (cron+tz, worker module only); automatic run
+  flag-gated (off→no-op, on→runs); manual endpoint admin-only (403/401), returns
+  summary + raises alerts; worker isolated to MainModule (suite exit 0);
+  coverage + suite + lint + typecheck + build green.
+- **Evidence:** `evidence/expiry/EXP-02.md`.
+- **Dependencies:** EXP-01, NOTIF-01 (BullMQ). **Risks:** producer/worker split
+  (worker only in MainModule); shared-queue race → drive the processor directly +
+  hit the endpoint synchronously; dormant-by-default flag (nothing fires until an
+  admin enables it — intended).
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

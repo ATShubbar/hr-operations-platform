@@ -120,3 +120,7 @@ export {
   type NotificationResponse,
   type NotificationListResponse,
 } from './notification.js';
+export {
+  expiryScanResponseSchema,
+  type ExpiryScanResponse,
+} from './expiry.js';

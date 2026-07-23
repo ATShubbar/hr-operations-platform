@@ -56,12 +56,14 @@ retention, and the documents web UI. **Notifications epic (3.3): NOTIF-01..03 do
 BullMQ dispatch infra (producer/worker split), in-app notifications
 (`notify` + read/mark-read, per-user), email channel (pluggable transport, dev
 capture / SMTP deferred, ar/en templates, recipient-language). **Document-expiry
-engine (3.4) STARTED: EXP-01 done** — `exp_alerts` idempotency ledger + scan
+engine (3.4): EXP-01..02 done** — `exp_alerts` idempotency ledger + scan
 service (threshold tiers 60/30/14/7/1/0, category→staff recipients, bilingual
-alerts via `NotificationsService.notify`); the first real cross-module consumer.
-API suite **182/182**; web typecheck+lint green. **Seven product screens** (login,
-audit, clients, employees, settings, documents). **Next: EXP-02 (daily BullMQ
-schedule + trigger endpoint, flag-gated) → EXP-03. NOTIF-04/05/06 still open.
+alerts via `NotificationsService.notify`; the first real cross-module consumer),
+now on a **daily BullMQ repeatable job** (`0 6 * * *` Asia/Riyadh, worker in
+`MainModule` only, gated by `flag.document-expiry-alerts` — ships dormant) + a
+manual admin `POST /expiry/scan` trigger. API suite **186/186**; web typecheck+lint
+green. **Seven product screens** (login, audit, clients, employees, settings,
+documents). **Next: EXP-03 (optional web surfacing) or NOTIF-04/05/06.
 AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback

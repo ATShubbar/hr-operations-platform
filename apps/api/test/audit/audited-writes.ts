@@ -49,4 +49,5 @@ export const AUDIT_EXEMPT_WRITES: Record<string, string> = {
   'POST /auth/mfa/challenge': 'promotes the Redis session to full; no business-table mutation',
   'POST /notifications/:id/read': "marks the caller's own notification read; a self-service read-state toggle, not a business-data mutation",
   'POST /notifications/read-all': "marks the caller's own notifications read; a self-service read-state toggle, not a business-data mutation",
+  'POST /expiry/scan': 'system-wide (cross-client) maintenance trigger; the scan spans all clients so there is no single client scope for the AUDIT-03 tx, and its durable record is the exp_alerts + notifications it raises',
 };
