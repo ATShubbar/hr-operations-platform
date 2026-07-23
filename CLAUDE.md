@@ -52,16 +52,18 @@ modules (2.1–2.5). **Documents+Storage epic (3.2) COMPLETE (STOR-01 + DOC-01..
 Storage module (MinIO local), `doc_documents` registry (expiry first-class),
 presigned upload flow (category-scoped), read/download/delete, virus-scan hook
 (pluggable, EICAR dev scanner → quarantine; ClamAV deferred) + legal-hold
-retention, and the documents web UI. **Notifications epic (3.3): NOTIF-01..05 done** —
+retention, and the documents web UI. **Notifications epic (3.3) COMPLETE (NOTIF-01..06)** —
 BullMQ dispatch infra (producer/worker split), in-app notifications
 (`notify` + read/mark-read, per-user), email channel (pluggable transport, dev
 capture / SMTP deferred, ar/en templates, recipient-language), **per-user
 email preferences** (`notif_preferences`, per-category opt-out gating email
-dispatch; in-app always on), and the **ADR-004 in-process domain-event bus**
+dispatch; in-app always on), the **ADR-004 in-process domain-event bus**
 (`modules/events`, `EventBus.publish` over @nestjs/event-emitter, awaited +
-error-isolated) — the expiry scan now PUBLISHES `DocumentExpiringEvent` and
+error-isolated) — the expiry scan PUBLISHES `DocumentExpiringEvent` and
 Notifications SUBSCRIBES (`@OnEvent`), so document-expiry no longer imports
-Notifications. **ADR-004 → Accepted** (outbox half deferred). **Document-expiry
+Notifications (**ADR-004 → Accepted**, outbox half deferred) — and the **web
+notification bell** (unread badge + list + mark-read, RTL popover) + **settings
+preferences panel** (per-category email toggles). **Document-expiry
 engine (3.4): EXP-01..02 done** — `exp_alerts` idempotency ledger + scan
 service (threshold tiers 60/30/14/7/1/0, category→staff recipients, bilingual
 alerts via `NotificationsService.notify`; the first real cross-module consumer),
@@ -71,8 +73,10 @@ manual admin `POST /expiry/scan` trigger + **EXP-03 the expiry dashboard web UI*
 (bucketed Expired/≤7/≤30/≤60d, dual-calendar, admin run-scan button). **Document-
 expiry engine (3.4) COMPLETE (EXP-01..03).** API suite **195/195**; web typecheck+lint
 green. **Eight product screens** (login, audit, clients, employees, settings,
-documents, expiry). **Next: NOTIF-06 (notification bell + prefs UI). AWS/OCI
-decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup
+documents, expiry) + a notification bell in the shell header. **Priority-3 domain
+core so far: 3.1 Employees, 3.2 Documents, 3.3 Notifications, 3.4 Document-expiry
+— all complete. Next: Priority-3 remaining (Recruitment 4.1 / GRO 4.2 / Requests
++ Tasks) or the Client Portal (5.1). AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback
 (ADR-006). Infra pickup: docs/HANDOFF-WS20.md.

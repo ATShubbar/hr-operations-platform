@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { LanguageSwitcher } from '@/components/language-switcher';
+import { NotificationBell } from '@/components/notification-bell';
 import { SignOutButton } from '@/components/sign-out-button';
 import { useCan } from '@/lib/session';
 
@@ -65,6 +66,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <header className="flex h-14 items-center gap-4 border-b px-4">
           <span className="text-sm font-medium md:hidden">{t('nav.console')}</span>
           <div className="ms-auto flex items-center gap-2">
+            <NotificationBell />
             <LanguageSwitcher />
             <SignOutButton />
           </div>

@@ -345,5 +345,28 @@
       "cv": "CV",
       "other": "Other"
     }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No notifications.",
+    "loading": "Loading…",
+    "error": "Could not load notifications.",
+    "markAllRead": "Mark all read",
+    "justNow": "just now",
+    "open": "Notifications",
+    "prefsTitle": "Notifications",
+    "prefsSubtitle": "Choose which notifications you receive by email. In-app notifications are always on.",
+    "emailLabel": "Email",
+    "on": "On",
+    "off": "Off",
+    "enable": "Enable",
+    "disable": "Disable",
+    "category": {
+      "document_expiry": "Document expiry",
+      "task": "Tasks",
+      "request": "Requests",
+      "general": "General",
+      "system": "System"
+    }
   }
 }

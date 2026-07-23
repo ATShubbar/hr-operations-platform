@@ -10,6 +10,7 @@ import type {
 import { usePathname, useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useCan } from '@/lib/session';
+import { NotificationPreferences } from '@/components/notification-preferences';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -161,6 +162,9 @@ export default function SettingsPage() {
           />
         </CardContent>
       </Card>
+
+      {/* ---- Notification preferences (everyone) ---- */}
+      <NotificationPreferences />
 
       {/* ---- System settings (System Admin only) ---- */}
       {canWriteSystem && system && (

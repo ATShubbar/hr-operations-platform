@@ -805,7 +805,7 @@ engine (3.4). Depends on 2.1 (Redis, live).
 | NOTIF-03 | Email channel — pluggable transport (dev capture / SMTP deferred) + ar/en templates + dispatch worker send | NOTIF-02 | done ([evidence](evidence/notifications/NOTIF-03.md)) |
 | NOTIF-04 | Per-user notification preferences (`notification-pref.update`) gating email dispatch | NOTIF-02, CONF-03 | done ([evidence](evidence/notifications/NOTIF-04.md)) |
 | NOTIF-05 | Domain-event bus (ADR-004 acceptance) + Notifications subscribes (else producers call `notify()`) | NOTIF-02 | done ([evidence](evidence/notifications/NOTIF-05.md)) |
-| NOTIF-06 | Web UI — notification bell/list + mark-read + preferences | NOTIF-02/03/04 | todo |
+| NOTIF-06 | Web UI — notification bell/list + mark-read + preferences | NOTIF-02/03/04 | done ([evidence](evidence/notifications/NOTIF-06.md)) |
 
 ### NOTIF-01 — BullMQ dispatch infra
 - **Objective:** the async-dispatch backbone — BullMQ over the existing Redis via
@@ -910,6 +910,25 @@ engine (3.4). Depends on 2.1 (Redis, live).
   producer (type-only, no DI cycle); awaited dispatch preserves at-most-once;
   transactional outbox deferred to the first must-not-lose consumer; pre-existing
   benign BullMQ teardown flake in the full suite (documented, not NOTIF-05).
+
+### NOTIF-06 — Notification bell + preferences UI (closes epic 3.3)
+- **Objective:** surface notifications in-product — a header bell (unread count +
+  list + mark-read) and a settings preferences panel (per-category email
+  toggles). Web-only, over the NOTIF-02 read API + NOTIF-04 prefs API.
+- **Files:** `components/notification-bell.tsx` (badge + hand-rolled RTL popover,
+  poll, mark-one/all, Intl relative time); `components/app-shell.tsx` (bell in
+  header); `components/notification-preferences.tsx` + `settings/page.tsx` (prefs
+  section); `messages/{ar,en}.json` (`notifications` namespace).
+- **DoD:** bell shows unread count + list (locale + relative time + unread
+  state), click marks read, mark-all clears; prefs list 5 categories email on/off,
+  toggle persists, in-app-always-on noted; ar/en+RTL; verified in-browser; web
+  typecheck + lint green (no prod next build while dev server runs).
+- **Evidence:** `evidence/notifications/NOTIF-06.md`.
+- **Dependencies:** NOTIF-02/03/04. **Risks:** no popover/switch primitives →
+  hand-rolled (RTL logical positioning, click-outside); light polling; bell for
+  every authenticated principal (correct — all hold notification.read).
+
+**Notifications epic (3.3) COMPLETE (NOTIF-01..06).**
 
 ## Priority 3 — Document-expiry engine epic (ACTION-PLAN 3.4, architecture.md)
 
