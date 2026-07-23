@@ -68,6 +68,10 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'GET /notifications': 'self',
   'POST /notifications/:id/read': 'self',
   'POST /notifications/read-all': 'self',
+  // Per-user notification email preferences (NOTIF-04): the caller's OWN, any
+  // authenticated principal; actor from the session, never the URL.
+  'GET /notifications/preferences': 'self',
+  'PATCH /notifications/preferences/:category': 'self',
   'GET /clients': 'staff',
   'GET /clients/:id': 'staff',
   'POST /clients': 'staff',

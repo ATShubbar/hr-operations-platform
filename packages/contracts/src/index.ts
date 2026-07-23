@@ -116,9 +116,13 @@ export {
   notificationCategorySchema,
   notificationResponseSchema,
   notificationListResponseSchema,
+  notificationPreferencesResponseSchema,
+  setNotificationPreferenceRequestSchema,
   type NotificationCategory,
   type NotificationResponse,
   type NotificationListResponse,
+  type NotificationPreferencesResponse,
+  type SetNotificationPreferenceRequest,
 } from './notification.js';
 export {
   expiryScanResponseSchema,

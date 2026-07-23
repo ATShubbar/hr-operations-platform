@@ -1,18 +1,28 @@
 import {
+  BadRequestException,
+  Body,
   Controller,
   Get,
   HttpCode,
   NotFoundException,
   Param,
+  Patch,
   Post,
   Query,
   UnauthorizedException,
 } from '@nestjs/common';
-import type { NotificationListResponse, NotificationResponse } from '@hr/contracts';
+import {
+  notificationCategorySchema,
+  setNotificationPreferenceRequestSchema,
+  type NotificationListResponse,
+  type NotificationPreferencesResponse,
+  type NotificationResponse,
+} from '@hr/contracts';
 import { RequirePermission } from '../../../auth/permissions.decorator';
 import { requestContext } from '../../../context/request-context';
 import type { NotificationModel as NotificationRecord } from '../../../generated/prisma/models';
 import { NotificationsService } from '../application/notifications.service';
+import { NotificationPreferencesService } from '../application/notification-preferences.service';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -21,7 +31,10 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 // session (never the URL). Any authenticated principal holds `notification.read`.
 @Controller('notifications')
 export class NotificationsController {
-  constructor(private readonly notifications: NotificationsService) {}
+  constructor(
+    private readonly notifications: NotificationsService,
+    private readonly preferences: NotificationPreferencesService,
+  ) {}
 
   @RequirePermission('notification.read')
   @Get()
@@ -49,6 +62,30 @@ export class NotificationsController {
   @HttpCode(200)
   async markAllRead(): Promise<{ updated: number }> {
     return { updated: await this.notifications.markAllRead(this.actorId()) };
+  }
+
+  // The caller's effective per-category EMAIL preferences (NOTIF-04). In-app
+  // delivery is always on and not represented here.
+  @RequirePermission('notification.read')
+  @Get('preferences')
+  async getPreferences(): Promise<NotificationPreferencesResponse> {
+    return { email: await this.preferences.effectiveFor(this.actorId()) };
+  }
+
+  // Toggle EMAIL for one category (per-category PATCH); own preferences only —
+  // the actor is the session's, never the URL. Returns the full effective map.
+  @RequirePermission('notification-pref.update')
+  @Patch('preferences/:category')
+  async setPreference(
+    @Param('category') category: string,
+    @Body() body: unknown,
+  ): Promise<NotificationPreferencesResponse> {
+    const cat = notificationCategorySchema.safeParse(category);
+    if (!cat.success) throw new NotFoundException('Unknown category');
+    const parsed = setNotificationPreferenceRequestSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException('Invalid preference payload');
+    await this.preferences.setEmailEnabled(this.actorId(), cat.data, parsed.data.emailEnabled);
+    return { email: await this.preferences.effectiveFor(this.actorId()) };
   }
 
   private actorId(): string {

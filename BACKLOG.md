@@ -803,7 +803,7 @@ engine (3.4). Depends on 2.1 (Redis, live).
 | NOTIF-01 | BullMQ dispatch infra (`@nestjs/bullmq` + `bullmq`, Redis root, producer/worker split, graceful shutdown, roundtrip e2e) | Redis | done ([evidence](evidence/notifications/NOTIF-01.md)) |
 | NOTIF-02 | Notifications module + `notif_notifications` (in-app, per-user, app-enforced) + `NotificationsService.notify()` + read/mark-read API (`self`) | NOTIF-01 | done ([evidence](evidence/notifications/NOTIF-02.md)) |
 | NOTIF-03 | Email channel — pluggable transport (dev capture / SMTP deferred) + ar/en templates + dispatch worker send | NOTIF-02 | done ([evidence](evidence/notifications/NOTIF-03.md)) |
-| NOTIF-04 | Per-user notification preferences (`notification-pref.update`) gating email dispatch | NOTIF-02, CONF-03 | todo |
+| NOTIF-04 | Per-user notification preferences (`notification-pref.update`) gating email dispatch | NOTIF-02, CONF-03 | done ([evidence](evidence/notifications/NOTIF-04.md)) |
 | NOTIF-05 | Domain-event bus (ADR-004 acceptance) + Notifications subscribes (else producers call `notify()`) | NOTIF-02 | todo |
 | NOTIF-06 | Web UI — notification bell/list + mark-read + preferences | NOTIF-02/03/04 | todo |
 
@@ -863,6 +863,29 @@ engine (3.4). Depends on 2.1 (Redis, live).
 - **Dependencies:** NOTIF-02. **Risks:** shared-queue race with the running dev
   worker → test the dispatch SERVICE directly (queue path covered by queue.e2e);
   recipient language resolves OUT of request context.
+
+### NOTIF-04 — Per-user notification preferences
+- **Objective:** let each user turn EMAIL off per notification category (in-app
+  always on); the preference gates only the email side of dispatch.
+- **Files:** `NotificationPreference` model + migration (`notif_preferences`,
+  user-owned, no RLS, `app_staff` grant, PK `(user_id, category)`);
+  `application/notification-preferences.service.ts` (effectiveFor / isEmailEnabled
+  / setEmailEnabled, audited); `api/notifications.controller.ts` (`GET
+  /notifications/preferences`, `PATCH /notifications/preferences/:category`);
+  `application/notification-dispatch.service.ts` (gate on isEmailEnabled);
+  `NotificationsModule` (+AuditModule, provides/exports the service) +
+  `NotificationsWorkerModule` (imports NotificationsModule); `permissions.ts`
+  (`notification-pref.update` → all roles); `@hr/contracts` prefs schemas; both
+  routes `self` + PATCH in AUDITED_WRITES; `test/notification-preferences.e2e-spec.ts`.
+- **DoD:** GET returns effective per-category flags; PATCH upserts own category
+  (unknown→404, bad→400, audited); dispatch skips email when disabled, sends when
+  enabled, in-app written either way; per-user isolation; 401 unauth; coverage +
+  suite + lint + typecheck + build green.
+- **Evidence:** `evidence/notifications/NOTIF-04.md`.
+- **Dependencies:** NOTIF-02, CONF-03 (user-owned pattern). **Risks:** dispatch
+  worker reads prefs via the notifications module's own service (worker imports
+  NotificationsModule — no cross-module DB access); test the dispatch service
+  directly for the gate (shared-queue race precedent).
 
 ## Priority 3 — Document-expiry engine epic (ACTION-PLAN 3.4, architecture.md)
 

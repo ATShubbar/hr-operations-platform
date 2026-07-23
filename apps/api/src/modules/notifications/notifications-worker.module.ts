@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from '../auth/public-api';
 import { ConfigurationModule } from '../configuration/public-api';
+import { NotificationsModule } from './notifications.module';
 import { NotificationDispatchProcessor } from './api/notification-dispatch.processor';
 import { NotificationDispatchService } from './application/notification-dispatch.service';
 import { captureEmailTransportProvider } from './infra/capture-email-transport';
@@ -12,7 +13,7 @@ import { captureEmailTransportProvider } from './infra/capture-email-transport';
 // config (recipient language). Binds the dev capture transport to EMAIL_TRANSPORT
 // (production swaps in a real SMTP transport).
 @Module({
-  imports: [AuthModule, ConfigurationModule],
+  imports: [AuthModule, ConfigurationModule, NotificationsModule],
   providers: [
     NotificationDispatchService,
     NotificationDispatchProcessor,

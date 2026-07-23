@@ -28,6 +28,24 @@ export const notificationListResponseSchema = z.object({
   unreadCount: z.number(),
 });
 
+// Per-user notification preferences (NOTIF-04). The effective per-category
+// EMAIL flags for the caller (defaults on, overlaid with their overrides);
+// in-app delivery is always on and not represented here.
+export const notificationPreferencesResponseSchema = z.object({
+  email: z.record(notificationCategorySchema, z.boolean()),
+});
+
+// Set one category's email preference (per-category PATCH).
+export const setNotificationPreferenceRequestSchema = z.object({
+  emailEnabled: z.boolean(),
+});
+
 export type NotificationCategory = z.infer<typeof notificationCategorySchema>;
 export type NotificationResponse = z.infer<typeof notificationResponseSchema>;
 export type NotificationListResponse = z.infer<typeof notificationListResponseSchema>;
+export type NotificationPreferencesResponse = z.infer<
+  typeof notificationPreferencesResponseSchema
+>;
+export type SetNotificationPreferenceRequest = z.infer<
+  typeof setNotificationPreferenceRequestSchema
+>;

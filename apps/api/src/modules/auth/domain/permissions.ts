@@ -57,8 +57,10 @@ export const PERMISSIONS = [
   'config.read-self',
   'config.write-self',
   // Notifications (NOTIF-02): every authenticated principal reads + marks read
-  // their OWN in-app notifications. Preference management is notification-pref.* (NOTIF-04).
+  // their OWN in-app notifications. Per-user email preferences (NOTIF-04) —
+  // toggling which categories email is sent for — is notification-pref.update.
   'notification.read',
+  'notification-pref.update',
   // Document-expiry engine (EXP-02): admins may trigger the system-wide scan on
   // demand (POST /expiry/scan). The automatic daily run is scheduled, not a
   // permissioned route.
@@ -98,6 +100,7 @@ const STAFF_BASE: readonly Permission[] = [
   'config.write-self',
   'document.read',
   'notification.read',
+  'notification-pref.update',
 ];
 // System/Company Admin extra: audit read + client CRUD (matrix) + triggering
 // the document-expiry scan on demand (EXP-02).
@@ -117,6 +120,7 @@ const ALL_CLIENT: readonly Permission[] = [
   'config.read-self',
   'config.write-self',
   'notification.read',
+  'notification-pref.update',
 ];
 // Client Admin additionally manages its own client's portal users (matrix —
 // Client User does NOT).

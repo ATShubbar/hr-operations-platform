@@ -371,3 +371,20 @@ enum NotificationCategory {
   general
   system
 }
+
+// Per-user notification preferences (NOTIF-04). Gates EMAIL delivery per
+// category; the in-app notification is always written (source of truth), so this
+// only ever suppresses mail. User-OWNED (keyed user_id + category) like
+// notif_notifications / cfg_user_settings → NO RLS, isolation is APPLICATION-
+// enforced (every query filters by the caller's context actorId, never input;
+// grant app_staff only — client-rep own-pref ops run through the staff
+// connection). Absence of a row = email ENABLED (opt-out model).
+model NotificationPreference {
+  userId       String               @map("user_id") @db.Uuid
+  category     NotificationCategory
+  emailEnabled Boolean              @map("email_enabled")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+
+  @@id([userId, category])
+  @@map("notif_preferences")
+}
