@@ -388,3 +388,51 @@ model NotificationPreference {
   @@id([userId, category])
   @@map("notif_preferences")
 }
+
+// Client-facing workflow request (REQ-01; ACTION-PLAN 4.3). A client asks the
+// consultancy for something (a letter, a certificate, a GRO service) — tracked
+// through a status workflow with an SLA due date. CLIENT-scoped (ADR-001): the
+// FIRST table clients WRITE (matrix — Client Admin CRU own, Client User CR own),
+// so app_client is granted SELECT/INSERT/UPDATE (not DELETE) and the RLS
+// client_isolation policy enforces own-client on both read and write. title/
+// description are user-entered free text (author's language), not system ar/en.
+model Request {
+  id              String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clientId        String          @map("client_id") @db.Uuid
+  type            RequestType
+  title           String
+  description     String?
+  status          RequestStatus   @default(open)
+  priority        RequestPriority @default(normal)
+  dueDate         DateTime?       @map("due_date") @db.Date
+  createdByUserId String          @map("created_by_user_id") @db.Uuid
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+
+  @@index([clientId])
+  @@index([status])
+  @@index([dueDate])
+  @@map("req_requests")
+}
+
+enum RequestType {
+  letter
+  certificate
+  document
+  gro_service
+  general
+}
+
+enum RequestStatus {
+  open
+  in_progress
+  resolved
+  closed
+  cancelled
+}
+
+enum RequestPriority {
+  low
+  normal
+  high
+}

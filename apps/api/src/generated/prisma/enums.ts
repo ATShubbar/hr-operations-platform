@@ -145,3 +145,34 @@ export const NotificationCategory = {
 } as const
 
 export type NotificationCategory = (typeof NotificationCategory)[keyof typeof NotificationCategory]
+
+
+export const RequestType = {
+  letter: 'letter',
+  certificate: 'certificate',
+  document: 'document',
+  gro_service: 'gro_service',
+  general: 'general'
+} as const
+
+export type RequestType = (typeof RequestType)[keyof typeof RequestType]
+
+
+export const RequestStatus = {
+  open: 'open',
+  in_progress: 'in_progress',
+  resolved: 'resolved',
+  closed: 'closed',
+  cancelled: 'cancelled'
+} as const
+
+export type RequestStatus = (typeof RequestStatus)[keyof typeof RequestStatus]
+
+
+export const RequestPriority = {
+  low: 'low',
+  normal: 'normal',
+  high: 'high'
+} as const
+
+export type RequestPriority = (typeof RequestPriority)[keyof typeof RequestPriority]

@@ -74,9 +74,12 @@ manual admin `POST /expiry/scan` trigger + **EXP-03 the expiry dashboard web UI*
 expiry engine (3.4) COMPLETE (EXP-01..03).** API suite **195/195**; web typecheck+lint
 green. **Eight product screens** (login, audit, clients, employees, settings,
 documents, expiry) + a notification bell in the shell header. **Priority-3 domain
-core so far: 3.1 Employees, 3.2 Documents, 3.3 Notifications, 3.4 Document-expiry
-— all complete. Next: Priority-3 remaining (Recruitment 4.1 / GRO 4.2 / Requests
-+ Tasks) or the Client Portal (5.1). AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup
+core COMPLETE: 3.1 Employees, 3.2 Documents, 3.3 Notifications, 3.4 Document-expiry.**
+**Priority 4 — Requests + Tasks epic STARTED: REQ-01 done** — `req_requests`
+client-scoped table (the FIRST table clients WRITE: app_client SELECT/INSERT/UPDATE,
+RLS client_isolation) + `RequestsService` (staff path, audited create) + seed (3
+requests). API suite **197/197**. **Next: REQ-02 (Requests HTTP API + the client-
+rep write path). AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback
 (ADR-006). Infra pickup: docs/HANDOFF-WS20.md.

@@ -1006,6 +1006,43 @@ applies (producers call `notify()` directly). Depends on 3.2 (Documents) + 3.3
   (`expiringBefore`). **Risks:** seed docs are >60d out → seeded near-expiry docs
   for the in-browser proof; scan is idempotent so repeat clicks are safe.
 
+## Priority 4 — Requests + Tasks epic (ACTION-PLAN 4.3 + 4.4, architecture.md)
+
+Evidence goes to `evidence/requests/`. **Request** = a client-facing workflow
+object (owned by Requests, `req_`) with status tracking + SLA — the FIRST module
+where client reps write real data. **Task** = an internal staff work item (owned
+by Tasks, `task_`); clients have no task access; a Request spawns Tasks via a
+domain event (second ADR-004 consumer). Requests-first (Tasks depends on it).
+
+| ID | Task | Depends on | Status |
+|---|---|---|---|
+| REQ-01 | `req_requests` client-scoped table + `RequestsService` (staff path) + seed | 2.5, 3.1 | done ([evidence](evidence/requests/REQ-01.md)) |
+| REQ-02 | Requests HTTP API — staff + client-rep create/read/list/update (client-facing write path), `request.create`/`request.read`, isolation + audit | REQ-01, 3.3 | todo |
+| REQ-03 | Request processing + SLA — `request.process` (staff status workflow, assignee), notify on status change | REQ-02 | todo |
+| REQ-04 | Requests web UI (staff console; client view lands with Portal 5.1) | REQ-02 | todo |
+| TASK-01 | `task_tasks` staff-owned table + `TasksService` (assignment, Sun–Thu due dates) | REQ-01 | todo |
+| TASK-02 | Tasks HTTP API — CRU own/assigned, `task.update`, isolation + audit | TASK-01 | todo |
+| TASK-03 | Requests → Tasks via a domain event (`RequestOpened`) — second ADR-004 consumer | REQ-02, TASK-01, NOTIF-05 | todo |
+| TASK-04 | Tasks web UI | TASK-02 | todo |
+
+### REQ-01 — Requests foundation (`req_requests` + RequestsService)
+- **Objective:** the client-scoped Requests registry + service (staff path),
+  mirroring EMP-01/DOC-01. HTTP + the client-rep write path land in REQ-02.
+- **Files:** `Request` model (+ RequestType/Status/Priority enums) + migration
+  (client-scoped: `client_id`, grants app_staff full / **app_client SELECT+INSERT+
+  UPDATE**, RLS staff_full_access + client_isolation w/ NULLIF, indexes);
+  `modules/requests/{application/requests.service.ts, domain/request.ts,
+  requests.module.ts, public-api.ts}`; AppModule; seed 3 requests;
+  `test/requests.e2e-spec.ts`.
+- **DoD:** table + correct client grants + RLS; enums/defaults; service create
+  (audited, tx) / list / find; seed + migration + db:generate; test + lint +
+  typecheck + build green.
+- **Evidence:** `evidence/requests/REQ-01.md`.
+- **Dependencies:** CLIENT-01 (client_id origin), AUDIT-03 (transactional audit).
+  **Risks:** first client-writable table — the app_client INSERT/UPDATE grant +
+  RLS WITH CHECK enforce own-client on writes (proven per-endpoint in REQ-02);
+  run `db:generate` after the migration (landmine).
+
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 
 | Epic | Source | Gate |

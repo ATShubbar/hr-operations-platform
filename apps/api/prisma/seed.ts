@@ -212,6 +212,56 @@ async function seedDocuments(prisma: PrismaClient): Promise<number> {
   return documents.length;
 }
 
+async function seedRequests(prisma: PrismaClient): Promise<number> {
+  // Client-facing workflow requests (REQ-01), attributed to the seeded client
+  // reps (client A's admin, client B's user) — the authors clients would be.
+  // Runs after seedUsers so the creator ids resolve.
+  const repA = await prisma.authUser.findUnique({
+    where: { email: `client_admin-a@${SEED_USER_DOMAIN}` },
+  });
+  const repB = await prisma.authUser.findUnique({
+    where: { email: `client_user-b@${SEED_USER_DOMAIN}` },
+  });
+  if (!repA || !repB) return 0; // reps not seeded → skip
+
+  const requests = [
+    {
+      id: 'a0000001-0000-4000-8000-000000000001',
+      clientId: SEED_CLIENT_A,
+      type: 'letter' as const,
+      title: 'Salary certificate for Ahmed Hassan',
+      description: 'Please issue a salary certificate addressed to the bank.',
+      priority: 'normal' as const,
+      status: 'open' as const,
+      dueDate: new Date('2026-08-05'),
+      createdByUserId: repA.id,
+    },
+    {
+      id: 'a0000001-0000-4000-8000-000000000002',
+      clientId: SEED_CLIENT_A,
+      type: 'gro_service' as const,
+      title: 'Iqama renewal — Ahmed Hassan',
+      priority: 'high' as const,
+      status: 'in_progress' as const,
+      dueDate: new Date('2026-08-20'),
+      createdByUserId: repA.id,
+    },
+    {
+      id: 'a0000002-0000-4000-8000-000000000001',
+      clientId: SEED_CLIENT_B,
+      type: 'certificate' as const,
+      title: 'Employment letter — Rajesh Kumar',
+      priority: 'normal' as const,
+      status: 'open' as const,
+      createdByUserId: repB.id,
+    },
+  ];
+  for (const { id, ...rest } of requests) {
+    await prisma.request.upsert({ where: { id }, create: { id, ...rest }, update: rest });
+  }
+  return requests.length;
+}
+
 async function main(): Promise<void> {
   if (process.env.NODE_ENV === 'production') {
     throw new Error('Refusing to seed: NODE_ENV=production. The seed is development-only.');
@@ -240,13 +290,14 @@ async function main(): Promise<void> {
     await prisma.coreScopeCheck.createMany({ data: fixtures });
 
     const userCount = await seedUsers(prisma);
+    const requestCount = await seedRequests(prisma);
 
     const rowCount = await prisma.coreScopeCheck.count({
       where: { note: { startsWith: 'seed:' } },
     });
     const roleCount = STAFF_ROLES.length + CLIENT_REP_ASSIGNMENTS.length;
     process.stdout.write(
-      `Seed complete: ${clientCount} client companies; ${employeeCount} employees; ${documentCount} documents; ${rowCount} scope-check rows ` +
+      `Seed complete: ${clientCount} client companies; ${employeeCount} employees; ${documentCount} documents; ${requestCount} requests; ${rowCount} scope-check rows ` +
         `across clients A (${SEED_CLIENT_A}) and B (${SEED_CLIENT_B}); ${userCount} auth users ` +
         `(${STAFF_ROLES.length} staff roles + ${CLIENT_REP_ASSIGNMENTS.length} client reps, ` +
         `${roleCount}/${STAFF_ROLES.length + CLIENT_ROLES.length} distinct roles covered).\n`,

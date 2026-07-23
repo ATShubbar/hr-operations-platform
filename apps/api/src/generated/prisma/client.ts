@@ -99,3 +99,8 @@ export type ExpiryAlert = Prisma.ExpiryAlertModel
  * 
  */
 export type NotificationPreference = Prisma.NotificationPreferenceModel
+/**
+ * Model Request
+ * 
+ */
+export type Request = Prisma.RequestModel
