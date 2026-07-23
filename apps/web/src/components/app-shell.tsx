@@ -19,6 +19,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const canClients = useCan('client.read');
   const canEmployees = useCan('employee.read');
   const canDocuments = useCan('document.read');
+  const canRequests = useCan('request.read');
   const canAudit = useCan('audit.read');
   const canSettings = useCan('config.read-self'); // every authenticated principal
 
@@ -47,6 +48,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           {canDocuments && (
             <Link href="/expiry" className={NAV_LINK}>
               {t('nav.expiry')}
+            </Link>
+          )}
+          {canRequests && (
+            <Link href="/requests" className={NAV_LINK}>
+              {t('nav.requests')}
             </Link>
           )}
           {canAudit && (

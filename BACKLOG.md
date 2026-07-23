@@ -1019,7 +1019,7 @@ domain event (second ADR-004 consumer). Requests-first (Tasks depends on it).
 | REQ-01 | `req_requests` client-scoped table + `RequestsService` (staff path) + seed | 2.5, 3.1 | done ([evidence](evidence/requests/REQ-01.md)) |
 | REQ-02 | Requests HTTP API — staff + client-rep create/read/list/update (client-facing write path), `request.create`/`request.read`, isolation + audit | REQ-01, 3.3 | done ([evidence](evidence/requests/REQ-02.md)) |
 | REQ-03 | Request processing + SLA — `request.process` (staff status workflow, assignee), notify on status change | REQ-02 | done ([evidence](evidence/requests/REQ-03.md)) |
-| REQ-04 | Requests web UI (staff console; client view lands with Portal 5.1) | REQ-02 | todo |
+| REQ-04 | Requests web UI (staff console; client view lands with Portal 5.1) | REQ-02 | done ([evidence](evidence/requests/REQ-04.md)) |
 | TASK-01 | `task_tasks` staff-owned table + `TasksService` (assignment, Sun–Thu due dates) | REQ-01 | todo |
 | TASK-02 | Tasks HTTP API — CRU own/assigned, `task.update`, isolation + audit | TASK-01 | todo |
 | TASK-03 | Requests → Tasks via a domain event (`RequestOpened`) — second ADR-004 consumer | REQ-02, TASK-01, NOTIF-05 | todo |
@@ -1085,6 +1085,24 @@ domain event (second ADR-004 consumer). Requests-first (Tasks depends on it).
 - **Dependencies:** REQ-02, NOTIF-05 (event bus). **Risks:** notify via domain
   event not direct call (keeps edge one-directional); publish after commit
   (awaited, deterministic); transition validation guards illegal jumps.
+
+### REQ-04 — Requests web UI (staff console)
+- **Objective:** a staff console over the REQ-02/03 API — filtered list + create
+  + process (advance status). Client-facing view lands with Portal 5.1.
+- **Files (web only):** `(app)/requests/page.tsx` (list w/ client+status filters,
+  status badges, dual-calendar due; create dialog → POST /requests; process dialog
+  → POST /:id/process, legal next-steps only mirrored client-side); `app-shell.tsx`
+  (Requests nav, gated request.read); `messages/{ar,en}.json` (requests namespace).
+- **DoD:** list + filters + badges + dual-calendar; create (request.create) adds a
+  row; process (request.process) advances status legal-steps-only; nav +
+  buttons capability-gated; ar/en+RTL; verified in-browser; web typecheck + lint
+  green (no prod next build while dev server runs).
+- **Evidence:** `evidence/requests/REQ-04.md`.
+- **Dependencies:** REQ-02/03. **Risks:** no popover/switch needed (reuses
+  dialog/select/badge); assignee picker deferred (needs a staff-user list
+  endpoint) — process advances status only for now.
+
+**Requests sub-module (4.3) COMPLETE (REQ-01..04).**
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

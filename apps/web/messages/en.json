@@ -66,7 +66,8 @@
     "documents": "Documents",
     "auditLog": "Audit log",
     "settings": "Settings",
-    "expiry": "Expiry"
+    "expiry": "Expiry",
+    "requests": "Requests"
   },
   "documents": {
     "title": "Documents",
@@ -367,6 +368,64 @@
       "request": "Requests",
       "general": "General",
       "system": "System"
+    }
+  },
+  "requests": {
+    "title": "Requests",
+    "subtitle": "Client requests and their processing status.",
+    "new": "New request",
+    "empty": "No requests.",
+    "loading": "Loading…",
+    "error": "Could not load requests.",
+    "saveError": "Could not save — check your permissions.",
+    "colTitle": "Title",
+    "colClient": "Client",
+    "colType": "Type",
+    "colStatus": "Status",
+    "colPriority": "Priority",
+    "colDue": "Due",
+    "colActions": "Actions",
+    "filterClient": "Client",
+    "filterStatus": "Status",
+    "filterAll": "All",
+    "apply": "Apply",
+    "clear": "Clear",
+    "process": "Process",
+    "processTitle": "Process request",
+    "currentStatus": "Current status",
+    "nextStatus": "Advance to",
+    "noTransitions": "This request is closed.",
+    "createTitle": "New request",
+    "fieldClient": "Client company",
+    "selectClient": "Select a client",
+    "fieldType": "Type",
+    "fieldTitle": "Title",
+    "fieldDescription": "Description",
+    "fieldPriority": "Priority",
+    "fieldDue": "Due date",
+    "save": "Create",
+    "saving": "Saving…",
+    "submit": "Update",
+    "cancel": "Cancel",
+    "none": "—",
+    "type": {
+      "letter": "Letter",
+      "certificate": "Certificate",
+      "document": "Document",
+      "gro_service": "GRO service",
+      "general": "General"
+    },
+    "status": {
+      "open": "Open",
+      "in_progress": "In progress",
+      "resolved": "Resolved",
+      "closed": "Closed",
+      "cancelled": "Cancelled"
+    },
+    "priority": {
+      "low": "Low",
+      "normal": "Normal",
+      "high": "High"
     }
   }
 }

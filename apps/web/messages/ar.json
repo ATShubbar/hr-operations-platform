@@ -66,7 +66,8 @@
     "documents": "المستندات",
     "auditLog": "سجل التدقيق",
     "settings": "الإعدادات",
-    "expiry": "الانتهاءات"
+    "expiry": "الانتهاءات",
+    "requests": "الطلبات"
   },
   "documents": {
     "title": "المستندات",
@@ -367,6 +368,64 @@
       "request": "الطلبات",
       "general": "عام",
       "system": "النظام"
+    }
+  },
+  "requests": {
+    "title": "الطلبات",
+    "subtitle": "طلبات العملاء وحالة معالجتها.",
+    "new": "طلب جديد",
+    "empty": "لا توجد طلبات.",
+    "loading": "جارٍ التحميل…",
+    "error": "تعذّر تحميل الطلبات.",
+    "saveError": "تعذّر الحفظ — تحقّق من صلاحياتك.",
+    "colTitle": "العنوان",
+    "colClient": "العميل",
+    "colType": "النوع",
+    "colStatus": "الحالة",
+    "colPriority": "الأولوية",
+    "colDue": "الاستحقاق",
+    "colActions": "إجراءات",
+    "filterClient": "العميل",
+    "filterStatus": "الحالة",
+    "filterAll": "الكل",
+    "apply": "تطبيق",
+    "clear": "مسح",
+    "process": "معالجة",
+    "processTitle": "معالجة الطلب",
+    "currentStatus": "الحالة الحالية",
+    "nextStatus": "الانتقال إلى",
+    "noTransitions": "هذا الطلب مغلق.",
+    "createTitle": "طلب جديد",
+    "fieldClient": "الشركة العميلة",
+    "selectClient": "اختر عميلاً",
+    "fieldType": "النوع",
+    "fieldTitle": "العنوان",
+    "fieldDescription": "الوصف",
+    "fieldPriority": "الأولوية",
+    "fieldDue": "تاريخ الاستحقاق",
+    "save": "إنشاء",
+    "saving": "جارٍ الحفظ…",
+    "submit": "تحديث",
+    "cancel": "إلغاء",
+    "none": "—",
+    "type": {
+      "letter": "خطاب",
+      "certificate": "شهادة",
+      "document": "مستند",
+      "gro_service": "خدمة حكومية",
+      "general": "عام"
+    },
+    "status": {
+      "open": "مفتوح",
+      "in_progress": "قيد المعالجة",
+      "resolved": "تم الحل",
+      "closed": "مغلق",
+      "cancelled": "ملغى"
+    },
+    "priority": {
+      "low": "منخفضة",
+      "normal": "عادية",
+      "high": "عالية"
     }
   }
 }
