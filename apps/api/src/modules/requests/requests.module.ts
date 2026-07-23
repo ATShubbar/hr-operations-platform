@@ -1,13 +1,16 @@
 import { Module } from '@nestjs/common';
 import { AuditModule } from '../audit/public-api';
+import { ClientsModule } from '../clients/public-api';
+import { RequestsController } from './api/requests.controller';
 import { RequestsService } from './application/requests.service';
 
-// Requests module (ACTION-PLAN 4.3; ADR-003 layout). REQ-01 ships the client-
-// scoped `req_requests` registry + service (staff path). The HTTP API + the
-// client-representative write path land in REQ-02; processing/SLA in REQ-03.
-// AuditModule provides the transactional audit; PrismaModule is @Global.
+// Requests module (ACTION-PLAN 4.3; ADR-003 layout). REQ-02 adds the dual-path
+// HTTP API — staff (cross-client) + client reps (own-client, RLS-enforced via
+// ScopedPrismaService). ClientsModule validates staff-supplied clientIds;
+// AuditModule provides the transactional audit; Prisma/ScopedPrisma are @Global.
 @Module({
-  imports: [AuditModule],
+  imports: [AuditModule, ClientsModule],
+  controllers: [RequestsController],
   providers: [RequestsService],
   exports: [RequestsService],
 })

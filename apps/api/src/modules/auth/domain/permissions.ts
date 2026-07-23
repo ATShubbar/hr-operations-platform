@@ -65,6 +65,12 @@ export const PERMISSIONS = [
   // demand (POST /expiry/scan). The automatic daily run is scheduled, not a
   // permissioned route.
   'expiry.run',
+  // Requests (REQ-02; permission matrix): all staff + both client roles READ;
+  // Company Admin + client reps CREATE; Company Admin + Client Admin UPDATE
+  // (Client User is create+read only). Advancing status is request.process (REQ-03).
+  'request.read',
+  'request.create',
+  'request.update',
   // Session lifecycle — every authenticated principal may end their session.
   'session.end',
 ] as const;
@@ -101,6 +107,7 @@ const STAFF_BASE: readonly Permission[] = [
   'document.read',
   'notification.read',
   'notification-pref.update',
+  'request.read',
 ];
 // System/Company Admin extra: audit read + client CRUD (matrix) + triggering
 // the document-expiry scan on demand (EXP-02).
@@ -121,6 +128,10 @@ const ALL_CLIENT: readonly Permission[] = [
   'config.write-self',
   'notification.read',
   'notification-pref.update',
+  // Requests (REQ-02): both client roles read + create their own client's
+  // requests; Client Admin additionally updates (added in CLIENT_ADMIN).
+  'request.read',
+  'request.create',
 ];
 // Client Admin additionally manages its own client's portal users (matrix —
 // Client User does NOT).
@@ -130,6 +141,8 @@ const CLIENT_ADMIN: readonly Permission[] = [
   'client-user.create',
   'client-user.update',
   'client-user.delete',
+  // Client Admin updates its own client's requests (Client User does not).
+  'request.update',
 ];
 
 // Seeded straight from the architecture permission matrix (rows: employee core,
@@ -153,6 +166,9 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'config.write-client',
     'document.upload',
     'document.delete',
+    // Requests: Company Admin has full CRUD (create + update here; delete later).
+    'request.create',
+    'request.update',
   ],
   // core R · salary – · govdata – · documents: recruitment (category-scoped)
   recruiter: [...STAFF_BASE, 'document.upload', 'document.delete'],

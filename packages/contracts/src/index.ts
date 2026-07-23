@@ -128,3 +128,21 @@ export {
   expiryScanResponseSchema,
   type ExpiryScanResponse,
 } from './expiry.js';
+export {
+  requestTypeSchema,
+  requestStatusSchema,
+  requestPrioritySchema,
+  requestResponseSchema,
+  createRequestRequestSchema,
+  updateRequestRequestSchema,
+  requestListResponseSchema,
+  requestQuerySchema,
+  type RequestType,
+  type RequestStatus,
+  type RequestPriority,
+  type RequestResponse,
+  type CreateRequestRequest,
+  type UpdateRequestRequest,
+  type RequestListResponse,
+  type RequestQuery,
+} from './request.js';

@@ -97,6 +97,14 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   // Document-expiry manual trigger (EXP-02): admin-only, system-wide (cross-
   // client) scan returning a run summary — no client data, so 'staff'.
   'POST /expiry/scan': 'staff',
+  // Requests (REQ-02): the first DUAL-PATH resource — staff cross-client, client
+  // reps own-client (RLS-enforced). Reads are client-read (own-scoping proven in
+  // the REQ-02 e2e); writes are client-write (cross-client barred by RLS WITH
+  // CHECK, proven per-endpoint). All must reject unauthenticated callers.
+  'POST /requests': 'client-write',
+  'GET /requests': 'client-read',
+  'GET /requests/:id': 'client-read',
+  'PATCH /requests/:id': 'client-write',
   'GET /example/greeting': 'staff',
   'GET /example-consumer/relay': 'staff',
   'GET /scope-check': 'client-scoped',

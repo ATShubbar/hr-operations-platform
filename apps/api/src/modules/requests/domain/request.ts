@@ -12,3 +12,13 @@ export interface CreateRequestInput {
   dueDate?: Date | null;
   createdByUserId: string;
 }
+
+// Editable fields (REQ-02). Status is NOT here — advancing it is the processing
+// concern (request.process, REQ-03). Every field is optional (partial update);
+// `description`/`dueDate` accept null to clear.
+export interface UpdateRequestInput {
+  title?: string;
+  description?: string | null;
+  priority?: RequestPriority;
+  dueDate?: Date | null;
+}

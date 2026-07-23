@@ -1017,7 +1017,7 @@ domain event (second ADR-004 consumer). Requests-first (Tasks depends on it).
 | ID | Task | Depends on | Status |
 |---|---|---|---|
 | REQ-01 | `req_requests` client-scoped table + `RequestsService` (staff path) + seed | 2.5, 3.1 | done ([evidence](evidence/requests/REQ-01.md)) |
-| REQ-02 | Requests HTTP API — staff + client-rep create/read/list/update (client-facing write path), `request.create`/`request.read`, isolation + audit | REQ-01, 3.3 | todo |
+| REQ-02 | Requests HTTP API — staff + client-rep create/read/list/update (client-facing write path), `request.create`/`request.read`, isolation + audit | REQ-01, 3.3 | done ([evidence](evidence/requests/REQ-02.md)) |
 | REQ-03 | Request processing + SLA — `request.process` (staff status workflow, assignee), notify on status change | REQ-02 | todo |
 | REQ-04 | Requests web UI (staff console; client view lands with Portal 5.1) | REQ-02 | todo |
 | TASK-01 | `task_tasks` staff-owned table + `TasksService` (assignment, Sun–Thu due dates) | REQ-01 | todo |
@@ -1042,6 +1042,27 @@ domain event (second ADR-004 consumer). Requests-first (Tasks depends on it).
   **Risks:** first client-writable table — the app_client INSERT/UPDATE grant +
   RLS WITH CHECK enforce own-client on writes (proven per-endpoint in REQ-02);
   run `db:generate` after the migration (landmine).
+
+### REQ-02 — Requests HTTP API (dual-path: staff + client-rep)
+- **Objective:** the first DUAL-PATH resource — staff manage requests
+  cross-client; client reps create/read/update only their OWN client's (RLS via
+  ScopedPrismaService). The first real end-to-end client-rep write path.
+- **Files:** `api/requests.controller.ts` (POST/GET/GET :id/PATCH, branch on
+  principal); `application/requests.service.ts` (+ *ForClient scoped methods +
+  staff update); `requests.module.ts` (+ClientsModule + controller);
+  `permissions.ts` (request.read → all staff + both client roles; request.create
+  → company_admin + client roles; request.update → company_admin + client_admin);
+  `@hr/contracts` request schemas; isolation (GETs client-read, writes
+  client-write) + audited-writes (POST/PATCH); `test/requests-api.e2e-spec.ts`.
+- **DoD:** staff create-for-any-client (validated) + rep create-own (body clientId
+  ignored); reads staff cross-client / rep own-only (foreign id 404); PATCH fields
+  only (no status), client_admin own / staff any / client_user 403 / cross 404;
+  401 unauth; coverage + suite + lint + typecheck + build green.
+- **Evidence:** `evidence/requests/REQ-02.md`.
+- **Dependencies:** REQ-01, CLIENT-03 (ScopedPrismaService pattern). **Risks:**
+  dual-path branch — rep clientId ALWAYS from context never input; client-rep
+  writes go through ScopedPrismaService (raw Prisma would bypass RLS);
+  request.update excludes status (that's request.process, REQ-03).
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

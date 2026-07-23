@@ -1,36 +1,32 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
+import { ScopedPrismaService } from '../../../prisma/scoped-prisma.service';
 import type { RequestModel as RequestRecord } from '../../../generated/prisma/models';
 import type { Prisma } from '../../../generated/prisma/client';
 import { AuditService } from '../../audit/public-api';
-import type { CreateRequestInput } from '../domain/request';
+import type { CreateRequestInput, UpdateRequestInput } from '../domain/request';
 
-// Requests registry access (REQ-01). Staff path only here (app_staff); the
-// client-representative CREATE/read path (ScopedPrismaService) lands with the
-// HTTP API in REQ-02. Every mutation writes its audit entry in the same
-// transaction (AUDIT-03), scoped to the request's client. A request is
-// client-facing metadata (type/title/status) — the snapshot carries it in full
-// (no salary/govdata-style sensitivity here).
+// Requests registry access (REQ-01/02). TWO data paths, both owned here:
+//   - STAFF path (app_staff, cross-client) via PrismaService — create/list/find/update.
+//   - CLIENT-REP path (app_client, own-client, RLS-enforced) via ScopedPrismaService
+//     — *ForClient methods; the transaction-local scope + RLS WITH CHECK bar any
+//     cross-client read or write. The controller picks the path by principal.
+// Every mutation writes its audit entry in the SAME transaction (AUDIT-03),
+// scoped to the request's client (staff pass clientId; the rep path inherits it
+// from the request context).
 @Injectable()
 export class RequestsService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly scoped: ScopedPrismaService,
     private readonly audit: AuditService,
   ) {}
 
+  // ---- staff path (cross-client) ----
+
   create(input: CreateRequestInput): Promise<RequestRecord> {
     return this.prisma.$transaction(async (tx) => {
-      const row = await tx.request.create({
-        data: {
-          clientId: input.clientId,
-          type: input.type,
-          title: input.title,
-          description: input.description ?? null,
-          priority: input.priority ?? 'normal',
-          dueDate: input.dueDate ?? null,
-          createdByUserId: input.createdByUserId,
-        },
-      });
+      const row = await tx.request.create({ data: toCreateData(input) });
       await this.audit.record(tx, {
         resource: 'request',
         action: 'create',
@@ -55,6 +51,83 @@ export class RequestsService {
   findById(id: string): Promise<RequestRecord | null> {
     return this.prisma.request.findUnique({ where: { id } });
   }
+
+  async update(id: string, data: UpdateRequestInput): Promise<RequestRecord | null> {
+    return this.prisma.$transaction(async (tx) => {
+      const before = await tx.request.findUnique({ where: { id } });
+      if (!before) return null;
+      const row = await tx.request.update({ where: { id }, data: toUpdateData(data) });
+      await this.audit.record(tx, {
+        resource: 'request',
+        action: 'update',
+        clientId: row.clientId,
+        before: snapshot(before),
+        after: snapshot(row),
+      });
+      return row;
+    });
+  }
+
+  // ---- client-representative path (own-client, RLS-enforced) ----
+
+  createForClient(clientId: string, input: CreateRequestInput): Promise<RequestRecord> {
+    // clientId is the caller's scoped client (from context), never input.
+    return this.scoped.transaction(clientId, async (tx) => {
+      const row = await tx.request.create({ data: toCreateData({ ...input, clientId }) });
+      await this.audit.record(tx, { resource: 'request', action: 'create', after: snapshot(row) });
+      return row;
+    });
+  }
+
+  listForClient(clientId: string): Promise<RequestRecord[]> {
+    return this.scoped.forClient(clientId).request.findMany({ orderBy: { createdAt: 'desc' } });
+  }
+
+  // RLS filters the row to the caller's client, so a foreign id resolves to null.
+  findForClient(clientId: string, id: string): Promise<RequestRecord | null> {
+    return this.scoped.forClient(clientId).request.findUnique({ where: { id } });
+  }
+
+  async updateForClient(
+    clientId: string,
+    id: string,
+    data: UpdateRequestInput,
+  ): Promise<RequestRecord | null> {
+    return this.scoped.transaction(clientId, async (tx) => {
+      // RLS scopes the read; a foreign id is invisible here → null → 404.
+      const before = await tx.request.findUnique({ where: { id } });
+      if (!before) return null;
+      const row = await tx.request.update({ where: { id }, data: toUpdateData(data) });
+      await this.audit.record(tx, {
+        resource: 'request',
+        action: 'update',
+        before: snapshot(before),
+        after: snapshot(row),
+      });
+      return row;
+    });
+  }
+}
+
+function toCreateData(input: CreateRequestInput): Prisma.RequestUncheckedCreateInput {
+  return {
+    clientId: input.clientId,
+    type: input.type,
+    title: input.title,
+    description: input.description ?? null,
+    priority: input.priority ?? 'normal',
+    dueDate: input.dueDate ?? null,
+    createdByUserId: input.createdByUserId,
+  };
+}
+
+function toUpdateData(data: UpdateRequestInput): Prisma.RequestUpdateInput {
+  return {
+    ...(data.title !== undefined ? { title: data.title } : {}),
+    ...(data.description !== undefined ? { description: data.description } : {}),
+    ...(data.priority !== undefined ? { priority: data.priority } : {}),
+    ...(data.dueDate !== undefined ? { dueDate: data.dueDate } : {}),
+  };
 }
 
 function snapshot(r: RequestRecord): Prisma.InputJsonValue {

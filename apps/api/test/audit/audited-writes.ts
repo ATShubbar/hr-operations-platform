@@ -40,6 +40,8 @@ export const AUDITED_WRITES: Record<string, string> = {
   'PATCH /config/me/:key': 'config.user-set',
   'DELETE /config/me/:key': 'config.user-clear',
   'PATCH /notifications/preferences/:category': 'notification-pref.update',
+  'POST /requests': 'request.create',
+  'PATCH /requests/:id': 'request.update',
 };
 
 export const AUDIT_EXEMPT_WRITES: Record<string, string> = {
