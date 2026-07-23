@@ -2,6 +2,9 @@
 // EXP-02 (the daily schedule + manual trigger) drives ExpiryScanService.scan().
 export { DocumentExpiryModule } from './document-expiry.module';
 export { ExpiryScanService, type ExpiryScanResult } from './application/expiry-scan.service';
+// The domain event this module publishes (NOTIF-05, ADR-004). Owned here;
+// consumers (Notifications) subscribe via @OnEvent(DocumentExpiringEvent.NAME).
+export { DocumentExpiringEvent } from './domain/document-expiring.event';
 // The worker (daily schedule + queue processor). MainModule loads it in the real
 // process; the schedule e2e opts it in — never ordinary specs (producer/worker
 // split). The scheduling constants let that e2e assert the daily job registered.

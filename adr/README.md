@@ -15,7 +15,7 @@ One decision per file, numbered in creation order. A record is never edited to c
 | [ADR-001](ADR-001-data-isolation-rls-prisma-pooling.md) | Data isolation — client_id + RLS with Prisma and pooling | Accepted |
 | [ADR-002](ADR-002-authorization-model.md) | Authorization — permission-based RBAC, deny by default | Accepted |
 | [ADR-003](ADR-003-module-structure-and-boundaries.md) | Module structure and boundary enforcement | Accepted |
-| [ADR-004](ADR-004-inter-module-communication.md) | Inter-module communication — domain events | Proposed |
+| [ADR-004](ADR-004-inter-module-communication.md) | Inter-module communication — domain events | Accepted |
 | [ADR-005](ADR-005-localization.md) | Localization — configurable with Saudi defaults | Accepted |
 | [ADR-006](ADR-006-ksa-cloud-provider.md) | KSA cloud provider selection | Accepted rev. 4 (interim staging AWS UAE, no-production-data guard; KSA target via CNTXT/AWS-Saudi; OCI fallback) |
 | [ADR-007](ADR-007-api-conventions.md) | API conventions | Proposed |

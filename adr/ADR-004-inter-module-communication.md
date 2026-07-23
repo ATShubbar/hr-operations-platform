@@ -1,8 +1,18 @@
 # ADR-004 — Inter-module communication: domain events
 
-- Status: Proposed
-- Date: 2026-07-18
+- Status: Accepted
+- Date: 2026-07-18 (accepted 2026-07-23, NOTIF-05)
 - Owner: TBD
+
+> **Accepted (NOTIF-05).** The in-process event bus is live: `modules/events`
+> exposes `EventBus.publish(event)` (awaited, best-effort, error-isolated) over
+> `@nestjs/event-emitter`; consumers subscribe with `@OnEvent(<Event>.NAME)`.
+> First producer→consumer pair: the document-expiry scan publishes
+> `DocumentExpiringEvent` (owned by, and exported from, the document-expiry
+> module) and Notifications subscribes — the producer no longer imports
+> Notifications. The **transactional outbox** half of this decision is NOT yet
+> built: it lands with the first must-not-lose consumer (e.g. hire → employee),
+> not with best-effort notifications.
 
 ## Context
 Cross-module side effects are everywhere in the domain: a hired candidate becomes an employee; a document expiring triggers notifications; a client request spawns internal tasks; every mutation must be audit-logged. If Recruitment directly calls Employees, Notifications, and Audit, it accumulates dependencies on half the system and the "one owning module" rule collapses in practice.

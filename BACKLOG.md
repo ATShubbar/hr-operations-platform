@@ -804,7 +804,7 @@ engine (3.4). Depends on 2.1 (Redis, live).
 | NOTIF-02 | Notifications module + `notif_notifications` (in-app, per-user, app-enforced) + `NotificationsService.notify()` + read/mark-read API (`self`) | NOTIF-01 | done ([evidence](evidence/notifications/NOTIF-02.md)) |
 | NOTIF-03 | Email channel — pluggable transport (dev capture / SMTP deferred) + ar/en templates + dispatch worker send | NOTIF-02 | done ([evidence](evidence/notifications/NOTIF-03.md)) |
 | NOTIF-04 | Per-user notification preferences (`notification-pref.update`) gating email dispatch | NOTIF-02, CONF-03 | done ([evidence](evidence/notifications/NOTIF-04.md)) |
-| NOTIF-05 | Domain-event bus (ADR-004 acceptance) + Notifications subscribes (else producers call `notify()`) | NOTIF-02 | todo |
+| NOTIF-05 | Domain-event bus (ADR-004 acceptance) + Notifications subscribes (else producers call `notify()`) | NOTIF-02 | done ([evidence](evidence/notifications/NOTIF-05.md)) |
 | NOTIF-06 | Web UI — notification bell/list + mark-read + preferences | NOTIF-02/03/04 | todo |
 
 ### NOTIF-01 — BullMQ dispatch infra
@@ -886,6 +886,30 @@ engine (3.4). Depends on 2.1 (Redis, live).
   worker reads prefs via the notifications module's own service (worker imports
   NotificationsModule — no cross-module DB access); test the dispatch service
   directly for the gate (shared-queue race precedent).
+
+### NOTIF-05 — Domain-event bus (ADR-004 acceptance)
+- **Objective:** stand up the ADR-004 in-process event bus and prove it by
+  inverting one producer→consumer edge: the expiry scan PUBLISHES a
+  DocumentExpiring fact; Notifications SUBSCRIBES — the producer stops importing
+  Notifications. Flip ADR-004 to Accepted.
+- **Files:** dep `@nestjs/event-emitter`; `modules/events/` (EventsModule @Global
+  + EventEmitterModule.forRoot, EventBus.publish awaited+error-isolated,
+  DomainEvent base, public-api); `document-expiry/domain/document-expiring.event.ts`
+  (owned + exported); `expiry-scan.service.ts` publishes (drops NotificationsService),
+  `document-expiry.module.ts` drops NotificationsModule; `messages.ts` MOVED to
+  `notifications/domain/expiry-content.ts`; `notifications/application/document-expiring.handler.ts`
+  (@OnEvent → render + notify per recipient), registered in NotificationsModule;
+  AppModule imports EventsModule; ADR-004 + adr/README status → Accepted;
+  `test/document-expiring-event.e2e-spec.ts`.
+- **DoD:** bus in-process/awaited/error-isolated; event owned+exported by producer;
+  document-expiry no longer imports Notifications (module-boundary lint+build);
+  consumer @OnEvent creates notifications; EXP-01/02/03 still green; ADR-004
+  Accepted; suite + lint + typecheck + build green.
+- **Evidence:** `evidence/notifications/NOTIF-05.md`.
+- **Dependencies:** NOTIF-02. **Risks:** consumer imports the event type from the
+  producer (type-only, no DI cycle); awaited dispatch preserves at-most-once;
+  transactional outbox deferred to the first must-not-lose consumer; pre-existing
+  benign BullMQ teardown flake in the full suite (documented, not NOTIF-05).
 
 ## Priority 3 — Document-expiry engine epic (ACTION-PLAN 3.4, architecture.md)
 

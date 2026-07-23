@@ -1,10 +1,10 @@
 import type { DocumentCategory } from '@hr/contracts';
 
-// Bilingual notification content for an expiry alert (EXP-01). Titles/bodies are
-// stored ar+en (NOTIF-02) so each recipient reads their own language; the email
-// channel (NOTIF-03) renders the same content. Category names are labelled here
-// (the engine owns its own message copy) rather than reaching into another
-// module for i18n.
+// Bilingual notification content for a document-expiry alert (NOTIF-05; moved
+// here from the document-expiry module when NOTIF-05 accepted ADR-004 —
+// Notifications owns "how people are told", the producer owns the fact). Titles/
+// bodies are stored ar+en (NOTIF-02) so each recipient reads their own language;
+// the email channel (NOTIF-03) renders the same content.
 const CATEGORY_LABELS: Record<DocumentCategory, { ar: string; en: string }> = {
   iqama: { ar: 'الإقامة', en: 'Iqama' },
   passport: { ar: 'جواز السفر', en: 'Passport' },

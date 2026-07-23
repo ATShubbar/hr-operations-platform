@@ -1,25 +1,27 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { Prisma } from '../../../generated/prisma/client';
+import { requestContext } from '../../../context/request-context';
 import { UsersService } from '../../auth/public-api';
 import { DocumentsService } from '../../documents/public-api';
-import { NotificationsService } from '../../notifications/public-api';
-import { buildExpiryContent } from '../domain/messages';
+import { EventBus } from '../../events/public-api';
+import { DocumentExpiringEvent } from '../domain/document-expiring.event';
 import { rolesForCategory } from '../domain/recipients';
 import { daysUntil, scanHorizon, tierFor } from '../domain/thresholds';
 
 export interface ExpiryScanResult {
   scanned: number; // documents within the scan horizon
   alertsRaised: number; // (document, tier) claims newly created this scan
-  notificationsSent: number; // per-recipient notify() calls
+  notificationsSent: number; // recipients the published events reached
 }
 
 // The document-expiry engine (EXP-01; ACTION-PLAN 3.4) — the first real cross-
 // module consumer. Reads documents through DocumentsService (never doc_documents
-// directly), raises notifications through NotificationsService (the ADR-004
-// event bus is NOT built yet — NOTIF-05 — so the documented fallback applies:
-// producers call notify()). exp_alerts is this module's OWN idempotency ledger,
-// so a DAILY scan is safe: each (document, tier) fires at most once, ever.
+// directly) and PUBLISHES a DocumentExpiring fact per newly-claimed (document,
+// tier) — it owns "what expires" and "which staff manage it"; Notifications
+// subscribes and owns "how people are told" (NOTIF-05, ADR-004). This module no
+// longer depends on Notifications. exp_alerts is its OWN idempotency ledger, so a
+// DAILY scan is safe: each (document, tier) fires at most once, ever.
 @Injectable()
 export class ExpiryScanService {
   private readonly logger = new Logger(ExpiryScanService.name);
@@ -27,12 +29,13 @@ export class ExpiryScanService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly documents: DocumentsService,
-    private readonly notifications: NotificationsService,
     private readonly users: UsersService,
+    private readonly events: EventBus,
   ) {}
 
   async scan(asOf: Date): Promise<ExpiryScanResult> {
     const docs = await this.documents.expiringOnOrBefore(scanHorizon(asOf));
+    const correlationId = requestContext.get()?.requestId ?? null;
     let alertsRaised = 0;
     let notificationsSent = 0;
 
@@ -45,7 +48,7 @@ export class ExpiryScanService {
       // Claim the (document, tier) slot FIRST — the unique index is the
       // idempotency guard. A P2002 means another scan (or an earlier run today)
       // already claimed it → skip. This makes delivery at-most-once per tier: a
-      // crash between the claim and notify drops that one alert, which we prefer
+      // crash between the claim and publish drops that one alert, which we prefer
       // to duplicate alerts on every daily run.
       try {
         await this.prisma.expiryAlert.create({
@@ -59,24 +62,24 @@ export class ExpiryScanService {
       }
       alertsRaised += 1;
 
-      const expiryIso = doc.expiryDate.toISOString().slice(0, 10);
-      const content = buildExpiryContent({
-        category: doc.category,
-        title: doc.title,
-        expiryDate: expiryIso,
-        days,
-      });
+      // Resolve the audience (this module owns the category→staff-role policy) and
+      // publish the fact. Notifications subscribes and renders/delivers.
       const recipients = await this.users.findStaffByRoles(rolesForCategory(doc.category));
-      for (const recipient of recipients) {
-        await this.notifications.notify({
-          recipientUserId: recipient.id,
-          category: 'document_expiry',
-          title: content.title,
-          body: content.body,
-          data: { documentId: doc.id, category: doc.category, threshold: tier, expiryDate: expiryIso },
-        });
-        notificationsSent += 1;
-      }
+      const recipientUserIds = recipients.map((r) => r.id);
+      await this.events.publish(
+        new DocumentExpiringEvent(
+          doc.id,
+          doc.clientId,
+          doc.category,
+          doc.title,
+          doc.expiryDate.toISOString().slice(0, 10),
+          tier,
+          days,
+          recipientUserIds,
+          correlationId,
+        ),
+      );
+      notificationsSent += recipientUserIds.length;
     }
 
     this.logger.log(
