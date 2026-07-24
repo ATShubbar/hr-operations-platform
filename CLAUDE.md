@@ -87,8 +87,16 @@ unassigned task — the THIRD ADR-004 flow) + the Tasks web console. API suite
 **218/218**; web typecheck+lint green. **Ten product screens** (login, audit,
 clients, employees, settings, documents, expiry, requests, tasks) + the header
 bell. **Two more ADR-004 event flows** (request→notify, request→task) on top of
-document-expiry. **Next: Recruitment (4.1) / GRO (4.2), or the Client Portal (5.1).
-AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup
+document-expiry. **Priority 5 — Client Portal epic STARTED: PORTAL-01 done** — a
+dedicated `modules/portal` **delivery module** (client-facing surface, reads the
+domain modules' services): `GET /portal/company` returns the caller's OWN company,
+gated by `portal.read` (client-only permission) + the per-client
+`flag.client-self-service` flag (403 when off). Chose a `/portal/*` module over
+principal-aware `/clients` — avoids the ConfigurationModule↔ClientsModule DI cycle,
+matches architecture module 10. API suite **222/222**. **Next: PORTAL-02
+(`/portal/employees`, redacted core+govdata:status). AWS/OCI decision (ADR-006)
+open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
+2026-07-24: ECS throttle + RDS InvalidAction persist)
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback
 (ADR-006). Infra pickup: docs/HANDOFF-WS20.md.

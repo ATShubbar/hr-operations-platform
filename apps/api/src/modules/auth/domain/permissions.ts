@@ -82,6 +82,8 @@ export const PERMISSIONS = [
   'task.create',
   'task.update',
   'task.delete',
+  // Client Portal (PORTAL-01): client-only self-service access. Gates /portal/*.
+  'portal.read',
   // Session lifecycle — every authenticated principal may end their session.
   'session.end',
 ] as const;
@@ -146,6 +148,10 @@ const ALL_CLIENT: readonly Permission[] = [
   // requests; Client Admin additionally updates (added in CLIENT_ADMIN).
   'request.read',
   'request.create',
+  // Client Portal (PORTAL-01): the client self-service surface. A client-only
+  // permission (staff never hold it) that gates every /portal/* read — reps use
+  // dedicated portal endpoints, not the staff resource endpoints.
+  'portal.read',
 ];
 // Client Admin additionally manages its own client's portal users (matrix —
 // Client User does NOT).

@@ -115,6 +115,9 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'GET /tasks/:id': 'staff',
   'PATCH /tasks/:id': 'staff',
   'DELETE /tasks/:id': 'staff',
+  // Client Portal (PORTAL-01): client-only self-service reads, scoped to the
+  // caller's own client (proven in portal-company.e2e); 401 on unauth.
+  'GET /portal/company': 'client-read',
   'GET /example/greeting': 'staff',
   'GET /example-consumer/relay': 'staff',
   'GET /scope-check': 'client-scoped',

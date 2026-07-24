@@ -1104,6 +1104,38 @@ domain event (second ADR-004 consumer). Requests-first (Tasks depends on it).
 
 **Requests sub-module (4.3) COMPLETE (REQ-01..04).** **Tasks sub-module (4.4) COMPLETE (TASK-01..04) — table + service, HTTP with own/assigned scope, Requests→Tasks via a domain event, web console. Requests + Tasks epic (4.3+4.4) COMPLETE.**
 
+## Priority 5 — Client Portal epic (ACTION-PLAN 5.1, architecture.md module 10)
+
+Evidence goes to `evidence/portal/`. A **client-scoped delivery surface** — its own
+`modules/portal` (no business logic; reads the domain modules' services), all
+routes `portal.read` (client-only) + gated by the per-client
+`flag.client-self-service` flag. The "first hard test of RLS + client-rep auth in
+production". Requests rep-access already shipped (REQ-02); the portal surfaces it.
+
+| ID | Task | Depends on | Status |
+|---|---|---|---|
+| PORTAL-01 | Foundation: `modules/portal` + `GET /portal/company` (own company, flag-gated) + `portal.read` | 2.5, CONF-04 | done ([evidence](evidence/portal/PORTAL-01.md)) |
+| PORTAL-02 | `GET /portal/employees[/:id]` — rep reads own employees, redacted to **core + govdata:status only** (no salary/identifiers) | PORTAL-01, 3.1 | todo |
+| PORTAL-03 | `GET /portal/documents[/:id/download]` — rep reads/downloads own documents | PORTAL-01, 3.2 | todo |
+| PORTAL-04 | Client portal **UI** (flag-gated shell + company/employees/documents/requests) | PORTAL-02/03 | todo |
+
+### PORTAL-01 — Client portal foundation
+- **Objective:** the portal delivery module + first own-scoped, flag-gated read
+  (`GET /portal/company`) + the reusable `portal.read` gate.
+- **Files:** `modules/portal/{api/portal.controller.ts, portal.module.ts,
+  public-api.ts}` (imports ClientsModule + ConfigurationModule — a leaf, no
+  cycle); `permissions.ts` (`portal.read` → ALL_CLIENT, client-only); AppModule;
+  isolation `GET /portal/company` → client-read; `test/portal-company.e2e-spec.ts`.
+- **DoD:** rep reads OWN company only (id from session); 403 when flag off / 200
+  when on; staff → 403 (no portal.read); 401 unauth; no DI cycle; coverage +
+  suite + lint + typecheck + build green.
+- **Evidence:** `evidence/portal/PORTAL-01.md`.
+- **Dependencies:** CLIENT-01 (clients), CONF-04 (flag). **Risks:** dedicated
+  `/portal/*` module (not principal-aware `/clients`) — avoids the ConfigurationModule↔
+  ClientsModule DI cycle AND matches the architecture; `portal.read` (client-only)
+  prevents the staff-endpoint leak that granting `client.read` to reps would cause;
+  the flag/scope always key on the SESSION clientId, never input.
+
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 
 | Epic | Source | Gate |
