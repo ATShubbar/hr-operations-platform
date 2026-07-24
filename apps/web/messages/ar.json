@@ -68,7 +68,10 @@
     "settings": "الإعدادات",
     "expiry": "الانتهاءات",
     "requests": "الطلبات",
-    "tasks": "المهام"
+    "tasks": "المهام",
+    "portalCompany": "شركتي",
+    "portalEmployees": "موظفيّ",
+    "portalDocuments": "مستنداتي"
   },
   "documents": {
     "title": "المستندات",
@@ -478,6 +481,61 @@
       "low": "منخفضة",
       "normal": "عادية",
       "high": "عالية"
+    }
+  },
+  "portal": {
+    "loading": "جارٍ التحميل…",
+    "error": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+    "notEnabled": "لم يتم تفعيل الخدمة الذاتية لمؤسستك بعد. يرجى التواصل مع مستشارك.",
+    "company": {
+      "title": "شركتي",
+      "subtitle": "الملف التعريفي لمؤسستك.",
+      "name": "اسم الشركة",
+      "status": "الحالة",
+      "since": "عميل منذ",
+      "statusValue": {
+        "active": "نشط",
+        "inactive": "غير نشط"
+      }
+    },
+    "employees": {
+      "title": "موظفيّ",
+      "subtitle": "موظفوك مع حالة الوثائق الحكومية. لا تُعرض الرواتب وأرقام الهوية.",
+      "colName": "الاسم",
+      "colJobTitle": "المسمى الوظيفي",
+      "colDepartment": "القسم",
+      "colStatus": "الحالة",
+      "colIqamaExpiry": "انتهاء الإقامة",
+      "colWorkPermitExpiry": "انتهاء رخصة العمل",
+      "none": "—",
+      "empty": "لا يوجد موظفون لعرضهم.",
+      "status": {
+        "active": "نشط",
+        "on_leave": "في إجازة",
+        "suspended": "موقوف",
+        "terminated": "منتهي"
+      }
+    },
+    "documents": {
+      "title": "مستنداتي",
+      "subtitle": "المستندات المتاحة لمؤسستك.",
+      "colTitle": "العنوان",
+      "colCategory": "الفئة",
+      "colExpiry": "الانتهاء",
+      "colActions": "الإجراءات",
+      "download": "تنزيل",
+      "none": "—",
+      "empty": "لا توجد مستندات لعرضها.",
+      "category": {
+        "iqama": "إقامة",
+        "passport": "جواز سفر",
+        "visa": "تأشيرة",
+        "contract": "عقد",
+        "gosi": "التأمينات",
+        "national_id": "هوية وطنية",
+        "cv": "سيرة ذاتية",
+        "other": "أخرى"
+      }
     }
   }
 }

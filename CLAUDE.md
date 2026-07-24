@@ -87,7 +87,7 @@ unassigned task — the THIRD ADR-004 flow) + the Tasks web console. API suite
 **218/218**; web typecheck+lint green. **Ten product screens** (login, audit,
 clients, employees, settings, documents, expiry, requests, tasks) + the header
 bell. **Two more ADR-004 event flows** (request→notify, request→task) on top of
-document-expiry. **Priority 5 — Client Portal epic STARTED: PORTAL-01..03 done** — a
+document-expiry. **Priority 5 — Client Portal epic COMPLETE (PORTAL-01..04)** — a
 dedicated `modules/portal` **delivery module** (client-facing surface, reads the
 domain modules' services): `GET /portal/company` returns the caller's OWN company,
 gated by `portal.read` (client-only permission) + the per-client
@@ -104,7 +104,14 @@ URL; **AVAILABLE-only** (never pending/quarantined — a deliberate tightening v
 staff list); cross-client/unknown/non-available → 404; `toDocumentResponse` likewise
 extracted to `documents/domain/document-view.ts`. Portal is still a leaf module
 (imports Clients/Config/Employees/Documents/Storage — no cycle). API suite **239/239**.
-**Next: PORTAL-04 (client portal web UI). AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
+**PORTAL-04: the client portal web UI** — three `(app)/portal/*` pages (company /
+employees redacted / documents + download) wired to `/portal/*`, a `portal.read`-
+gated client-only nav section in the shared shell (staff console untouched), the
+login redirect fixed so reps land on `/portal/company` (was the staff `/clients`
+they can't use), and flag-off → a calm "not enabled" state. **Eleven product screens**
+now (the ten staff + the client portal). Verified live in the browser (ar RTL + en),
+redaction confirmed at the payload, download → presigned 300s per-client URL; web
+typecheck + lint green. **Next: pick the next epic. AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
 2026-07-24: ECS throttle + RDS InvalidAction persist)
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback

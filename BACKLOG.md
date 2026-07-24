@@ -1117,7 +1117,7 @@ production". Requests rep-access already shipped (REQ-02); the portal surfaces i
 | PORTAL-01 | Foundation: `modules/portal` + `GET /portal/company` (own company, flag-gated) + `portal.read` | 2.5, CONF-04 | done ([evidence](evidence/portal/PORTAL-01.md)) |
 | PORTAL-02 | `GET /portal/employees[/:id]` — rep reads own employees, redacted to **core + govdata:status only** (no salary/identifiers) | PORTAL-01, 3.1 | done ([evidence](evidence/portal/PORTAL-02.md)) |
 | PORTAL-03 | `GET /portal/documents[/:id/download]` — rep reads/downloads own documents | PORTAL-01, 3.2 | done ([evidence](evidence/portal/PORTAL-03.md)) |
-| PORTAL-04 | Client portal **UI** (flag-gated shell + company/employees/documents/requests) | PORTAL-02/03 | todo |
+| PORTAL-04 | Client portal **UI** (flag-gated shell + company/employees/documents/requests) | PORTAL-02/03 | done ([evidence](evidence/portal/PORTAL-04.md)) |
 
 ### PORTAL-01 — Client portal foundation
 - **Objective:** the portal delivery module + first own-scoped, flag-gated read
@@ -1179,6 +1179,28 @@ production". Requests rep-access already shipped (REQ-02); the portal surfaces i
   presigned URL is scoped by the per-client storage key so it can't cross clients;
   mapper extraction guarded by the existing documents suites; no new permission,
   no schema change.
+
+### PORTAL-04 — Client portal web UI
+- **Objective:** the client-facing screens over `/portal/*` — company / employees
+  (redacted) / documents (download) — plus fixing the login redirect so reps land
+  on their portal home, not the staff `/clients` page.
+- **Files:** `app/[locale]/(app)/portal/{company,employees,documents}/page.tsx`
+  (NEW); `components/app-shell.tsx` (portal nav section gated on `portal.read`,
+  client-only); `app/[locale]/login/page.tsx` (rep → `/portal/company`);
+  `messages/{en,ar}.json` (`nav.portal*` + `portal.*`). Front-end only — no API/
+  contract/schema change.
+- **DoD:** rep sees company/employees/documents (+ requests/settings); staff nav
+  unchanged; company shows own company; employees table redacted (no salary/ID
+  columns, expiry shown); documents lists own available + download opens presigned
+  URL; flag off → "not enabled" message; login lands rep on portal; RTL + logical
+  utilities; web typecheck + lint green; verified live in the browser (both locales).
+- **Evidence:** `evidence/portal/PORTAL-04.md`.
+- **Dependencies:** PORTAL-01/02/03. **Risks:** extends the existing capability-
+  gated shell (no forked portal shell — avoids duplicating bell/lang/sign-out); the
+  login-redirect fix addresses a pre-existing reps-land-on-broken-page bug; the
+  redaction is enforced server-side (PORTAL-02), the UI merely omits the columns.
+
+**Client Portal epic (5.1) COMPLETE — PORTAL-01..04.**
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

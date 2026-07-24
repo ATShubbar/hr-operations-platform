@@ -68,7 +68,10 @@
     "settings": "Settings",
     "expiry": "Expiry",
     "requests": "Requests",
-    "tasks": "Tasks"
+    "tasks": "Tasks",
+    "portalCompany": "My company",
+    "portalEmployees": "My employees",
+    "portalDocuments": "My documents"
   },
   "documents": {
     "title": "Documents",
@@ -478,6 +481,61 @@
       "low": "Low",
       "normal": "Normal",
       "high": "High"
+    }
+  },
+  "portal": {
+    "loading": "Loading…",
+    "error": "Something went wrong. Please try again.",
+    "notEnabled": "Self-service isn't enabled for your organization yet. Please contact your consultant.",
+    "company": {
+      "title": "My company",
+      "subtitle": "Your organization's profile.",
+      "name": "Company name",
+      "status": "Status",
+      "since": "Client since",
+      "statusValue": {
+        "active": "Active",
+        "inactive": "Inactive"
+      }
+    },
+    "employees": {
+      "title": "My employees",
+      "subtitle": "Your staff, with government document status. Salary and identifier numbers are not shown.",
+      "colName": "Name",
+      "colJobTitle": "Job title",
+      "colDepartment": "Department",
+      "colStatus": "Status",
+      "colIqamaExpiry": "Iqama expiry",
+      "colWorkPermitExpiry": "Work permit expiry",
+      "none": "—",
+      "empty": "No employees to show.",
+      "status": {
+        "active": "Active",
+        "on_leave": "On leave",
+        "suspended": "Suspended",
+        "terminated": "Terminated"
+      }
+    },
+    "documents": {
+      "title": "My documents",
+      "subtitle": "Your organization's available documents.",
+      "colTitle": "Title",
+      "colCategory": "Category",
+      "colExpiry": "Expiry",
+      "colActions": "Actions",
+      "download": "Download",
+      "none": "—",
+      "empty": "No documents to show.",
+      "category": {
+        "iqama": "Iqama",
+        "passport": "Passport",
+        "visa": "Visa",
+        "contract": "Contract",
+        "gosi": "GOSI",
+        "national_id": "National ID",
+        "cv": "CV",
+        "other": "Other"
+      }
     }
   }
 }

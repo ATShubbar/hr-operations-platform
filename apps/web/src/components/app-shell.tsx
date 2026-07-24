@@ -23,6 +23,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const canTasks = useCan('task.read');
   const canAudit = useCan('audit.read');
   const canSettings = useCan('config.read-self'); // every authenticated principal
+  const canPortal = useCan('portal.read'); // client-only self-service surface (PORTAL-04)
 
   return (
     <div className="flex min-h-dvh">
@@ -31,6 +32,23 @@ export function AppShell({ children }: { children: ReactNode }) {
           {t('common.appName')}
         </div>
         <nav className="flex flex-col gap-1 px-2 py-2">
+          {/* Client portal self-service nav (PORTAL-04) — client-only. Staff never
+              hold portal.read, so this whole group is hidden for the staff console. */}
+          {canPortal && (
+            <Link href="/portal/company" className={NAV_LINK}>
+              {t('nav.portalCompany')}
+            </Link>
+          )}
+          {canPortal && (
+            <Link href="/portal/employees" className={NAV_LINK}>
+              {t('nav.portalEmployees')}
+            </Link>
+          )}
+          {canPortal && (
+            <Link href="/portal/documents" className={NAV_LINK}>
+              {t('nav.portalDocuments')}
+            </Link>
+          )}
           {canClients && (
             <Link href="/clients" className={NAV_LINK}>
               {t('nav.clients')}
