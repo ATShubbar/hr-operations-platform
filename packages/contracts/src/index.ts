@@ -149,6 +149,24 @@ export {
   type RequestQuery,
 } from './request.js';
 export {
+  calendarEventResponseSchema,
+  calendarEventListResponseSchema,
+  createCalendarEventRequestSchema,
+  updateCalendarEventRequestSchema,
+  calendarRangeQuerySchema,
+  calendarItemKindSchema,
+  calendarItemSchema,
+  calendarViewResponseSchema,
+  type CalendarEventResponse,
+  type CalendarEventListResponse,
+  type CreateCalendarEventRequest,
+  type UpdateCalendarEventRequest,
+  type CalendarRangeQuery,
+  type CalendarItemKind,
+  type CalendarItem,
+  type CalendarViewResponse,
+} from './calendar.js';
+export {
   groProcessTypeSchema,
   groProcessStatusSchema,
   groProcessResponseSchema,

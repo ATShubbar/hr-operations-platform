@@ -181,10 +181,18 @@ task_tasks `app_client` gets nothing) + `CalendarService` (audited CRUD, own-sco
 list with date-range overlap; `resource: 'calendar-event'`). `ownerUserId` is the own-
 scope key; `clientId` optional context; start/end are timestamps stored UTC (Hijri =
 render). Calendar is a delivery-layer module — owns its events, reads deadlines from
-Tasks/Requests/GRO (CAL-02). 2 seed events; `modules/calendar` registered. API suite
-**288/288**. **Next: CAL-02 (Calendar HTTP API — own-scoped event CRUD + a calendar-view
-endpoint merging Tasks/Requests/GRO deadlines; `calendar.*` catalog). AWS/OCI decision
-(ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
+Tasks/Requests/GRO (CAL-02). 2 seed events; `modules/calendar` registered. **CAL-02: the Calendar HTTP API** —
+staff-only own-scoped event CRUD (`calendar.read-all` lifts read/update/delete to all,
+like Tasks; non-read-all → 404 on others' events; **delete is Company-Admin-only**) +
+the **`/calendar/view`** endpoint that merges own events with **active** Tasks/Requests/
+GRO **deadlines** for a `[from,to]` window, each source gated by its read permission via
+`PolicyService.can` (all staff read tasks/requests; **GRO only for gro.read holders** —
+a recruiter's view omits GRO). Terminal items excluded. 5 `calendar.*` perms
+(`calendar.read` in STAFF_BASE). Calendar imports Tasks/Requests/GRO **read-only**
+(one-way, no cycle). 6 isolation routes, 3 audited writes. Contracts add `calendar.ts`.
+API suite **296/296**. **Next: CAL-03 (Calendar web UI — agenda/month view over
+`/calendar/view`, dual-calendar Hijri, create/edit), then the epic closes. AWS/OCI
+decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
 2026-07-24: ECS throttle + RDS InvalidAction persist)
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback

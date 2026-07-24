@@ -1422,7 +1422,7 @@ from the domain modules below it).
 | Task | Objective | Deps | Status |
 |---|---|---|---|
 | CAL-01 | `cal_events` staff-owned table + `CalendarService` (CRUD, own-scoped) + seed | 4.4, 4.2 | done ([evidence](evidence/calendar/CAL-01.md)) |
-| CAL-02 | Calendar HTTP API — event CRUD (own-scope; `calendar.read-all` lifts) + a **calendar-view** endpoint merging Tasks/Requests/GRO deadlines; `calendar.*` catalog | CAL-01 | todo |
+| CAL-02 | Calendar HTTP API — event CRUD (own-scope; `calendar.read-all` lifts) + a **calendar-view** endpoint merging Tasks/Requests/GRO deadlines; `calendar.*` catalog | CAL-01 | done ([evidence](evidence/calendar/CAL-02.md)) |
 | CAL-03 | Calendar web UI — agenda/month view (events + deadlines, dual-calendar Hijri) + create/edit | CAL-02 | todo |
 
 ### CAL-01 — `cal_events` table + CalendarService (staff path) + seed
@@ -1440,6 +1440,25 @@ from the domain modules below it).
 - **Dependencies:** Audit, Auth (owner ids). **Risks:** staff-owned (like Tasks) —
   `clientId` is optional context, not a scope key; start/end are timestamps stored
   UTC (Hijri = render); permissions + the deadline-aggregation view land with CAL-02.
+
+### CAL-02 — Calendar HTTP API (own-scoped event CRUD + aggregated calendar-view)
+- **Objective:** staff-only own-scoped event CRUD (`calendar.read-all` lifts scope) +
+  the `/calendar/view` endpoint merging own events with active Tasks/Requests/GRO
+  deadlines for a date range.
+- **Files:** `contracts/calendar.ts` (+ index); `permissions.ts` (5 `calendar.*` +
+  grants — read in STAFF_BASE, delete company-admin-only); `calendar/api/calendar.
+  controller.ts` (NEW); `calendar/domain/calendar-view.ts` (NEW — active filters +
+  item mappers); `calendar.module.ts` (+Auth/Tasks/Requests/Gro, one-way);
+  isolation (6 staff routes) + audited-writes (3); `test/calendar-api.e2e-spec.ts`.
+- **DoD:** event CRUD; own-scope (non-read-all → 404 on others'); delete company-admin
+  only; clients → 403; view merges events + Task/Request/GRO deadlines (terminal
+  excluded); a recruiter's view omits GRO (no gro.read); view requires from+to;
+  isolation + catalog + write-coverage green; suite + lint + typecheck + build green.
+- **Evidence:** `evidence/calendar/CAL-02.md`.
+- **Dependencies:** CAL-01, Tasks, Requests, GRO. **Risks:** the view fetches per
+  service + filters in-memory (dueDate ∈ range + active) — fine at scale, no new
+  domain queries; Calendar imports Tasks/Requests/GRO read-only (one-way, no cycle);
+  each deadline source gated by its read permission (GRO only for gro.read holders).
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

@@ -107,6 +107,16 @@ export const PERMISSIONS = [
   // Company Admin create/update/advance. No delete verb (cancel via status).
   'gro.read',
   'gro.process',
+  // Calendar (CAL-02; permission matrix). STAFF-ONLY. All staff read (own events by
+  // default); `calendar.read-all` lifts read/update/delete to ALL events (System
+  // Admin, Company Admin, Read Only). Company Admin + Recruiter/HR/GRO/Finance create
+  // + update their own; only Company Admin deletes (matrix: Company Admin is CRUD,
+  // the CRU roles have no delete).
+  'calendar.read',
+  'calendar.read-all',
+  'calendar.create',
+  'calendar.update',
+  'calendar.delete',
   // Client Portal (PORTAL-01): client-only self-service access. Gates /portal/*.
   'portal.read',
   // Session lifecycle — every authenticated principal may end their session.
@@ -149,6 +159,9 @@ const STAFF_BASE: readonly Permission[] = [
   // Tasks: every staff role reads tasks (own/assigned by default — task.read-all
   // lifts the scope to all).
   'task.read',
+  // Calendar: every staff role reads the calendar (own events by default —
+  // calendar.read-all lifts the scope to all events).
+  'calendar.read',
 ];
 // System/Company Admin extra: audit read + client CRUD (matrix) + triggering
 // the document-expiry scan on demand (EXP-02).
@@ -210,6 +223,8 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'vacancy.read',
     'candidate.read',
     'gro.read',
+    // Calendar: System Admin reads all events (matrix R), no create/update/delete.
+    'calendar.read-all',
   ],
   // core CRUD · salary R · govdata R; manages PER-CLIENT config overrides
   // (matrix — per-client settings are Company Admin's, distinct from the
@@ -245,6 +260,11 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     // GRO: Company Admin reads + manages processes (matrix RU → gro.read + gro.process).
     'gro.read',
     'gro.process',
+    // Calendar: Company Admin is CRUD-all (matrix) — read-all + create/update/delete.
+    'calendar.read-all',
+    'calendar.create',
+    'calendar.update',
+    'calendar.delete',
   ],
   // core R · salary – · govdata – · documents: recruitment (category-scoped).
   // The primary recruitment role: full vacancy CRUD + approve (matrix).
@@ -264,6 +284,9 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'candidate.update',
     'candidate.advance',
     'candidate.delete',
+    // Calendar: CRU own (matrix) — no read-all, no delete.
+    'calendar.create',
+    'calendar.update',
   ],
   // core CRUD · salary RU · govdata R · documents: all
   hr_officer: [
@@ -280,10 +303,12 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'task.create',
     'task.update',
     // HR Officer reads vacancies + candidates (matrix R); recruitment CRUD is the
-    // Recruiter's. GRO: reads processes (matrix R).
+    // Recruiter's. GRO: reads processes (matrix R). Calendar: CRU own.
     'vacancy.read',
     'candidate.read',
     'gro.read',
+    'calendar.create',
+    'calendar.update',
   ],
   // core RU · salary – · govdata CRUD · documents: government (category-scoped).
   // The primary GRO role: full process management (matrix CRUD → gro.read + gro.process).
@@ -299,10 +324,22 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'task.update',
     'gro.read',
     'gro.process',
+    // Calendar: CRU own (matrix).
+    'calendar.create',
+    'calendar.update',
   ],
-  // core R · salary RU · govdata –
-  finance: [...STAFF_BASE, 'salary.read', 'salary.update', 'task.create', 'task.update'],
-  // core R · salary – · govdata R (Finance holds no recruitment/GRO perms — matrix)
+  // core R · salary RU · govdata – (no recruitment/GRO; Calendar CRU own — matrix)
+  finance: [
+    ...STAFF_BASE,
+    'salary.read',
+    'salary.update',
+    'task.create',
+    'task.update',
+    'calendar.create',
+    'calendar.update',
+  ],
+  // core R · salary – · govdata R (no recruitment/GRO perms — matrix). Calendar:
+  // read all (matrix R), no create/update/delete.
   read_only: [
     ...STAFF_BASE,
     'govdata.read',
@@ -310,6 +347,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'vacancy.read',
     'candidate.read',
     'gro.read',
+    'calendar.read-all',
   ],
   client_admin: CLIENT_ADMIN,
   client_user: ALL_CLIENT,

@@ -145,6 +145,16 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'GET /gro-processes/:id': 'client-read',
   'PATCH /gro-processes/:id': 'staff',
   'POST /gro-processes/:id/status': 'staff',
+  // Calendar (CAL-02): STAFF-ONLY — clients have no calendar access, so every route
+  // is 'staff'. Events are own-scoped (calendar.read-all lifts it); the /calendar/view
+  // endpoint merges Tasks/Requests/GRO deadlines read-only. Own-scoping + source
+  // gating proven in the CAL-02 e2e.
+  'POST /calendar/events': 'staff',
+  'GET /calendar/events': 'staff',
+  'GET /calendar/events/:id': 'staff',
+  'PATCH /calendar/events/:id': 'staff',
+  'DELETE /calendar/events/:id': 'staff',
+  'GET /calendar/view': 'staff',
   // Client Portal (PORTAL-01/02/03): client-only self-service reads, scoped to
   // the caller's own client (proven in the portal-* e2e specs); 401 on unauth.
   // Employees are redacted to core + govdata:status (PORTAL-02); documents are
