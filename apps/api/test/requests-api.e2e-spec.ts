@@ -58,8 +58,9 @@ describe('Requests API (REQ-02, e2e)', () => {
 
   afterAll(async () => {
     await owner.auditEntry.deleteMany({
-      where: { clientId: { in: [clientA, clientB] }, resource: 'request' },
+      where: { clientId: { in: [clientA, clientB] }, resource: { in: ['request', 'task'] } },
     });
+    await owner.task.deleteMany({ where: { clientId: { in: [clientA, clientB] } } }); // spawned by TASK-03
     await owner.request.deleteMany({ where: { clientId: { in: [clientA, clientB] } } });
     await cleanupHelperUsers(app);
     await owner.client.deleteMany({ where: { id: { in: [clientA, clientB] } } });

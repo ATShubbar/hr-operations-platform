@@ -7,6 +7,7 @@ import type { Prisma } from '../../../generated/prisma/client';
 import { AuditService } from '../../audit/public-api';
 import { EventBus } from '../../events/public-api';
 import type { CreateRequestInput, ProcessRequestInput, UpdateRequestInput } from '../domain/request';
+import { RequestCreatedEvent } from '../domain/request-created.event';
 import { RequestStatusChangedEvent } from '../domain/request-status-changed.event';
 import { canTransition } from '../domain/status-workflow';
 
@@ -29,17 +30,19 @@ export class RequestsService {
 
   // ---- staff path (cross-client) ----
 
-  create(input: CreateRequestInput): Promise<RequestRecord> {
-    return this.prisma.$transaction(async (tx) => {
-      const row = await tx.request.create({ data: toCreateData(input) });
+  async create(input: CreateRequestInput): Promise<RequestRecord> {
+    const row = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.request.create({ data: toCreateData(input) });
       await this.audit.record(tx, {
         resource: 'request',
         action: 'create',
-        clientId: row.clientId,
-        after: snapshot(row),
+        clientId: created.clientId,
+        after: snapshot(created),
       });
-      return row;
+      return created;
     });
+    await this.publishCreated(row);
+    return row;
   }
 
   list(clientId?: string): Promise<RequestRecord[]> {
@@ -121,13 +124,30 @@ export class RequestsService {
 
   // ---- client-representative path (own-client, RLS-enforced) ----
 
-  createForClient(clientId: string, input: CreateRequestInput): Promise<RequestRecord> {
+  async createForClient(clientId: string, input: CreateRequestInput): Promise<RequestRecord> {
     // clientId is the caller's scoped client (from context), never input.
-    return this.scoped.transaction(clientId, async (tx) => {
-      const row = await tx.request.create({ data: toCreateData({ ...input, clientId }) });
-      await this.audit.record(tx, { resource: 'request', action: 'create', after: snapshot(row) });
-      return row;
+    const row = await this.scoped.transaction(clientId, async (tx) => {
+      const created = await tx.request.create({ data: toCreateData({ ...input, clientId }) });
+      await this.audit.record(tx, { resource: 'request', action: 'create', after: snapshot(created) });
+      return created;
     });
+    await this.publishCreated(row);
+    return row;
+  }
+
+  // Publish the RequestCreated fact after commit so consumers (Tasks, TASK-03)
+  // never touch a request endpoint. Awaited in-process, error-isolated by the bus.
+  private async publishCreated(row: RequestRecord): Promise<void> {
+    await this.events.publish(
+      new RequestCreatedEvent(
+        row.id,
+        row.clientId,
+        row.type,
+        row.title,
+        row.createdByUserId,
+        requestContext.get()?.requestId ?? null,
+      ),
+    );
   }
 
   listForClient(clientId: string): Promise<RequestRecord[]> {

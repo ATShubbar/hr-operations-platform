@@ -2,6 +2,8 @@
 export { RequestsModule } from './requests.module';
 export { RequestsService } from './application/requests.service';
 export type { CreateRequestInput } from './domain/request';
-// The domain event this module publishes on a status change (REQ-03, ADR-004).
-// Consumers (Notifications) subscribe via @OnEvent(RequestStatusChangedEvent.NAME).
+// The domain events this module publishes (ADR-004). Consumers subscribe via
+// @OnEvent(<Event>.NAME): Notifications on status change (REQ-03), Tasks on
+// creation (TASK-03 — a request spawns a task).
 export { RequestStatusChangedEvent } from './domain/request-status-changed.event';
+export { RequestCreatedEvent } from './domain/request-created.event';

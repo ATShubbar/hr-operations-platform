@@ -29,7 +29,10 @@ describe('Requests service (REQ-01, e2e)', () => {
   });
 
   afterAll(async () => {
-    await owner.auditEntry.deleteMany({ where: { clientId, resource: 'request' } });
+    await owner.auditEntry.deleteMany({
+      where: { clientId, resource: { in: ['request', 'task'] } },
+    });
+    await owner.task.deleteMany({ where: { clientId } }); // spawned by TASK-03
     await owner.request.deleteMany({ where: { clientId } });
     await owner.$disconnect();
     await app.close();

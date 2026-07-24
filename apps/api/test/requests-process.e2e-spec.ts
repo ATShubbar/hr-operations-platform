@@ -53,7 +53,10 @@ describe('Request processing (REQ-03, e2e)', () => {
 
   afterAll(async () => {
     await owner.notification.deleteMany({ where: { recipientUserId: rep.userId } });
-    await owner.auditEntry.deleteMany({ where: { clientId: clientA, resource: 'request' } });
+    await owner.auditEntry.deleteMany({
+      where: { clientId: clientA, resource: { in: ['request', 'task'] } },
+    });
+    await owner.task.deleteMany({ where: { clientId: clientA } }); // spawned by TASK-03
     await owner.request.deleteMany({ where: { clientId: clientA } });
     await cleanupHelperUsers(app);
     await owner.client.deleteMany({ where: { id: clientA } });
