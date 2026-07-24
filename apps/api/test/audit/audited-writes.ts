@@ -54,6 +54,9 @@ export const AUDITED_WRITES: Record<string, string> = {
   'PATCH /candidates/:id': 'candidate.update',
   'POST /candidates/:id/stage': 'candidate.stage',
   'DELETE /candidates/:id': 'candidate.delete',
+  'POST /gro-processes': 'gro-process.create',
+  'PATCH /gro-processes/:id': 'gro-process.update',
+  'POST /gro-processes/:id/status': 'gro-process.status',
 };
 
 export const AUDIT_EXEMPT_WRITES: Record<string, string> = {

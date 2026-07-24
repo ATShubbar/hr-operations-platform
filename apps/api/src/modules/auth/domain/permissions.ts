@@ -101,6 +101,12 @@ export const PERMISSIONS = [
   'candidate.update',
   'candidate.advance',
   'candidate.delete',
+  // GRO government processes (GRO-02; permission matrix — the frozen catalog names
+  // exactly these two). `gro.read` — all staff except Recruiter/Finance read, plus
+  // both client roles read their OWN (status only); `gro.process` — GRO Officer +
+  // Company Admin create/update/advance. No delete verb (cancel via status).
+  'gro.read',
+  'gro.process',
   // Client Portal (PORTAL-01): client-only self-service access. Gates /portal/*.
   'portal.read',
   // Session lifecycle — every authenticated principal may end their session.
@@ -173,6 +179,8 @@ const ALL_CLIENT: readonly Permission[] = [
   'portal.read',
   // Recruitment (REC-02): both client roles read their OWN client's vacancies.
   'vacancy.read',
+  // GRO (GRO-02): both client roles read their OWN client's processes (status only).
+  'gro.read',
 ];
 // Client Admin additionally manages its own client's portal users (matrix —
 // Client User does NOT).
@@ -201,6 +209,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'task.read-all',
     'vacancy.read',
     'candidate.read',
+    'gro.read',
   ],
   // core CRUD · salary R · govdata R; manages PER-CLIENT config overrides
   // (matrix — per-client settings are Company Admin's, distinct from the
@@ -233,6 +242,9 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'candidate.read',
     'candidate.update',
     'candidate.advance',
+    // GRO: Company Admin reads + manages processes (matrix RU → gro.read + gro.process).
+    'gro.read',
+    'gro.process',
   ],
   // core R · salary – · govdata – · documents: recruitment (category-scoped).
   // The primary recruitment role: full vacancy CRUD + approve (matrix).
@@ -268,11 +280,13 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'task.create',
     'task.update',
     // HR Officer reads vacancies + candidates (matrix R); recruitment CRUD is the
-    // Recruiter's.
+    // Recruiter's. GRO: reads processes (matrix R).
     'vacancy.read',
     'candidate.read',
+    'gro.read',
   ],
-  // core RU · salary – · govdata CRUD · documents: government (category-scoped)
+  // core RU · salary – · govdata CRUD · documents: government (category-scoped).
+  // The primary GRO role: full process management (matrix CRUD → gro.read + gro.process).
   gro_officer: [
     ...STAFF_BASE,
     'employee.update',
@@ -283,11 +297,20 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'request.process',
     'task.create',
     'task.update',
+    'gro.read',
+    'gro.process',
   ],
   // core R · salary RU · govdata –
   finance: [...STAFF_BASE, 'salary.read', 'salary.update', 'task.create', 'task.update'],
-  // core R · salary – · govdata R (Finance holds no recruitment perms — matrix)
-  read_only: [...STAFF_BASE, 'govdata.read', 'task.read-all', 'vacancy.read', 'candidate.read'],
+  // core R · salary – · govdata R (Finance holds no recruitment/GRO perms — matrix)
+  read_only: [
+    ...STAFF_BASE,
+    'govdata.read',
+    'task.read-all',
+    'vacancy.read',
+    'candidate.read',
+    'gro.read',
+  ],
   client_admin: CLIENT_ADMIN,
   client_user: ALL_CLIENT,
 };

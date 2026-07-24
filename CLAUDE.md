@@ -151,10 +151,18 @@ table (tracks a government procedure — iqama renewal/exit-reentry/transfer… 
 employee; clients read own status-only so `app_client` gets **SELECT only**) +
 staff-path `GroProcessesService` (audited CRUD, `resource: 'gro-process'`). `employeeId`
 is a bare cross-module ref (no FK); status defaults `not_started`; `dueDate` stored
-Gregorian (Hijri = render). Frozen catalog names exactly `gro.read` + `gro.process`
-(land with GRO-02). 3 seed processes; `modules/gro` registered. API suite **272/272**.
-**Next: GRO-02 (GRO HTTP API — staff CRUD + `gro.process` workflow + client-rep read-own
-status-only). AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
+Gregorian (Hijri = render). 3 seed processes; `modules/gro` registered. **GRO-02: the GRO processes HTTP API** —
+an asymmetric dual-path resource (staff CRUD cross-client; client reps READ own
+**status-only** — reference/notes/assignee redacted to null; all writes staff-only).
+`POST /gro-processes/:id/status` (`gro.process`) advances the workflow (not_started→
+in_progress→submitted→approved→completed, rejected→in_progress retry, →cancelled;
+validated → 400). **No DELETE** — the frozen catalog is exactly `gro.read` + `gro.process`,
+so a process is cancelled via status, not deleted. `clientId` is derived from the
+employee (GRO imports Employees, one-way). Grants: gro_officer + company_admin process,
+system_admin/hr_officer/read_only read, **Recruiter/Finance excluded**. 5 isolation
+routes, 3 audited writes. Contracts add `gro.ts`. API suite **279/279**. **Next: GRO-03
+(cross-module — completing a renewal updates the employee's govdata expiry + notify on
+status change). AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
 2026-07-24: ECS throttle + RDS InvalidAction persist)
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback

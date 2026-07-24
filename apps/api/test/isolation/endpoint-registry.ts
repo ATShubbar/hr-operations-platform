@@ -135,6 +135,16 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'PATCH /candidates/:id': 'staff',
   'POST /candidates/:id/stage': 'staff',
   'DELETE /candidates/:id': 'staff',
+  // GRO processes (GRO-02): a dual-path resource. Reads are client-read (staff
+  // cross-client; client reps own-client STATUS-ONLY, RLS-enforced — own-scoping +
+  // redaction proven in the GRO-02 e2e). All WRITES are STAFF-only (clients hold no
+  // gro.process and app_client has a SELECT-only grant). No delete verb (cancel via
+  // status).
+  'POST /gro-processes': 'staff',
+  'GET /gro-processes': 'client-read',
+  'GET /gro-processes/:id': 'client-read',
+  'PATCH /gro-processes/:id': 'staff',
+  'POST /gro-processes/:id/status': 'staff',
   // Client Portal (PORTAL-01/02/03): client-only self-service reads, scoped to
   // the caller's own client (proven in the portal-* e2e specs); 401 on unauth.
   // Employees are redacted to core + govdata:status (PORTAL-02); documents are

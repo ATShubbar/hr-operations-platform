@@ -1336,7 +1336,7 @@ operating over Employees + Documents. The frozen catalog names exactly `gro.read
 | Task | Objective | Deps | Status |
 |---|---|---|---|
 | GRO-01 | `gro_processes` client-scoped table (client-**read** status-only, staff-write) + `GroProcessesService` (staff, audited) + seed | 3.1, 3.4 | done ([evidence](evidence/gro/GRO-01.md)) |
-| GRO-02 | GRO HTTP API — staff CRUD + `gro.process` status workflow + client-rep read-own (status-only) dual-path; `gro.read`/`gro.process` catalog | GRO-01 | todo |
+| GRO-02 | GRO HTTP API — staff CRUD + `gro.process` status workflow + client-rep read-own (status-only) dual-path; `gro.read`/`gro.process` catalog | GRO-01 | done ([evidence](evidence/gro/GRO-02.md)) |
 | GRO-03 | Cross-module: completing a renewal **updates the employee's govdata expiry** + notify on status change (poss. `DocumentExpiring → GRO` auto-spawn) | GRO-02, 3.1/3.3 | todo |
 | GRO-04 | GRO web UI (process list/board with dual-calendar Hijri deadlines) | GRO-02 | todo |
 
@@ -1355,6 +1355,25 @@ operating over Employees + Documents. The frozen catalog names exactly `gro.read
 - **Dependencies:** EMP-01, CLIENT-01, Audit. **Risks:** `employeeId` is a bare
   cross-module reference (no FK to Employees); clients read status-only (redaction is
   a GRO-02 concern); `dueDate` stored Gregorian (Hijri is a render concern).
+
+### GRO-02 — GRO HTTP API (staff CRUD + gro.process workflow + client-rep read-own status-only)
+- **Objective:** the GRO processes HTTP surface — staff CRUD + the `gro.process`
+  status workflow; client reps READ their own STATUS-ONLY (dual-path).
+- **Files:** `contracts/gro.ts` (+ index); `permissions.ts` (`gro.read` +
+  `gro.process` + grants — Recruiter/Finance excluded); `gro/api/gro-processes.
+  controller.ts` (NEW, redaction mapper); `application/gro-processes.service.ts`
+  (+ client-rep read, changeStatus); `domain/gro-status-workflow.ts`; `gro.module.ts`
+  (+controller, EmployeesModule); isolation (5 routes) + audited-writes (3);
+  `test/gro-processes-api.e2e-spec.ts`.
+- **DoD:** staff CRUD; illegal transition → 400; unknown employee → 404; rep reads
+  own only (RLS) STATUS-ONLY (reference/notes/assignee null), foreign id → 404, rep
+  writes → 403; Recruiter/Finance read → 403; all mutations audited; isolation +
+  catalog + write-coverage green; suite + lint + typecheck + build green.
+- **Evidence:** `evidence/gro/GRO-02.md`.
+- **Dependencies:** GRO-01, EMP-01. **Risks:** no DELETE (frozen 2-permission catalog
+  → cancel via status); clientId derived from the employee (no wrong-client
+  attribution); GRO imports Employees (one-way, no cycle); status-only redaction is
+  server-side.
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

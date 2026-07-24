@@ -149,6 +149,24 @@ export {
   type RequestQuery,
 } from './request.js';
 export {
+  groProcessTypeSchema,
+  groProcessStatusSchema,
+  groProcessResponseSchema,
+  createGroProcessRequestSchema,
+  updateGroProcessRequestSchema,
+  changeGroProcessStatusRequestSchema,
+  groProcessListResponseSchema,
+  groProcessQuerySchema,
+  type GroProcessType,
+  type GroProcessStatus,
+  type GroProcessResponse,
+  type CreateGroProcessRequest,
+  type UpdateGroProcessRequest,
+  type ChangeGroProcessStatusRequest,
+  type GroProcessListResponse,
+  type GroProcessQuery,
+} from './gro.js';
+export {
   vacancyStatusSchema,
   vacancyResponseSchema,
   createVacancyRequestSchema,
