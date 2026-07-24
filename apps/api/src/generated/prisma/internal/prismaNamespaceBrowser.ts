@@ -63,7 +63,8 @@ export const ModelName = {
   Notification: 'Notification',
   ExpiryAlert: 'ExpiryAlert',
   NotificationPreference: 'NotificationPreference',
-  Request: 'Request'
+  Request: 'Request',
+  Task: 'Task'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -284,6 +285,24 @@ export const RequestScalarFieldEnum = {
 } as const
 
 export type RequestScalarFieldEnum = (typeof RequestScalarFieldEnum)[keyof typeof RequestScalarFieldEnum]
+
+
+export const TaskScalarFieldEnum = {
+  id: 'id',
+  clientId: 'clientId',
+  requestId: 'requestId',
+  title: 'title',
+  description: 'description',
+  status: 'status',
+  priority: 'priority',
+  assigneeUserId: 'assigneeUserId',
+  createdByUserId: 'createdByUserId',
+  dueDate: 'dueDate',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type TaskScalarFieldEnum = (typeof TaskScalarFieldEnum)[keyof typeof TaskScalarFieldEnum]
 
 
 export const SortOrder = {

@@ -176,3 +176,22 @@ export const RequestPriority = {
 } as const
 
 export type RequestPriority = (typeof RequestPriority)[keyof typeof RequestPriority]
+
+
+export const TaskStatus = {
+  open: 'open',
+  in_progress: 'in_progress',
+  done: 'done',
+  cancelled: 'cancelled'
+} as const
+
+export type TaskStatus = (typeof TaskStatus)[keyof typeof TaskStatus]
+
+
+export const TaskPriority = {
+  low: 'low',
+  normal: 'normal',
+  high: 'high'
+} as const
+
+export type TaskPriority = (typeof TaskPriority)[keyof typeof TaskPriority]

@@ -17,6 +17,7 @@ import { DocumentsModule } from './modules/documents/public-api';
 import { NotificationsModule } from './modules/notifications/public-api';
 import { DocumentExpiryModule } from './modules/document-expiry/public-api';
 import { RequestsModule } from './modules/requests/public-api';
+import { TasksModule } from './modules/tasks/public-api';
 import { ExampleModule } from './modules/example/public-api';
 import { ExampleConsumerModule } from './modules/example-consumer/public-api';
 import { ScopeCheckModule } from './modules/scope-check/public-api';
@@ -37,6 +38,7 @@ import { ScopeCheckModule } from './modules/scope-check/public-api';
     NotificationsModule,
     DocumentExpiryModule,
     RequestsModule,
+    TasksModule,
     ExampleModule,
     ExampleConsumerModule,
     ScopeCheckModule,

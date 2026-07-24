@@ -262,6 +262,37 @@ async function seedRequests(prisma: PrismaClient): Promise<number> {
   return requests.length;
 }
 
+async function seedTasks(prisma: PrismaClient): Promise<number> {
+  // Internal work items (TASK-01), assigned to seeded staff. One is linked to a
+  // seed request (the Iqama-renewal request), one stands alone.
+  const gro = await prisma.authUser.findUnique({
+    where: { email: `staff-gro_officer@${SEED_USER_DOMAIN}` },
+  });
+  const tasks = [
+    {
+      id: 'b0000001-0000-4000-8000-000000000001',
+      clientId: SEED_CLIENT_A,
+      requestId: 'a0000001-0000-4000-8000-000000000002',
+      title: 'Prepare iqama renewal paperwork — Ahmed Hassan',
+      status: 'in_progress' as const,
+      priority: 'high' as const,
+      assigneeUserId: gro?.id ?? null,
+    },
+    {
+      id: 'b0000001-0000-4000-8000-000000000002',
+      clientId: SEED_CLIENT_A,
+      title: 'Quarterly GOSI reconciliation',
+      status: 'open' as const,
+      priority: 'normal' as const,
+      assigneeUserId: gro?.id ?? null,
+    },
+  ];
+  for (const { id, ...rest } of tasks) {
+    await prisma.task.upsert({ where: { id }, create: { id, ...rest }, update: rest });
+  }
+  return tasks.length;
+}
+
 async function main(): Promise<void> {
   if (process.env.NODE_ENV === 'production') {
     throw new Error('Refusing to seed: NODE_ENV=production. The seed is development-only.');
@@ -291,13 +322,14 @@ async function main(): Promise<void> {
 
     const userCount = await seedUsers(prisma);
     const requestCount = await seedRequests(prisma);
+    const taskCount = await seedTasks(prisma);
 
     const rowCount = await prisma.coreScopeCheck.count({
       where: { note: { startsWith: 'seed:' } },
     });
     const roleCount = STAFF_ROLES.length + CLIENT_REP_ASSIGNMENTS.length;
     process.stdout.write(
-      `Seed complete: ${clientCount} client companies; ${employeeCount} employees; ${documentCount} documents; ${requestCount} requests; ${rowCount} scope-check rows ` +
+      `Seed complete: ${clientCount} client companies; ${employeeCount} employees; ${documentCount} documents; ${requestCount} requests; ${taskCount} tasks; ${rowCount} scope-check rows ` +
         `across clients A (${SEED_CLIENT_A}) and B (${SEED_CLIENT_B}); ${userCount} auth users ` +
         `(${STAFF_ROLES.length} staff roles + ${CLIENT_REP_ASSIGNMENTS.length} client reps, ` +
         `${roleCount}/${STAFF_ROLES.length + CLIENT_ROLES.length} distinct roles covered).\n`,

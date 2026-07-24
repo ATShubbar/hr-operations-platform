@@ -82,3 +82,8 @@ export type NotificationPreference = Prisma.NotificationPreferenceModel
  * 
  */
 export type Request = Prisma.RequestModel
+/**
+ * Model Task
+ * 
+ */
+export type Task = Prisma.TaskModel

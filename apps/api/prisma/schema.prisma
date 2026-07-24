@@ -437,3 +437,44 @@ enum RequestPriority {
   normal
   high
 }
+
+// Internal work item (TASK-01; ACTION-PLAN 4.4). A Task is consultancy-INTERNAL
+// (matrix — clients have NO task access), so unlike req_requests this table is
+// STAFF-owned: app_staff only, no app_client grant, RLS with a staff_full_access
+// policy for defence-in-depth. `client_id`/`request_id` are optional reporting
+// links (a task may be spawned from a request via a domain event — TASK-03 — or
+// stand alone). `created_by_user_id`/`assignee_user_id` are nullable so a
+// system-spawned task can be unassigned until an admin triages it.
+model Task {
+  id              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clientId        String?      @map("client_id") @db.Uuid
+  requestId       String?      @map("request_id") @db.Uuid
+  title           String
+  description     String?
+  status          TaskStatus   @default(open)
+  priority        TaskPriority @default(normal)
+  assigneeUserId  String?      @map("assignee_user_id") @db.Uuid
+  createdByUserId String?      @map("created_by_user_id") @db.Uuid
+  dueDate         DateTime?    @map("due_date") @db.Date
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  @@index([clientId])
+  @@index([status])
+  @@index([assigneeUserId])
+  @@index([dueDate])
+  @@map("task_tasks")
+}
+
+enum TaskStatus {
+  open
+  in_progress
+  done
+  cancelled
+}
+
+enum TaskPriority {
+  low
+  normal
+  high
+}

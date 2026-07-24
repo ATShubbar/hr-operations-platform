@@ -1020,7 +1020,7 @@ domain event (second ADR-004 consumer). Requests-first (Tasks depends on it).
 | REQ-02 | Requests HTTP API — staff + client-rep create/read/list/update (client-facing write path), `request.create`/`request.read`, isolation + audit | REQ-01, 3.3 | done ([evidence](evidence/requests/REQ-02.md)) |
 | REQ-03 | Request processing + SLA — `request.process` (staff status workflow, assignee), notify on status change | REQ-02 | done ([evidence](evidence/requests/REQ-03.md)) |
 | REQ-04 | Requests web UI (staff console; client view lands with Portal 5.1) | REQ-02 | done ([evidence](evidence/requests/REQ-04.md)) |
-| TASK-01 | `task_tasks` staff-owned table + `TasksService` (assignment, Sun–Thu due dates) | REQ-01 | todo |
+| TASK-01 | `task_tasks` staff-owned table + `TasksService` (assignment, Sun–Thu due dates) | REQ-01 | done ([evidence](evidence/tasks/TASK-01.md)) |
 | TASK-02 | Tasks HTTP API — CRU own/assigned, `task.update`, isolation + audit | TASK-01 | todo |
 | TASK-03 | Requests → Tasks via a domain event (`RequestOpened`) — second ADR-004 consumer | REQ-02, TASK-01, NOTIF-05 | todo |
 | TASK-04 | Tasks web UI | TASK-02 | todo |
