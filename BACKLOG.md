@@ -1338,7 +1338,7 @@ operating over Employees + Documents. The frozen catalog names exactly `gro.read
 | GRO-01 | `gro_processes` client-scoped table (client-**read** status-only, staff-write) + `GroProcessesService` (staff, audited) + seed | 3.1, 3.4 | done ([evidence](evidence/gro/GRO-01.md)) |
 | GRO-02 | GRO HTTP API — staff CRUD + `gro.process` status workflow + client-rep read-own (status-only) dual-path; `gro.read`/`gro.process` catalog | GRO-01 | done ([evidence](evidence/gro/GRO-02.md)) |
 | GRO-03 | Cross-module: completing a renewal **updates the employee's govdata expiry** + notify on status change (poss. `DocumentExpiring → GRO` auto-spawn) | GRO-02, 3.1/3.3 | done ([evidence](evidence/gro/GRO-03.md)) |
-| GRO-04 | GRO web UI (process list/board with dual-calendar Hijri deadlines) | GRO-02 | todo |
+| GRO-04 | GRO web UI (process list/board with dual-calendar Hijri deadlines) | GRO-02 | done ([evidence](evidence/gro/GRO-04.md)) |
 
 ### GRO-01 — `gro_processes` table + GroProcessesService (staff path) + seed
 - **Objective:** the GRO foundation — a client-scoped `gro_processes` table (ADR-001
@@ -1393,6 +1393,24 @@ operating over Employees + Documents. The frozen catalog names exactly `gro.read
   validation, so an event would cycle; GRO "consumes Employees + Notifications" is the
   architecture's design (module 6). `DocumentExpiring → GRO` auto-spawn deferred to
   its own card.
+
+### GRO-04 — GRO web UI (process console with dual-calendar Hijri deadlines)
+- **Objective:** the staff GRO screen over `/gro-processes` — a process table with
+  dual-calendar Hijri due dates, create, status transitions, and the completion
+  (resulting-expiry → govdata) flow.
+- **Files:** `(app)/gro/page.tsx` (NEW); `app-shell.tsx` (GRO nav link gated on
+  gro.read); `messages/{en,ar}.json` (`nav.gro` + `gro.*`). Front-end only.
+- **DoD:** GRO officer sees the nav; table renders dual-calendar due dates; create a
+  process; advance status; complete with a resulting expiry → employee govdata
+  updated (verified live); status control offers only legal moves; RTL + logical
+  utilities; web typecheck + lint green; verified in the browser (both locales).
+- **Evidence:** `evidence/gro/GRO-04.md`.
+- **Dependencies:** GRO-02, GRO-03. **Risks:** the completion→resulting-expiry is a
+  two-call sequence (PATCH then status) — the one novel bit; else mirrors the
+  Requests/Tasks consoles; employee-name resolution fetches `/employees` (gro_officer
+  has employee.read via STAFF_BASE).
+
+**GRO epic (4.2) COMPLETE — GRO-01..04 (processes, API+workflow, completion→govdata+notify, web UI).**
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

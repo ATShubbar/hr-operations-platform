@@ -168,9 +168,16 @@ employee via `EmployeesService.update` (GRO *operates on* Employees); every stat
 change notifies the assignee via `NotificationsService`. **Direct calls, NOT a 5th
 ADR-004 event** — GRO already imports Employees (validation), so an event would cycle;
 GRO "consumes Employees + Notifications" is the architecture's module-6 design.
-`DocumentExpiring → GRO` auto-spawn deferred. API suite **283/283**. **Next: GRO-04
-(GRO web UI — process board with dual-calendar Hijri deadlines), then the epic closes.
-AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
+`DocumentExpiring → GRO` auto-spawn deferred. API suite **283/283**. **GRO-04: the GRO
+web UI** — a process console over `/gro-processes` (table with **dual-calendar Hijri
+deadlines** — the epic's headline surfaced; create; status transitions; the completion
+dialog captures a **resulting expiry** → PATCH + status → GRO-03 writes it to the
+employee's govdata). Nav gated on `gro.read`. Verified live: completing an iqama-renewal
+through the UI moved Ahmed Hassan's iqama expiry 2027→2029, both locales (ar RTL).
+**GRO epic (4.2) COMPLETE — GRO-01..04.** Fourteen product screens. **Priorities 4
+(Recruitment + GRO + Requests + Tasks) and 5.1 (Client Portal) now complete. Next: pick
+an epic — 5.2 Calendar (now unblocked by GRO), 5.4 Reporting, or `DocumentExpiring → GRO`
+auto-spawn. AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
 2026-07-24: ECS throttle + RDS InvalidAction persist)
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback
