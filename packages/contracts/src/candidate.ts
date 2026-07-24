@@ -19,6 +19,7 @@ export const candidateResponseSchema = z.object({
   clientId: z.uuid(),
   vacancyId: z.uuid(),
   name: z.object({ ar: z.string(), en: z.string() }),
+  nationality: z.string().nullable(), // ISO 3166-1 alpha-2; required before hiring
   email: z.string().nullable(),
   phone: z.string().nullable(),
   stage: candidateStageSchema,
@@ -34,6 +35,7 @@ export const candidateResponseSchema = z.object({
 export const createCandidateRequestSchema = z.object({
   vacancyId: z.uuid(),
   name: z.object({ ar: z.string().min(1).max(200), en: z.string().min(1).max(200) }),
+  nationality: z.string().length(2).optional(), // ISO 3166-1 alpha-2
   email: z.string().email().max(200).optional(),
   phone: z.string().max(40).optional(),
   cvDocumentId: z.uuid().optional(),
@@ -43,6 +45,7 @@ export const createCandidateRequestSchema = z.object({
 // Update: editable core fields only — stage is advanced via candidate.advance.
 export const updateCandidateRequestSchema = z.object({
   name: z.object({ ar: z.string().min(1).max(200), en: z.string().min(1).max(200) }).optional(),
+  nationality: z.string().length(2).nullable().optional(), // ISO 3166-1 alpha-2
   email: z.string().email().max(200).nullable().optional(),
   phone: z.string().max(40).nullable().optional(),
   cvDocumentId: z.uuid().nullable().optional(),

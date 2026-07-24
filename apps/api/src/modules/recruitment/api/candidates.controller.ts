@@ -46,6 +46,7 @@ export class CandidatesController {
       vacancyId: req.vacancyId,
       nameAr: req.name.ar,
       nameEn: req.name.en,
+      nationality: req.nationality ?? null,
       email: req.email ?? null,
       phone: req.phone ?? null,
       cvDocumentId: req.cvDocumentId ?? null,
@@ -82,6 +83,7 @@ export class CandidatesController {
     const p = parsed.data;
     const data: UpdateCandidateInput = {
       ...(p.name ? { nameAr: p.name.ar, nameEn: p.name.en } : {}),
+      ...(p.nationality !== undefined ? { nationality: p.nationality } : {}),
       ...(p.email !== undefined ? { email: p.email } : {}),
       ...(p.phone !== undefined ? { phone: p.phone } : {}),
       ...(p.cvDocumentId !== undefined ? { cvDocumentId: p.cvDocumentId } : {}),
@@ -121,6 +123,7 @@ function toResponse(c: CandidateRecord): CandidateResponse {
     clientId: c.clientId,
     vacancyId: c.vacancyId,
     name: { ar: c.nameAr, en: c.nameEn },
+    nationality: c.nationality,
     email: c.email,
     phone: c.phone,
     stage: c.stage,

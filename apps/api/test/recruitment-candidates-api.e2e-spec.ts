@@ -50,6 +50,8 @@ describe('Candidates API (REC-04, e2e)', () => {
 
   afterAll(async () => {
     await owner.auditEntry.deleteMany({ where: { clientId } });
+    // Advancing a candidate to `hired` spawns an employee (REC-05) — clean it up.
+    await owner.employee.deleteMany({ where: { clientId } });
     await owner.candidate.deleteMany({ where: { clientId } });
     await owner.vacancy.deleteMany({ where: { id: vacancyId } });
     await cleanupHelperUsers(app);
@@ -62,6 +64,7 @@ describe('Candidates API (REC-04, e2e)', () => {
     const res = await post(recruiter.cookie, {
       vacancyId,
       name: { ar: 'سالم', en: 'Salem' },
+      nationality: 'SA', // required to reach `hired` later (REC-05)
       email: 'salem@example.com',
     }).expect(201);
     expect(res.body.stage).toBe('applied');

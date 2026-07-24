@@ -348,6 +348,7 @@ async function seedCandidates(prisma: PrismaClient): Promise<number> {
       vacancyId: 'c0000001-0000-4000-8000-000000000001', // Senior Accountant (A)
       nameAr: 'سالم القحطاني',
       nameEn: 'Salem Alqahtani',
+      nationality: 'SA',
       email: 'salem.q@example.com',
       stage: 'screening' as const,
     },
@@ -357,6 +358,7 @@ async function seedCandidates(prisma: PrismaClient): Promise<number> {
       vacancyId: 'c0000001-0000-4000-8000-000000000001', // Senior Accountant (A)
       nameAr: 'نورة الحربي',
       nameEn: 'Noura Alharbi',
+      nationality: 'SA',
       email: 'noura.h@example.com',
       stage: 'interview' as const,
     },
@@ -366,6 +368,7 @@ async function seedCandidates(prisma: PrismaClient): Promise<number> {
       vacancyId: 'c0000002-0000-4000-8000-000000000001', // Civil Engineer (B)
       nameAr: 'راجيش كومار',
       nameEn: 'Rajesh Kumar',
+      nationality: 'IN',
       email: 'rajesh.k@example.com',
       stage: 'applied' as const,
     },

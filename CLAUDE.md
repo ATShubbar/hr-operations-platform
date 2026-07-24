@@ -133,10 +133,15 @@ is REC-04. `vacancyId` + `cvDocumentId` are plain UUID refs, not FKs. 3 seed can
 screening→interview→offer→hired; reject/withdraw from any active stage; workflow-
 validated → 400). 5 `candidate.*` perms granted per-role (GRO/Finance excluded, no
 client access — asserted in tests). 6 isolation routes, 4 audited writes. Contracts
-add `candidate.ts`. API suite **265/265**. **Recruitment 4.1 status: REC-01..04 done
-(vacancies full + candidates full). Next: REC-05 (offer flow + `CandidateHired` →
-Employees domain event — the 4th ADR-004 flow), then REC-06 (recruitment web UI).
-AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
+add `candidate.ts`. **REC-05: `CandidateHired` → Employees** — advancing a candidate
+to `hired` publishes `CandidateHiredEvent` (recruitment-owned) and Employees `@OnEvent`
+creates the employee record (**4th ADR-004 flow**; Employees imports only the event
+type, no DI cycle). Added `nationality` to candidates + a **hire-time guard** (400 if
+absent) so the created employee is well-formed (`contractType: unlimited` default,
+`active`; HR completes salary/govdata). Idempotent via `hired` being terminal (event
+fires once → one employee). API suite **268/268**. **Recruitment epic (4.1): REC-01..05
+done. Next: REC-06 (recruitment web UI — vacancies + candidate pipeline board),
+then the epic closes. AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
 2026-07-24: ECS throttle + RDS InvalidAction persist)
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback

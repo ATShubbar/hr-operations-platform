@@ -1215,7 +1215,7 @@ client) collects **candidates** through a pipeline (applied → screening → in
 | REC-02 | Vacancies HTTP API — staff CRUD + `vacancy.approve` status workflow (+ client-rep read-own dual-path) | REC-01 | done ([evidence](evidence/recruitment/REC-02.md)) |
 | REC-03 | `rec_candidates` staff-owned table + `CandidatesService` (candidate ↔ vacancy, pipeline stage, CV doc link) | REC-01, 3.2 | done ([evidence](evidence/recruitment/REC-03.md)) |
 | REC-04 | Candidates HTTP API — CRUD + pipeline stage-transition workflow | REC-03 | done ([evidence](evidence/recruitment/REC-04.md)) |
-| REC-05 | Offer flow + **`CandidateHired` → Employees** domain event (PII-free; Employees `@OnEvent` creates the record) | REC-04, 3.1 | todo |
+| REC-05 | Offer flow + **`CandidateHired` → Employees** domain event (Employees `@OnEvent` creates the record) | REC-04, 3.1 | done ([evidence](evidence/recruitment/REC-05.md)) |
 | REC-06 | Recruitment web UI (vacancies + candidate pipeline board) | REC-02/04 | todo |
 
 ### REC-01 — `rec_vacancies` table + VacanciesService (staff path) + seed
@@ -1287,6 +1287,29 @@ client) collects **candidates** through a pipeline (applied → screening → in
 - **Dependencies:** REC-03. **Risks:** candidates have NO client-scoped path — all 6
   routes are `staff` (like Tasks); reaching `hired` is a plain terminal transition
   here, the Employees-creation side effect is deferred to REC-05.
+
+### REC-05 — Offer flow + `CandidateHired` → Employees domain event
+- **Objective:** close the loop — advancing a candidate to `hired` publishes
+  `CandidateHiredEvent`; Employees `@OnEvent` creates the employee record (4th
+  ADR-004 flow). Recruitment never imports Employees.
+- **Files:** `schema.prisma` + migration (add `nationality` to rec_candidates);
+  `contracts/candidate.ts` (+nationality); `recruitment/domain/candidate-hired.event.ts`
+  (NEW) + public-api; `candidates.service.ts` (hire guard + publish, EventBus);
+  candidate domain/controller (+nationality); `employees/application/
+  candidate-hired.handler.ts` (NEW) + employees.module; `test/recruitment-candidate-
+  hired.e2e-spec.ts`.
+- **DoD:** hiring (with nationality) creates an Employee (same client, name +
+  nationality, audited `employee.create`); hiring without nationality → 400, no
+  employee; `hired` terminal → event fires once → exactly one employee; no DI cycle
+  (boundary lint green); suite + lint + typecheck + build green.
+- **Evidence:** `evidence/recruitment/REC-05.md`.
+- **Dependencies:** REC-04, EMP-01. **Risks:** an Employee needs nationality, a
+  candidate didn't — added `nationality` to candidates + a hire-time guard so the
+  record is well-formed; `contractType` defaults to `unlimited` (valid enum, HR
+  adjusts); idempotent via `hired` being terminal (no ledger); notify-on-hire +
+  employee↔candidate link deferred.
+
+**Recruitment epic (4.1): REC-01..05 done (vacancies, candidates, hire→employee event). REC-06 (web UI) remaining.**
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

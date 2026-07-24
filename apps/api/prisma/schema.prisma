@@ -522,6 +522,9 @@ model Candidate {
   vacancyId       String         @map("vacancy_id") @db.Uuid
   nameAr          String         @map("name_ar")
   nameEn          String         @map("name_en")
+  nationality     String? // ISO 3166-1 alpha-2; captured during recruitment,
+  //                         REQUIRED before a candidate can be hired (REC-05) so
+  //                         the CandidateHired → Employees record is well-formed.
   email           String?
   phone           String?
   stage           CandidateStage @default(applied)

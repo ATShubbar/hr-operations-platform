@@ -7,6 +7,7 @@ export interface CreateCandidateInput {
   vacancyId: string;
   nameAr: string;
   nameEn: string;
+  nationality?: string | null;
   email?: string | null;
   phone?: string | null;
   cvDocumentId?: string | null;
@@ -20,6 +21,7 @@ export interface CreateCandidateInput {
 export interface UpdateCandidateInput {
   nameAr?: string;
   nameEn?: string;
+  nationality?: string | null;
   email?: string | null;
   phone?: string | null;
   cvDocumentId?: string | null;

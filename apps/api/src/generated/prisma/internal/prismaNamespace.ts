@@ -1887,6 +1887,7 @@ export const CandidateScalarFieldEnum = {
   vacancyId: 'vacancyId',
   nameAr: 'nameAr',
   nameEn: 'nameEn',
+  nationality: 'nationality',
   email: 'email',
   phone: 'phone',
   stage: 'stage',

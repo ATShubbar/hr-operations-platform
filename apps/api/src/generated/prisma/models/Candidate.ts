@@ -30,6 +30,7 @@ export type CandidateMinAggregateOutputType = {
   vacancyId: string | null
   nameAr: string | null
   nameEn: string | null
+  nationality: string | null
   email: string | null
   phone: string | null
   stage: $Enums.CandidateStage | null
@@ -46,6 +47,7 @@ export type CandidateMaxAggregateOutputType = {
   vacancyId: string | null
   nameAr: string | null
   nameEn: string | null
+  nationality: string | null
   email: string | null
   phone: string | null
   stage: $Enums.CandidateStage | null
@@ -62,6 +64,7 @@ export type CandidateCountAggregateOutputType = {
   vacancyId: number
   nameAr: number
   nameEn: number
+  nationality: number
   email: number
   phone: number
   stage: number
@@ -80,6 +83,7 @@ export type CandidateMinAggregateInputType = {
   vacancyId?: true
   nameAr?: true
   nameEn?: true
+  nationality?: true
   email?: true
   phone?: true
   stage?: true
@@ -96,6 +100,7 @@ export type CandidateMaxAggregateInputType = {
   vacancyId?: true
   nameAr?: true
   nameEn?: true
+  nationality?: true
   email?: true
   phone?: true
   stage?: true
@@ -112,6 +117,7 @@ export type CandidateCountAggregateInputType = {
   vacancyId?: true
   nameAr?: true
   nameEn?: true
+  nationality?: true
   email?: true
   phone?: true
   stage?: true
@@ -201,6 +207,7 @@ export type CandidateGroupByOutputType = {
   vacancyId: string
   nameAr: string
   nameEn: string
+  nationality: string | null
   email: string | null
   phone: string | null
   stage: $Enums.CandidateStage
@@ -238,6 +245,7 @@ export type CandidateWhereInput = {
   vacancyId?: Prisma.UuidFilter<"Candidate"> | string
   nameAr?: Prisma.StringFilter<"Candidate"> | string
   nameEn?: Prisma.StringFilter<"Candidate"> | string
+  nationality?: Prisma.StringNullableFilter<"Candidate"> | string | null
   email?: Prisma.StringNullableFilter<"Candidate"> | string | null
   phone?: Prisma.StringNullableFilter<"Candidate"> | string | null
   stage?: Prisma.EnumCandidateStageFilter<"Candidate"> | $Enums.CandidateStage
@@ -254,6 +262,7 @@ export type CandidateOrderByWithRelationInput = {
   vacancyId?: Prisma.SortOrder
   nameAr?: Prisma.SortOrder
   nameEn?: Prisma.SortOrder
+  nationality?: Prisma.SortOrderInput | Prisma.SortOrder
   email?: Prisma.SortOrderInput | Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
   stage?: Prisma.SortOrder
@@ -273,6 +282,7 @@ export type CandidateWhereUniqueInput = Prisma.AtLeast<{
   vacancyId?: Prisma.UuidFilter<"Candidate"> | string
   nameAr?: Prisma.StringFilter<"Candidate"> | string
   nameEn?: Prisma.StringFilter<"Candidate"> | string
+  nationality?: Prisma.StringNullableFilter<"Candidate"> | string | null
   email?: Prisma.StringNullableFilter<"Candidate"> | string | null
   phone?: Prisma.StringNullableFilter<"Candidate"> | string | null
   stage?: Prisma.EnumCandidateStageFilter<"Candidate"> | $Enums.CandidateStage
@@ -289,6 +299,7 @@ export type CandidateOrderByWithAggregationInput = {
   vacancyId?: Prisma.SortOrder
   nameAr?: Prisma.SortOrder
   nameEn?: Prisma.SortOrder
+  nationality?: Prisma.SortOrderInput | Prisma.SortOrder
   email?: Prisma.SortOrderInput | Prisma.SortOrder
   phone?: Prisma.SortOrderInput | Prisma.SortOrder
   stage?: Prisma.SortOrder
@@ -311,6 +322,7 @@ export type CandidateScalarWhereWithAggregatesInput = {
   vacancyId?: Prisma.UuidWithAggregatesFilter<"Candidate"> | string
   nameAr?: Prisma.StringWithAggregatesFilter<"Candidate"> | string
   nameEn?: Prisma.StringWithAggregatesFilter<"Candidate"> | string
+  nationality?: Prisma.StringNullableWithAggregatesFilter<"Candidate"> | string | null
   email?: Prisma.StringNullableWithAggregatesFilter<"Candidate"> | string | null
   phone?: Prisma.StringNullableWithAggregatesFilter<"Candidate"> | string | null
   stage?: Prisma.EnumCandidateStageWithAggregatesFilter<"Candidate"> | $Enums.CandidateStage
@@ -327,6 +339,7 @@ export type CandidateCreateInput = {
   vacancyId: string
   nameAr: string
   nameEn: string
+  nationality?: string | null
   email?: string | null
   phone?: string | null
   stage?: $Enums.CandidateStage
@@ -343,6 +356,7 @@ export type CandidateUncheckedCreateInput = {
   vacancyId: string
   nameAr: string
   nameEn: string
+  nationality?: string | null
   email?: string | null
   phone?: string | null
   stage?: $Enums.CandidateStage
@@ -359,6 +373,7 @@ export type CandidateUpdateInput = {
   vacancyId?: Prisma.StringFieldUpdateOperationsInput | string
   nameAr?: Prisma.StringFieldUpdateOperationsInput | string
   nameEn?: Prisma.StringFieldUpdateOperationsInput | string
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stage?: Prisma.EnumCandidateStageFieldUpdateOperationsInput | $Enums.CandidateStage
@@ -375,6 +390,7 @@ export type CandidateUncheckedUpdateInput = {
   vacancyId?: Prisma.StringFieldUpdateOperationsInput | string
   nameAr?: Prisma.StringFieldUpdateOperationsInput | string
   nameEn?: Prisma.StringFieldUpdateOperationsInput | string
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stage?: Prisma.EnumCandidateStageFieldUpdateOperationsInput | $Enums.CandidateStage
@@ -391,6 +407,7 @@ export type CandidateCreateManyInput = {
   vacancyId: string
   nameAr: string
   nameEn: string
+  nationality?: string | null
   email?: string | null
   phone?: string | null
   stage?: $Enums.CandidateStage
@@ -407,6 +424,7 @@ export type CandidateUpdateManyMutationInput = {
   vacancyId?: Prisma.StringFieldUpdateOperationsInput | string
   nameAr?: Prisma.StringFieldUpdateOperationsInput | string
   nameEn?: Prisma.StringFieldUpdateOperationsInput | string
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stage?: Prisma.EnumCandidateStageFieldUpdateOperationsInput | $Enums.CandidateStage
@@ -423,6 +441,7 @@ export type CandidateUncheckedUpdateManyInput = {
   vacancyId?: Prisma.StringFieldUpdateOperationsInput | string
   nameAr?: Prisma.StringFieldUpdateOperationsInput | string
   nameEn?: Prisma.StringFieldUpdateOperationsInput | string
+  nationality?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stage?: Prisma.EnumCandidateStageFieldUpdateOperationsInput | $Enums.CandidateStage
@@ -439,6 +458,7 @@ export type CandidateCountOrderByAggregateInput = {
   vacancyId?: Prisma.SortOrder
   nameAr?: Prisma.SortOrder
   nameEn?: Prisma.SortOrder
+  nationality?: Prisma.SortOrder
   email?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   stage?: Prisma.SortOrder
@@ -455,6 +475,7 @@ export type CandidateMaxOrderByAggregateInput = {
   vacancyId?: Prisma.SortOrder
   nameAr?: Prisma.SortOrder
   nameEn?: Prisma.SortOrder
+  nationality?: Prisma.SortOrder
   email?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   stage?: Prisma.SortOrder
@@ -471,6 +492,7 @@ export type CandidateMinOrderByAggregateInput = {
   vacancyId?: Prisma.SortOrder
   nameAr?: Prisma.SortOrder
   nameEn?: Prisma.SortOrder
+  nationality?: Prisma.SortOrder
   email?: Prisma.SortOrder
   phone?: Prisma.SortOrder
   stage?: Prisma.SortOrder
@@ -493,6 +515,7 @@ export type CandidateSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   vacancyId?: boolean
   nameAr?: boolean
   nameEn?: boolean
+  nationality?: boolean
   email?: boolean
   phone?: boolean
   stage?: boolean
@@ -509,6 +532,7 @@ export type CandidateSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   vacancyId?: boolean
   nameAr?: boolean
   nameEn?: boolean
+  nationality?: boolean
   email?: boolean
   phone?: boolean
   stage?: boolean
@@ -525,6 +549,7 @@ export type CandidateSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   vacancyId?: boolean
   nameAr?: boolean
   nameEn?: boolean
+  nationality?: boolean
   email?: boolean
   phone?: boolean
   stage?: boolean
@@ -541,6 +566,7 @@ export type CandidateSelectScalar = {
   vacancyId?: boolean
   nameAr?: boolean
   nameEn?: boolean
+  nationality?: boolean
   email?: boolean
   phone?: boolean
   stage?: boolean
@@ -551,7 +577,7 @@ export type CandidateSelectScalar = {
   updatedAt?: boolean
 }
 
-export type CandidateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clientId" | "vacancyId" | "nameAr" | "nameEn" | "email" | "phone" | "stage" | "cvDocumentId" | "notes" | "createdByUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["candidate"]>
+export type CandidateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clientId" | "vacancyId" | "nameAr" | "nameEn" | "nationality" | "email" | "phone" | "stage" | "cvDocumentId" | "notes" | "createdByUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["candidate"]>
 
 export type $CandidatePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Candidate"
@@ -562,6 +588,7 @@ export type $CandidatePayload<ExtArgs extends runtime.Types.Extensions.InternalA
     vacancyId: string
     nameAr: string
     nameEn: string
+    nationality: string | null
     email: string | null
     phone: string | null
     stage: $Enums.CandidateStage
@@ -998,6 +1025,7 @@ export interface CandidateFieldRefs {
   readonly vacancyId: Prisma.FieldRef<"Candidate", 'String'>
   readonly nameAr: Prisma.FieldRef<"Candidate", 'String'>
   readonly nameEn: Prisma.FieldRef<"Candidate", 'String'>
+  readonly nationality: Prisma.FieldRef<"Candidate", 'String'>
   readonly email: Prisma.FieldRef<"Candidate", 'String'>
   readonly phone: Prisma.FieldRef<"Candidate", 'String'>
   readonly stage: Prisma.FieldRef<"Candidate", 'CandidateStage'>

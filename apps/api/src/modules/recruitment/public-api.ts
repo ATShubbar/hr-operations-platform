@@ -4,3 +4,6 @@ export { VacanciesService } from './application/vacancies.service';
 export { CandidatesService } from './application/candidates.service';
 export type { CreateVacancyInput, UpdateVacancyInput } from './domain/vacancy';
 export type { CreateCandidateInput, UpdateCandidateInput } from './domain/candidate';
+// The domain event this module publishes (ADR-004). Employees subscribes via
+// @OnEvent(CandidateHiredEvent.NAME) and creates the employee record (REC-05).
+export { CandidateHiredEvent } from './domain/candidate-hired.event';
