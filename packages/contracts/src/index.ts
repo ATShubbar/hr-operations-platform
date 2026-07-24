@@ -149,6 +149,22 @@ export {
   type RequestQuery,
 } from './request.js';
 export {
+  vacancyStatusSchema,
+  vacancyResponseSchema,
+  createVacancyRequestSchema,
+  updateVacancyRequestSchema,
+  changeVacancyStatusRequestSchema,
+  vacancyListResponseSchema,
+  vacancyQuerySchema,
+  type VacancyStatus,
+  type VacancyResponse,
+  type CreateVacancyRequest,
+  type UpdateVacancyRequest,
+  type ChangeVacancyStatusRequest,
+  type VacancyListResponse,
+  type VacancyQuery,
+} from './vacancy.js';
+export {
   taskStatusSchema,
   taskPrioritySchema,
   taskResponseSchema,

@@ -59,7 +59,7 @@ describe('Recruitment — VacanciesService (REC-01)', () => {
       where: { resource: 'vacancy', action: 'create', clientId },
     });
     expect(entries).toHaveLength(1);
-    expect((entries[0].after as { titleEn?: string }).titleEn).toBe('Accountant');
+    expect((entries[0]?.after as { titleEn?: string }).titleEn).toBe('Accountant');
   });
 
   it('updates a vacancy and audits the before/after', async () => {
@@ -74,8 +74,8 @@ describe('Recruitment — VacanciesService (REC-01)', () => {
       where: { resource: 'vacancy', action: 'update', clientId },
     });
     expect(entries).toHaveLength(1);
-    expect((entries[0].before as { titleEn?: string }).titleEn).toBe('Developer');
-    expect((entries[0].after as { titleEn?: string }).titleEn).toBe('Senior Developer');
+    expect((entries[0]?.before as { titleEn?: string }).titleEn).toBe('Developer');
+    expect((entries[0]?.after as { titleEn?: string }).titleEn).toBe('Senior Developer');
   });
 
   it('returns null when updating a missing vacancy (no audit written)', async () => {

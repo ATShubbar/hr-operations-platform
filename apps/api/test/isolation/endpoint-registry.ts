@@ -115,6 +115,17 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'GET /tasks/:id': 'staff',
   'PATCH /tasks/:id': 'staff',
   'DELETE /tasks/:id': 'staff',
+  // Recruitment vacancies (REC-02): asymmetric dual-path. Reads are client-read
+  // (staff cross-client; client reps own-client, RLS-enforced, own-scoping proven
+  // in the REC-02 e2e). All WRITES are STAFF-only (clients hold no vacancy write
+  // permission and app_client has a SELECT-only grant) — so 'staff', not a
+  // client-scoped write class.
+  'POST /vacancies': 'staff',
+  'GET /vacancies': 'client-read',
+  'GET /vacancies/:id': 'client-read',
+  'PATCH /vacancies/:id': 'staff',
+  'POST /vacancies/:id/status': 'staff',
+  'DELETE /vacancies/:id': 'staff',
   // Client Portal (PORTAL-01/02/03): client-only self-service reads, scoped to
   // the caller's own client (proven in the portal-* e2e specs); 401 on unauth.
   // Employees are redacted to core + govdata:status (PORTAL-02); documents are

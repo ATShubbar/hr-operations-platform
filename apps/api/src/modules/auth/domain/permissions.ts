@@ -82,6 +82,16 @@ export const PERMISSIONS = [
   'task.create',
   'task.update',
   'task.delete',
+  // Recruitment vacancies (REC-02; permission matrix). NOT granted to every staff
+  // role — GRO Officer + Finance are excluded from recruitment. Recruiter has full
+  // CRUD; Company Admin reads/updates/approves; System Admin/HR Officer/Read Only
+  // read; both client roles read their OWN vacancies (portal-style). `vacancy.approve`
+  // advances the status workflow (draft → open → filled/closed).
+  'vacancy.read',
+  'vacancy.create',
+  'vacancy.update',
+  'vacancy.approve',
+  'vacancy.delete',
   // Client Portal (PORTAL-01): client-only self-service access. Gates /portal/*.
   'portal.read',
   // Session lifecycle — every authenticated principal may end their session.
@@ -152,6 +162,8 @@ const ALL_CLIENT: readonly Permission[] = [
   // permission (staff never hold it) that gates every /portal/* read — reps use
   // dedicated portal endpoints, not the staff resource endpoints.
   'portal.read',
+  // Recruitment (REC-02): both client roles read their OWN client's vacancies.
+  'vacancy.read',
 ];
 // Client Admin additionally manages its own client's portal users (matrix —
 // Client User does NOT).
@@ -178,6 +190,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'govdata.read',
     'config.write',
     'task.read-all',
+    'vacancy.read',
   ],
   // core CRUD · salary R · govdata R; manages PER-CLIENT config overrides
   // (matrix — per-client settings are Company Admin's, distinct from the
@@ -202,14 +215,24 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'task.create',
     'task.update',
     'task.delete',
+    // Recruitment: Company Admin reads/updates/approves vacancies (no create/delete).
+    'vacancy.read',
+    'vacancy.update',
+    'vacancy.approve',
   ],
-  // core R · salary – · govdata – · documents: recruitment (category-scoped)
+  // core R · salary – · govdata – · documents: recruitment (category-scoped).
+  // The primary recruitment role: full vacancy CRUD + approve (matrix).
   recruiter: [
     ...STAFF_BASE,
     'document.upload',
     'document.delete',
     'task.create',
     'task.update',
+    'vacancy.read',
+    'vacancy.create',
+    'vacancy.update',
+    'vacancy.approve',
+    'vacancy.delete',
   ],
   // core CRUD · salary RU · govdata R · documents: all
   hr_officer: [
@@ -225,6 +248,8 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'request.process',
     'task.create',
     'task.update',
+    // HR Officer reads vacancies (matrix R); recruitment CRUD is the Recruiter's.
+    'vacancy.read',
   ],
   // core RU · salary – · govdata CRUD · documents: government (category-scoped)
   gro_officer: [
@@ -240,8 +265,8 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
   ],
   // core R · salary RU · govdata –
   finance: [...STAFF_BASE, 'salary.read', 'salary.update', 'task.create', 'task.update'],
-  // core R · salary – · govdata R
-  read_only: [...STAFF_BASE, 'govdata.read', 'task.read-all'],
+  // core R · salary – · govdata R (Finance holds no vacancy.* — matrix)
+  read_only: [...STAFF_BASE, 'govdata.read', 'task.read-all', 'vacancy.read'],
   client_admin: CLIENT_ADMIN,
   client_user: ALL_CLIENT,
 };

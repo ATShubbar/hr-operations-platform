@@ -115,10 +115,15 @@ typecheck + lint green. **Priority 4 — Recruitment epic (4.1) STARTED: REC-01 
 `rec_vacancies` client-scoped table (a vacancy is an open position AT a client; clients
 **read** their own, staff write — so `app_client` gets **SELECT only**, the one
 deviation from the REQ-01 template) + staff-path `VacanciesService` (audited CRUD,
-`resource: 'vacancy'`) + 3 seed vacancies. `modules/recruitment` registered; no HTTP
-surface/permissions yet (land with REC-02, mirroring REQ-01→REQ-02). API suite **242/242**.
-**Next: REC-02 (vacancies HTTP API — staff CRUD + `vacancy.approve` workflow + client-rep
-read-own). AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
+`resource: 'vacancy'`) + 3 seed vacancies. `modules/recruitment` registered. **REC-02: the vacancies HTTP API** — an
+asymmetric dual-path resource (staff CRUD cross-client; client reps READ own via
+`ScopedPrismaService`/RLS; all writes staff-only). `POST /vacancies/:id/status`
+(`vacancy.approve`) advances the workflow (draft→open→filled/closed, workflow-validated
+→ 400). The 5 `vacancy.*` perms are granted PER-ROLE, **not** via STAFF_BASE — GRO
+Officer + Finance are excluded from recruitment (matrix; asserted in a test). 6 routes
+in the isolation harness, 4 audited writes. Contracts add `vacancy.ts`. API suite **251/251**.
+**Next: REC-03 (`rec_candidates` staff-owned table + CandidatesService — candidate ↔
+vacancy, pipeline stage, CV doc link). AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
 2026-07-24: ECS throttle + RDS InvalidAction persist)
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback

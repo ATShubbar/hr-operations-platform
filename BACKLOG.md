@@ -1212,7 +1212,7 @@ client) collects **candidates** through a pipeline (applied → screening → in
 | Task | Objective | Deps | Status |
 |---|---|---|---|
 | REC-01 | `rec_vacancies` client-scoped table (client-**read**, staff-write) + `VacanciesService` (staff CRUD, audited) + seed | 2.5, 3.x | done ([evidence](evidence/recruitment/REC-01.md)) |
-| REC-02 | Vacancies HTTP API — staff CRUD + `vacancy.approve` status workflow (+ client-rep read-own dual-path) | REC-01 | todo |
+| REC-02 | Vacancies HTTP API — staff CRUD + `vacancy.approve` status workflow (+ client-rep read-own dual-path) | REC-01 | done ([evidence](evidence/recruitment/REC-02.md)) |
 | REC-03 | `rec_candidates` staff-owned table + `CandidatesService` (candidate ↔ vacancy, pipeline stage, CV doc link) | REC-01, 3.2 | todo |
 | REC-04 | Candidates HTTP API — CRUD + pipeline stage-transition workflow | REC-03 | todo |
 | REC-05 | Offer flow + **`CandidateHired` → Employees** domain event (PII-free; Employees `@OnEvent` creates the record) | REC-04, 3.1 | todo |
@@ -1234,6 +1234,23 @@ client) collects **candidates** through a pipeline (applied → screening → in
   template is the SELECT-only client grant (clients read but never write vacancies)
   — deliberate, per the matrix; no permissions declared yet (catalog-coverage
   requires a permission to be USED by an endpoint in the same commit).
+
+### REC-02 — Vacancies HTTP API (staff CRUD + approve workflow + client-rep read-own)
+- **Objective:** the vacancies HTTP surface — staff CRUD across clients + the
+  `vacancy.approve` status workflow; client reps READ their own (dual-path).
+- **Files:** `contracts/vacancy.ts` (+ index); `permissions.ts` (5 `vacancy.*` +
+  grants — read is per-role, NOT STAFF_BASE, since GRO/Finance are excluded);
+  `recruitment/api/vacancies.controller.ts` (NEW); `application/vacancies.service.ts`
+  (+ client-rep read, changeStatus, remove); `domain/vacancy-status-workflow.ts`;
+  `recruitment.module.ts` (+controller, ClientsModule); isolation (6 routes) +
+  audited-writes (4 writes); `test/recruitment-vacancies-api.e2e-spec.ts`.
+- **DoD:** staff CRUD; illegal transition → 400; rep reads own only (RLS), foreign
+  id → 404, rep writes → 403; GRO/Finance read → 403; all mutations audited;
+  isolation + catalog + write-coverage green; suite + lint + typecheck + build green.
+- **Evidence:** `evidence/recruitment/REC-02.md`.
+- **Dependencies:** REC-01, CLIENT-01. **Risks:** `vacancy.read` granted per-role
+  (GRO/Finance excluded — asserted in a test); the `/status` endpoint carries one
+  permission (`vacancy.approve`) for the whole lifecycle, mirroring REQ-03's process.
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 
