@@ -67,7 +67,8 @@ export const ModelName = {
   Task: 'Task',
   Vacancy: 'Vacancy',
   Candidate: 'Candidate',
-  GroProcess: 'GroProcess'
+  GroProcess: 'GroProcess',
+  CalendarEvent: 'CalendarEvent'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -362,6 +363,23 @@ export const GroProcessScalarFieldEnum = {
 } as const
 
 export type GroProcessScalarFieldEnum = (typeof GroProcessScalarFieldEnum)[keyof typeof GroProcessScalarFieldEnum]
+
+
+export const CalendarEventScalarFieldEnum = {
+  id: 'id',
+  ownerUserId: 'ownerUserId',
+  clientId: 'clientId',
+  title: 'title',
+  description: 'description',
+  location: 'location',
+  startAt: 'startAt',
+  endAt: 'endAt',
+  allDay: 'allDay',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CalendarEventScalarFieldEnum = (typeof CalendarEventScalarFieldEnum)[keyof typeof CalendarEventScalarFieldEnum]
 
 
 export const SortOrder = {

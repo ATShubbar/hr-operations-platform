@@ -102,3 +102,8 @@ export type Candidate = Prisma.CandidateModel
  * 
  */
 export type GroProcess = Prisma.GroProcessModel
+/**
+ * Model CalendarEvent
+ * 
+ */
+export type CalendarEvent = Prisma.CalendarEventModel

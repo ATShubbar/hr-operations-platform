@@ -20,6 +20,7 @@ import { RequestsModule } from './modules/requests/public-api';
 import { TasksModule } from './modules/tasks/public-api';
 import { RecruitmentModule } from './modules/recruitment/public-api';
 import { GroModule } from './modules/gro/public-api';
+import { CalendarModule } from './modules/calendar/public-api';
 import { PortalModule } from './modules/portal/public-api';
 import { ExampleModule } from './modules/example/public-api';
 import { ExampleConsumerModule } from './modules/example-consumer/public-api';
@@ -44,6 +45,7 @@ import { ScopeCheckModule } from './modules/scope-check/public-api';
     TasksModule,
     RecruitmentModule,
     GroModule,
+    CalendarModule,
     PortalModule,
     ExampleModule,
     ExampleConsumerModule,

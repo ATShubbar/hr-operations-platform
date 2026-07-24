@@ -174,10 +174,17 @@ deadlines** — the epic's headline surfaced; create; status transitions; the co
 dialog captures a **resulting expiry** → PATCH + status → GRO-03 writes it to the
 employee's govdata). Nav gated on `gro.read`. Verified live: completing an iqama-renewal
 through the UI moved Ahmed Hassan's iqama expiry 2027→2029, both locales (ar RTL).
-**GRO epic (4.2) COMPLETE — GRO-01..04.** Fourteen product screens. **Priorities 4
-(Recruitment + GRO + Requests + Tasks) and 5.1 (Client Portal) now complete. Next: pick
-an epic — 5.2 Calendar (now unblocked by GRO), 5.4 Reporting, or `DocumentExpiring → GRO`
-auto-spawn. AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
+**GRO epic (4.2) COMPLETE — GRO-01..04.** Fourteen product screens. **Priority 5 —
+Calendar epic (5.2) STARTED: CAL-01 done** — `cal_events` STAFF-OWNED table (staff
+scheduling primitives — meetings/interviews; clients have no calendar access, so like
+task_tasks `app_client` gets nothing) + `CalendarService` (audited CRUD, own-scoped
+list with date-range overlap; `resource: 'calendar-event'`). `ownerUserId` is the own-
+scope key; `clientId` optional context; start/end are timestamps stored UTC (Hijri =
+render). Calendar is a delivery-layer module — owns its events, reads deadlines from
+Tasks/Requests/GRO (CAL-02). 2 seed events; `modules/calendar` registered. API suite
+**288/288**. **Next: CAL-02 (Calendar HTTP API — own-scoped event CRUD + a calendar-view
+endpoint merging Tasks/Requests/GRO deadlines; `calendar.*` catalog). AWS/OCI decision
+(ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
 2026-07-24: ECS throttle + RDS InvalidAction persist)
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback

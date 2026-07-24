@@ -601,3 +601,29 @@ enum GroProcessStatus {
   completed
   cancelled
 }
+
+// Calendar events (CAL-01, ACTION-PLAN 5.2). Staff scheduling primitives (meetings,
+// interviews). STAFF-ONLY — clients have no calendar access (matrix), so like
+// task_tasks this table grants app_client nothing. `ownerUserId` is the own-scope
+// key; `clientId` is optional context (a denormalized reporting link, NOT a
+// client-rep scope key). start/end are timestamps stored UTC — Hijri is a render
+// concern (architecture rule). Derived deadlines (Tasks/Requests/GRO) are NOT stored
+// here; the calendar view merges them read-only at query time (CAL-02).
+model CalendarEvent {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ownerUserId String   @map("owner_user_id") @db.Uuid
+  clientId    String?  @map("client_id") @db.Uuid
+  title       String
+  description String?
+  location    String?
+  startAt     DateTime @map("start_at")
+  endAt       DateTime @map("end_at")
+  allDay      Boolean  @default(false) @map("all_day")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([ownerUserId])
+  @@index([startAt])
+  @@index([clientId])
+  @@map("cal_events")
+}

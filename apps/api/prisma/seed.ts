@@ -422,6 +422,44 @@ async function seedGroProcesses(prisma: PrismaClient): Promise<number> {
   return processes.length;
 }
 
+async function seedCalendarEvents(prisma: PrismaClient): Promise<number> {
+  // Staff calendar events (CAL-01). Owned by seeded staff; start/end are UTC
+  // timestamps (Hijri is a render concern). Idempotent by fixed ids.
+  const recruiter = await prisma.authUser.findUnique({
+    where: { email: `staff-recruiter@${SEED_USER_DOMAIN}` },
+  });
+  const gro = await prisma.authUser.findUnique({
+    where: { email: `staff-gro_officer@${SEED_USER_DOMAIN}` },
+  });
+  if (!recruiter || !gro) return 0;
+  const events = [
+    {
+      id: 'f0000001-0000-4000-8000-000000000001',
+      ownerUserId: recruiter.id,
+      clientId: SEED_CLIENT_A,
+      title: 'Interview — Salem Alqahtani — Senior Accountant',
+      location: 'Riyadh office — Room 2',
+      startAt: new Date('2026-08-03T09:00:00Z'),
+      endAt: new Date('2026-08-03T10:00:00Z'),
+      allDay: false,
+    },
+    {
+      id: 'f0000001-0000-4000-8000-000000000002',
+      ownerUserId: gro.id,
+      clientId: SEED_CLIENT_A,
+      title: 'Muqeem visit — iqama renewals batch',
+      location: 'Muqeem service center',
+      startAt: new Date('2026-08-06T07:30:00Z'),
+      endAt: new Date('2026-08-06T09:30:00Z'),
+      allDay: false,
+    },
+  ];
+  for (const { id, ...rest } of events) {
+    await prisma.calendarEvent.upsert({ where: { id }, create: { id, ...rest }, update: rest });
+  }
+  return events.length;
+}
+
 async function main(): Promise<void> {
   if (process.env.NODE_ENV === 'production') {
     throw new Error('Refusing to seed: NODE_ENV=production. The seed is development-only.');
@@ -455,13 +493,14 @@ async function main(): Promise<void> {
     const vacancyCount = await seedVacancies(prisma);
     const candidateCount = await seedCandidates(prisma);
     const groCount = await seedGroProcesses(prisma);
+    const calendarCount = await seedCalendarEvents(prisma);
 
     const rowCount = await prisma.coreScopeCheck.count({
       where: { note: { startsWith: 'seed:' } },
     });
     const roleCount = STAFF_ROLES.length + CLIENT_REP_ASSIGNMENTS.length;
     process.stdout.write(
-      `Seed complete: ${clientCount} client companies; ${employeeCount} employees; ${documentCount} documents; ${requestCount} requests; ${taskCount} tasks; ${vacancyCount} vacancies; ${candidateCount} candidates; ${groCount} GRO processes; ${rowCount} scope-check rows ` +
+      `Seed complete: ${clientCount} client companies; ${employeeCount} employees; ${documentCount} documents; ${requestCount} requests; ${taskCount} tasks; ${vacancyCount} vacancies; ${candidateCount} candidates; ${groCount} GRO processes; ${calendarCount} calendar events; ${rowCount} scope-check rows ` +
         `across clients A (${SEED_CLIENT_A}) and B (${SEED_CLIENT_B}); ${userCount} auth users ` +
         `(${STAFF_ROLES.length} staff roles + ${CLIENT_REP_ASSIGNMENTS.length} client reps, ` +
         `${roleCount}/${STAFF_ROLES.length + CLIENT_ROLES.length} distinct roles covered).\n`,

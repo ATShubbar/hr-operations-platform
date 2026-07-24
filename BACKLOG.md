@@ -1412,6 +1412,35 @@ operating over Employees + Documents. The frozen catalog names exactly `gro.read
 
 **GRO epic (4.2) COMPLETE — GRO-01..04 (processes, API+workflow, completion→govdata+notify, web UI).**
 
+## Priority 5 — Calendar epic (ACTION-PLAN 5.2, architecture.md module 9)
+
+A staff scheduling surface: own calendar events (meetings, interviews) + derived
+deadlines aggregated read-only from Tasks/Requests/GRO. STAFF-ONLY (clients have no
+calendar access — matrix). A delivery-layer module (owns its events, reads deadlines
+from the domain modules below it).
+
+| Task | Objective | Deps | Status |
+|---|---|---|---|
+| CAL-01 | `cal_events` staff-owned table + `CalendarService` (CRUD, own-scoped) + seed | 4.4, 4.2 | done ([evidence](evidence/calendar/CAL-01.md)) |
+| CAL-02 | Calendar HTTP API — event CRUD (own-scope; `calendar.read-all` lifts) + a **calendar-view** endpoint merging Tasks/Requests/GRO deadlines; `calendar.*` catalog | CAL-01 | todo |
+| CAL-03 | Calendar web UI — agenda/month view (events + deadlines, dual-calendar Hijri) + create/edit | CAL-02 | todo |
+
+### CAL-01 — `cal_events` table + CalendarService (staff path) + seed
+- **Objective:** the calendar foundation — a STAFF-OWNED `cal_events` table (like
+  task_tasks; clients get no access) + `CalendarService` (audited CRUD, own-scoped
+  list). No endpoints/permissions yet (mirrors GRO-01 → GRO-02).
+- **Files:** `schema.prisma` (CalendarEvent); migration `*_calendar_events`
+  (app_staff-only grant + RLS); `modules/calendar/{module, public-api, application/
+  calendar.service, domain/calendar-event}`; `app.module.ts`; `seed.ts`
+  (seedCalendarEvents); `test/calendar-events.e2e-spec.ts`.
+- **DoD:** migration + `db:generate`; app_staff full CRUD, NO app_client grant, RLS
+  on (psql); create/update audited (`resource: 'calendar-event'`); list filters by
+  owner + date-range overlap; seed clean; suite + lint + typecheck + build green.
+- **Evidence:** `evidence/calendar/CAL-01.md`.
+- **Dependencies:** Audit, Auth (owner ids). **Risks:** staff-owned (like Tasks) —
+  `clientId` is optional context, not a scope key; start/end are timestamps stored
+  UTC (Hijri = render); permissions + the deadline-aggregation view land with CAL-02.
+
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 
 | Epic | Source | Gate |
