@@ -21,6 +21,7 @@ export interface CreateGroProcessInput {
 export interface UpdateGroProcessInput {
   referenceNumber?: string | null;
   dueDate?: Date | null;
+  resultingExpiry?: Date | null;
   assigneeUserId?: string | null;
   notes?: string | null;
 }

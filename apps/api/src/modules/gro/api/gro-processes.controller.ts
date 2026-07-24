@@ -128,6 +128,7 @@ function toResponse(p: GroProcessRecord, redacted: boolean): GroProcessResponse 
     status: p.status,
     referenceNumber: redacted ? null : p.referenceNumber,
     dueDate: p.dueDate ? p.dueDate.toISOString().slice(0, 10) : null,
+    resultingExpiry: p.resultingExpiry ? p.resultingExpiry.toISOString().slice(0, 10) : null,
     assigneeUserId: redacted ? null : p.assigneeUserId,
     notes: redacted ? null : p.notes,
     createdByUserId: redacted ? null : p.createdByUserId,

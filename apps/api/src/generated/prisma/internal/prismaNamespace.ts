@@ -1984,6 +1984,7 @@ export const GroProcessScalarFieldEnum = {
   status: 'status',
   referenceNumber: 'referenceNumber',
   dueDate: 'dueDate',
+  resultingExpiry: 'resultingExpiry',
   assigneeUserId: 'assigneeUserId',
   notes: 'notes',
   createdByUserId: 'createdByUserId',

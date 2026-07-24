@@ -1337,7 +1337,7 @@ operating over Employees + Documents. The frozen catalog names exactly `gro.read
 |---|---|---|---|
 | GRO-01 | `gro_processes` client-scoped table (client-**read** status-only, staff-write) + `GroProcessesService` (staff, audited) + seed | 3.1, 3.4 | done ([evidence](evidence/gro/GRO-01.md)) |
 | GRO-02 | GRO HTTP API — staff CRUD + `gro.process` status workflow + client-rep read-own (status-only) dual-path; `gro.read`/`gro.process` catalog | GRO-01 | done ([evidence](evidence/gro/GRO-02.md)) |
-| GRO-03 | Cross-module: completing a renewal **updates the employee's govdata expiry** + notify on status change (poss. `DocumentExpiring → GRO` auto-spawn) | GRO-02, 3.1/3.3 | todo |
+| GRO-03 | Cross-module: completing a renewal **updates the employee's govdata expiry** + notify on status change (poss. `DocumentExpiring → GRO` auto-spawn) | GRO-02, 3.1/3.3 | done ([evidence](evidence/gro/GRO-03.md)) |
 | GRO-04 | GRO web UI (process list/board with dual-calendar Hijri deadlines) | GRO-02 | todo |
 
 ### GRO-01 — `gro_processes` table + GroProcessesService (staff path) + seed
@@ -1374,6 +1374,25 @@ operating over Employees + Documents. The frozen catalog names exactly `gro.read
   → cancel via status); clientId derived from the employee (no wrong-client
   attribution); GRO imports Employees (one-way, no cycle); status-only redaction is
   server-side.
+
+### GRO-03 — Completion updates Employees govdata + notify on status change
+- **Objective:** the cross-module payoff — completing an expiry-establishing process
+  writes its resulting gov-doc expiry back to the employee's govdata; status changes
+  notify the assignee.
+- **Files:** `schema.prisma` + migration (add `resultingExpiry`); `contracts/gro.ts`
+  (+field); `gro/domain/gro-effects.ts` (NEW — type→field map + bilingual content);
+  `gro/domain/gro-process.ts` (+field); `application/gro-processes.service.ts`
+  (after-commit effects; +Employees/Notifications); controller (+field);
+  `gro.module.ts` (+NotificationsModule); `test/gro-completion.e2e-spec.ts`.
+- **DoD:** completing iqama_renewal (resultingExpiry set) → employee iqamaExpiry
+  updated + audited; non-mapping type / no resultingExpiry → no write; status change
+  with assignee → notification; no DI cycle; suite + lint + typecheck + build green.
+- **Evidence:** `evidence/gro/GRO-03.md`.
+- **Dependencies:** GRO-02, EMP-02, NOTIF-02. **Risks:** DIRECT EmployeesService/
+  NotificationsService calls (not an event) — GRO already imports Employees for
+  validation, so an event would cycle; GRO "consumes Employees + Notifications" is the
+  architecture's design (module 6). `DocumentExpiring → GRO` auto-spawn deferred to
+  its own card.
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

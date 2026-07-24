@@ -564,6 +564,10 @@ model GroProcess {
   status          GroProcessStatus @default(not_started)
   referenceNumber String?          @map("reference_number")
   dueDate         DateTime?        @map("due_date") @db.Date
+  // The government-document expiry this process establishes (e.g. the new iqama
+  // expiry after a renewal). On completion (GRO-03) it is written back to the
+  // employee's matching govdata expiry field. Gregorian storage (Hijri = render).
+  resultingExpiry DateTime?        @map("resulting_expiry") @db.Date
   assigneeUserId  String?          @map("assignee_user_id") @db.Uuid
   notes           String?
   createdByUserId String?          @map("created_by_user_id") @db.Uuid

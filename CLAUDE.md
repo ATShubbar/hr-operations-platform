@@ -160,9 +160,17 @@ validated → 400). **No DELETE** — the frozen catalog is exactly `gro.read` +
 so a process is cancelled via status, not deleted. `clientId` is derived from the
 employee (GRO imports Employees, one-way). Grants: gro_officer + company_admin process,
 system_admin/hr_officer/read_only read, **Recruiter/Finance excluded**. 5 isolation
-routes, 3 audited writes. Contracts add `gro.ts`. API suite **279/279**. **Next: GRO-03
-(cross-module — completing a renewal updates the employee's govdata expiry + notify on
-status change). AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
+routes, 3 audited writes. Contracts add `gro.ts`. **GRO-03: the cross-module payoff** —
+a `resultingExpiry` field on the process; on `changeStatus → completed`, if the type
+maps to a govdata expiry field (iqama_issue/renewal→iqamaExpiry, exit_reentry→
+exitReentryExpiry, work_permit_renewal→workPermitExpiry), GRO writes it back to the
+employee via `EmployeesService.update` (GRO *operates on* Employees); every status
+change notifies the assignee via `NotificationsService`. **Direct calls, NOT a 5th
+ADR-004 event** — GRO already imports Employees (validation), so an event would cycle;
+GRO "consumes Employees + Notifications" is the architecture's module-6 design.
+`DocumentExpiring → GRO` auto-spawn deferred. API suite **283/283**. **Next: GRO-04
+(GRO web UI — process board with dual-calendar Hijri deadlines), then the epic closes.
+AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
 2026-07-24: ECS throttle + RDS InvalidAction persist)
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback

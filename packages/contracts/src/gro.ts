@@ -32,6 +32,7 @@ export const groProcessResponseSchema = z.object({
   status: groProcessStatusSchema,
   referenceNumber: z.string().nullable(), // null = redacted (client-rep status-only)
   dueDate: z.string().nullable(),
+  resultingExpiry: z.string().nullable(), // the new gov-doc expiry a completion writes to govdata
   assigneeUserId: z.uuid().nullable(), // null = redacted (client-rep status-only)
   notes: z.string().nullable(), // null = redacted (client-rep status-only)
   createdByUserId: z.uuid().nullable(),
@@ -55,6 +56,7 @@ export const createGroProcessRequestSchema = z.object({
 export const updateGroProcessRequestSchema = z.object({
   referenceNumber: z.string().max(120).nullable().optional(),
   dueDate: z.coerce.date().nullable().optional(),
+  resultingExpiry: z.coerce.date().nullable().optional(),
   assigneeUserId: z.uuid().nullable().optional(),
   notes: z.string().max(4000).nullable().optional(),
 });
