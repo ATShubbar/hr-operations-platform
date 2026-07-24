@@ -4,6 +4,7 @@ import type { CandidateModel as CandidateRecord } from '../../../generated/prism
 import type { CandidateStage, Prisma } from '../../../generated/prisma/client';
 import { AuditService } from '../../audit/public-api';
 import type { CreateCandidateInput, UpdateCandidateInput } from '../domain/candidate';
+import { canTransition } from '../domain/candidate-stage-workflow';
 import { VacanciesService } from './vacancies.service';
 
 // Candidate registry access (REC-03). STAFF-INTERNAL — no client-rep path (clients
@@ -63,6 +64,43 @@ export class CandidatesService {
         clientId: row.clientId,
         before: snapshot(before),
         after: snapshot(row),
+      });
+      return row;
+    });
+  }
+
+  // Advance the pipeline stage (REC-04). Validates the transition (illegal → 400),
+  // audits before/after — all in one tx. Returns null if the candidate is missing.
+  // (REC-05 will publish CandidateHired here when the target stage is `hired`.)
+  async changeStage(id: string, to: CandidateStage): Promise<CandidateRecord | null> {
+    return this.prisma.$transaction(async (tx) => {
+      const before = await tx.candidate.findUnique({ where: { id } });
+      if (!before) return null;
+      if (!canTransition(before.stage, to)) {
+        throw new BadRequestException(`Cannot move a candidate from '${before.stage}' to '${to}'`);
+      }
+      const row = await tx.candidate.update({ where: { id }, data: { stage: to } });
+      await this.audit.record(tx, {
+        resource: 'candidate',
+        action: 'stage',
+        clientId: row.clientId,
+        before: snapshot(before),
+        after: snapshot(row),
+      });
+      return row;
+    });
+  }
+
+  async remove(id: string): Promise<CandidateRecord | null> {
+    return this.prisma.$transaction(async (tx) => {
+      const before = await tx.candidate.findUnique({ where: { id } });
+      if (!before) return null;
+      const row = await tx.candidate.delete({ where: { id } });
+      await this.audit.record(tx, {
+        resource: 'candidate',
+        action: 'delete',
+        clientId: before.clientId,
+        before: snapshot(before),
       });
       return row;
     });

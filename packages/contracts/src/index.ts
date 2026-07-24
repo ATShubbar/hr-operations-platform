@@ -165,6 +165,22 @@ export {
   type VacancyQuery,
 } from './vacancy.js';
 export {
+  candidateStageSchema,
+  candidateResponseSchema,
+  createCandidateRequestSchema,
+  updateCandidateRequestSchema,
+  changeCandidateStageRequestSchema,
+  candidateListResponseSchema,
+  candidateQuerySchema,
+  type CandidateStage,
+  type CandidateResponse,
+  type CreateCandidateRequest,
+  type UpdateCandidateRequest,
+  type ChangeCandidateStageRequest,
+  type CandidateListResponse,
+  type CandidateQuery,
+} from './candidate.js';
+export {
   taskStatusSchema,
   taskPrioritySchema,
   taskResponseSchema,

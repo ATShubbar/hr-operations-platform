@@ -1214,7 +1214,7 @@ client) collects **candidates** through a pipeline (applied → screening → in
 | REC-01 | `rec_vacancies` client-scoped table (client-**read**, staff-write) + `VacanciesService` (staff CRUD, audited) + seed | 2.5, 3.x | done ([evidence](evidence/recruitment/REC-01.md)) |
 | REC-02 | Vacancies HTTP API — staff CRUD + `vacancy.approve` status workflow (+ client-rep read-own dual-path) | REC-01 | done ([evidence](evidence/recruitment/REC-02.md)) |
 | REC-03 | `rec_candidates` staff-owned table + `CandidatesService` (candidate ↔ vacancy, pipeline stage, CV doc link) | REC-01, 3.2 | done ([evidence](evidence/recruitment/REC-03.md)) |
-| REC-04 | Candidates HTTP API — CRUD + pipeline stage-transition workflow | REC-03 | todo |
+| REC-04 | Candidates HTTP API — CRUD + pipeline stage-transition workflow | REC-03 | done ([evidence](evidence/recruitment/REC-04.md)) |
 | REC-05 | Offer flow + **`CandidateHired` → Employees** domain event (PII-free; Employees `@OnEvent` creates the record) | REC-04, 3.1 | todo |
 | REC-06 | Recruitment web UI (vacancies + candidate pipeline board) | REC-02/04 | todo |
 
@@ -1270,6 +1270,23 @@ client) collects **candidates** through a pipeline (applied → screening → in
   (intra-module) + `cvDocumentId` (cross-module → documents) are plain UUID refs,
   not FKs (matches task_tasks→requests); the pipeline stage-transition workflow is
   deferred to REC-04 (stage stays `applied` on create).
+
+### REC-04 — Candidates HTTP API (staff CRUD + pipeline stage workflow)
+- **Objective:** the candidates HTTP surface — STAFF-ONLY (no client path) staff
+  CRUD + a `candidate.advance` stage-transition endpoint (applied→screening→
+  interview→offer→hired; reject/withdraw from any active stage).
+- **Files:** `contracts/candidate.ts` (+ index); `permissions.ts` (5 `candidate.*` +
+  grants, per-role, GRO/Finance excluded); `recruitment/api/candidates.controller.ts`
+  (NEW); `application/candidates.service.ts` (+changeStage, remove); `domain/
+  candidate-stage-workflow.ts`; module (+controller); isolation (6 staff routes) +
+  audited-writes (4); `test/recruitment-candidates-api.e2e-spec.ts`.
+- **DoD:** recruiter CRUD + transitions; illegal transition → 400; unknown vacancy →
+  400; GRO/Finance read → 403; client rep → 403 (no route); all mutations audited;
+  isolation + catalog + write-coverage green; suite + lint + typecheck + build green.
+- **Evidence:** `evidence/recruitment/REC-04.md`.
+- **Dependencies:** REC-03. **Risks:** candidates have NO client-scoped path — all 6
+  routes are `staff` (like Tasks); reaching `hired` is a plain terminal transition
+  here, the Employees-creation side effect is deferred to REC-05.
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

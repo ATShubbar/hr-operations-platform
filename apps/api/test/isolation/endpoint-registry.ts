@@ -126,6 +126,15 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'PATCH /vacancies/:id': 'staff',
   'POST /vacancies/:id/status': 'staff',
   'DELETE /vacancies/:id': 'staff',
+  // Recruitment candidates (REC-04): STAFF-INTERNAL only — clients never see
+  // applicants, so every route is 'staff' (cross-client by permission, like Tasks).
+  // The matrix excludes GRO/Finance from recruitment (proven in the REC-04 e2e).
+  'POST /candidates': 'staff',
+  'GET /candidates': 'staff',
+  'GET /candidates/:id': 'staff',
+  'PATCH /candidates/:id': 'staff',
+  'POST /candidates/:id/stage': 'staff',
+  'DELETE /candidates/:id': 'staff',
   // Client Portal (PORTAL-01/02/03): client-only self-service reads, scoped to
   // the caller's own client (proven in the portal-* e2e specs); 401 on unauth.
   // Employees are redacted to core + govdata:status (PORTAL-02); documents are

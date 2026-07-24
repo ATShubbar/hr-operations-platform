@@ -128,8 +128,15 @@ clients get no access, so like task_tasks `app_client` is granted nothing) +
 audited `resource: 'candidate'`; list/getById/update). `stage` (applied→screening→
 interview→offer→hired/rejected/withdrawn) defaults `applied`; the transition workflow
 is REC-04. `vacancyId` + `cvDocumentId` are plain UUID refs, not FKs. 3 seed candidates.
-API suite **256/256**. **Next: REC-04 (candidates HTTP API — staff CRUD + pipeline
-stage-transition workflow). AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
+**REC-04: the candidates HTTP API** — STAFF-ONLY (no client path; all 6 routes are
+`staff` like Tasks) staff CRUD + a `candidate.advance` stage workflow (applied→
+screening→interview→offer→hired; reject/withdraw from any active stage; workflow-
+validated → 400). 5 `candidate.*` perms granted per-role (GRO/Finance excluded, no
+client access — asserted in tests). 6 isolation routes, 4 audited writes. Contracts
+add `candidate.ts`. API suite **265/265**. **Recruitment 4.1 status: REC-01..04 done
+(vacancies full + candidates full). Next: REC-05 (offer flow + `CandidateHired` →
+Employees domain event — the 4th ADR-004 flow), then REC-06 (recruitment web UI).
+AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
 2026-07-24: ECS throttle + RDS InvalidAction persist)
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback
