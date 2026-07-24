@@ -97,3 +97,8 @@ export type Vacancy = Prisma.VacancyModel
  * 
  */
 export type Candidate = Prisma.CandidateModel
+/**
+ * Model GroProcess
+ * 
+ */
+export type GroProcess = Prisma.GroProcessModel

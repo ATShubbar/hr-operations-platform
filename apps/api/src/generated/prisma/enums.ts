@@ -219,3 +219,30 @@ export const CandidateStage = {
 } as const
 
 export type CandidateStage = (typeof CandidateStage)[keyof typeof CandidateStage]
+
+
+export const GroProcessType = {
+  iqama_issue: 'iqama_issue',
+  iqama_renewal: 'iqama_renewal',
+  exit_reentry: 'exit_reentry',
+  final_exit: 'final_exit',
+  profession_change: 'profession_change',
+  sponsorship_transfer: 'sponsorship_transfer',
+  work_permit_renewal: 'work_permit_renewal',
+  other: 'other'
+} as const
+
+export type GroProcessType = (typeof GroProcessType)[keyof typeof GroProcessType]
+
+
+export const GroProcessStatus = {
+  not_started: 'not_started',
+  in_progress: 'in_progress',
+  submitted: 'submitted',
+  approved: 'approved',
+  rejected: 'rejected',
+  completed: 'completed',
+  cancelled: 'cancelled'
+} as const
+
+export type GroProcessStatus = (typeof GroProcessStatus)[keyof typeof GroProcessStatus]

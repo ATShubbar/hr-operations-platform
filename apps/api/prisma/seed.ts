@@ -379,6 +379,49 @@ async function seedCandidates(prisma: PrismaClient): Promise<number> {
   return candidates.length;
 }
 
+async function seedGroProcesses(prisma: PrismaClient): Promise<number> {
+  // Government processes (GRO-01) attached to the seeded employees. Attributed to
+  // the seeded GRO officer where present. dueDate stored Gregorian (Hijri render).
+  const gro = await prisma.authUser.findUnique({
+    where: { email: `staff-gro_officer@${SEED_USER_DOMAIN}` },
+  });
+  const processes = [
+    {
+      id: 'e1000001-0000-4000-8000-000000000001',
+      clientId: SEED_CLIENT_A,
+      employeeId: 'e0000001-0000-4000-8000-000000000002', // Ahmed Hassan (A)
+      type: 'iqama_renewal' as const,
+      status: 'in_progress' as const,
+      referenceNumber: 'MUQ-2026-00123',
+      dueDate: new Date('2026-08-25'),
+      assigneeUserId: gro?.id ?? null,
+    },
+    {
+      id: 'e1000001-0000-4000-8000-000000000002',
+      clientId: SEED_CLIENT_A,
+      employeeId: 'e0000001-0000-4000-8000-000000000002', // Ahmed Hassan (A)
+      type: 'exit_reentry' as const,
+      status: 'not_started' as const,
+      dueDate: new Date('2026-09-10'),
+      assigneeUserId: gro?.id ?? null,
+    },
+    {
+      id: 'e1000002-0000-4000-8000-000000000001',
+      clientId: SEED_CLIENT_B,
+      employeeId: 'e0000002-0000-4000-8000-000000000001', // client B employee
+      type: 'sponsorship_transfer' as const,
+      status: 'submitted' as const,
+      referenceNumber: 'QIWA-2026-4567',
+      dueDate: new Date('2026-08-15'),
+      assigneeUserId: gro?.id ?? null,
+    },
+  ];
+  for (const { id, ...rest } of processes) {
+    await prisma.groProcess.upsert({ where: { id }, create: { id, ...rest }, update: rest });
+  }
+  return processes.length;
+}
+
 async function main(): Promise<void> {
   if (process.env.NODE_ENV === 'production') {
     throw new Error('Refusing to seed: NODE_ENV=production. The seed is development-only.');
@@ -411,13 +454,14 @@ async function main(): Promise<void> {
     const taskCount = await seedTasks(prisma);
     const vacancyCount = await seedVacancies(prisma);
     const candidateCount = await seedCandidates(prisma);
+    const groCount = await seedGroProcesses(prisma);
 
     const rowCount = await prisma.coreScopeCheck.count({
       where: { note: { startsWith: 'seed:' } },
     });
     const roleCount = STAFF_ROLES.length + CLIENT_REP_ASSIGNMENTS.length;
     process.stdout.write(
-      `Seed complete: ${clientCount} client companies; ${employeeCount} employees; ${documentCount} documents; ${requestCount} requests; ${taskCount} tasks; ${vacancyCount} vacancies; ${candidateCount} candidates; ${rowCount} scope-check rows ` +
+      `Seed complete: ${clientCount} client companies; ${employeeCount} employees; ${documentCount} documents; ${requestCount} requests; ${taskCount} tasks; ${vacancyCount} vacancies; ${candidateCount} candidates; ${groCount} GRO processes; ${rowCount} scope-check rows ` +
         `across clients A (${SEED_CLIENT_A}) and B (${SEED_CLIENT_B}); ${userCount} auth users ` +
         `(${STAFF_ROLES.length} staff roles + ${CLIENT_REP_ASSIGNMENTS.length} client reps, ` +
         `${roleCount}/${STAFF_ROLES.length + CLIENT_ROLES.length} distinct roles covered).\n`,

@@ -1326,6 +1326,36 @@ client) collects **candidates** through a pipeline (applied → screening → in
 
 **Recruitment epic (4.1) COMPLETE — REC-01..06 (vacancies, candidates, hire→employee event, web UI).**
 
+## Priority 4 — GRO epic (ACTION-PLAN 4.2, architecture.md module 6)
+
+GRO tracks government processes (iqama renewal, exit/re-entry, transfer…) for
+employees through a status workflow — the heaviest Hijri/reference consumer,
+operating over Employees + Documents. The frozen catalog names exactly `gro.read`
++ `gro.process`.
+
+| Task | Objective | Deps | Status |
+|---|---|---|---|
+| GRO-01 | `gro_processes` client-scoped table (client-**read** status-only, staff-write) + `GroProcessesService` (staff, audited) + seed | 3.1, 3.4 | done ([evidence](evidence/gro/GRO-01.md)) |
+| GRO-02 | GRO HTTP API — staff CRUD + `gro.process` status workflow + client-rep read-own (status-only) dual-path; `gro.read`/`gro.process` catalog | GRO-01 | todo |
+| GRO-03 | Cross-module: completing a renewal **updates the employee's govdata expiry** + notify on status change (poss. `DocumentExpiring → GRO` auto-spawn) | GRO-02, 3.1/3.3 | todo |
+| GRO-04 | GRO web UI (process list/board with dual-calendar Hijri deadlines) | GRO-02 | todo |
+
+### GRO-01 — `gro_processes` table + GroProcessesService (staff path) + seed
+- **Objective:** the GRO foundation — a client-scoped `gro_processes` table (ADR-001
+  checklist) + staff-path `GroProcessesService` (audited CRUD) + seed. No endpoints/
+  permissions yet (mirrors REQ-01 → REQ-02).
+- **Files:** `schema.prisma` (GroProcess + type/status enums); migration
+  `*_gro_processes` (table + grants + RLS); `modules/gro/{module, public-api,
+  application/gro-processes.service, domain/gro-process}`; `app.module.ts`;
+  `seed.ts` (seedGroProcesses); `test/gro-processes.e2e-spec.ts`.
+- **DoD:** migration + `db:generate`; RLS + both policies, `app_client` **SELECT
+  only** (psql); create/update audited in one tx (`resource: 'gro-process'`); status
+  defaults `not_started`; seed clean; suite + lint + typecheck + build green.
+- **Evidence:** `evidence/gro/GRO-01.md`.
+- **Dependencies:** EMP-01, CLIENT-01, Audit. **Risks:** `employeeId` is a bare
+  cross-module reference (no FK to Employees); clients read status-only (redaction is
+  a GRO-02 concern); `dueDate` stored Gregorian (Hijri is a render concern).
+
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 
 | Epic | Source | Gate |

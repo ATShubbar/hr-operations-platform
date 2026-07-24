@@ -399,7 +399,8 @@ export const ModelName = {
   Request: 'Request',
   Task: 'Task',
   Vacancy: 'Vacancy',
-  Candidate: 'Candidate'
+  Candidate: 'Candidate',
+  GroProcess: 'GroProcess'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -415,7 +416,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "authUser" | "coreScopeCheck" | "auditEntry" | "systemSetting" | "clientSetting" | "userSetting" | "client" | "employee" | "document" | "notification" | "expiryAlert" | "notificationPreference" | "request" | "task" | "vacancy" | "candidate"
+    modelProps: "authUser" | "coreScopeCheck" | "auditEntry" | "systemSetting" | "clientSetting" | "userSetting" | "client" | "employee" | "document" | "notification" | "expiryAlert" | "notificationPreference" | "request" | "task" | "vacancy" | "candidate" | "groProcess"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1603,6 +1604,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    GroProcess: {
+      payload: Prisma.$GroProcessPayload<ExtArgs>
+      fields: Prisma.GroProcessFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.GroProcessFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroProcessPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.GroProcessFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroProcessPayload>
+        }
+        findFirst: {
+          args: Prisma.GroProcessFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroProcessPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.GroProcessFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroProcessPayload>
+        }
+        findMany: {
+          args: Prisma.GroProcessFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroProcessPayload>[]
+        }
+        create: {
+          args: Prisma.GroProcessCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroProcessPayload>
+        }
+        createMany: {
+          args: Prisma.GroProcessCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.GroProcessCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroProcessPayload>[]
+        }
+        delete: {
+          args: Prisma.GroProcessDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroProcessPayload>
+        }
+        update: {
+          args: Prisma.GroProcessUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroProcessPayload>
+        }
+        deleteMany: {
+          args: Prisma.GroProcessDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.GroProcessUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.GroProcessUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroProcessPayload>[]
+        }
+        upsert: {
+          args: Prisma.GroProcessUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroProcessPayload>
+        }
+        aggregate: {
+          args: Prisma.GroProcessAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateGroProcess>
+        }
+        groupBy: {
+          args: Prisma.GroProcessGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GroProcessGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.GroProcessCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GroProcessCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1899,6 +1974,24 @@ export const CandidateScalarFieldEnum = {
 } as const
 
 export type CandidateScalarFieldEnum = (typeof CandidateScalarFieldEnum)[keyof typeof CandidateScalarFieldEnum]
+
+
+export const GroProcessScalarFieldEnum = {
+  id: 'id',
+  clientId: 'clientId',
+  employeeId: 'employeeId',
+  type: 'type',
+  status: 'status',
+  referenceNumber: 'referenceNumber',
+  dueDate: 'dueDate',
+  assigneeUserId: 'assigneeUserId',
+  notes: 'notes',
+  createdByUserId: 'createdByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GroProcessScalarFieldEnum = (typeof GroProcessScalarFieldEnum)[keyof typeof GroProcessScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -2341,6 +2434,34 @@ export type ListEnumCandidateStageFieldRefInput<$PrismaModel> = FieldRefInputTyp
 
 
 /**
+ * Reference to a field of type 'GroProcessType'
+ */
+export type EnumGroProcessTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GroProcessType'>
+    
+
+
+/**
+ * Reference to a field of type 'GroProcessType[]'
+ */
+export type ListEnumGroProcessTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GroProcessType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'GroProcessStatus'
+ */
+export type EnumGroProcessStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GroProcessStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'GroProcessStatus[]'
+ */
+export type ListEnumGroProcessStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GroProcessStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -2479,6 +2600,7 @@ export type GlobalOmitConfig = {
   task?: Prisma.TaskOmit
   vacancy?: Prisma.VacancyOmit
   candidate?: Prisma.CandidateOmit
+  groProcess?: Prisma.GroProcessOmit
 }
 
 /* Types for Logging */

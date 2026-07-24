@@ -549,3 +549,51 @@ enum CandidateStage {
   rejected
   withdrawn
 }
+
+// GRO government-process workflows (GRO-01, ACTION-PLAN 4.2). Tracks a government
+// procedure for an employee (iqama renewal, exit/re-entry, transfer…) through a
+// status workflow. Client-scoped — clients may READ their own processes (status
+// only, matrix); only staff write. `employeeId` is a plain cross-module reference
+// to emp_employees (no FK), like task_tasks.request_id. `dueDate` is stored
+// Gregorian (Hijri is a render concern — architecture rule).
+model GroProcess {
+  id              String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clientId        String           @map("client_id") @db.Uuid
+  employeeId      String           @map("employee_id") @db.Uuid
+  type            GroProcessType
+  status          GroProcessStatus @default(not_started)
+  referenceNumber String?          @map("reference_number")
+  dueDate         DateTime?        @map("due_date") @db.Date
+  assigneeUserId  String?          @map("assignee_user_id") @db.Uuid
+  notes           String?
+  createdByUserId String?          @map("created_by_user_id") @db.Uuid
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  @@index([clientId])
+  @@index([employeeId])
+  @@index([status])
+  @@index([dueDate])
+  @@map("gro_processes")
+}
+
+enum GroProcessType {
+  iqama_issue
+  iqama_renewal
+  exit_reentry
+  final_exit
+  profession_change
+  sponsorship_transfer
+  work_permit_renewal
+  other
+}
+
+enum GroProcessStatus {
+  not_started
+  in_progress
+  submitted
+  approved
+  rejected
+  completed
+  cancelled
+}

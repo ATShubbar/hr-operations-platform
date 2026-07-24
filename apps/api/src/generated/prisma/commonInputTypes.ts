@@ -782,6 +782,40 @@ export type EnumCandidateStageWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumCandidateStageFilter<$PrismaModel>
 }
 
+export type EnumGroProcessTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.GroProcessType | Prisma.EnumGroProcessTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.GroProcessType[] | Prisma.ListEnumGroProcessTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.GroProcessType[] | Prisma.ListEnumGroProcessTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumGroProcessTypeFilter<$PrismaModel> | $Enums.GroProcessType
+}
+
+export type EnumGroProcessStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.GroProcessStatus | Prisma.EnumGroProcessStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.GroProcessStatus[] | Prisma.ListEnumGroProcessStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.GroProcessStatus[] | Prisma.ListEnumGroProcessStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumGroProcessStatusFilter<$PrismaModel> | $Enums.GroProcessStatus
+}
+
+export type EnumGroProcessTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.GroProcessType | Prisma.EnumGroProcessTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.GroProcessType[] | Prisma.ListEnumGroProcessTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.GroProcessType[] | Prisma.ListEnumGroProcessTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumGroProcessTypeWithAggregatesFilter<$PrismaModel> | $Enums.GroProcessType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumGroProcessTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumGroProcessTypeFilter<$PrismaModel>
+}
+
+export type EnumGroProcessStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.GroProcessStatus | Prisma.EnumGroProcessStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.GroProcessStatus[] | Prisma.ListEnumGroProcessStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.GroProcessStatus[] | Prisma.ListEnumGroProcessStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumGroProcessStatusWithAggregatesFilter<$PrismaModel> | $Enums.GroProcessStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumGroProcessStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumGroProcessStatusFilter<$PrismaModel>
+}
+
 export type NestedUuidFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -1503,6 +1537,40 @@ export type NestedEnumCandidateStageWithAggregatesFilter<$PrismaModel = never> =
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumCandidateStageFilter<$PrismaModel>
   _max?: Prisma.NestedEnumCandidateStageFilter<$PrismaModel>
+}
+
+export type NestedEnumGroProcessTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.GroProcessType | Prisma.EnumGroProcessTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.GroProcessType[] | Prisma.ListEnumGroProcessTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.GroProcessType[] | Prisma.ListEnumGroProcessTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumGroProcessTypeFilter<$PrismaModel> | $Enums.GroProcessType
+}
+
+export type NestedEnumGroProcessStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.GroProcessStatus | Prisma.EnumGroProcessStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.GroProcessStatus[] | Prisma.ListEnumGroProcessStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.GroProcessStatus[] | Prisma.ListEnumGroProcessStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumGroProcessStatusFilter<$PrismaModel> | $Enums.GroProcessStatus
+}
+
+export type NestedEnumGroProcessTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.GroProcessType | Prisma.EnumGroProcessTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.GroProcessType[] | Prisma.ListEnumGroProcessTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.GroProcessType[] | Prisma.ListEnumGroProcessTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumGroProcessTypeWithAggregatesFilter<$PrismaModel> | $Enums.GroProcessType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumGroProcessTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumGroProcessTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumGroProcessStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.GroProcessStatus | Prisma.EnumGroProcessStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.GroProcessStatus[] | Prisma.ListEnumGroProcessStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.GroProcessStatus[] | Prisma.ListEnumGroProcessStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumGroProcessStatusWithAggregatesFilter<$PrismaModel> | $Enums.GroProcessStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumGroProcessStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumGroProcessStatusFilter<$PrismaModel>
 }
 
 

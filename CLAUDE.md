@@ -145,9 +145,16 @@ per-card advance offering only legal moves, **Hire →** at the offer stage) ove
 REC-02/04 APIs; nav gated on `vacancy.read`/`candidate.read`. Verified live: hiring a
 candidate through the board created the employee end-to-end (REC-05 flow), both locales
 (ar RTL). **Recruitment epic (4.1) COMPLETE — REC-01..06.** Thirteen product screens
-(the eleven prior + vacancies + candidates); the 4th ADR-004 event flow live. **Next:
-pick another epic — 4.2 GRO (unlocks Calendar 5.2) or a Priority-5 surface. AWS/OCI
-decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
+(the eleven prior + vacancies + candidates); the 4th ADR-004 event flow live.
+**Priority 4 — GRO epic (4.2) STARTED: GRO-01 done** — `gro_processes` client-scoped
+table (tracks a government procedure — iqama renewal/exit-reentry/transfer… — for an
+employee; clients read own status-only so `app_client` gets **SELECT only**) +
+staff-path `GroProcessesService` (audited CRUD, `resource: 'gro-process'`). `employeeId`
+is a bare cross-module ref (no FK); status defaults `not_started`; `dueDate` stored
+Gregorian (Hijri = render). Frozen catalog names exactly `gro.read` + `gro.process`
+(land with GRO-02). 3 seed processes; `modules/gro` registered. API suite **272/272**.
+**Next: GRO-02 (GRO HTTP API — staff CRUD + `gro.process` workflow + client-rep read-own
+status-only). AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
 2026-07-24: ECS throttle + RDS InvalidAction persist)
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback

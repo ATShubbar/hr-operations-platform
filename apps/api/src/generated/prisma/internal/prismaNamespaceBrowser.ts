@@ -66,7 +66,8 @@ export const ModelName = {
   Request: 'Request',
   Task: 'Task',
   Vacancy: 'Vacancy',
-  Candidate: 'Candidate'
+  Candidate: 'Candidate',
+  GroProcess: 'GroProcess'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -342,6 +343,24 @@ export const CandidateScalarFieldEnum = {
 } as const
 
 export type CandidateScalarFieldEnum = (typeof CandidateScalarFieldEnum)[keyof typeof CandidateScalarFieldEnum]
+
+
+export const GroProcessScalarFieldEnum = {
+  id: 'id',
+  clientId: 'clientId',
+  employeeId: 'employeeId',
+  type: 'type',
+  status: 'status',
+  referenceNumber: 'referenceNumber',
+  dueDate: 'dueDate',
+  assigneeUserId: 'assigneeUserId',
+  notes: 'notes',
+  createdByUserId: 'createdByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GroProcessScalarFieldEnum = (typeof GroProcessScalarFieldEnum)[keyof typeof GroProcessScalarFieldEnum]
 
 
 export const SortOrder = {
