@@ -115,9 +115,12 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'GET /tasks/:id': 'staff',
   'PATCH /tasks/:id': 'staff',
   'DELETE /tasks/:id': 'staff',
-  // Client Portal (PORTAL-01): client-only self-service reads, scoped to the
-  // caller's own client (proven in portal-company.e2e); 401 on unauth.
+  // Client Portal (PORTAL-01/02): client-only self-service reads, scoped to the
+  // caller's own client (proven in portal-company / portal-employees e2e); 401
+  // on unauth. Employees are redacted to core + govdata:status (PORTAL-02).
   'GET /portal/company': 'client-read',
+  'GET /portal/employees': 'client-read',
+  'GET /portal/employees/:id': 'client-read',
   'GET /example/greeting': 'staff',
   'GET /example-consumer/relay': 'staff',
   'GET /scope-check': 'client-scoped',

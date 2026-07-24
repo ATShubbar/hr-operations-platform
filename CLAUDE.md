@@ -87,14 +87,19 @@ unassigned task — the THIRD ADR-004 flow) + the Tasks web console. API suite
 **218/218**; web typecheck+lint green. **Ten product screens** (login, audit,
 clients, employees, settings, documents, expiry, requests, tasks) + the header
 bell. **Two more ADR-004 event flows** (request→notify, request→task) on top of
-document-expiry. **Priority 5 — Client Portal epic STARTED: PORTAL-01 done** — a
+document-expiry. **Priority 5 — Client Portal epic STARTED: PORTAL-01..02 done** — a
 dedicated `modules/portal` **delivery module** (client-facing surface, reads the
 domain modules' services): `GET /portal/company` returns the caller's OWN company,
 gated by `portal.read` (client-only permission) + the per-client
 `flag.client-self-service` flag (403 when off). Chose a `/portal/*` module over
 principal-aware `/clients` — avoids the ConfigurationModule↔ClientsModule DI cycle,
-matches architecture module 10. API suite **222/222**. **Next: PORTAL-02
-(`/portal/employees`, redacted core+govdata:status). AWS/OCI decision (ADR-006)
+matches architecture module 10. **PORTAL-02: `GET /portal/employees[/:id]`** — rep
+reads OWN employees redacted to **core + govdata:status** (no salary, no gov
+identifier numbers; cross-client/unknown `:id` → 404). Activated the deferred EMP-02
+`govdata:'status'` tier by **extracting the redaction mapper** (`toEmployeeResponse`
++ `EmployeeVisibility`) into `employees/domain/employee-view.ts` — one source of
+truth shared by the staff controller and the portal. API suite **229/229**.
+**Next: PORTAL-03 (`/portal/documents[/:id/download]`). AWS/OCI decision (ADR-006)
 open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
 2026-07-24: ECS throttle + RDS InvalidAction persist)
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");

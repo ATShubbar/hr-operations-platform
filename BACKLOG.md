@@ -1115,7 +1115,7 @@ production". Requests rep-access already shipped (REQ-02); the portal surfaces i
 | ID | Task | Depends on | Status |
 |---|---|---|---|
 | PORTAL-01 | Foundation: `modules/portal` + `GET /portal/company` (own company, flag-gated) + `portal.read` | 2.5, CONF-04 | done ([evidence](evidence/portal/PORTAL-01.md)) |
-| PORTAL-02 | `GET /portal/employees[/:id]` — rep reads own employees, redacted to **core + govdata:status only** (no salary/identifiers) | PORTAL-01, 3.1 | todo |
+| PORTAL-02 | `GET /portal/employees[/:id]` — rep reads own employees, redacted to **core + govdata:status only** (no salary/identifiers) | PORTAL-01, 3.1 | done ([evidence](evidence/portal/PORTAL-02.md)) |
 | PORTAL-03 | `GET /portal/documents[/:id/download]` — rep reads/downloads own documents | PORTAL-01, 3.2 | todo |
 | PORTAL-04 | Client portal **UI** (flag-gated shell + company/employees/documents/requests) | PORTAL-02/03 | todo |
 
@@ -1135,6 +1135,27 @@ production". Requests rep-access already shipped (REQ-02); the portal surfaces i
   ClientsModule DI cycle AND matches the architecture; `portal.read` (client-only)
   prevents the staff-endpoint leak that granting `client.read` to reps would cause;
   the flag/scope always key on the SESSION clientId, never input.
+
+### PORTAL-02 — Portal employees (own, redacted core + govdata:status)
+- **Objective:** `GET /portal/employees[/:id]` — rep reads OWN employees, redacted
+  to core + government status/expiry only (no salary, no gov identifier numbers).
+  Activates the deferred EMP-02 `govdata: 'status'` tier.
+- **Files:** `employees/domain/employee-view.ts` (NEW — `toEmployeeResponse` +
+  `EmployeeVisibility` extracted from the staff controller, exported via
+  `employees/public-api.ts`; staff controller now consumes it — behavior-preserving
+  refactor); `modules/portal/api/portal.controller.ts` (+list/`:id`, fixed
+  `{salary:false, govdata:'status'}`, own-client check → 404); `portal.module.ts`
+  (+EmployeesModule, still a leaf); isolation `GET /portal/employees[/:id]` →
+  client-read; `test/portal-employees.e2e-spec.ts`.
+- **DoD:** rep lists OWN only; cross-client/unknown `:id` → 404; salary null +
+  gov identifiers null + gov status/expiry present; flag off → 403; staff → 403;
+  401 unauth; staff employees behavior unchanged; coverage + suite + lint +
+  typecheck + build green.
+- **Evidence:** `evidence/portal/PORTAL-02.md`.
+- **Dependencies:** PORTAL-01, EMP-02 (3.1). **Risks:** the only non-trivial move
+  is the mapper extraction — kept the signature identical, existing employees
+  suite is the regression guard; 404 (not 403) on out-of-scope ids so existence
+  never leaks; no new permission (portal.read covers it), no schema change.
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

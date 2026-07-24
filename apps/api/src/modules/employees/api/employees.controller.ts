@@ -27,6 +27,7 @@ import type { Prisma } from '../../../generated/prisma/client';
 import { PolicyService } from '../../auth/public-api';
 import { ClientsService } from '../../clients/public-api';
 import { EmployeesService } from '../application/employees.service';
+import { toEmployeeResponse, type EmployeeVisibility } from '../domain/employee-view';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -53,13 +54,13 @@ export class EmployeesController {
     }
     const rows = await this.employees.list(clientId);
     const view = this.readVisibility();
-    return { employees: rows.map((r) => toResponse(r, view)) };
+    return { employees: rows.map((r) => toEmployeeResponse(r, view)) };
   }
 
   @RequirePermission('employee.read')
   @Get(':id')
   async get(@Param('id') id: string): Promise<EmployeeResponse> {
-    return toResponse(await this.require(id), this.readVisibility());
+    return toEmployeeResponse(await this.require(id), this.readVisibility());
   }
 
   // ---- create (core; salary/govdata inline-gated by their update caps) ----
@@ -102,7 +103,7 @@ export class EmployeesController {
       ...(req.govdata ?? {}),
     };
     const row = await this.employees.create(data);
-    return toResponse(row, this.readVisibility());
+    return toEmployeeResponse(row, this.readVisibility());
   }
 
   // ---- writes, one endpoint per field group (its own permission) ----
@@ -155,10 +156,10 @@ export class EmployeesController {
   ): Promise<EmployeeResponse> {
     const row = await this.employees.update(id, data, action);
     if (!row) throw new NotFoundException('Employee not found');
-    return toResponse(row, this.readVisibility());
+    return toEmployeeResponse(row, this.readVisibility());
   }
 
-  private readVisibility(): Visibility {
+  private readVisibility(): EmployeeVisibility {
     const role = requestContext.get()?.role;
     return {
       salary: this.policy.can(role, 'salary.read'),
@@ -178,70 +179,4 @@ export class EmployeesController {
   private assertUuid(id: string): void {
     if (!UUID_RE.test(id)) throw new NotFoundException('Employee not found');
   }
-}
-
-interface Visibility {
-  salary: boolean;
-  govdata: 'full' | 'status' | 'none';
-}
-
-function iso(d: Date | null): string | null {
-  return d ? d.toISOString() : null;
-}
-function num(d: { toNumber(): number } | null): number | null {
-  return d == null ? null : d.toNumber();
-}
-
-function toResponse(e: EmployeeRecord, vis: Visibility): EmployeeResponse {
-  const govFull = vis.govdata === 'full';
-  return {
-    id: e.id,
-    clientId: e.clientId,
-    name: { ar: e.nameAr, en: e.nameEn },
-    nationality: e.nationality,
-    gender: e.gender,
-    dateOfBirth: iso(e.dateOfBirth),
-    jobTitle: { ar: e.jobTitleAr, en: e.jobTitleEn },
-    department: e.department,
-    hireDate: iso(e.hireDate),
-    employmentStatus: e.employmentStatus,
-    contractType: e.contractType,
-    contractEndDate: iso(e.contractEndDate),
-    countsTowardSaudization: e.countsTowardSaudization,
-    createdAt: e.createdAt.toISOString(),
-    updatedAt: e.updatedAt.toISOString(),
-    salary: vis.salary
-      ? {
-          currency: e.currency,
-          basicSalary: num(e.basicSalary),
-          housingAllowance: num(e.housingAllowance),
-          transportAllowance: num(e.transportAllowance),
-          otherAllowances: num(e.otherAllowances),
-          gosiWage: num(e.gosiWage),
-          gosiContributionBasis: e.gosiContributionBasis,
-          bankIban: e.bankIban,
-          wpsStatus: e.wpsStatus,
-        }
-      : null,
-    govdata:
-      vis.govdata === 'none'
-        ? null
-        : {
-            // identifiers: staff-only (`full`)
-            iqamaNumber: govFull ? e.iqamaNumber : null,
-            nationalId: govFull ? e.nationalId : null,
-            borderNumber: govFull ? e.borderNumber : null,
-            passportNumber: govFull ? e.passportNumber : null,
-            workPermitNumber: govFull ? e.workPermitNumber : null,
-            gosiRegistrationNumber: govFull ? e.gosiRegistrationNumber : null,
-            absherServiceRef: govFull ? e.absherServiceRef : null,
-            // expiry/status: visible at both `full` and `status`
-            iqamaExpiry: iso(e.iqamaExpiry),
-            passportExpiry: iso(e.passportExpiry),
-            workPermitExpiry: iso(e.workPermitExpiry),
-            exitReentryStatus: e.exitReentryStatus,
-            exitReentryExpiry: iso(e.exitReentryExpiry),
-            gosiRegistrationStatus: e.gosiRegistrationStatus,
-          },
-  };
 }
