@@ -75,18 +75,20 @@ expiry engine (3.4) COMPLETE (EXP-01..03).** API suite **195/195**; web typechec
 green. **Eight product screens** (login, audit, clients, employees, settings,
 documents, expiry) + a notification bell in the shell header. **Priority-3 domain
 core COMPLETE: 3.1 Employees, 3.2 Documents, 3.3 Notifications, 3.4 Document-expiry.**
-**Priority 4 — Requests sub-module (4.3) COMPLETE (REQ-01..04)** — `req_requests`
-client-scoped table (the FIRST table clients WRITE) + `RequestsService`, the
-**dual-path HTTP API** (REQ-02: staff cross-client, client reps own-client via
-`ScopedPrismaService` + RLS `WITH CHECK`), **processing** (REQ-03:
-`request.process` staff status workflow + assignee, notify the creator via a
-`RequestStatusChangedEvent` domain event — the SECOND ADR-004 event producer),
-and the **Requests web console** (REQ-04: staff list/create/process, status
-workflow). API suite **208/208**; web typecheck+lint green. **Nine product screens**
-(login, audit, clients, employees, settings, documents, expiry, requests) + the
-header bell. **Next: Tasks sub-module (TASK-01 `task_tasks` → TASK-02 HTTP →
-TASK-03 Requests→Tasks via domain event → TASK-04 web UI). AWS/OCI decision
-(ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup
+**Priority 4 — Requests + Tasks epic (4.3 + 4.4) COMPLETE.** Requests (REQ-01..04):
+`req_requests` client-scoped table (the FIRST table clients WRITE) + the **dual-path
+HTTP API** (staff cross-client, client reps own-client via `ScopedPrismaService`
++ RLS `WITH CHECK`) + **processing** (`request.process` status workflow, notify
+the creator via `RequestStatusChangedEvent`) + the web console. Tasks (TASK-01..04):
+`task_tasks` **staff-owned** table (internal work items, clients no access) + the
+**HTTP API with the matrix own/assigned scope** (`task.read-all` lifts it) +
+**Requests→Tasks via a `RequestCreatedEvent` domain event** (a request spawns an
+unassigned task — the THIRD ADR-004 flow) + the Tasks web console. API suite
+**218/218**; web typecheck+lint green. **Ten product screens** (login, audit,
+clients, employees, settings, documents, expiry, requests, tasks) + the header
+bell. **Two more ADR-004 event flows** (request→notify, request→task) on top of
+document-expiry. **Next: Recruitment (4.1) / GRO (4.2), or the Client Portal (5.1).
+AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback
 (ADR-006). Infra pickup: docs/HANDOFF-WS20.md.

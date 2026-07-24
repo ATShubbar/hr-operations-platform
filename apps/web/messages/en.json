@@ -67,7 +67,8 @@
     "auditLog": "Audit log",
     "settings": "Settings",
     "expiry": "Expiry",
-    "requests": "Requests"
+    "requests": "Requests",
+    "tasks": "Tasks"
   },
   "documents": {
     "title": "Documents",
@@ -420,6 +421,57 @@
       "in_progress": "In progress",
       "resolved": "Resolved",
       "closed": "Closed",
+      "cancelled": "Cancelled"
+    },
+    "priority": {
+      "low": "Low",
+      "normal": "Normal",
+      "high": "High"
+    }
+  },
+  "tasks": {
+    "title": "Tasks",
+    "subtitle": "Internal work items and their status.",
+    "new": "New task",
+    "empty": "No tasks.",
+    "loading": "Loading…",
+    "error": "Could not load tasks.",
+    "saveError": "Could not save — check your permissions.",
+    "colTitle": "Title",
+    "colClient": "Client",
+    "colStatus": "Status",
+    "colPriority": "Priority",
+    "colAssignee": "Assignee",
+    "colDue": "Due",
+    "colActions": "Actions",
+    "filterStatus": "Status",
+    "filterClient": "Client",
+    "filterAll": "All",
+    "apply": "Apply",
+    "clear": "Clear",
+    "edit": "Edit",
+    "editTitle": "Edit task",
+    "assignToMe": "Assign to me",
+    "assigned": "Assigned",
+    "unassigned": "Unassigned",
+    "none": "—",
+    "fromRequest": "From request",
+    "createTitle": "New task",
+    "fieldClient": "Client (optional)",
+    "selectClient": "No client",
+    "fieldTitle": "Title",
+    "fieldDescription": "Description",
+    "fieldPriority": "Priority",
+    "fieldStatus": "Status",
+    "fieldDue": "Due date",
+    "save": "Create",
+    "saving": "Saving…",
+    "submit": "Update",
+    "cancel": "Cancel",
+    "status": {
+      "open": "Open",
+      "in_progress": "In progress",
+      "done": "Done",
       "cancelled": "Cancelled"
     },
     "priority": {

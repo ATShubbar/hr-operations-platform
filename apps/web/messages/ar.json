@@ -67,7 +67,8 @@
     "auditLog": "سجل التدقيق",
     "settings": "الإعدادات",
     "expiry": "الانتهاءات",
-    "requests": "الطلبات"
+    "requests": "الطلبات",
+    "tasks": "المهام"
   },
   "documents": {
     "title": "المستندات",
@@ -421,6 +422,57 @@
       "resolved": "تم الحل",
       "closed": "مغلق",
       "cancelled": "ملغى"
+    },
+    "priority": {
+      "low": "منخفضة",
+      "normal": "عادية",
+      "high": "عالية"
+    }
+  },
+  "tasks": {
+    "title": "المهام",
+    "subtitle": "عناصر العمل الداخلية وحالتها.",
+    "new": "مهمة جديدة",
+    "empty": "لا توجد مهام.",
+    "loading": "جارٍ التحميل…",
+    "error": "تعذّر تحميل المهام.",
+    "saveError": "تعذّر الحفظ — تحقّق من صلاحياتك.",
+    "colTitle": "العنوان",
+    "colClient": "العميل",
+    "colStatus": "الحالة",
+    "colPriority": "الأولوية",
+    "colAssignee": "المكلَّف",
+    "colDue": "الاستحقاق",
+    "colActions": "إجراءات",
+    "filterStatus": "الحالة",
+    "filterClient": "العميل",
+    "filterAll": "الكل",
+    "apply": "تطبيق",
+    "clear": "مسح",
+    "edit": "تعديل",
+    "editTitle": "تعديل المهمة",
+    "assignToMe": "إسناد إليّ",
+    "assigned": "مُسنَدة",
+    "unassigned": "غير مُسنَدة",
+    "none": "—",
+    "fromRequest": "من طلب",
+    "createTitle": "مهمة جديدة",
+    "fieldClient": "العميل (اختياري)",
+    "selectClient": "بدون عميل",
+    "fieldTitle": "العنوان",
+    "fieldDescription": "الوصف",
+    "fieldPriority": "الأولوية",
+    "fieldStatus": "الحالة",
+    "fieldDue": "تاريخ الاستحقاق",
+    "save": "إنشاء",
+    "saving": "جارٍ الحفظ…",
+    "submit": "تحديث",
+    "cancel": "إلغاء",
+    "status": {
+      "open": "مفتوحة",
+      "in_progress": "قيد التنفيذ",
+      "done": "منجزة",
+      "cancelled": "ملغاة"
     },
     "priority": {
       "low": "منخفضة",

@@ -1023,7 +1023,7 @@ domain event (second ADR-004 consumer). Requests-first (Tasks depends on it).
 | TASK-01 | `task_tasks` staff-owned table + `TasksService` (assignment, Sun–Thu due dates) | REQ-01 | done ([evidence](evidence/tasks/TASK-01.md)) |
 | TASK-02 | Tasks HTTP API — CRU own/assigned, `task.update`, isolation + audit | TASK-01 | done ([evidence](evidence/tasks/TASK-02.md)) |
 | TASK-03 | Requests → Tasks via a domain event (`RequestCreated`) — third ADR-004 flow | REQ-02, TASK-01, NOTIF-05 | done ([evidence](evidence/tasks/TASK-03.md)) |
-| TASK-04 | Tasks web UI | TASK-02 | todo |
+| TASK-04 | Tasks web UI | TASK-02 | done ([evidence](evidence/tasks/TASK-04.md)) |
 
 ### REQ-01 — Requests foundation (`req_requests` + RequestsService)
 - **Objective:** the client-scoped Requests registry + service (staff path),
@@ -1102,7 +1102,7 @@ domain event (second ADR-004 consumer). Requests-first (Tasks depends on it).
   dialog/select/badge); assignee picker deferred (needs a staff-user list
   endpoint) — process advances status only for now.
 
-**Requests sub-module (4.3) COMPLETE (REQ-01..04).**
+**Requests sub-module (4.3) COMPLETE (REQ-01..04).** **Tasks sub-module (4.4) COMPLETE (TASK-01..04) — table + service, HTTP with own/assigned scope, Requests→Tasks via a domain event, web console. Requests + Tasks epic (4.3+4.4) COMPLETE.**
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 
