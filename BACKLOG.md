@@ -1216,7 +1216,7 @@ client) collects **candidates** through a pipeline (applied → screening → in
 | REC-03 | `rec_candidates` staff-owned table + `CandidatesService` (candidate ↔ vacancy, pipeline stage, CV doc link) | REC-01, 3.2 | done ([evidence](evidence/recruitment/REC-03.md)) |
 | REC-04 | Candidates HTTP API — CRUD + pipeline stage-transition workflow | REC-03 | done ([evidence](evidence/recruitment/REC-04.md)) |
 | REC-05 | Offer flow + **`CandidateHired` → Employees** domain event (Employees `@OnEvent` creates the record) | REC-04, 3.1 | done ([evidence](evidence/recruitment/REC-05.md)) |
-| REC-06 | Recruitment web UI (vacancies + candidate pipeline board) | REC-02/04 | todo |
+| REC-06 | Recruitment web UI (vacancies + candidate pipeline board) | REC-02/04 | done ([evidence](evidence/recruitment/REC-06.md)) |
 
 ### REC-01 — `rec_vacancies` table + VacanciesService (staff path) + seed
 - **Objective:** the vacancy foundation — a client-scoped `rec_vacancies` table
@@ -1309,7 +1309,22 @@ client) collects **candidates** through a pipeline (applied → screening → in
   adjusts); idempotent via `hired` being terminal (no ledger); notify-on-hire +
   employee↔candidate link deferred.
 
-**Recruitment epic (4.1): REC-01..05 done (vacancies, candidates, hire→employee event). REC-06 (web UI) remaining.**
+### REC-06 — Recruitment web UI (vacancies + candidate pipeline board)
+- **Objective:** the staff recruitment screens — a vacancies console + a candidate
+  pipeline board (with the hire action) — over the REC-02/04 APIs.
+- **Files:** `(app)/vacancies/page.tsx` + `(app)/candidates/page.tsx` (NEW);
+  `app-shell.tsx` (2 nav links gated on vacancy.read / candidate.read);
+  `messages/{en,ar}.json` (`nav.*` + `vacancies.*` / `candidates.*`). Front-end only.
+- **DoD:** recruiter sees the nav + can create a vacancy, advance its status, create
+  a candidate (with nationality), and walk the pipeline incl. Hire (which spawns an
+  employee via REC-05); stage/status controls offer only legal moves; RTL + logical
+  utilities; web typecheck + lint green; verified live in the browser (both locales).
+- **Evidence:** `evidence/recruitment/REC-06.md`.
+- **Dependencies:** REC-02, REC-04. **Risks:** the pipeline board (lanes of cards) is
+  the one new UI shape; the client dropdown fetches staff-only `/clients` — recruiter
+  has `client.read` (STAFF_BASE) so it works.
+
+**Recruitment epic (4.1) COMPLETE — REC-01..06 (vacancies, candidates, hire→employee event, web UI).**
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

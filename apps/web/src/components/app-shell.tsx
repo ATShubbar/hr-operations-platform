@@ -21,6 +21,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const canDocuments = useCan('document.read');
   const canRequests = useCan('request.read');
   const canTasks = useCan('task.read');
+  const canVacancies = useCan('vacancy.read');
+  const canCandidates = useCan('candidate.read');
   const canAudit = useCan('audit.read');
   const canSettings = useCan('config.read-self'); // every authenticated principal
   const canPortal = useCan('portal.read'); // client-only self-service surface (PORTAL-04)
@@ -77,6 +79,16 @@ export function AppShell({ children }: { children: ReactNode }) {
           {canTasks && (
             <Link href="/tasks" className={NAV_LINK}>
               {t('nav.tasks')}
+            </Link>
+          )}
+          {canVacancies && (
+            <Link href="/vacancies" className={NAV_LINK}>
+              {t('nav.vacancies')}
+            </Link>
+          )}
+          {canCandidates && (
+            <Link href="/candidates" className={NAV_LINK}>
+              {t('nav.candidates')}
             </Link>
           )}
           {canAudit && (

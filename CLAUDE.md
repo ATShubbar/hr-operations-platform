@@ -139,9 +139,15 @@ creates the employee record (**4th ADR-004 flow**; Employees imports only the ev
 type, no DI cycle). Added `nationality` to candidates + a **hire-time guard** (400 if
 absent) so the created employee is well-formed (`contractType: unlimited` default,
 `active`; HR completes salary/govdata). Idempotent via `hired` being terminal (event
-fires once → one employee). API suite **268/268**. **Recruitment epic (4.1): REC-01..05
-done. Next: REC-06 (recruitment web UI — vacancies + candidate pipeline board),
-then the epic closes. AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
+fires once → one employee). API suite **268/268**. **REC-06: the recruitment web UI** —
+a vacancies console (list/create/status) + a **candidate pipeline board** (stage lanes,
+per-card advance offering only legal moves, **Hire →** at the offer stage) over the
+REC-02/04 APIs; nav gated on `vacancy.read`/`candidate.read`. Verified live: hiring a
+candidate through the board created the employee end-to-end (REC-05 flow), both locales
+(ar RTL). **Recruitment epic (4.1) COMPLETE — REC-01..06.** Thirteen product screens
+(the eleven prior + vacancies + candidates); the 4th ADR-004 event flow live. **Next:
+pick another epic — 4.2 GRO (unlocks Calendar 5.2) or a Priority-5 surface. AWS/OCI
+decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
 2026-07-24: ECS throttle + RDS InvalidAction persist)
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback
