@@ -1116,7 +1116,7 @@ production". Requests rep-access already shipped (REQ-02); the portal surfaces i
 |---|---|---|---|
 | PORTAL-01 | Foundation: `modules/portal` + `GET /portal/company` (own company, flag-gated) + `portal.read` | 2.5, CONF-04 | done ([evidence](evidence/portal/PORTAL-01.md)) |
 | PORTAL-02 | `GET /portal/employees[/:id]` — rep reads own employees, redacted to **core + govdata:status only** (no salary/identifiers) | PORTAL-01, 3.1 | done ([evidence](evidence/portal/PORTAL-02.md)) |
-| PORTAL-03 | `GET /portal/documents[/:id/download]` — rep reads/downloads own documents | PORTAL-01, 3.2 | todo |
+| PORTAL-03 | `GET /portal/documents[/:id/download]` — rep reads/downloads own documents | PORTAL-01, 3.2 | done ([evidence](evidence/portal/PORTAL-03.md)) |
 | PORTAL-04 | Client portal **UI** (flag-gated shell + company/employees/documents/requests) | PORTAL-02/03 | todo |
 
 ### PORTAL-01 — Client portal foundation
@@ -1156,6 +1156,29 @@ production". Requests rep-access already shipped (REQ-02); the portal surfaces i
   is the mapper extraction — kept the signature identical, existing employees
   suite is the regression guard; 404 (not 403) on out-of-scope ids so existence
   never leaks; no new permission (portal.read covers it), no schema change.
+
+### PORTAL-03 — Portal documents (own, available-only + presigned download)
+- **Objective:** `GET /portal/documents[/:id][/:id/download]` — rep reads OWN
+  documents (metadata) and gets a short-lived presigned GET URL to download them.
+  Deliberately narrower than staff: AVAILABLE-only (no pending/quarantined).
+- **Files:** `documents/domain/document-view.ts` (NEW — `toDocumentResponse`
+  extracted from the staff controller, exported via `documents/public-api.ts`;
+  staff controller consumes it aliased — behavior-preserving); `modules/portal/
+  api/portal.controller.ts` (+list/`:id`/download, `find({clientId, status:
+  'available'})`, shared `ownAvailableDocument` guard → 404, `presignDownload`
+  300s); `portal.module.ts` (+DocumentsModule +StorageModule, still a leaf);
+  isolation `GET /portal/documents[/:id][/:id/download]` → client-read;
+  `test/portal-documents.e2e-spec.ts`.
+- **DoD:** rep lists OWN available only (pending/quarantined excluded + 404);
+  cross-client/unknown/non-available `:id`+download → 404; download → presigned
+  GET URL (300s, per-client key); flag off → 403; staff → 403; 401 unauth; staff
+  documents behavior unchanged; coverage + suite + lint + typecheck + build green.
+- **Evidence:** `evidence/portal/PORTAL-03.md`.
+- **Dependencies:** PORTAL-01, DOC-03 (3.2), STOR-01. **Risks:** AVAILABLE-only is
+  a deliberate tightening vs. the staff list (documented), not an oversight; the
+  presigned URL is scoped by the per-client storage key so it can't cross clients;
+  mapper extraction guarded by the existing documents suites; no new permission,
+  no schema change.
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

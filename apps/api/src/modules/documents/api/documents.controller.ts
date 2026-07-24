@@ -30,6 +30,7 @@ import { StorageService } from '../../storage/public-api';
 import { DocumentsService } from '../application/documents.service';
 import { canWriteCategory } from '../domain/document-policy';
 import { DOCUMENT_SCANNER, type DocumentScanner } from '../domain/scanner';
+import { toDocumentResponse as toResponse } from '../domain/document-view';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const UPLOAD_TTL_SECONDS = 900;
@@ -192,27 +193,4 @@ export class DocumentsController {
     if (!doc) throw new NotFoundException('Document not found');
     return doc;
   }
-}
-
-function iso(d: Date | null): string | null {
-  return d ? d.toISOString() : null;
-}
-
-function toResponse(d: DocumentRecord): DocumentResponse {
-  return {
-    id: d.id,
-    clientId: d.clientId,
-    category: d.category,
-    title: d.title,
-    fileName: d.fileName,
-    contentType: d.contentType,
-    sizeBytes: d.sizeBytes,
-    status: d.status,
-    legalHold: d.legalHold,
-    issueDate: iso(d.issueDate),
-    expiryDate: iso(d.expiryDate),
-    employeeId: d.employeeId,
-    createdAt: d.createdAt.toISOString(),
-    updatedAt: d.updatedAt.toISOString(),
-  };
 }
