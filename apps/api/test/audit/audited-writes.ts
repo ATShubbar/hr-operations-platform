@@ -43,6 +43,9 @@ export const AUDITED_WRITES: Record<string, string> = {
   'POST /requests': 'request.create',
   'PATCH /requests/:id': 'request.update',
   'POST /requests/:id/process': 'request.process',
+  'POST /tasks': 'task.create',
+  'PATCH /tasks/:id': 'task.update',
+  'DELETE /tasks/:id': 'task.delete',
 };
 
 export const AUDIT_EXEMPT_WRITES: Record<string, string> = {

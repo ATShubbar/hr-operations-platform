@@ -148,3 +148,19 @@ export {
   type RequestListResponse,
   type RequestQuery,
 } from './request.js';
+export {
+  taskStatusSchema,
+  taskPrioritySchema,
+  taskResponseSchema,
+  createTaskRequestSchema,
+  updateTaskRequestSchema,
+  taskListResponseSchema,
+  taskQuerySchema,
+  type TaskStatus,
+  type TaskPriority,
+  type TaskResponse,
+  type CreateTaskRequest,
+  type UpdateTaskRequest,
+  type TaskListResponse,
+  type TaskQuery,
+} from './task.js';

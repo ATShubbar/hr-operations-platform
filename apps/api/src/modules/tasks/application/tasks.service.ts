@@ -3,7 +3,7 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import type { TaskModel as TaskRecord } from '../../../generated/prisma/models';
 import type { Prisma } from '../../../generated/prisma/client';
 import { AuditService } from '../../audit/public-api';
-import type { CreateTaskInput } from '../domain/task';
+import type { CreateTaskInput, UpdateTaskInput } from '../domain/task';
 
 // Tasks registry access (TASK-01). Staff path only (app_staff) — tasks are
 // consultancy-internal, no client-rep path. Every mutation writes its audit entry
@@ -53,6 +53,48 @@ export class TasksService {
   findById(id: string): Promise<TaskRecord | null> {
     return this.prisma.task.findUnique({ where: { id } });
   }
+
+  async update(id: string, data: UpdateTaskInput): Promise<TaskRecord | null> {
+    return this.prisma.$transaction(async (tx) => {
+      const before = await tx.task.findUnique({ where: { id } });
+      if (!before) return null;
+      const row = await tx.task.update({ where: { id }, data: toUpdateData(data) });
+      await this.audit.record(tx, {
+        resource: 'task',
+        action: 'update',
+        clientId: row.clientId ?? undefined,
+        before: snapshot(before),
+        after: snapshot(row),
+      });
+      return row;
+    });
+  }
+
+  async remove(id: string): Promise<TaskRecord | null> {
+    return this.prisma.$transaction(async (tx) => {
+      const before = await tx.task.findUnique({ where: { id } });
+      if (!before) return null;
+      await tx.task.delete({ where: { id } });
+      await this.audit.record(tx, {
+        resource: 'task',
+        action: 'delete',
+        clientId: before.clientId ?? undefined,
+        before: snapshot(before),
+      });
+      return before;
+    });
+  }
+}
+
+function toUpdateData(data: UpdateTaskInput): Prisma.TaskUpdateInput {
+  return {
+    ...(data.title !== undefined ? { title: data.title } : {}),
+    ...(data.description !== undefined ? { description: data.description } : {}),
+    ...(data.status !== undefined ? { status: data.status } : {}),
+    ...(data.priority !== undefined ? { priority: data.priority } : {}),
+    ...(data.assigneeUserId !== undefined ? { assigneeUserId: data.assigneeUserId } : {}),
+    ...(data.dueDate !== undefined ? { dueDate: data.dueDate } : {}),
+  };
 }
 
 function toCreateData(input: CreateTaskInput): Prisma.TaskUncheckedCreateInput {

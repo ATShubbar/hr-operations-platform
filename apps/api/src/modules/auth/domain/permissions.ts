@@ -74,6 +74,14 @@ export const PERMISSIONS = [
   // Advancing a request through its status workflow (REQ-03): Company Admin + HR
   // Officer + GRO Officer (matrix — the RU-process roles). Staff-only.
   'request.process',
+  // Tasks (TASK-02; permission matrix): internal work items, staff-only. Most
+  // staff read/create/update tasks restricted to OWN/ASSIGNED; `task.read-all`
+  // lifts that to all-tasks (Admins + Read Only). Company Admin also deletes.
+  'task.read',
+  'task.read-all',
+  'task.create',
+  'task.update',
+  'task.delete',
   // Session lifecycle — every authenticated principal may end their session.
   'session.end',
 ] as const;
@@ -111,6 +119,9 @@ const STAFF_BASE: readonly Permission[] = [
   'notification.read',
   'notification-pref.update',
   'request.read',
+  // Tasks: every staff role reads tasks (own/assigned by default — task.read-all
+  // lifts the scope to all).
+  'task.read',
 ];
 // System/Company Admin extra: audit read + client CRUD (matrix) + triggering
 // the document-expiry scan on demand (EXP-02).
@@ -154,7 +165,14 @@ const CLIENT_ADMIN: readonly Permission[] = [
 export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
   // core R · salary R · govdata R (read-only on employee data; power is config):
   // the ONLY holder of config.write — writes deployment-wide system settings.
-  system_admin: [...STAFF_BASE, ...ADMIN_EXTRA, 'salary.read', 'govdata.read', 'config.write'],
+  system_admin: [
+    ...STAFF_BASE,
+    ...ADMIN_EXTRA,
+    'salary.read',
+    'govdata.read',
+    'config.write',
+    'task.read-all',
+  ],
   // core CRUD · salary R · govdata R; manages PER-CLIENT config overrides
   // (matrix — per-client settings are Company Admin's, distinct from the
   // System Admin's system-level config.write).
@@ -174,9 +192,19 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'request.create',
     'request.update',
     'request.process',
+    'task.read-all',
+    'task.create',
+    'task.update',
+    'task.delete',
   ],
   // core R · salary – · govdata – · documents: recruitment (category-scoped)
-  recruiter: [...STAFF_BASE, 'document.upload', 'document.delete'],
+  recruiter: [
+    ...STAFF_BASE,
+    'document.upload',
+    'document.delete',
+    'task.create',
+    'task.update',
+  ],
   // core CRUD · salary RU · govdata R · documents: all
   hr_officer: [
     ...STAFF_BASE,
@@ -189,6 +217,8 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'document.upload',
     'document.delete',
     'request.process',
+    'task.create',
+    'task.update',
   ],
   // core RU · salary – · govdata CRUD · documents: government (category-scoped)
   gro_officer: [
@@ -199,11 +229,13 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'document.upload',
     'document.delete',
     'request.process',
+    'task.create',
+    'task.update',
   ],
   // core R · salary RU · govdata –
-  finance: [...STAFF_BASE, 'salary.read', 'salary.update'],
+  finance: [...STAFF_BASE, 'salary.read', 'salary.update', 'task.create', 'task.update'],
   // core R · salary – · govdata R
-  read_only: [...STAFF_BASE, 'govdata.read'],
+  read_only: [...STAFF_BASE, 'govdata.read', 'task.read-all'],
   client_admin: CLIENT_ADMIN,
   client_user: ALL_CLIENT,
 };
