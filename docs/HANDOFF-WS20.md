@@ -75,3 +75,25 @@ Background retry: 36 attempts / 3 hours + manual attempt — RDS and ECS
 creation still blocked ~4h after account creation. **Support case is the
 critical path.** On pickup: check the support case reply first (root email
 inbox / Support Center), then rerun step 1 of the sequence above.
+
+## Re-check (2026-07-24)
+
+Read-only probe + a **live retry of step 1** (owner-approved) — account still
+restricted, no change from 2026-07-19:
+
+- `aws ecs create-cluster --cluster-name hr-staging` → **ThrottlingException:
+  Rate exceeded** (identical to handoff).
+- `aws rds create-db-instance … hr-staging-pg …` → **InvalidAction:
+  CreateDBInstance is not available in this region** (identical to handoff).
+- ECS clusters: none. RDS instances: none. ALB `hr-staging-alb`: **still
+  `provisioning`** (created 2026-07-19 08:11 UTC — ~5 days stuck, the restriction
+  symptom).
+- SSM `/hr/staging/db/master-password` fetched fine → IAM/SSM work; the block is
+  specifically new-account ECS/RDS provisioning.
+- Support case status could **not** be read via CLI (account is on **Basic**
+  support → `SubscriptionRequiredException`); check the Support Center console /
+  root-account email inbox. **The support case remains the critical path.**
+
+No resources created (both creates failed) → no new cost; ALB-only meter
+unchanged. Nothing on the product side is blocked — local Docker stack is the
+dev/test environment and (ADR-006) the interim AWS staging never holds real data.
