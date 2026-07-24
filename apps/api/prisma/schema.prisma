@@ -508,3 +508,41 @@ enum VacancyStatus {
   closed
   cancelled
 }
+
+// Recruitment candidates (REC-03, ACTION-PLAN 4.1). A candidate is a person in the
+// pipeline for a vacancy. STAFF-INTERNAL — clients never see candidates (their
+// PII/CVs are the consultancy's recruitment data), so like task_tasks this table
+// grants app_client nothing. `clientId` is denormalized from the vacancy for audit
+// scoping/reporting (NOT a client-rep scope key). `vacancyId` (intra-module) and
+// `cvDocumentId` (a cross-module reference to doc_documents) are plain UUID links,
+// not FKs — matching how task_tasks references requests by id.
+model Candidate {
+  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clientId        String         @map("client_id") @db.Uuid
+  vacancyId       String         @map("vacancy_id") @db.Uuid
+  nameAr          String         @map("name_ar")
+  nameEn          String         @map("name_en")
+  email           String?
+  phone           String?
+  stage           CandidateStage @default(applied)
+  cvDocumentId    String?        @map("cv_document_id") @db.Uuid
+  notes           String?
+  createdByUserId String?        @map("created_by_user_id") @db.Uuid
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  @@index([vacancyId])
+  @@index([clientId])
+  @@index([stage])
+  @@map("rec_candidates")
+}
+
+enum CandidateStage {
+  applied
+  screening
+  interview
+  offer
+  hired
+  rejected
+  withdrawn
+}

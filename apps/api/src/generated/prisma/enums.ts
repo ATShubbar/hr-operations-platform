@@ -206,3 +206,16 @@ export const VacancyStatus = {
 } as const
 
 export type VacancyStatus = (typeof VacancyStatus)[keyof typeof VacancyStatus]
+
+
+export const CandidateStage = {
+  applied: 'applied',
+  screening: 'screening',
+  interview: 'interview',
+  offer: 'offer',
+  hired: 'hired',
+  rejected: 'rejected',
+  withdrawn: 'withdrawn'
+} as const
+
+export type CandidateStage = (typeof CandidateStage)[keyof typeof CandidateStage]

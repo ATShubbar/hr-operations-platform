@@ -121,9 +121,15 @@ asymmetric dual-path resource (staff CRUD cross-client; client reps READ own via
 (`vacancy.approve`) advances the workflow (draft→open→filled/closed, workflow-validated
 → 400). The 5 `vacancy.*` perms are granted PER-ROLE, **not** via STAFF_BASE — GRO
 Officer + Finance are excluded from recruitment (matrix; asserted in a test). 6 routes
-in the isolation harness, 4 audited writes. Contracts add `vacancy.ts`. API suite **251/251**.
-**Next: REC-03 (`rec_candidates` staff-owned table + CandidatesService — candidate ↔
-vacancy, pipeline stage, CV doc link). AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
+in the isolation harness, 4 audited writes. Contracts add `vacancy.ts`. **REC-03:
+`rec_candidates` STAFF-OWNED table** (a candidate's PII/CV is consultancy data —
+clients get no access, so like task_tasks `app_client` is granted nothing) +
+`CandidatesService` (create validates the vacancy + **derives clientId from it**,
+audited `resource: 'candidate'`; list/getById/update). `stage` (applied→screening→
+interview→offer→hired/rejected/withdrawn) defaults `applied`; the transition workflow
+is REC-04. `vacancyId` + `cvDocumentId` are plain UUID refs, not FKs. 3 seed candidates.
+API suite **256/256**. **Next: REC-04 (candidates HTTP API — staff CRUD + pipeline
+stage-transition workflow). AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
 2026-07-24: ECS throttle + RDS InvalidAction persist)
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback

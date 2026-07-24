@@ -1213,7 +1213,7 @@ client) collects **candidates** through a pipeline (applied → screening → in
 |---|---|---|---|
 | REC-01 | `rec_vacancies` client-scoped table (client-**read**, staff-write) + `VacanciesService` (staff CRUD, audited) + seed | 2.5, 3.x | done ([evidence](evidence/recruitment/REC-01.md)) |
 | REC-02 | Vacancies HTTP API — staff CRUD + `vacancy.approve` status workflow (+ client-rep read-own dual-path) | REC-01 | done ([evidence](evidence/recruitment/REC-02.md)) |
-| REC-03 | `rec_candidates` staff-owned table + `CandidatesService` (candidate ↔ vacancy, pipeline stage, CV doc link) | REC-01, 3.2 | todo |
+| REC-03 | `rec_candidates` staff-owned table + `CandidatesService` (candidate ↔ vacancy, pipeline stage, CV doc link) | REC-01, 3.2 | done ([evidence](evidence/recruitment/REC-03.md)) |
 | REC-04 | Candidates HTTP API — CRUD + pipeline stage-transition workflow | REC-03 | todo |
 | REC-05 | Offer flow + **`CandidateHired` → Employees** domain event (PII-free; Employees `@OnEvent` creates the record) | REC-04, 3.1 | todo |
 | REC-06 | Recruitment web UI (vacancies + candidate pipeline board) | REC-02/04 | todo |
@@ -1251,6 +1251,25 @@ client) collects **candidates** through a pipeline (applied → screening → in
 - **Dependencies:** REC-01, CLIENT-01. **Risks:** `vacancy.read` granted per-role
   (GRO/Finance excluded — asserted in a test); the `/status` endpoint carries one
   permission (`vacancy.approve`) for the whole lifecycle, mirroring REQ-03's process.
+
+### REC-03 — `rec_candidates` table + CandidatesService (staff path)
+- **Objective:** the candidate foundation — a STAFF-OWNED `rec_candidates` table
+  (like task_tasks; clients get no access) + `CandidatesService` (audited CRUD).
+  No endpoints/permissions yet (mirrors REC-01 → REC-02).
+- **Files:** `schema.prisma` (Candidate + CandidateStage); migration
+  `*_recruitment_candidates` (app_staff-only grant + RLS); `recruitment/application/
+  candidates.service.ts` (NEW — create validates vacancy + derives clientId, audited;
+  list/getById/update); `domain/candidate.ts`; module + public-api (+CandidatesService);
+  `seed.ts` (seedCandidates); `test/recruitment-candidates.e2e-spec.ts`.
+- **DoD:** migration + `db:generate`; app_staff full CRUD, NO app_client grant, RLS
+  on (psql); create validates vacancy (unknown → error) + derives clientId + audits;
+  update audits; stage defaults `applied`; seed clean; suite + lint + typecheck +
+  build green.
+- **Evidence:** `evidence/recruitment/REC-03.md`.
+- **Dependencies:** REC-01, DOC-01 (cvDocumentId reference). **Risks:** `vacancyId`
+  (intra-module) + `cvDocumentId` (cross-module → documents) are plain UUID refs,
+  not FKs (matches task_tasks→requests); the pipeline stage-transition workflow is
+  deferred to REC-04 (stage stays `applied` on create).
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

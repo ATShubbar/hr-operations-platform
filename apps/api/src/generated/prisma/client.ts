@@ -114,3 +114,8 @@ export type Task = Prisma.TaskModel
  * 
  */
 export type Vacancy = Prisma.VacancyModel
+/**
+ * Model Candidate
+ * 
+ */
+export type Candidate = Prisma.CandidateModel

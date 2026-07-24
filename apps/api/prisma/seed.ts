@@ -338,6 +338,44 @@ async function seedVacancies(prisma: PrismaClient): Promise<number> {
   return vacancies.length;
 }
 
+async function seedCandidates(prisma: PrismaClient): Promise<number> {
+  // Candidates in the pipeline (REC-03), attached to the seeded OPEN vacancies.
+  // clientId mirrors the vacancy's client (staff-internal — no client access).
+  const candidates = [
+    {
+      id: 'd0000001-0000-4000-8000-000000000001',
+      clientId: SEED_CLIENT_A,
+      vacancyId: 'c0000001-0000-4000-8000-000000000001', // Senior Accountant (A)
+      nameAr: 'سالم القحطاني',
+      nameEn: 'Salem Alqahtani',
+      email: 'salem.q@example.com',
+      stage: 'screening' as const,
+    },
+    {
+      id: 'd0000001-0000-4000-8000-000000000002',
+      clientId: SEED_CLIENT_A,
+      vacancyId: 'c0000001-0000-4000-8000-000000000001', // Senior Accountant (A)
+      nameAr: 'نورة الحربي',
+      nameEn: 'Noura Alharbi',
+      email: 'noura.h@example.com',
+      stage: 'interview' as const,
+    },
+    {
+      id: 'd0000002-0000-4000-8000-000000000001',
+      clientId: SEED_CLIENT_B,
+      vacancyId: 'c0000002-0000-4000-8000-000000000001', // Civil Engineer (B)
+      nameAr: 'راجيش كومار',
+      nameEn: 'Rajesh Kumar',
+      email: 'rajesh.k@example.com',
+      stage: 'applied' as const,
+    },
+  ];
+  for (const { id, ...rest } of candidates) {
+    await prisma.candidate.upsert({ where: { id }, create: { id, ...rest }, update: rest });
+  }
+  return candidates.length;
+}
+
 async function main(): Promise<void> {
   if (process.env.NODE_ENV === 'production') {
     throw new Error('Refusing to seed: NODE_ENV=production. The seed is development-only.');
@@ -369,13 +407,14 @@ async function main(): Promise<void> {
     const requestCount = await seedRequests(prisma);
     const taskCount = await seedTasks(prisma);
     const vacancyCount = await seedVacancies(prisma);
+    const candidateCount = await seedCandidates(prisma);
 
     const rowCount = await prisma.coreScopeCheck.count({
       where: { note: { startsWith: 'seed:' } },
     });
     const roleCount = STAFF_ROLES.length + CLIENT_REP_ASSIGNMENTS.length;
     process.stdout.write(
-      `Seed complete: ${clientCount} client companies; ${employeeCount} employees; ${documentCount} documents; ${requestCount} requests; ${taskCount} tasks; ${vacancyCount} vacancies; ${rowCount} scope-check rows ` +
+      `Seed complete: ${clientCount} client companies; ${employeeCount} employees; ${documentCount} documents; ${requestCount} requests; ${taskCount} tasks; ${vacancyCount} vacancies; ${candidateCount} candidates; ${rowCount} scope-check rows ` +
         `across clients A (${SEED_CLIENT_A}) and B (${SEED_CLIENT_B}); ${userCount} auth users ` +
         `(${STAFF_ROLES.length} staff roles + ${CLIENT_REP_ASSIGNMENTS.length} client reps, ` +
         `${roleCount}/${STAFF_ROLES.length + CLIENT_ROLES.length} distinct roles covered).\n`,
