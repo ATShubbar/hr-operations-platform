@@ -293,6 +293,51 @@ async function seedTasks(prisma: PrismaClient): Promise<number> {
   return tasks.length;
 }
 
+async function seedVacancies(prisma: PrismaClient): Promise<number> {
+  // Open positions the consultancy is recruiting for (REC-01), one per seed
+  // client. Attributed to the seeded recruiter where present. Bilingual titles.
+  const recruiter = await prisma.authUser.findUnique({
+    where: { email: `staff-recruiter@${SEED_USER_DOMAIN}` },
+  });
+  const vacancies = [
+    {
+      id: 'c0000001-0000-4000-8000-000000000001',
+      clientId: SEED_CLIENT_A,
+      titleAr: 'محاسب أول',
+      titleEn: 'Senior Accountant',
+      description: 'Finance department hire for the Riyadh office.',
+      department: 'Finance',
+      headcount: 1,
+      status: 'open' as const,
+      openedByUserId: recruiter?.id ?? null,
+    },
+    {
+      id: 'c0000001-0000-4000-8000-000000000002',
+      clientId: SEED_CLIENT_A,
+      titleAr: 'مشرف موقع',
+      titleEn: 'Site Supervisor',
+      department: 'Operations',
+      headcount: 2,
+      status: 'draft' as const,
+      openedByUserId: recruiter?.id ?? null,
+    },
+    {
+      id: 'c0000002-0000-4000-8000-000000000001',
+      clientId: SEED_CLIENT_B,
+      titleAr: 'مهندس مدني',
+      titleEn: 'Civil Engineer',
+      department: 'Projects',
+      headcount: 1,
+      status: 'open' as const,
+      openedByUserId: recruiter?.id ?? null,
+    },
+  ];
+  for (const { id, ...rest } of vacancies) {
+    await prisma.vacancy.upsert({ where: { id }, create: { id, ...rest }, update: rest });
+  }
+  return vacancies.length;
+}
+
 async function main(): Promise<void> {
   if (process.env.NODE_ENV === 'production') {
     throw new Error('Refusing to seed: NODE_ENV=production. The seed is development-only.');
@@ -323,13 +368,14 @@ async function main(): Promise<void> {
     const userCount = await seedUsers(prisma);
     const requestCount = await seedRequests(prisma);
     const taskCount = await seedTasks(prisma);
+    const vacancyCount = await seedVacancies(prisma);
 
     const rowCount = await prisma.coreScopeCheck.count({
       where: { note: { startsWith: 'seed:' } },
     });
     const roleCount = STAFF_ROLES.length + CLIENT_REP_ASSIGNMENTS.length;
     process.stdout.write(
-      `Seed complete: ${clientCount} client companies; ${employeeCount} employees; ${documentCount} documents; ${requestCount} requests; ${taskCount} tasks; ${rowCount} scope-check rows ` +
+      `Seed complete: ${clientCount} client companies; ${employeeCount} employees; ${documentCount} documents; ${requestCount} requests; ${taskCount} tasks; ${vacancyCount} vacancies; ${rowCount} scope-check rows ` +
         `across clients A (${SEED_CLIENT_A}) and B (${SEED_CLIENT_B}); ${userCount} auth users ` +
         `(${STAFF_ROLES.length} staff roles + ${CLIENT_REP_ASSIGNMENTS.length} client reps, ` +
         `${roleCount}/${STAFF_ROLES.length + CLIENT_ROLES.length} distinct roles covered).\n`,

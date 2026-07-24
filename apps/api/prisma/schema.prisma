@@ -478,3 +478,33 @@ enum TaskPriority {
   normal
   high
 }
+
+// Recruitment (REC-01, ACTION-PLAN 4.1). A vacancy is an open position the
+// consultancy is recruiting for AT a client company — hence client-scoped
+// (clients may READ their own vacancies; only staff write them). Bilingual job
+// title matches official Saudi documents. Candidates (REC-03) attach to a vacancy.
+model Vacancy {
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clientId       String        @map("client_id") @db.Uuid
+  titleAr        String        @map("title_ar")
+  titleEn        String        @map("title_en")
+  description    String?
+  department     String?
+  headcount      Int           @default(1)
+  status         VacancyStatus @default(draft)
+  openedByUserId String?       @map("opened_by_user_id") @db.Uuid
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  @@index([clientId])
+  @@index([status])
+  @@map("rec_vacancies")
+}
+
+enum VacancyStatus {
+  draft
+  open
+  filled
+  closed
+  cancelled
+}

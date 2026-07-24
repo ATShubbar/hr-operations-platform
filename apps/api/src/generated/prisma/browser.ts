@@ -87,3 +87,8 @@ export type Request = Prisma.RequestModel
  * 
  */
 export type Task = Prisma.TaskModel
+/**
+ * Model Vacancy
+ * 
+ */
+export type Vacancy = Prisma.VacancyModel

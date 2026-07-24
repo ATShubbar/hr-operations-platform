@@ -195,3 +195,14 @@ export const TaskPriority = {
 } as const
 
 export type TaskPriority = (typeof TaskPriority)[keyof typeof TaskPriority]
+
+
+export const VacancyStatus = {
+  draft: 'draft',
+  open: 'open',
+  filled: 'filled',
+  closed: 'closed',
+  cancelled: 'cancelled'
+} as const
+
+export type VacancyStatus = (typeof VacancyStatus)[keyof typeof VacancyStatus]

@@ -1202,6 +1202,39 @@ production". Requests rep-access already shipped (REQ-02); the portal surfaces i
 
 **Client Portal epic (5.1) COMPLETE — PORTAL-01..04.**
 
+## Priority 4 — Recruitment epic (ACTION-PLAN 4.1, architecture.md module 5)
+
+The consultancy recruits FOR client companies: a **vacancy** (open position at a
+client) collects **candidates** through a pipeline (applied → screening → interview
+→ offer → hired/rejected); a hired candidate becomes an **Employee** via a PII-free
+`CandidateHired` domain event (the 4th ADR-004 flow).
+
+| Task | Objective | Deps | Status |
+|---|---|---|---|
+| REC-01 | `rec_vacancies` client-scoped table (client-**read**, staff-write) + `VacanciesService` (staff CRUD, audited) + seed | 2.5, 3.x | done ([evidence](evidence/recruitment/REC-01.md)) |
+| REC-02 | Vacancies HTTP API — staff CRUD + `vacancy.approve` status workflow (+ client-rep read-own dual-path) | REC-01 | todo |
+| REC-03 | `rec_candidates` staff-owned table + `CandidatesService` (candidate ↔ vacancy, pipeline stage, CV doc link) | REC-01, 3.2 | todo |
+| REC-04 | Candidates HTTP API — CRUD + pipeline stage-transition workflow | REC-03 | todo |
+| REC-05 | Offer flow + **`CandidateHired` → Employees** domain event (PII-free; Employees `@OnEvent` creates the record) | REC-04, 3.1 | todo |
+| REC-06 | Recruitment web UI (vacancies + candidate pipeline board) | REC-02/04 | todo |
+
+### REC-01 — `rec_vacancies` table + VacanciesService (staff path) + seed
+- **Objective:** the vacancy foundation — a client-scoped `rec_vacancies` table
+  (ADR-001 checklist) + staff-path `VacanciesService` (audited CRUD) + seed. No
+  endpoints/permissions yet (mirrors REQ-01 → REQ-02).
+- **Files:** `schema.prisma` (Vacancy + VacancyStatus); migration
+  `*_recruitment_vacancies` (table + grants + RLS); `modules/recruitment/{module,
+  public-api, application/vacancies.service, domain/vacancy}`; `app.module.ts`;
+  `seed.ts` (seedVacancies); `test/recruitment-vacancies.e2e-spec.ts`.
+- **DoD:** migration applies + `db:generate`; RLS + both policies, `app_client`
+  **SELECT only** (verified via psql); create/update audited in one tx
+  (`resource: 'vacancy'`); seed clean; suite + lint + typecheck + build green.
+- **Evidence:** `evidence/recruitment/REC-01.md`.
+- **Dependencies:** CLIENT-01, Audit. **Risks:** the one deviation from the REQ-01
+  template is the SELECT-only client grant (clients read but never write vacancies)
+  — deliberate, per the matrix; no permissions declared yet (catalog-coverage
+  requires a permission to be USED by an endpoint in the same commit).
+
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 
 | Epic | Source | Gate |

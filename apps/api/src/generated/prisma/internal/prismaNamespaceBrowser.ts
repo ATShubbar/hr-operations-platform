@@ -64,7 +64,8 @@ export const ModelName = {
   ExpiryAlert: 'ExpiryAlert',
   NotificationPreference: 'NotificationPreference',
   Request: 'Request',
-  Task: 'Task'
+  Task: 'Task',
+  Vacancy: 'Vacancy'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -303,6 +304,23 @@ export const TaskScalarFieldEnum = {
 } as const
 
 export type TaskScalarFieldEnum = (typeof TaskScalarFieldEnum)[keyof typeof TaskScalarFieldEnum]
+
+
+export const VacancyScalarFieldEnum = {
+  id: 'id',
+  clientId: 'clientId',
+  titleAr: 'titleAr',
+  titleEn: 'titleEn',
+  description: 'description',
+  department: 'department',
+  headcount: 'headcount',
+  status: 'status',
+  openedByUserId: 'openedByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type VacancyScalarFieldEnum = (typeof VacancyScalarFieldEnum)[keyof typeof VacancyScalarFieldEnum]
 
 
 export const SortOrder = {

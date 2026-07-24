@@ -111,7 +111,14 @@ login redirect fixed so reps land on `/portal/company` (was the staff `/clients`
 they can't use), and flag-off → a calm "not enabled" state. **Eleven product screens**
 now (the ten staff + the client portal). Verified live in the browser (ar RTL + en),
 redaction confirmed at the payload, download → presigned 300s per-client URL; web
-typecheck + lint green. **Next: pick the next epic. AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
+typecheck + lint green. **Priority 4 — Recruitment epic (4.1) STARTED: REC-01 done** —
+`rec_vacancies` client-scoped table (a vacancy is an open position AT a client; clients
+**read** their own, staff write — so `app_client` gets **SELECT only**, the one
+deviation from the REQ-01 template) + staff-path `VacanciesService` (audited CRUD,
+`resource: 'vacancy'`) + 3 seed vacancies. `modules/recruitment` registered; no HTTP
+surface/permissions yet (land with REC-02, mirroring REQ-01→REQ-02). API suite **242/242**.
+**Next: REC-02 (vacancies HTTP API — staff CRUD + `vacancy.approve` workflow + client-rep
+read-own). AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
 2026-07-24: ECS throttle + RDS InvalidAction persist)
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback
