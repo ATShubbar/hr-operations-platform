@@ -272,7 +272,14 @@ export default function EmployeesPage() {
                 onValueChange={(v) => setForm({ ...form, clientId: v ?? '' })}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder={t('selectClient')} />
+                  {/* Without a render function this showed the client's UUID. */}
+                  <SelectValue placeholder={t('selectClient')}>
+                    {(v) => {
+                      const c = clients.find((x) => x.id === v);
+                      if (!c) return t('selectClient');
+                      return locale === 'ar' ? c.name.ar : c.name.en;
+                    }}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {clients.map((c) => (
@@ -320,7 +327,9 @@ export default function EmployeesPage() {
                   onValueChange={(v) => setForm({ ...form, contractType: v ?? '' })}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue />
+                    <SelectValue>
+                      {(v) => (v ? t(CONTRACT_TYPE_KEY[v as keyof typeof CONTRACT_TYPE_KEY]) : '')}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {CONTRACT_TYPE_VALUES.map((v) => (
@@ -335,7 +344,9 @@ export default function EmployeesPage() {
                 <Label>{t('fieldGender')}</Label>
                 <Select value={form.gender} onValueChange={(v) => setForm({ ...form, gender: v ?? '' })}>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder={t('none')} />
+                    <SelectValue placeholder={t('none')}>
+                      {(v) => (v ? t(GENDER_KEY[v as keyof typeof GENDER_KEY]) : t('none'))}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {GENDER_VALUES.map((v) => (
@@ -353,7 +364,9 @@ export default function EmployeesPage() {
                   onValueChange={(v) => setForm({ ...form, employmentStatus: v ?? '' })}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue />
+                    <SelectValue>
+                      {(v) => (v ? t(EMPLOYMENT_STATUS_KEY[v as keyof typeof EMPLOYMENT_STATUS_KEY]) : '')}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {EMPLOYMENT_STATUS_VALUES.map((v) => (

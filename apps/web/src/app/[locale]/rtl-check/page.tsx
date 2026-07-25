@@ -67,7 +67,9 @@ export default function RtlCheckPage() {
         <Label>{t('selectLabel')}</Label>
         <Select>
           <SelectTrigger className="w-64">
-            <SelectValue placeholder={t('selectPlaceholder')} />
+            <SelectValue placeholder={t('selectPlaceholder')}>
+              {(v) => (v === 'resident' ? t('selectOption2') : t('selectOption1'))}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="saudi">{t('selectOption1')}</SelectItem>

@@ -520,9 +520,32 @@ already consistently Latin (457 vs 0) — none touched. What was real: `TextFiel
 **`dir?: 'rtl'`**, so an identifier field could not be marked LTR even in principle, and eight
 government-identifier inputs (iqama/national-id/border/passport/work-permit/GOSI/Absher/IBAN)
 inherited the page's RTL; the read-only `mono` identifier display now wraps values in
-`<bdi dir="ltr">`. Also corrected the Arabic-Indic digits I introduced in the UX-07 seed. Next:
-UX-09 (SelectValue leak + unified workflow controls), UX-10 (staff-user directory — the gap
-behind Tasks showing a truncated UUID and Today having no name to greet), or UX-11 (a11y pass).
+`<bdi dir="ltr">`. Also corrected the Arabic-Indic digits I introduced in the UX-07 seed. 
+**UX-09 done — no more enum keys in the UI, and one workflow control.** Base UI's
+`Select.Value` renders the RAW VALUE without a render function, so on `/ar/employees` the
+create form's triggers read **`unlimited`** and **`active`** while the options below them were
+correctly Arabic. Nine sites fixed — the highest-leverage being the **shared `SelectField`** on
+employee detail, which already received `labelFor` and simply wasn't using it for the trigger,
+so every govdata/salary dialog leaked. New **`hr/no-bare-select-value`** lint rule (alongside
+`rtl-safe-classes`/`no-brand-in-status`) — and on its first run it **caught two sites I'd missed
+by reading**, one being the client picker that rendered a raw **UUID** once selected; proven
+both ways (deliberate violation → 1 error, restored → clean). `/ar/calendar` also leaked raw
+statuses AND used the GRO process TYPE as the title (Today's UX-04 bug, second occurrence) —
+that second consumer justified extracting **`lib/view-item-labels.ts`**, now used by both;
+agenda scan for raw enum tokens returns zero. **Workflow control:** four screens each had their
+own affordance for the same decision. New `components/ui/status-action.tsx` owns exactly
+"given the current status, offer the legal next ones, translated" and NOT what happens after.
+**Requests lost its dialog** (it held only a status Select plus the title/status the row already
+showed — three clicks for one choice); **GRO kept its** because completing an expiry-bearing
+process must capture the resulting expiry (GRO-03), but the row now picks the status and the
+dialog asks for ONLY that field. Verified per role: hr_officer applied `مفتوح → قيد المعالجة`
+in one click; a `submitted` GRO process correctly offered no "complete" (the workflow routes via
+`approved`); completing an approved work-permit renewal opened the one-field dialog and saved.
+Unification also exposed that the same control said two different things about terminal state
+(vacancies/GRO `terminal: '—'`, requests/candidates no key) — now one shared `states.terminal`.
+API 336/336, no API change. Next: UX-10 (staff-user directory, client-users admin, per-client
+settings — the gap behind Tasks showing a truncated UUID and Today having no name to greet) or
+UX-11 (accessibility pass).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

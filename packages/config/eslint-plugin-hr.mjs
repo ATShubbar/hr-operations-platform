@@ -155,10 +155,52 @@ const noBrandInStatus = {
   },
 };
 
+// Base UI's `Select.Value` renders the RAW VALUE when it has no render function
+// (UX-09). On an enum-backed select that means the trigger shows `unlimited` or
+// `not_started` while the options below it are correctly translated — the
+// database's vocabulary, leaked to the user, on the app's default locale.
+//
+// Measured before this rule existed: the employees create dialog showed contract
+// type as `unlimited` and employment status as `active`, in Arabic.
+//
+// A bare <SelectValue /> is legitimate ONLY when the values are already
+// human-readable and locale-independent — which in this codebase they never are,
+// because the options are always either enum keys or ids. So the rule requires a
+// child render function and points at the fix.
+const noBareSelectValue = {
+  meta: {
+    type: 'problem',
+    messages: {
+      bareSelectValue:
+        'SelectValue renders the raw value with no children — an enum key or id will be shown to the user. Pass a render function: <SelectValue>{(v) => label(v)}</SelectValue>.',
+    },
+    schema: [],
+  },
+  create(context) {
+    return {
+      JSXElement(node) {
+        const name = node.openingElement?.name;
+        if (name?.type !== 'JSXIdentifier' || name.name !== 'SelectValue') return;
+        // Self-closing, or opened and closed with nothing meaningful between.
+        const hasRenderChild = node.children.some(
+          (c) =>
+            c.type === 'JSXExpressionContainer' &&
+            (c.expression.type === 'ArrowFunctionExpression' ||
+              c.expression.type === 'FunctionExpression'),
+        );
+        if (!hasRenderChild) {
+          context.report({ node: node.openingElement, messageId: 'bareSelectValue' });
+        }
+      },
+    };
+  },
+};
+
 export default {
   rules: {
     'module-boundaries': moduleBoundaries,
     'rtl-safe-classes': rtlSafeClasses,
     'no-brand-in-status': noBrandInStatus,
+    'no-bare-select-value': noBareSelectValue,
   },
 };

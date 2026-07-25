@@ -247,7 +247,9 @@ export default function ClientsPage() {
                 onValueChange={(v) => setForm({ ...form, status: v as Status })}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue />
+                  <SelectValue>
+                    {(v) => (v === 'inactive' ? t('statusInactive') : t('statusActive'))}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="active">{t('statusActive')}</SelectItem>

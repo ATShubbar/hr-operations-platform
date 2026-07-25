@@ -12,6 +12,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { LoadError } from '@/components/ui/load-state';
 import { Skeleton, SkeletonRegion } from '@/components/ui/skeleton';
 import { StatusPill, type StatusTone } from '@/components/ui/status-pill';
+import { useViewItemLabels } from '@/lib/view-item-labels';
 
 // "Today" (UX-04) — the home screen the product never had.
 //
@@ -81,14 +82,8 @@ export default function TodayPage() {
   // `loading` key silently announced "calendar.loading" to screen readers when
   // the namespace happened not to define one (UX-06).
   const tStates = useTranslations('states');
-  // /calendar/view returns raw API enums — and for GRO items it uses the process
-  // TYPE as the title, so an untranslated `iqama_renewal` would appear as a
-  // headline on the app's most-read screen. Each domain screen already owns a
-  // label map, so reuse those rather than inventing a third vocabulary.
-  const tGro = useTranslations('gro');
-  const tReq = useTranslations('requests');
-  const tTask = useTranslations('tasks');
-  const tDoc = useTranslations('documents');
+  // Shared with the calendar agenda, which had the same raw-enum bug (UX-09).
+  const { statusLabel, titleFor } = useViewItemLabels();
   const locale = useLocale() as Locale;
   const router = useRouter();
 
@@ -97,39 +92,6 @@ export default function TodayPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Enum → label, per kind. Falls back to the raw value so a new server-side enum
-  // shows up as itself rather than crashing the page.
-  const label = useCallback(
-    (kind: Kind, value: string | null): string | null => {
-      if (!value) return null;
-      const has = (tt: (k: string) => string, key: string) => {
-        try {
-          return tt(key);
-        } catch {
-          return value;
-        }
-      };
-      if (kind === 'gro') return has(tGro as never, `status.${value}`);
-      if (kind === 'request') return has(tReq as never, `status.${value}`);
-      if (kind === 'task') return has(tTask as never, `status.${value}`);
-      // For a document the "status" slot carries its CATEGORY (iqama, passport…),
-      // which is the useful thing to show next to an expiry.
-      if (kind === 'document') return has(tDoc as never, `category.${value}`);
-      return value;
-    },
-    [tGro, tReq, tTask, tDoc],
-  );
-
-  const groTitle = useCallback(
-    (raw: string): string => {
-      try {
-        return (tGro as never as (k: string) => string)(`type.${raw}`);
-      } catch {
-        return raw;
-      }
-    },
-    [tGro],
-  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -150,7 +112,7 @@ export default function TodayPage() {
           id: `${it.kind}-${it.id}`,
           kind: it.kind as Kind,
           // GRO's "title" from the view IS the process type enum.
-          title: it.kind === 'gro' ? groTitle(it.title) : it.title,
+          title: titleFor(it.kind as Kind, it.title),
           when: it.startAt,
           status: it.status,
           href: HREF[it.kind as Kind] ?? '/today',
@@ -193,7 +155,7 @@ export default function TodayPage() {
     } finally {
       setLoading(false);
     }
-  }, [router, t, groTitle]);
+  }, [router, t, titleFor]);
 
   useEffect(() => {
     void load();
@@ -302,8 +264,8 @@ export default function TodayPage() {
                         <span className="block truncate text-sm font-medium">{item.title}</span>
                         <span className="block text-xs text-muted-foreground">
                           {t(`kind.${item.kind}`)}
-                          {label(item.kind, item.status)
-                            ? ` · ${label(item.kind, item.status)}`
+                          {statusLabel(item.kind, item.status)
+                            ? ` · ${statusLabel(item.kind, item.status)}`
                             : ''}
                         </span>
                       </span>

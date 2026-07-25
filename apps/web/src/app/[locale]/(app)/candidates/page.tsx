@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { LoadError, NoAccess } from '@/components/ui/load-state';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton, SkeletonRegion } from '@/components/ui/skeleton';
+import { StatusAction } from '@/components/ui/status-action';
 import {
   Dialog,
   DialogContent,
@@ -187,18 +188,15 @@ export default function CandidatesPage() {
       {c.email && <div className="mt-1 text-xs text-muted-foreground">{c.email}</div>}
       {canAdvance && NEXT[c.stage].length > 0 && (
         <div className="mt-2">
-          <Select value="" onValueChange={(s) => s && void advance(c, s as CandidateStage)}>
-            <SelectTrigger className="h-8 w-full">
-              <SelectValue placeholder={t('advance')}>{() => t('advance')}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {NEXT[c.stage].map((s) => (
-                <SelectItem key={s} value={s}>
-                  {s === 'hired' ? t('actionHire') : t(`stage.${s}`)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <StatusAction
+            next={NEXT[c.stage]}
+            onSelect={(s) => void advance(c, s)}
+            // "Hire" rather than "hired": this move creates an employee record
+            // (REC-05), so it reads as the action it is.
+            label={(s) => (s === 'hired' ? t('actionHire') : t(`stage.${s}`))}
+            placeholder={t('advance')}
+            className="w-full"
+          />
         </div>
       )}
     </div>

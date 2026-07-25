@@ -14,6 +14,7 @@ import { dualDate, type Locale } from '@/lib/employee-format';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LoadError, NoAccess } from '@/components/ui/load-state';
+import { useViewItemLabels, type ViewItemKind } from '@/lib/view-item-labels';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton, SkeletonRegion } from '@/components/ui/skeleton';
 import {
@@ -63,6 +64,7 @@ export default function CalendarPage() {
   // `loading` key silently announced "calendar.loading" to screen readers when
   // the namespace happened not to define one (UX-06).
   const tStates = useTranslations('states');
+  const { statusLabel, titleFor } = useViewItemLabels();
   const locale = useLocale() as Locale;
   const router = useRouter();
   const canCreate = useCan('calendar.create');
@@ -250,10 +252,15 @@ export default function CalendarPage() {
                   onClick={() => void openEdit(it)}
                 >
                   <Badge variant={KIND_VARIANT[it.kind] ?? 'secondary'}>{t(`kind.${it.kind}`)}</Badge>
-                  <span className="font-medium">{it.title}</span>
+                  {/* /calendar/view returns raw enums, and uses the GRO process
+                      TYPE as the title — so this row used to read
+                      "iqama_renewal … · open" in Arabic (UX-09). */}
+                  <span className="font-medium">{titleFor(it.kind as ViewItemKind, it.title)}</span>
                   <span className="ms-auto whitespace-nowrap text-xs text-muted-foreground">
                     {it.allDay ? t('due') : timeLabel(it.startAt, it.allDay)}
-                    {it.status ? ` · ${it.status}` : ''}
+                    {statusLabel(it.kind as ViewItemKind, it.status)
+                      ? ` · ${statusLabel(it.kind as ViewItemKind, it.status)}`
+                      : ''}
                   </span>
                 </li>
               ))}

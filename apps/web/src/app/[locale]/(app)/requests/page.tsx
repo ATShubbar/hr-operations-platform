@@ -33,6 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { StatusAction } from '@/components/ui/status-action';
 import { StatusPill } from '@/components/ui/status-pill';
 import { toneFor } from '@/lib/status-tone';
 
@@ -95,10 +96,6 @@ export default function RequestsPage() {
   const [formError, setFormError] = useState('');
 
   // process dialog
-  const [procTarget, setProcTarget] = useState<RequestResponse | null>(null);
-  const [procNext, setProcNext] = useState<RequestStatus | ''>('');
-  const [procSaving, setProcSaving] = useState(false);
-  const [procError, setProcError] = useState('');
 
   const clientName = (id: string) => {
     const c = clients.find((x) => x.id === id);
@@ -184,29 +181,22 @@ export default function RequestsPage() {
     }
   }
 
-  function openProcess(r: RequestResponse) {
-    setProcTarget(r);
-    setProcNext(NEXT[r.status][0] ?? '');
-    setProcError('');
-  }
-
-  async function process(e: FormEvent) {
-    e.preventDefault();
-    if (!procTarget || !procNext) return;
-    setProcSaving(true);
-    setProcError('');
+  // Applied straight from the row's status menu (UX-09). The dialog this used to
+  // open contained ONLY a next-status Select — the row already shows the title
+  // and current status the dialog was repeating, so it was three clicks to
+  // deliver one choice. A failure surfaces in the page's error banner, which
+  // keeps the table on screen (UX-06).
+  async function processRequest(r: RequestResponse, next: RequestStatus) {
+    setError('');
     try {
-      await apiFetch(`/requests/${procTarget.id}/process`, {
+      await apiFetch(`/requests/${r.id}/process`, {
         method: 'POST',
-        body: JSON.stringify({ status: procNext }),
+        body: JSON.stringify({ status: next }),
       });
-      setProcTarget(null);
       await load();
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
-      setProcError(t('saveError'));
-    } finally {
-      setProcSaving(false);
+      setError(t('saveError'));
     }
   }
 
@@ -340,11 +330,12 @@ export default function RequestsPage() {
           canProcess
             ? (r) => (
                 <div className="flex justify-end">
-                  {NEXT[r.status].length > 0 && (
-                    <Button variant="outline" size="sm" onClick={() => openProcess(r)}>
-                      {t('process')}
-                    </Button>
-                  )}
+                  <StatusAction
+                    next={NEXT[r.status]}
+                    onSelect={(s) => void processRequest(r, s)}
+                    label={(s) => t(`status.${s}`)}
+                    placeholder={t('process')}
+                  />
                 </div>
               )
             : undefined
@@ -457,45 +448,6 @@ export default function RequestsPage() {
       </Dialog>
 
       {/* Process dialog */}
-      <Dialog open={procTarget !== null} onOpenChange={(o) => !o && setProcTarget(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('processTitle')}</DialogTitle>
-          </DialogHeader>
-          {procTarget && (
-            <form onSubmit={process} className="space-y-4">
-              <div className="text-sm font-medium">{procTarget.title}</div>
-              <div className="text-sm text-muted-foreground">
-                {t('currentStatus')}: {t(`status.${procTarget.status}`)}
-              </div>
-              <div className="space-y-1.5">
-                <Label>{t('nextStatus')}</Label>
-                <Select value={procNext} onValueChange={(v) => setProcNext((v as RequestStatus) ?? '')}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue>{(v) => (v ? t(`status.${String(v)}`) : '')}</SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {NEXT[procTarget.status].map((s) => (
-                      <SelectItem key={s} value={s}>
-                        {t(`status.${s}`)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              {procError && <p className="text-sm text-destructive">{procError}</p>}
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setProcTarget(null)}>
-                  {t('cancel')}
-                </Button>
-                <Button type="submit" disabled={procSaving || !procNext}>
-                  {procSaving ? t('saving') : t('submit')}
-                </Button>
-              </DialogFooter>
-            </form>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

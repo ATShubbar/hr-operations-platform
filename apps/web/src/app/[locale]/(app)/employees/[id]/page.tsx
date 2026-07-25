@@ -493,7 +493,11 @@ function SelectField<T extends string>({
       <Label>{label}</Label>
       <Select value={value} onValueChange={(v) => onChange(v ?? '')}>
         <SelectTrigger className="w-full">
-          <SelectValue />
+          {/* Base UI renders the RAW VALUE when Select.Value has no render
+              function — so this trigger showed `unlimited` and `not_started`
+              while the options below it were correctly translated. `labelFor` was
+              already here; it just was not being used for the trigger (UX-09). */}
+          <SelectValue>{(v) => (v ? labelFor(v as T) : '')}</SelectValue>
         </SelectTrigger>
         <SelectContent>
           {options.map((v) => (

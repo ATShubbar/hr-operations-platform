@@ -35,6 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { StatusAction } from '@/components/ui/status-action';
 import { StatusPill } from '@/components/ui/status-pill';
 import { toneFor } from '@/lib/status-tone';
 
@@ -206,39 +207,58 @@ export default function GroPage() {
     }
   }
 
-  function openStatus(p: GroProcessResponse) {
-    setStTarget(p);
-    setStNext(NEXT[p.status][0] ?? '');
-    setStExpiry(p.resultingExpiry ?? '');
+  // The status is chosen in the row (UX-09). Completing an expiry-bearing process
+  // is the ONE transition that needs another field — GRO-03 writes the resulting
+  // expiry back to the employee's govdata — so only that case opens a dialog, and
+  // the dialog now holds exactly that one field instead of re-asking for the
+  // status the user already picked.
+  function chooseStatus(p: GroProcessResponse, next: GroProcessStatus) {
     setStError('');
+    if (next === 'completed' && EXPIRY_TYPES.has(p.type)) {
+      setStTarget(p);
+      setStNext(next);
+      setStExpiry(p.resultingExpiry ?? '');
+      return;
+    }
+    void applyStatus(p, next, null);
   }
 
-  async function submitStatus(e: FormEvent) {
-    e.preventDefault();
-    if (!stTarget || !stNext) return;
+  async function applyStatus(
+    p: GroProcessResponse,
+    next: GroProcessStatus,
+    resultingExpiry: string | null,
+  ) {
     setStSaving(true);
     setStError('');
+    setError('');
     try {
-      // Completing an expiry-type process: capture the resulting expiry first, so
-      // the status change (GRO-03) writes it back to the employee's govdata.
-      if (stNext === 'completed' && EXPIRY_TYPES.has(stTarget.type) && stExpiry) {
-        await apiFetch(`/gro-processes/${stTarget.id}`, {
+      if (resultingExpiry) {
+        await apiFetch(`/gro-processes/${p.id}`, {
           method: 'PATCH',
-          body: JSON.stringify({ resultingExpiry: stExpiry }),
+          body: JSON.stringify({ resultingExpiry }),
         });
       }
-      await apiFetch(`/gro-processes/${stTarget.id}/status`, {
+      await apiFetch(`/gro-processes/${p.id}/status`, {
         method: 'POST',
-        body: JSON.stringify({ status: stNext }),
+        body: JSON.stringify({ status: next }),
       });
       setStTarget(null);
       await load();
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
-      setStError(t('saveError'));
+      // Inside the dialog it belongs beside the submit; applied from the row it
+      // belongs in the page banner.
+      if (stTarget) setStError(t('saveError'));
+      else setError(t('saveError'));
     } finally {
       setStSaving(false);
     }
+  }
+
+  async function submitStatus(e: FormEvent) {
+    e.preventDefault();
+    if (!stTarget || !stNext) return;
+    await applyStatus(stTarget, stNext, stExpiry || null);
   }
 
   const promptExpiry = !!stTarget && stNext === 'completed' && EXPIRY_TYPES.has(stTarget.type);
@@ -383,9 +403,12 @@ export default function GroPage() {
             ? (p) => (
                 <div className="flex justify-end">
                   {NEXT[p.status].length > 0 ? (
-                    <Button variant="outline" size="sm" onClick={() => openStatus(p)}>
-                      {t('changeStatus')}
-                    </Button>
+                    <StatusAction
+                      next={NEXT[p.status]}
+                      onSelect={(next) => chooseStatus(p, next)}
+                      label={(next) => t(`status.${next}`)}
+                      placeholder={t('changeStatus')}
+                    />
                   ) : (
                     <span className="text-sm text-muted-foreground">{t('terminal')}</span>
                   )}
@@ -464,21 +487,17 @@ export default function GroPage() {
             <DialogTitle>{t('statusTitle')}</DialogTitle>
           </DialogHeader>
           <form onSubmit={submitStatus} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label>{t('fieldNextStatus')}</Label>
-              <Select value={stNext} onValueChange={(v) => setStNext((v as GroProcessStatus) ?? '')}>
-                <SelectTrigger className="w-full">
-                  <SelectValue>{(v) => (v ? t(`status.${String(v)}`) : '')}</SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {(stTarget ? NEXT[stTarget.status] : []).map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {t(`status.${s}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {/* The status was already chosen in the row, so the dialog states it
+                rather than asking again — it exists only to collect the expiry. */}
+            {stTarget && (
+              <div className="rounded-lg border bg-muted/30 px-3 py-2 text-sm">
+                <span className="font-medium">{empName(stTarget.employeeId)}</span>
+                {' · '}
+                {t(`type.${stTarget.type}`)}
+                {' → '}
+                {stNext ? t(`status.${stNext}`) : ''}
+              </div>
+            )}
             {promptExpiry && (
               <div className="space-y-1.5">
                 <Label htmlFor="g-exp">{t('fieldResultingExpiry')}</Label>

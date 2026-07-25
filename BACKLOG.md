@@ -1730,7 +1730,7 @@ results** for the most common typing variants (`احمد` does not match `أحم
 | UX-06 | States everywhere: skeletons, empty, error-with-retry, 403 | UX-02 | **done** |
 | UX-07 | Realistic demo data (seed shows 0 expiring / 0 overdue today — the dashboard can't be evaluated) | — | **done** |
 | UX-08 | Arabic typeface + bidi isolation polish | UX-03b | **done** |
-| UX-09 | Fix the `SelectValue` raw-value leak; unify workflow controls | UX-02 | planned |
+| UX-09 | Fix the `SelectValue` raw-value leak; unify workflow controls | UX-02 | **done** |
 | UX-10 | Missing surfaces: staff-user directory, client-users admin, per-client settings | UX-03 | planned |
 | UX-11 | Accessibility pass (active nav state, keyboard agenda rows, popover semantics, heading outline) | UX-02 | planned |
 
@@ -1800,6 +1800,31 @@ results** for the most common typing variants (`احمد` does not match `أحم
   336/336 passing then exits non-zero on the documented ioredis teardown noise;
   reproduced 3/3 under turbo's concurrency) — filed as a follow-up, kept separate
   from the supertest port-collision issue.
+
+### UX-09 — the raw-value leak + one workflow control
+- **Objective:** stop showing users the database's vocabulary, and make "advance this
+  item" look like one thing rather than four.
+- **Files:** NEW `components/ui/status-action.tsx`, `lib/view-item-labels.ts`;
+  `packages/config/eslint-plugin-hr.mjs` + `apps/web/eslint.config.mjs`
+  (`hr/no-bare-select-value`); 9 leak sites; calendar/today/requests/gro/vacancies/
+  candidates; `messages/{en,ar}.json` (`states.terminal`).
+- **DoD:** zero bare `<SelectValue />`; lint rule fires on a deliberate violation and
+  passes clean; every trigger shows a translated label (verified live: `unlimited` → `غير
+  محدد`, `active` → `نشط`); `/ar/calendar` scan for raw enum tokens returns zero; the four
+  workflow screens share one control, verified per role; lint/typecheck/build 15/15;
+  API 336/336, no API change.
+- **Evidence:** `evidence/ux/UX-09.md`.
+- **Dependencies:** UX-02, UX-03c. **Risks/decisions:** **The lint rule caught two sites I
+  missed by reading**, one being the client picker that rendered a raw UUID once selected —
+  which is the argument for the rule over review. **Requests lost its dialog** because the
+  dialog contained only a status Select plus the title and status the row already showed —
+  three clicks to deliver one choice. **GRO kept its dialog** because completing an
+  expiry-bearing process must capture the resulting expiry (GRO-03); the row now picks the
+  status and the dialog asks for ONLY that field instead of re-asking. The unification also
+  exposed that the same control said two different things about the same state — vacancies
+  and GRO passed `terminal: '—'` while requests/candidates had no key — now one shared
+  `states.terminal` that says why there is no menu. Extracting `view-item-labels` was
+  justified by a SECOND consumer (calendar had Today's UX-04 bug), not anticipated.
 
 ### UX-08 — the Arabic typeface (+ the bidi work that was justified)
 - **Objective:** the app loaded Inter and nothing else, and Inter has NO ARABIC GLYPHS —

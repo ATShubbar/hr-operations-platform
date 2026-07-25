@@ -916,6 +916,7 @@
     "forbiddenTitle": "You do not have access",
     "forbiddenHint": "Ask an administrator if you need access to this screen.",
     "forbiddenWithCapability": "This screen needs the <cap>{capability}</cap> permission. Ask an administrator to grant it.",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "terminal": "No further steps"
   }
 }

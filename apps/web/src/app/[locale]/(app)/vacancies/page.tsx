@@ -32,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { StatusAction } from '@/components/ui/status-action';
 import { StatusPill } from '@/components/ui/status-pill';
 import { toneFor } from '@/lib/status-tone';
 
@@ -292,27 +293,12 @@ export default function VacanciesPage() {
           canApprove
             ? (v) => (
                 <div className="flex justify-end">
-                  {NEXT[v.status].length > 0 ? (
-                    <Select
-                      value=""
-                      onValueChange={(s) => s && void changeStatus(v, s as VacancyStatus)}
-                    >
-                      <SelectTrigger className="w-36">
-                        <SelectValue placeholder={t('changeStatus')}>
-                          {() => t('changeStatus')}
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {NEXT[v.status].map((s) => (
-                          <SelectItem key={s} value={s}>
-                            {t(`status.${s}`)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <span className="text-sm text-muted-foreground">{t('terminal')}</span>
-                  )}
+                  <StatusAction
+                    next={NEXT[v.status]}
+                    onSelect={(s) => void changeStatus(v, s)}
+                    label={(s) => t(`status.${s}`)}
+                    placeholder={t('changeStatus')}
+                  />
                 </div>
               )
             : undefined
