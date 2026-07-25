@@ -222,9 +222,16 @@ google-calendar`, staff-only). The service SENDS via the adapter first (which no
 the payload it built — the sole builder), then persists + audits; the stored payload is
 the adapter's, never rebuilt, so the service can't widen what leaves. Perm granted to
 Company Admin + Recruiter + HR/GRO Officers (Finance/Read-Only/clients excluded). 5
-isolation routes, 3 audited writes. Contracts add `integration.ts`. API suite **312/312**.
-**Next: GCAL-03 (web UI — schedule + inspect Google invitations, showing exactly what
-would leave). AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
+isolation routes, 3 audited writes. Contracts add `integration.ts`. API suite **312/312**. **GCAL-03: the invitations web UI** —
+an `(app)/integrations` console (schedule dialog + a table) with a **"What leaves the
+system"** transparency view showing exactly the whitelisted payload sent (title/description/
+start/end/location/attendees/external-id, nothing else) + a guardrail banner; nav gated on
+`integration.google-calendar`. Verified live: scheduled an interview through the UI, the
+transparency dialog showed `Interview — <name> — <role>` + `Ref: <code>` only, persisted
+end-to-end, both locales (ar RTL). **Google Calendar epic (5.3) COMPLETE — GCAL-01..03.**
+Sixteen product screens. **Priorities 2–4 + Client Portal (5.1) + Calendar (5.2) + Google
+Calendar (5.3) done. Remaining: 5.4 Reporting; the real Google client + attachments (infra,
+deferred per ADR-009); AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
 2026-07-24: ECS throttle + RDS InvalidAction persist)
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback

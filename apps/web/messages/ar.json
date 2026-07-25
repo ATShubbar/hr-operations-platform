@@ -73,6 +73,7 @@
     "candidates": "المرشحون",
     "gro": "الجوازات",
     "calendar": "التقويم",
+    "integrations": "تقويم Google",
     "portalCompany": "شركتي",
     "portalEmployees": "موظفيّ",
     "portalDocuments": "مستنداتي"
@@ -556,6 +557,55 @@
       "hired": "موظّف",
       "rejected": "مرفوض",
       "withdrawn": "منسحب"
+    }
+  },
+  "integrations": {
+    "title": "دعوات تقويم Google",
+    "subtitle": "دعوات المقابلات والاجتماعات الصادرة.",
+    "new": "جدولة دعوة",
+    "guardrail": "لا تغادر النظام سوى الحقول المسموح بها — وقت البداية/النهاية والعنوان والرمز المرجعي والمكان وبُرُد الحضور. لا تُرسَل أبداً أرقام الهوية الحكومية أو بيانات الرواتب.",
+    "colReference": "المرجع",
+    "colKind": "النوع",
+    "colSummary": "العنوان",
+    "colStart": "البداية",
+    "colStatus": "الحالة",
+    "colActions": "الإجراءات",
+    "inspect": "ما يُرسَل",
+    "cancel": "إلغاء",
+    "empty": "لا توجد دعوات بعد.",
+    "error": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+    "saveError": "تعذّرت الجدولة. يرجى المحاولة مرة أخرى.",
+    "createTitle": "جدولة دعوة",
+    "fieldKind": "النوع",
+    "fieldReference": "الرمز المرجعي",
+    "fieldPersonName": "اسم المشارك",
+    "fieldJobTitle": "المسمى الوظيفي",
+    "fieldMeetingTitle": "عنوان الاجتماع",
+    "fieldStart": "البداية",
+    "fieldEnd": "النهاية",
+    "fieldTimezone": "المنطقة الزمنية",
+    "fieldLocation": "المكان",
+    "fieldAttendees": "بُرُد الحضور",
+    "cancelBtn": "إلغاء",
+    "schedule": "جدولة",
+    "saving": "جارٍ الجدولة…",
+    "inspectTitle": "ما يغادر النظام",
+    "inspectNote": "بالضبط ما يُرسَل إلى Google — لا شيء غير ذلك. يبقى السجل الكامل في المنصة مرتبطاً بالرمز المرجعي.",
+    "payloadSummary": "العنوان",
+    "payloadDescription": "الوصف",
+    "payloadStart": "البداية",
+    "payloadEnd": "النهاية",
+    "payloadLocation": "المكان",
+    "payloadAttendees": "الحضور",
+    "payloadExternalId": "معرّف الحدث الخارجي",
+    "close": "إغلاق",
+    "kind": {
+      "interview": "مقابلة",
+      "meeting": "اجتماع"
+    },
+    "status": {
+      "scheduled": "مجدولة",
+      "cancelled": "ملغاة"
     }
   },
   "calendar": {

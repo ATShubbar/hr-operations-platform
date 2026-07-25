@@ -73,6 +73,7 @@
     "candidates": "Candidates",
     "gro": "GRO",
     "calendar": "Calendar",
+    "integrations": "Google Calendar",
     "portalCompany": "My company",
     "portalEmployees": "My employees",
     "portalDocuments": "My documents"
@@ -556,6 +557,55 @@
       "hired": "Hired",
       "rejected": "Rejected",
       "withdrawn": "Withdrawn"
+    }
+  },
+  "integrations": {
+    "title": "Google Calendar invitations",
+    "subtitle": "Outbound interview and meeting invitations.",
+    "new": "Schedule invitation",
+    "guardrail": "Only whitelisted fields leave the system — start/end, title, reference code, location, and attendee emails. Government identifiers and compensation data are never sent.",
+    "colReference": "Reference",
+    "colKind": "Type",
+    "colSummary": "Title",
+    "colStart": "Start",
+    "colStatus": "Status",
+    "colActions": "Actions",
+    "inspect": "What leaves",
+    "cancel": "Cancel",
+    "empty": "No invitations yet.",
+    "error": "Something went wrong. Please try again.",
+    "saveError": "Could not schedule. Please try again.",
+    "createTitle": "Schedule invitation",
+    "fieldKind": "Type",
+    "fieldReference": "Reference code",
+    "fieldPersonName": "Participant name",
+    "fieldJobTitle": "Job title",
+    "fieldMeetingTitle": "Meeting title",
+    "fieldStart": "Start",
+    "fieldEnd": "End",
+    "fieldTimezone": "Timezone",
+    "fieldLocation": "Location",
+    "fieldAttendees": "Attendee emails",
+    "cancelBtn": "Cancel",
+    "schedule": "Schedule",
+    "saving": "Scheduling…",
+    "inspectTitle": "What leaves the system",
+    "inspectNote": "Exactly the payload sent to Google — nothing else. The full record stays in the platform, linked by reference code.",
+    "payloadSummary": "Title",
+    "payloadDescription": "Description",
+    "payloadStart": "Start",
+    "payloadEnd": "End",
+    "payloadLocation": "Location",
+    "payloadAttendees": "Attendees",
+    "payloadExternalId": "External event id",
+    "close": "Close",
+    "kind": {
+      "interview": "Interview",
+      "meeting": "Meeting"
+    },
+    "status": {
+      "scheduled": "Scheduled",
+      "cancelled": "Cancelled"
     }
   },
   "calendar": {

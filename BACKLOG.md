@@ -1508,7 +1508,7 @@ deferred behind a pluggable dev-capture seam.
 |---|---|---|---|
 | GCAL-01 | `modules/integrations` + the Google Calendar adapter (typed `CalendarInvitation` → whitelisted payload builder) + `GOOGLE_CALENDAR_CLIENT` seam (dev-capture) + structural-minimization tests | 5.2, ADR-009 | done ([evidence](evidence/integrations/GCAL-01.md)) |
 | GCAL-02 | Persist + HTTP — `int_gcal_invitations` + `POST/PATCH/DELETE /integrations/google-calendar/invitations` (typed contract, `integration.google-calendar` perm, audited) | GCAL-01 | done ([evidence](evidence/integrations/GCAL-02.md)) |
-| GCAL-03 | Web UI — schedule + inspect Google invitations (dev-capture view of what would leave) | GCAL-02 | todo |
+| GCAL-03 | Web UI — schedule + inspect Google invitations (dev-capture view of what would leave) | GCAL-02 | done ([evidence](evidence/integrations/GCAL-03.md)) |
 
 ### GCAL-01 — Integrations module + Google Calendar adapter (structural minimization)
 - **Objective:** the ADR-009 core — the adapter that is the sole path to Google,
@@ -1545,6 +1545,24 @@ deferred behind a pluggable dev-capture seam.
   (returned), never rebuilt in the service — so the service can't widen what leaves;
   staff-owned table (no client access); send-then-persist order (a real client would
   want compensation on a persist failure — noted).
+
+### GCAL-03 — Google Calendar invitations web UI (schedule + transparency view)
+- **Objective:** the staff console over the GCAL-02 API — schedule outbound
+  invitations + a "What leaves the system" view showing exactly the whitelisted
+  payload sent.
+- **Files:** `(app)/integrations/page.tsx` (NEW); `app-shell.tsx` (nav gated on
+  integration.google-calendar); `messages/{en,ar}.json` (`nav.integrations` +
+  `integrations.*`). Front-end only.
+- **DoD:** nav visible for permission holders; guardrail banner; schedule an interview
+  (verified live); the transparency dialog shows exactly the whitelisted payload;
+  cancel; RTL + logical utilities; web typecheck + lint green; verified in the browser
+  (both locales).
+- **Evidence:** `evidence/integrations/GCAL-03.md`.
+- **Dependencies:** GCAL-02. **Risks:** attendee emails split on comma/newline; the
+  "what leaves" view surfaces the stored adapter payload (the transparency ADR-009 is
+  built for); the real Google client + attachments remain deferred to infra.
+
+**Google Calendar epic (5.3) COMPLETE — GCAL-01..03 (adapter+structural minimization, persisted+audited API, web UI+transparency view).**
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 
