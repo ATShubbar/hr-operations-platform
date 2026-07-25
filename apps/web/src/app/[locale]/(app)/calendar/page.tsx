@@ -13,6 +13,9 @@ import { useCan } from '@/lib/session';
 import { dualDate, type Locale } from '@/lib/employee-format';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { LoadError, NoAccess } from '@/components/ui/load-state';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Skeleton, SkeletonRegion } from '@/components/ui/skeleton';
 import {
   Dialog,
   DialogContent,
@@ -56,6 +59,10 @@ function timeLabel(iso: string, allDay: boolean): string {
 // Company-Admin-only (calendar.delete).
 export default function CalendarPage() {
   const t = useTranslations('calendar');
+  // Skeleton and error-state copy lives in one shared namespace: a per-screen
+  // `loading` key silently announced "calendar.loading" to screen readers when
+  // the namespace happened not to define one (UX-06).
+  const tStates = useTranslations('states');
   const locale = useLocale() as Locale;
   const router = useRouter();
   const canCreate = useCan('calendar.create');
@@ -70,6 +77,7 @@ export default function CalendarPage() {
   const [items, setItems] = useState<CalendarItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [forbidden, setForbidden] = useState(false);
 
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -95,7 +103,8 @@ export default function CalendarPage() {
       setItems([...res.items].sort((a, b) => a.startAt.localeCompare(b.startAt)));
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
-      setError(t('error'));
+      if (err instanceof ApiError && err.status === 403) setForbidden(true);
+      else setError(t('error'));
     } finally {
       setLoading(false);
     }
@@ -189,6 +198,20 @@ export default function CalendarPage() {
   const shiftMonth = (delta: number) =>
     setMonth((m) => new Date(m.getFullYear(), m.getMonth() + delta, 1));
 
+  // Deep-linked without the capability: the nav hides the link, a pasted URL does
+  // not. A refusal is not a failure, so it replaces the screen and offers no retry.
+  if (forbidden) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold">{t('title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
+        </div>
+        <NoAccess capability="calendar.read" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
@@ -209,7 +232,9 @@ export default function CalendarPage() {
         </Button>
       </div>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && (
+        <LoadError message={error} onRetry={() => void load()} hasContent={items.length > 0} />
+      )}
 
       <div className="space-y-4">
         {days.map(([day, dayItems]) => (
@@ -235,9 +260,18 @@ export default function CalendarPage() {
             </ul>
           </div>
         ))}
-        {days.length === 0 && !loading && (
-          <p className="text-sm text-muted-foreground">{t('empty')}</p>
+        {loading && days.length === 0 && (
+          <SkeletonRegion label={tStates('loading')} className="space-y-3">
+            {[0, 1].map((i) => (
+              <div key={i} className="rounded-lg border bg-card p-4">
+                <Skeleton className="mb-3 h-3 w-40" />
+                <Skeleton className="mb-2 h-4 w-2/3" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            ))}
+          </SkeletonRegion>
         )}
+        {days.length === 0 && !loading && <EmptyState variant="first-run" title={t('empty')} />}
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>

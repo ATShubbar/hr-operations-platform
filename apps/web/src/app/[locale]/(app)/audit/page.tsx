@@ -7,6 +7,7 @@ import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { LoadError, NoAccess } from '@/components/ui/load-state';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -39,6 +40,7 @@ export default function AuditPage() {
   const [action, setAction] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [forbidden, setForbidden] = useState(false);
 
   async function fetchPage(opts: {
     resource: string;
@@ -62,7 +64,8 @@ export default function AuditPage() {
         router.replace('/login');
         return;
       }
-      setError(t('error'));
+      if (err instanceof ApiError && err.status === 403) setForbidden(true);
+      else setError(t('error'));
     } finally {
       setLoading(false);
     }
@@ -82,6 +85,20 @@ export default function AuditPage() {
     setAction('');
     void fetchPage({ resource: '', action: '', append: false });
   };
+
+  // Deep-linked without the capability: the nav hides the link, a pasted URL does
+  // not. A refusal is not a failure, so it replaces the screen and offers no retry.
+  if (forbidden) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold">{t('title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
+        </div>
+        <NoAccess capability="audit.read" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -117,7 +134,9 @@ export default function AuditPage() {
         </Button>
       </form>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && (
+        <LoadError message={error} onRetry={() => void fetchPage({ resource, action, append: false })} hasContent={entries.length > 0} />
+      )}
 
       <div className="overflow-x-auto rounded-lg border">
         <Table>

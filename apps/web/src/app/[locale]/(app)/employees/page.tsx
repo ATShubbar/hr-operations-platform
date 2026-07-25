@@ -32,6 +32,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { DataTable } from '@/components/ui/data-table';
+import { LoadError, NoAccess } from '@/components/ui/load-state';
 import { StatusPill } from '@/components/ui/status-pill';
 import { toneFor } from '@/lib/status-tone';
 import {
@@ -84,6 +85,7 @@ export default function EmployeesPage() {
   const [employees, setEmployees] = useState<EmployeeResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [forbidden, setForbidden] = useState(false);
 
   const [open, setOpen] = useState(false);
   const [clients, setClients] = useState<ClientResponse[]>([]);
@@ -102,7 +104,8 @@ export default function EmployeesPage() {
         router.replace('/login');
         return;
       }
-      setError(t('error'));
+      if (err instanceof ApiError && err.status === 403) setForbidden(true);
+      else setError(t('error'));
     } finally {
       setLoading(false);
     }
@@ -164,6 +167,20 @@ export default function EmployeesPage() {
   const localizedJob = (e: EmployeeResponse) =>
     (locale === 'ar' ? e.jobTitle.ar : e.jobTitle.en) ?? t('none');
 
+  // Deep-linked without the capability: the nav hides the link, a pasted URL does
+  // not. A refusal is not a failure, so it replaces the screen and offers no retry.
+  if (forbidden) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold">{t('title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
+        </div>
+        <NoAccess capability="employee.read" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
@@ -174,7 +191,9 @@ export default function EmployeesPage() {
         {canCreate && <Button onClick={() => void openCreate()}>{t('new')}</Button>}
       </div>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && (
+        <LoadError message={error} onRetry={() => void load()} hasContent={employees.length > 0} />
+      )}
 
       {/* UX-03: search (Arabic-aware), sortable columns, pagination and a
           proper empty/no-results split. Employees is the primary entity, so it

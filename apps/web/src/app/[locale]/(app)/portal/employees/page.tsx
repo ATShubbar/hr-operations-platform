@@ -1,12 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { EmployeeListResponse, EmployeeResponse } from '@hr/contracts';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { dualDate, EMPLOYMENT_STATUS_KEY, type Locale } from '@/lib/employee-format';
 import { DataTable } from '@/components/ui/data-table';
+import { EmptyState } from '@/components/ui/empty-state';
+import { LoadError } from '@/components/ui/load-state';
 import { StatusPill } from '@/components/ui/status-pill';
 import { toneFor } from '@/lib/status-tone';
 
@@ -24,28 +26,29 @@ export default function PortalEmployeesPage() {
   const [disabled, setDisabled] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    let active = true;
-    apiFetch<EmployeeListResponse>('/portal/employees')
-      .then((res) => {
-        if (active) setEmployees(res.employees);
-      })
-      .catch((err) => {
-        if (!active) return;
-        if (err instanceof ApiError && err.status === 401) {
-          router.replace('/login');
-          return;
-        }
-        if (err instanceof ApiError && err.status === 403) setDisabled(true);
-        else setError(t('error'));
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
+  // Callable so the error state can retry in place (UX-06).
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const res = await apiFetch<EmployeeListResponse>('/portal/employees');
+      setEmployees(res.employees);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        router.replace('/login');
+        return;
+      }
+      // 403 = self-service off for this client. A state, not a failure: no retry.
+      if (err instanceof ApiError && err.status === 403) setDisabled(true);
+      else setError(t('error'));
+    } finally {
+      setLoading(false);
+    }
   }, [router, t]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   return (
     <div className="space-y-6">
@@ -54,8 +57,8 @@ export default function PortalEmployeesPage() {
         <p className="text-sm text-muted-foreground">{t('employees.subtitle')}</p>
       </div>
 
-      {disabled && <p className="text-sm text-muted-foreground">{t('notEnabled')}</p>}
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {disabled && <EmptyState variant="restricted" title={t('notEnabled')} />}
+      {error && <LoadError message={error} onRetry={() => void load()} hasContent={employees.length > 0} />}
 
       {!disabled && !error && (
         <DataTable

@@ -447,7 +447,34 @@ finished — the original audit finding), and two domains joined the tone table:
 (inactive = neutral, not a fault) and `invitation` (**cancelled = neutral, was
 `destructive`** — it read as failure for an action that succeeded). Dev data restored:
 the verification invitation deleted, the temporarily-enabled `flag.client-self-service`
-row deleted. Next: UX-06 states or UX-09 (SelectValue leak + unified workflow controls).
+row deleted. **UX-06 done — states everywhere.** Baseline: **34 bare `text-destructive` paragraphs
+across 19 files**, EmptyState and Skeleton with exactly ONE consumer each, 403 handled on
+three screens. New `components/ui/load-state.tsx` splits the two cases that want opposite
+things: **`LoadError`** (the request FAILED → retry that re-runs the loader in place) and
+**`NoAccess`** (403 = REFUSED → deliberately NO retry, names the missing capability).
+**The defect this card existed to find: a dead API logged you out of the interface.**
+`SessionProvider` redirected to /login on ANY `/auth/me` rejection — network error, 500,
+timeout — so every screen's error-with-retry state was unreachable exactly when it
+mattered, and the user landed on a sign-in form that also failed while holding a valid
+cookie. Now only 401/403 goes to sign-in; anything else keeps you in the app with a retry
+(and the guard's blank `return null` became a skeleton). **Retry proven to recover in
+place**: API stopped → error state; API restarted → click retry → rows back, `performance`
+navigation entries UNCHANGED (no reload). **`LoadError` decides by content** — a failed row
+action (Documents' download) shares the same `error` state as a failed load, so with rows
+on screen the failure is a banner and only an empty screen is taken over; both branches
+verified by failing a single endpoint (`/api/requests` → 500) while the guard stayed
+healthy. 403 verified by deep-linking `/ar/gro` as a **recruiter**: `restricted` variant,
+`role="status"` (not alert — a refusal is not an error), no retry, names `gro.read`, shell
+intact. Two defects caught while verifying: skeleton labels used each screen's own
+`t('loading')` and `calendar`/`candidates` have no such key, so a screen reader was
+announced the literal string **"calendar.loading"** (now one shared `states.loading`); and
+**Settings' early return swallowed its own error** into a permanent grey "loading…", making
+the retry below it unreachable. The 403 copy wraps the permission id in `<bdi>` rather than
+adding a NEW instance of the bidi bug UX-08 will clean up. Form/mutation errors
+deliberately stay inline next to their submit (34 → 16 remaining, every one a
+formError/procError/stError or the login form). Next: UX-09 (SelectValue leak + unified
+workflow controls) or UX-07 (realistic demo data — the seed still shows 0 expiring/0
+overdue, so several states can only be seen by sabotaging data).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

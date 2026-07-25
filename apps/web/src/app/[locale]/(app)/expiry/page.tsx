@@ -15,6 +15,9 @@ import { useCan } from '@/lib/session';
 import { dualDate, type Locale } from '@/lib/employee-format';
 import { StatusPill, type StatusTone } from '@/components/ui/status-pill';
 import { Button } from '@/components/ui/button';
+import { LoadError, NoAccess } from '@/components/ui/load-state';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Skeleton, SkeletonRegion, SkeletonRows } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -90,6 +93,10 @@ function isoHorizon(): string {
 // same scan on a daily schedule (EXP-02); this is the human-facing companion.
 export default function ExpiryPage() {
   const t = useTranslations('expiry');
+  // Skeleton and error-state copy lives in one shared namespace: a per-screen
+  // `loading` key silently announced "calendar.loading" to screen readers when
+  // the namespace happened not to define one (UX-06).
+  const tStates = useTranslations('states');
   const locale = useLocale() as Locale;
   const router = useRouter();
   const canScan = useCan('expiry.run');
@@ -98,6 +105,7 @@ export default function ExpiryPage() {
   const [clients, setClients] = useState<ClientResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [forbidden, setForbidden] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [scanNotice, setScanNotice] = useState('');
 
@@ -133,7 +141,8 @@ export default function ExpiryPage() {
         router.replace('/login');
         return;
       }
-      setError(t('error'));
+      if (err instanceof ApiError && err.status === 403) setForbidden(true);
+      else setError(t('error'));
     } finally {
       setLoading(false);
     }
@@ -205,6 +214,20 @@ export default function ExpiryPage() {
     return t('daysLeft', { n: days });
   };
 
+  // Deep-linked without the capability: the nav hides the link, a pasted URL does
+  // not. A refusal is not a failure, so it replaces the screen and offers no retry.
+  if (forbidden) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold">{t('title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
+        </div>
+        <NoAccess capability="document.read" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
@@ -271,12 +294,21 @@ export default function ExpiryPage() {
       </form>
 
       {scanNotice && <p className="text-sm text-muted-foreground">{scanNotice}</p>}
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && (
+        <LoadError message={error} onRetry={() => void load()} hasContent={documents.length > 0} />
+      )}
 
-      {total === 0 && !loading ? (
-        <div className="rounded-lg border p-8 text-center text-sm text-muted-foreground">
-          {t('empty')}
-        </div>
+      {loading && documents.length === 0 ? (
+        <SkeletonRegion label={tStates('loading')} className="space-y-3">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="rounded-lg border bg-card p-4">
+              <Skeleton className="mb-3 h-3 w-32" />
+              <SkeletonRows rows={2} columns={4} />
+            </div>
+          ))}
+        </SkeletonRegion>
+      ) : total === 0 ? (
+        <EmptyState variant="first-run" title={t('empty')} />
       ) : (
         BUCKETS.filter((b) => grouped[b].length > 0).map((b) => (
           <section key={b} className="space-y-2">

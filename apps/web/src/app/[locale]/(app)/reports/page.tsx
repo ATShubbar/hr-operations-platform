@@ -13,6 +13,8 @@ import { useCan } from '@/lib/session';
 import { dualDate, type Locale } from '@/lib/employee-format';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { LoadError, NoAccess } from '@/components/ui/load-state';
+import { SkeletonRegion, SkeletonRows } from '@/components/ui/skeleton';
 import {
   Table,
   TableBody,
@@ -32,6 +34,10 @@ import {
 // front-end change beyond its labels.
 export default function ReportsPage() {
   const t = useTranslations('reports');
+  // Skeleton and error-state copy lives in one shared namespace: a per-screen
+  // `loading` key silently announced "calendar.loading" to screen readers when
+  // the namespace happened not to define one (UX-06).
+  const tStates = useTranslations('states');
   const locale = useLocale() as Locale;
   const router = useRouter();
   const canExport = useCan('report.export');
@@ -41,6 +47,7 @@ export default function ReportsPage() {
   const [result, setResult] = useState<ReportResultResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [forbidden, setForbidden] = useState(false);
   const [exporting, setExporting] = useState(false);
 
   // Column headers and cell values arrive as stable keys; translate when we have
@@ -60,35 +67,47 @@ export default function ReportsPage() {
     [router],
   );
 
-  useEffect(() => {
-    void (async () => {
-      try {
-        const res = await apiFetch<ReportCatalogResponse>('/reports');
-        setReports(res.reports);
-        setSelected(res.reports[0]?.id ?? '');
-      } catch (err) {
-        if (!onUnauthorized(err)) setError(t('error'));
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [onUnauthorized, t]);
-
-  useEffect(() => {
-    if (!selected) return;
+  // Extracted from the effects so the error state can re-run them in place —
+  // a retry that only reloads the page would lose the selected report (UX-06).
+  const loadCatalog = useCallback(async () => {
     setLoading(true);
     setError('');
-    void (async () => {
+    try {
+      const res = await apiFetch<ReportCatalogResponse>('/reports');
+      setReports(res.reports);
+      setSelected((cur) => cur || res.reports[0]?.id || '');
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 403) setForbidden(true);
+      else if (!onUnauthorized(err)) setError(t('error'));
+    } finally {
+      setLoading(false);
+    }
+  }, [onUnauthorized, t]);
+
+  const runReport = useCallback(
+    async (id: string) => {
+      if (!id) return;
+      setLoading(true);
+      setError('');
       try {
-        setResult(await apiFetch<ReportResultResponse>(`/reports/${selected}`));
+        setResult(await apiFetch<ReportResultResponse>(`/reports/${id}`));
       } catch (err) {
         setResult(null);
         if (!onUnauthorized(err)) setError(t('error'));
       } finally {
         setLoading(false);
       }
-    })();
-  }, [selected, onUnauthorized, t]);
+    },
+    [onUnauthorized, t],
+  );
+
+  useEffect(() => {
+    void loadCatalog();
+  }, [loadCatalog]);
+
+  useEffect(() => {
+    void runReport(selected);
+  }, [selected, runReport]);
 
   // The export is a file download, not JSON — fetched directly so the CSV bytes
   // (BOM and all) reach the browser untouched.
@@ -121,6 +140,20 @@ export default function ReportsPage() {
     return numeric ? raw : value(raw);
   };
 
+  // Deep-linked without the capability: the nav hides the link, a pasted URL does
+  // not. A refusal is not a failure, so it replaces the screen and offers no retry.
+  if (forbidden) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold">{t('title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
+        </div>
+        <NoAccess capability="report.read" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -146,7 +179,14 @@ export default function ReportsPage() {
         </div>
       )}
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && (
+        <LoadError
+          message={error}
+          // Retry whichever step failed: with no catalog there is nothing to run.
+          onRetry={() => void (reports.length === 0 ? loadCatalog() : runReport(selected))}
+          hasContent={Boolean(result)}
+        />
+      )}
 
       {result && (
         <section className="space-y-4">
@@ -221,7 +261,11 @@ export default function ReportsPage() {
         </section>
       )}
 
-      {loading && <p className="text-sm text-muted-foreground">{t('loading')}</p>}
+      {loading && (
+        <SkeletonRegion label={tStates('loading')} className="rounded-lg border bg-card p-3">
+          <SkeletonRows rows={5} columns={5} />
+        </SkeletonRegion>
+      )}
     </div>
   );
 }

@@ -908,5 +908,14 @@
       "client_admin": "Client Admin",
       "client_user": "Client User"
     }
+  },
+  "states": {
+    "retry": "Try again",
+    "errorTitle": "Couldn't load this",
+    "errorHint": "The request failed. Check your connection and try again.",
+    "forbiddenTitle": "You do not have access",
+    "forbiddenHint": "Ask an administrator if you need access to this screen.",
+    "forbiddenWithCapability": "This screen needs the <cap>{capability}</cap> permission. Ask an administrator to grant it.",
+    "loading": "Loading…"
   }
 }

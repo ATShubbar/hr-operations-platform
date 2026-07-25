@@ -28,6 +28,9 @@ import {
 } from '@/lib/employee-format';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
+import { LoadError, NoAccess } from '@/components/ui/load-state';
+import { Skeleton, SkeletonRegion } from '@/components/ui/skeleton';
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
@@ -56,6 +59,10 @@ type DialogKind = 'core' | 'salary' | 'govdata' | null;
 // Each group's edit posts to its OWN endpoint (per-group permission).
 export default function EmployeeDetailPage() {
   const t = useTranslations('employees');
+  // Skeleton and error-state copy lives in one shared namespace: a per-screen
+  // `loading` key silently announced "calendar.loading" to screen readers when
+  // the namespace happened not to define one (UX-06).
+  const tStates = useTranslations('states');
   const locale = useLocale() as Locale;
   const router = useRouter();
   const params = useParams<{ id: string }>();
@@ -68,6 +75,9 @@ export default function EmployeeDetailPage() {
 
   const [emp, setEmp] = useState<EmployeeResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  // The HTTP status decides which state this is: a 404 will not become findable
+  // by retrying, and a 403 will not become permitted (UX-06).
+  const [status, setStatus] = useState<number | null>(null);
   const [error, setError] = useState('');
   const [dialog, setDialog] = useState<DialogKind>(null);
   const [terminating, setTerminating] = useState(false);
@@ -83,6 +93,7 @@ export default function EmployeeDetailPage() {
         router.replace('/login');
         return;
       }
+      setStatus(err instanceof ApiError ? err.status : 0);
       setError(err instanceof ApiError && err.status === 404 ? t('notFound') : t('error'));
     } finally {
       setLoading(false);
@@ -116,12 +127,35 @@ export default function EmployeeDetailPage() {
     setDialog(null);
   };
 
-  if (loading) return <p className="text-sm text-muted-foreground">{t('loading')}</p>;
+  if (loading) {
+    return (
+      <SkeletonRegion label={tStates('loading')} className="space-y-4">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-8 w-64" />
+        <div className="rounded-lg border bg-card p-6">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="mb-4 last:mb-0">
+              <Skeleton className="mb-2 h-3 w-28" />
+              <Skeleton className="h-4 w-48" />
+            </div>
+          ))}
+        </div>
+      </SkeletonRegion>
+    );
+  }
   if (error || !emp) {
+    // BackLink stays above every one of these: never a dead end.
     return (
       <div className="space-y-4">
         <BackLink t={t} />
-        <p className="text-sm text-destructive">{error || t('notFound')}</p>
+        {status === 403 ? (
+          <NoAccess capability="employee.read" />
+        ) : status === 404 ? (
+          // Retrying will not make a missing employee exist.
+          <EmptyState variant="error" title={t('notFound')} />
+        ) : (
+          <LoadError message={error} onRetry={() => void load()} />
+        )}
       </div>
     );
   }

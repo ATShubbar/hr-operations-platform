@@ -13,6 +13,8 @@ import { useCan } from '@/lib/session';
 import { NotificationPreferences } from '@/components/notification-preferences';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { LoadError } from '@/components/ui/load-state';
+import { Skeleton, SkeletonRegion } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -34,6 +36,10 @@ const CAL_VALUES = ['hijri', 'gregorian', 'dual'] as const;
 // /config + /config/flags + /config/catalog (admin only — config.read).
 export default function SettingsPage() {
   const t = useTranslations('settings');
+  // Skeleton and error-state copy lives in one shared namespace: a per-screen
+  // `loading` key silently announced "calendar.loading" to screen readers when
+  // the namespace happened not to define one (UX-06).
+  const tStates = useTranslations('states');
   const locale = useLocale() as Locale;
   const router = useRouter();
   const pathname = usePathname();
@@ -107,8 +113,31 @@ export default function SettingsPage() {
     router.replace(pathname, { locale: value });
   }
 
+  // Early return, so the error state has to be handled HERE too — otherwise a
+  // failed load renders a grey "loading…" forever and the retry below is
+  // unreachable (UX-06).
   if (!me) {
-    return <p className="text-sm text-muted-foreground">{error || t('loading')}</p>;
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold">{t('title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
+        </div>
+        {error ? (
+          <LoadError message={error} onRetry={() => void load()} />
+        ) : (
+          <SkeletonRegion label={tStates('loading')} className="space-y-3">
+            {[0, 1].map((i) => (
+              <div key={i} className="rounded-lg border bg-card p-6">
+                <Skeleton className="mb-4 h-4 w-40" />
+                <Skeleton className="mb-2 h-3 w-full" />
+                <Skeleton className="h-3 w-2/3" />
+              </div>
+            ))}
+          </SkeletonRegion>
+        )}
+      </div>
+    );
   }
 
   const workingWeek = Array.isArray(me['working.week']) ? (me['working.week'] as number[]) : [];
@@ -122,7 +151,9 @@ export default function SettingsPage() {
         <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
       </div>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && (
+        <LoadError message={error} onRetry={() => void load()} hasContent={false} />
+      )}
 
       {/* ---- My preferences (everyone) ---- */}
       <Card>

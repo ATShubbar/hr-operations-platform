@@ -1727,7 +1727,7 @@ results** for the most common typing variants (`احمد` does not match `أحم
 | UX-04 | **"Today"** — the role-aware home screen (re-projects `/calendar/view` as an urgency-ordered work queue) | UX-02 | done ([evidence](evidence/ux/UX-04.md)) |
 | UX-05 | Mobile navigation + responsive lists and dialogs | UX-02 | **done** |
 | UX-03c | Sweep the remaining lists onto DataTable | UX-03, UX-05 | **done** |
-| UX-06 | States everywhere: skeletons, empty, error-with-retry, 403 | UX-02 | planned |
+| UX-06 | States everywhere: skeletons, empty, error-with-retry, 403 | UX-02 | **done** |
 | UX-07 | Realistic demo data (seed shows 0 expiring / 0 overdue today — the dashboard can't be evaluated) | — | planned |
 | UX-08 | Arabic typeface + bidi isolation polish | UX-03b | planned |
 | UX-09 | Fix the `SelectValue` raw-value leak; unify workflow controls | UX-02 | planned |
@@ -1800,6 +1800,35 @@ results** for the most common typing variants (`احمد` does not match `أحم
   336/336 passing then exits non-zero on the documented ioredis teardown noise;
   reproduced 3/3 under turbo's concurrency) — filed as a follow-up, kept separate
   from the supertest port-collision issue.
+
+### UX-06 — states everywhere
+- **Objective:** every screen answers loading / empty / failed / forbidden, instead
+  of one red sentence and a dead end (34 bare destructive paragraphs across 19 files;
+  EmptyState and Skeleton each had exactly ONE consumer).
+- **Files:** NEW `components/ui/load-state.tsx` (`LoadError`, `NoAccess`);
+  `lib/session.tsx`; 16 screens; `messages/{en,ar}.json` (`states.*`).
+- **DoD:** zero page-level load errors left as bare paragraphs (34 → 16, all of them
+  form/mutation errors, by design); retry PROVEN to recover in place by stopping the
+  API and restarting it (no page reload — navigation entries unchanged); 403 renders
+  a no-retry `restricted` state naming the capability, verified by deep-linking
+  `/ar/gro` as a recruiter; skeletons on the 7 non-list screens; both locales;
+  lint/typecheck/build 15/15; no API change.
+- **Evidence:** `evidence/ux/UX-06.md`.
+- **Dependencies:** UX-02, UX-03c. **Risks/decisions:** **The defect this card
+  existed to find — a dead API logged you out of the interface.** `SessionProvider`
+  redirected to /login on ANY `/auth/me` rejection, including a network error or a
+  500, so every screen's error-with-retry state was unreachable exactly when it
+  mattered and the user landed on a sign-in form that also failed, holding a valid
+  cookie. Now only 401/403 goes to sign-in. **`LoadError` decides by content:** a
+  failed row action (Documents' download) shares the same `error` state as a failed
+  load, so with rows on screen the failure is a banner and only an empty screen is
+  taken over — both branches verified. Two defects caught while verifying: skeleton
+  labels announced the missing key `calendar.loading` to screen readers (now one
+  shared `states.loading`), and Settings' early return swallowed its own error into a
+  permanent grey "loading…" that made the retry unreachable. The 403 copy wraps the
+  permission id in `<bdi>` rather than adding a NEW instance of the bidi bug UX-08
+  will clean up. Form/mutation errors deliberately stay inline; success toasts are
+  not one of the four states (UX-09).
 
 ### UX-03c — the DataTable sweep
 - **Objective:** finish UX-03 — every list gets search, sort, paging, the empty-vs-

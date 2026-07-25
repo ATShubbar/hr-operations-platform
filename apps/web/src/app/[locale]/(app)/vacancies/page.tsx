@@ -15,6 +15,7 @@ import { useCan } from '@/lib/session';
 import { type Locale } from '@/lib/employee-format';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
+import { LoadError, NoAccess } from '@/components/ui/load-state';
 import {
   Dialog,
   DialogContent,
@@ -70,6 +71,7 @@ export default function VacanciesPage() {
   const [clients, setClients] = useState<ClientResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [forbidden, setForbidden] = useState(false);
 
   const [fClient, setFClient] = useState(ALL);
   const [fStatus, setFStatus] = useState(ALL);
@@ -103,7 +105,8 @@ export default function VacanciesPage() {
       setVacancies(res.vacancies);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
-      setError(t('error'));
+      if (err instanceof ApiError && err.status === 403) setForbidden(true);
+      else setError(t('error'));
     } finally {
       setLoading(false);
     }
@@ -166,6 +169,20 @@ export default function VacanciesPage() {
     }
   }
 
+  // Deep-linked without the capability: the nav hides the link, a pasted URL does
+  // not. A refusal is not a failure, so it replaces the screen and offers no retry.
+  if (forbidden) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold">{t('title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
+        </div>
+        <NoAccess capability="vacancy.read" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
@@ -217,7 +234,9 @@ export default function VacanciesPage() {
         </div>
       </div>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && (
+        <LoadError message={error} onRetry={() => void load()} hasContent={vacancies.length > 0} />
+      )}
 
       <DataTable
         rows={shown}

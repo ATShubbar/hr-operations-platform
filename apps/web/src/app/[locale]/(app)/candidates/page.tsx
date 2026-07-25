@@ -15,6 +15,9 @@ import { useCan } from '@/lib/session';
 import { type Locale } from '@/lib/employee-format';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { LoadError, NoAccess } from '@/components/ui/load-state';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Skeleton, SkeletonRegion } from '@/components/ui/skeleton';
 import {
   Dialog,
   DialogContent,
@@ -70,6 +73,10 @@ const EMPTY_CREATE: CreateForm = { vacancyId: '', nameAr: '', nameEn: '', nation
 // employee (REC-05). Create needs candidate.create.
 export default function CandidatesPage() {
   const t = useTranslations('candidates');
+  // Skeleton and error-state copy lives in one shared namespace: a per-screen
+  // `loading` key silently announced "calendar.loading" to screen readers when
+  // the namespace happened not to define one (UX-06).
+  const tStates = useTranslations('states');
   const locale = useLocale() as Locale;
   const router = useRouter();
   const canCreate = useCan('candidate.create');
@@ -79,6 +86,7 @@ export default function CandidatesPage() {
   const [vacancies, setVacancies] = useState<VacancyResponse[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [forbidden, setForbidden] = useState(false);
   const [fVacancy, setFVacancy] = useState(ALL);
 
   const [open, setOpen] = useState(false);
@@ -110,7 +118,8 @@ export default function CandidatesPage() {
       setCandidates(res.candidates);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
-      setError(t('error'));
+      if (err instanceof ApiError && err.status === 403) setForbidden(true);
+      else setError(t('error'));
     } finally {
       setLoading(false);
     }
@@ -195,6 +204,20 @@ export default function CandidatesPage() {
     </div>
   );
 
+  // Deep-linked without the capability: the nav hides the link, a pasted URL does
+  // not. A refusal is not a failure, so it replaces the screen and offers no retry.
+  if (forbidden) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-semibold">{t('title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
+        </div>
+        <NoAccess capability="candidate.read" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
@@ -234,7 +257,9 @@ export default function CandidatesPage() {
         </div>
       </div>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && (
+        <LoadError message={error} onRetry={() => void load()} hasContent={candidates.length > 0} />
+      )}
 
       <div className="overflow-x-auto">
         <div className="flex min-w-max gap-3">
@@ -255,8 +280,19 @@ export default function CandidatesPage() {
           </div>
         </div>
       </div>
+      {loading && candidates.length === 0 && (
+        <SkeletonRegion label={tStates('loading')} className="grid gap-3 sm:grid-cols-3">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="rounded-lg border bg-card p-3">
+              <Skeleton className="mb-3 h-3 w-24" />
+              <Skeleton className="mb-2 h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </div>
+          ))}
+        </SkeletonRegion>
+      )}
       {candidates.length === 0 && !loading && (
-        <p className="text-sm text-muted-foreground">{t('empty')}</p>
+        <EmptyState variant="first-run" title={t('empty')} />
       )}
 
       <Dialog open={open} onOpenChange={setOpen}>

@@ -9,6 +9,7 @@ import { apiFetch, ApiError } from '@/lib/api';
 import { dualDate, type Locale } from '@/lib/employee-format';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
+import { LoadError } from '@/components/ui/load-state';
 import { Skeleton, SkeletonRegion } from '@/components/ui/skeleton';
 import { StatusPill, type StatusTone } from '@/components/ui/status-pill';
 
@@ -76,6 +77,10 @@ function isoOffset(days: number): string {
 
 export default function TodayPage() {
   const t = useTranslations('today');
+  // Skeleton and error-state copy lives in one shared namespace: a per-screen
+  // `loading` key silently announced "calendar.loading" to screen readers when
+  // the namespace happened not to define one (UX-06).
+  const tStates = useTranslations('states');
   // /calendar/view returns raw API enums — and for GRO items it uses the process
   // TYPE as the title, so an untranslated `iqama_renewal` would appear as a
   // headline on the app's most-read screen. Each domain screen already owns a
@@ -231,19 +236,11 @@ export default function TodayPage() {
       </div>
 
       {error && (
-        <EmptyState
-          variant="error"
-          title={t('error')}
-          action={
-            <Button variant="outline" size="sm" onClick={() => void load()}>
-              {t('retry')}
-            </Button>
-          }
-        />
+        <LoadError message={error} onRetry={() => void load()} hasContent={items.length > 0} />
       )}
 
       {loading && (
-        <SkeletonRegion label={t('loading')} className="space-y-3">
+        <SkeletonRegion label={tStates('loading')} className="space-y-3">
           {[0, 1, 2].map((i) => (
             <div key={i} className="rounded-lg border bg-card p-4">
               <Skeleton className="mb-3 h-3 w-24" />
