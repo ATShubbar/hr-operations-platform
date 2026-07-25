@@ -89,9 +89,76 @@ const rtlSafeClasses = {
   },
 };
 
+// The brand accent must never carry a status meaning (UX-01).
+//
+// `--primary` is a gold at hue 92 — which is also where a warning colour
+// naturally sits — and it appears dozens of times per screen in buttons, focus
+// rings and active nav. A status tinted with it reads as brand, not as caution,
+// and a warning that looks like chrome is not a warning. So status surfaces use
+// the `--status-*` tier exclusively.
+//
+// Scoped to files whose path says "status", which is a deliberate line, not a
+// loophole: `Badge` is arbitrary metadata whose colour is decorative (a brand-
+// filled "New" badge is legitimate), while `StatusPill` communicates workflow
+// state and its colour is semantic. Those are different components with
+// different rules — see the design proposal for why they must not be merged.
+const STATUS_FILE_RE = /(?:^|\/)[^/]*status[^/]*\.[jt]sx?$|\/status\//i;
+const BRAND_CLASS_RE =
+  /^(?:bg|text|border|ring|outline|from|to|via|fill|stroke|decoration|caret|accent|divide)-(?:primary|brand)(?:-|\/|$)/;
+const BRAND_VAR_RE = /--(?:primary|brand)\b/;
+
+const noBrandInStatus = {
+  meta: {
+    type: 'problem',
+    messages: {
+      brandClass:
+        "'{{cls}}' puts the brand accent on a status surface — use the --status-* tier (bg-status-<tone>-surface / text-status-<tone>) so caution never reads as chrome (UX-01).",
+      brandVar:
+        "'{{text}}' references the brand token from a status file — use --status-<tone> instead (UX-01).",
+    },
+    schema: [],
+  },
+  create(context) {
+    const filename = context.filename.replace(/\\/g, '/');
+    if (!STATUS_FILE_RE.test(filename)) return {};
+
+    const checkClasses = (node, value) => {
+      for (const raw of String(value).split(/\s+/)) {
+        if (!raw) continue;
+        const cls = raw.split(':').pop() ?? raw;
+        if (BRAND_CLASS_RE.test(cls)) {
+          context.report({ node, messageId: 'brandClass', data: { cls: raw } });
+        }
+      }
+    };
+    const checkVar = (node, value) => {
+      const text = String(value);
+      if (BRAND_VAR_RE.test(text)) {
+        context.report({ node, messageId: 'brandVar', data: { text: text.trim().slice(0, 60) } });
+      }
+    };
+
+    return {
+      // Class strings anywhere — className attributes, cva variant maps, cn() args.
+      Literal(node) {
+        if (typeof node.value !== 'string') return;
+        checkClasses(node, node.value);
+        checkVar(node, node.value);
+      },
+      TemplateElement(node) {
+        const raw = node.value?.raw;
+        if (typeof raw !== 'string') return;
+        checkClasses(node, raw);
+        checkVar(node, raw);
+      },
+    };
+  },
+};
+
 export default {
   rules: {
     'module-boundaries': moduleBoundaries,
     'rtl-safe-classes': rtlSafeClasses,
+    'no-brand-in-status': noBrandInStatus,
   },
 };

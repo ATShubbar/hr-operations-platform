@@ -1700,6 +1700,58 @@ dissolve the residency compromise the AWS UAE interim was living with.
   names how a violation is caught; OKE adds Kubernetes complexity for a one-person
   team — accepted cost, mitigated by a minimal manifest set (no mesh, no operators).
 
+## UI/UX epic — from "it works" to "I'd use this all day"
+
+Started 2026-07-25 after the product surface was complete. Grounded in a full audit
+of `apps/web` plus design research; the reviewed proposal (findings, four
+interactive mockups, the sequenced plan) is the reference doc:
+**https://claude.ai/code/artifact/728af94a-5bab-485c-89e6-76aef6a8a39c**
+
+**Owner decisions (25 Jul):** "Today" becomes the front door · **evolution, not
+replacement** — the gold-on-neutral identity stays, what changes is structure and
+state · **dark mode NOT shipped** · charts stay hand-rolled (no charting library).
+
+The three findings that drove the plan, all verified live: the app is **unnavigable
+on a phone** (13 nav links in the DOM, 0 visible, no menu button); there is **no home
+screen** and the root URL still renders WS-01 scaffolding; **no list has search, sort
+or paging**. Two more found by verification: **Arabic search silently returns zero
+results** for the most common typing variants (`احمد` does not match `أحمد حسن`), and
+**Base UI never learns the app is RTL** (no `DirectionProvider`).
+
+| Task | Objective | Deps | Status |
+|---|---|---|---|
+| UX-01 | Semantic status token tier (separate from brand gold) + surface layering + `no-brand-in-status` guardrail | — | done ([evidence](evidence/ux/UX-01.md)) |
+| UX-02 | Primitives: StatusPill, Skeleton, Toast (Base UI), Textarea, EmptyState, Popover | UX-01 | planned |
+| UX-03 | DataTable: search (+ Arabic normaliser), sort, pagination, filter chips, always-visible row actions | UX-02 | planned |
+| UX-03b | Bidi correctness: `DirectionProvider` + isolate Latin identifiers and dual-calendar dates | — | planned |
+| UX-04 | **"Today"** — the role-aware home screen (re-projects `/calendar/view` as an urgency-ordered work queue) | UX-02 | planned |
+| UX-05 | Mobile navigation + responsive lists and dialogs | UX-02 | planned |
+| UX-06 | States everywhere: skeletons, empty, error-with-retry, 403 | UX-02 | planned |
+| UX-07 | Realistic demo data (seed shows 0 expiring / 0 overdue today — the dashboard can't be evaluated) | — | planned |
+| UX-08 | Arabic typeface + bidi isolation polish | UX-03b | planned |
+| UX-09 | Fix the `SelectValue` raw-value leak; unify workflow controls | UX-02 | planned |
+| UX-10 | Missing surfaces: staff-user directory, client-users admin, per-client settings | UX-03 | planned |
+| UX-11 | Accessibility pass (active nav state, keyboard agenda rows, popover semantics, heading outline) | UX-02 | planned |
+
+### UX-01 — Semantic status tokens + surface layering
+- **Objective:** give status its own token tier, structurally separated from the brand
+  gold, and lift the background off pure white so cards read as surfaces.
+- **Files:** `apps/web/src/app/globals.css`; `packages/config/eslint-plugin-hr.mjs`
+  (`no-brand-in-status`); `apps/web/eslint.config.mjs`;
+  `apps/web/scripts/verify-status-contrast.mjs` (NEW).
+- **DoD:** five tones × three roles; **contrast measured** (all ≥5.4:1 text on tint,
+  ≥6:1 on card); `--background`/`--card` visibly distinct, verified live in both
+  locales; Tailwind `@theme` wiring proven to emit real utilities; lint rule fires on
+  a deliberate violation and passes clean; `.dark` annotated as deliberately
+  unreachable; web typecheck + lint green; no API change, no component rewrites.
+- **Evidence:** `evidence/ux/UX-01.md`.
+- **Dependencies:** none. **Risks:** `--background` touches every screen (walked the
+  screens in the browser rather than trusting it). Measurement corrected three
+  assumptions from the card — dots draw from the tone not the line (1.4.11 exempts a
+  labelled control's boundary); unlabelled fills must use the tone not the tint
+  (tints are ~1.05:1 vs page); and a monotonic greyscale ramp across five hues is
+  incompatible with 4.5:1 on light tints, so redundancy comes from label + icon.
+
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 
 | Epic | Source | Gate |

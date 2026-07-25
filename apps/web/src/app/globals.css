@@ -38,6 +38,36 @@
     --color-card: var(--card);
     --color-foreground: var(--foreground);
     --color-background: var(--background);
+    /* Semantic status tier (UX-01). A SEPARATE tier from the brand: `--primary`
+       is a gold at hue 92, which is also where a warning colour naturally sits,
+       so anything tinted with the brand reads as brand rather than as caution.
+       Status components must reference these tokens and never --primary/--brand
+       (enforced by the hr/no-brand-in-status lint rule).
+
+       Three roles per tone:
+         --status-X          the tone itself — text, dots, icons, and any
+                             UNLABELLED fill such as a bar (measured ≥5.4:1 on
+                             its own surface, ≥6:1 on card)
+         --status-X-surface  the tint behind a labelled pill
+         --status-X-line     a decorative hairline. NOT load-bearing: WCAG 1.4.11
+                             exempts the boundary of a control whose meaning is
+                             carried by its own visible text. Never let this
+                             carry the signal on its own. */
+    --color-status-critical: var(--status-critical);
+    --color-status-critical-surface: var(--status-critical-surface);
+    --color-status-critical-line: var(--status-critical-line);
+    --color-status-warning: var(--status-warning);
+    --color-status-warning-surface: var(--status-warning-surface);
+    --color-status-warning-line: var(--status-warning-line);
+    --color-status-ok: var(--status-ok);
+    --color-status-ok-surface: var(--status-ok-surface);
+    --color-status-ok-line: var(--status-ok-line);
+    --color-status-info: var(--status-info);
+    --color-status-info-surface: var(--status-info-surface);
+    --color-status-info-line: var(--status-info-line);
+    --color-status-neutral: var(--status-neutral);
+    --color-status-neutral-surface: var(--status-neutral-surface);
+    --color-status-neutral-line: var(--status-neutral-line);
     --radius-sm: calc(var(--radius) * 0.6);
     --radius-md: calc(var(--radius) * 0.8);
     --radius-lg: var(--radius);
@@ -78,10 +108,42 @@
     --sidebar-accent-foreground: oklch(0.205 0 0);
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.708 0 0);
-    --background: oklch(1 0 0);
+    /* UX-01: lifted off pure white. --card/--popover stay at 1.0, so a card now
+       reads as a raised surface rather than as a hairline outline on the same
+       colour. Biased very slightly warm (hue 95) toward the gold accent — a
+       chosen neutral, not an inherited grey. */
+    --background: oklch(0.975 0.003 95);
     --foreground: oklch(0.145 0 0);
+
+    /* Status tones — ratios measured, not asserted (evidence/ux/UX-01.md).
+       Warning is ORANGE, deliberately redder and darker than the gold brand so
+       the two are distinguishable side by side, and so it survives the
+       red-green confusion axis that makes amber the weakest status hue. */
+    --status-critical: oklch(0.43 0.17 25);
+    --status-critical-surface: oklch(0.96 0.022 25);
+    --status-critical-line: oklch(0.84 0.07 25);
+    --status-warning: oklch(0.48 0.13 55);
+    --status-warning-surface: oklch(0.965 0.03 70);
+    --status-warning-line: oklch(0.84 0.09 65);
+    --status-ok: oklch(0.48 0.12 155);
+    --status-ok-surface: oklch(0.965 0.028 158);
+    --status-ok-line: oklch(0.84 0.07 155);
+    --status-info: oklch(0.47 0.16 260);
+    --status-info-surface: oklch(0.965 0.022 253);
+    --status-info-line: oklch(0.84 0.06 256);
+    --status-neutral: oklch(0.5 0.012 285);
+    --status-neutral-surface: oklch(0.968 0.002 285);
+    --status-neutral-line: oklch(0.87 0.004 285);
 }
 
+/* ⚠️ DELIBERATELY UNREACHABLE (owner decision, 2026-07-25 — UX-01).
+   Dark mode is NOT shipped: there is no theme toggle, no provider, and nothing
+   ever adds the `.dark` class. This block is retained only because it is shadcn
+   preset output and deleting it would drift from the preset.
+
+   This is a decision, not unfinished work. Do not wire a toggle to it, and do
+   not add status tones here, without reopening that decision — maintaining a
+   second theme across every screen is a permanent tax the owner declined. */
 .dark {
     --background: oklch(0.145 0 0);
     --foreground: oklch(0.985 0 0);

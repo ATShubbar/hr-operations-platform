@@ -310,6 +310,44 @@ resource IDs are dead) and ci.yml's AWS deploy job is marked a DEAD PATH until O
 it. Runbook: docs/PROVISIONING-OCI.md. Also remaining: the real Google client + attachments (infra, deferred
 per ADR-009).
 
+**UI/UX epic STARTED (2026-07-25) — the product surface is complete, the interface on top
+is not.** Grounded in an audit of `apps/web` + design research; reviewed proposal (findings,
+mockups, plan): https://claude.ai/code/artifact/728af94a-5bab-485c-89e6-76aef6a8a39c
+**Owner decisions: "Today" becomes the front door · EVOLUTION not replacement (gold-on-neutral
+identity stays; what changes is structure + state) · dark mode NOT shipped · charts stay
+hand-rolled (no charting library — shadcn's charts are Recharts, ~100-130KB gzip + a forced
+client boundary, and every chart we need is a div with a width or one `<polyline>`).**
+Verified findings driving the plan: app is **unnavigable on mobile** (13 nav links in DOM, 0
+visible, no menu button); **no home screen** + root URL still renders WS-01 scaffolding; **no
+list has search/sort/paging**; **Arabic search silently returns ZERO results** for the common
+typing variants (`احمد` does not match `أحمد حسن` — hamza omitted; also ة/ه, ى/ي, harakat,
+Arabic-Indic digits) so any search box needs a normaliser or it's worse than none; **Base UI
+never learns the app is RTL** (no `DirectionProvider` — it does NOT read `dir` from the DOM, so
+select/menu arrow-key direction and popover alignment are LTR-handed in Arabic today).
+Also settled by research: no ⌘K palette (16 screens don't need one; Latin mnemonic on an Arabic
+keyboard) · no breadcrumbs (NN/g excludes 1-2 level hierarchies; Polaris deleted the component
+for a single back action) · no Server Actions for forms (our Next app is a proxy to Nest — RHF +
+the zod schemas already in `@hr/contracts` instead) · **no optimistic UI on writes** (RLS, field
+authz, legal hold and workflow validation mean the server legitimately rejects) · toasts from
+Base UI with a durable twin in the notification bell (that's the WCAG timing answer, already
+built) · row actions always visible, never hover-only · skeleton on route entry only, then
+dim-and-hold · detail via a `?peek=` side panel, NOT Next parallel/intercepting routes.
+**Expiry tiers collapse 6 → 3 visual severities** (Critical 0-1d red / Action 7-14d orange /
+Watch 30-60d GREY, no email) — six colour steps is using hue as a magnitude scale, and the
+alarm-fatigue evidence (72-99% false-alarm rates) says non-actionable alerts are the mechanism;
+keep six in the engine, show three. **UX-01 done** — semantic status tier
+(`--status-{critical,warning,ok,info,neutral}-{,-surface,-line}`) SEPARATE from the brand +
+`--background` lifted off pure white (cards now read as surfaces) + new **`hr/no-brand-in-status`**
+lint rule (brand gold may not carry status meaning; scoped to `status` files — `Badge` colour is
+decorative metadata, `StatusPill` colour is semantic, and they must not be merged). Contrast
+MEASURED via `apps/web/scripts/verify-status-contrast.mjs` (all tones ≥5.4:1 on tint, ≥6:1 on
+card). Measurement corrected three card assumptions: **dots draw from the tone, not the line**
+(WCAG 1.4.11 exempts a labelled control's boundary, so `-line` is decorative); **unlabelled
+fills must use the tone, not the surface tint** (tints are ~1.05:1 vs page — a bar would be
+invisible); and **a monotonic greyscale ramp across 5 hues is incompatible with 4.5:1 on light
+tints**, so non-colour redundancy comes from label + icon (what 1.4.1 actually requires) and
+ordered data uses the existing `--chart-1..5` lightness ramp. Next: UX-02 primitives.
+
 ## Technical landmines (each cost real debugging — do not rediscover)
 
 - RLS policies MUST use `NULLIF(current_setting('app.client_id', true), '')::uuid` — pooled connections leave the GUC as '' not NULL (SPIKE-001).
@@ -321,6 +359,7 @@ per ADR-009).
 - Physical Tailwind utilities (pl-/pr-/left-…) are lint errors — logical only.
 - Every new client-scoped table follows the checklist in apps/api/src/modules/README.md and registers in the isolation harness (unregistered endpoints fail CI).
 - Local ports: Postgres 5433, Redis 6380, MinIO 9002 (API) / 9003 (console) — non-default because 5432/6379/9000 belong to other local tooling. `docker compose up -d` now includes MinIO; storage e2e (STOR-01) requires it up. StorageService is endpoint-configurable + `forcePathStyle` (MinIO); prod object-store provider is still ADR-006-open. Presigned uploads go browser→object-store DIRECTLY (never through the API); this works on MinIO's default CORS locally — a stricter production object store must have CORS configured for the web origin (DOC-05).
+- Tailwind v4 `@theme` only EMITS a utility when the class appears in scanned source — a new token is not a usable class until something references it. Verify with a real consumer, not by injecting a class at runtime.
 - Do NOT run `next build` (prod) while the web dev/preview server is running — it clobbers `.next` and the dev server then throws `Cannot find module './NNN.js'`. Stop the dev server first, or verify only via the dev server (AUTH-08).
 - BullMQ (NOTIF-01): the connection needs `maxRetriesPerRequest: null`. A Worker holds a blocking Redis connection whose teardown emits a benign "Connection is closed" unhandled rejection in EVERY app-creating spec → suite exit 1. Fix in place: producer (`QueueModule` in `AppModule`) is split from the worker (`DispatchWorkerModule`), which runs only in `MainModule` (main.ts) + the queue e2e. Keep workers out of `AppModule`.
 
