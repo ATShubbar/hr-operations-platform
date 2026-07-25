@@ -60,6 +60,7 @@ export function DataTable<T>({
   emptyAction,
   initialSort,
   label,
+  filtersActive,
   className,
 }: {
   rows: T[];
@@ -79,6 +80,12 @@ export function DataTable<T>({
   initialSort?: SortState;
   /** Accessible name for the scrollable table region. */
   label?: string;
+  /**
+   * True when a filter OUTSIDE this component (a server-side query param, a
+   * status chip) is narrowing `rows`. Drives the empty-vs-no-results split, which
+   * this component cannot infer for filters it does not own.
+   */
+  filtersActive?: boolean;
   className?: string;
 }) {
   const t = useTranslations('table');
@@ -126,7 +133,14 @@ export function DataTable<T>({
       s?.key === key ? { key, dir: s.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'asc' },
     );
 
-  const isFiltered = Boolean(query.trim()) || Boolean(onClearFilters);
+  // "Did the user narrow this list?" decides which empty state is honest.
+  //
+  // The search box is ours, so we know about it. Server-side filters are not:
+  // several screens fetch with query params, so an empty result is indistinguish-
+  // able from an empty table unless the screen tells us (`filtersActive`). Without
+  // that, someone who filtered to nothing gets "no documents yet — upload one",
+  // which is both wrong and the exact anti-pattern UX-03 set out to avoid.
+  const narrowed = Boolean(query.trim()) || Boolean(filtersActive);
   const colSpan = columns.length + (actions ? 1 : 0);
 
   return (
@@ -216,7 +230,7 @@ export function DataTable<T>({
                   {/* A filtered miss and a genuinely empty list are different
                       states with opposite remedies — never a create CTA when the
                       user has just filtered. */}
-                  {isFiltered && rows.length > 0 ? (
+                  {narrowed ? (
                     <EmptyState
                       variant="no-results"
                       title={t('noResults')}

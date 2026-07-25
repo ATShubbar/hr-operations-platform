@@ -14,8 +14,8 @@ import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useCan } from '@/lib/session';
 import { dualDate, type Locale } from '@/lib/employee-format';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { DataTable } from '@/components/ui/data-table';
 import {
   Dialog,
   DialogContent,
@@ -32,14 +32,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { StatusPill } from '@/components/ui/status-pill';
+import { toneFor } from '@/lib/status-tone';
 
 const CATEGORIES = [
   'iqama',
@@ -274,56 +268,66 @@ export default function DocumentsPage() {
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
-      <div className="overflow-x-auto rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('colTitle')}</TableHead>
-              <TableHead>{t('colCategory')}</TableHead>
-              <TableHead>{t('colStatus')}</TableHead>
-              <TableHead>{t('colExpiry')}</TableHead>
-              <TableHead className="text-end">{t('colActions')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {documents.map((d) => (
-              <TableRow key={d.id}>
-                <TableCell className="font-medium">{d.title}</TableCell>
-                <TableCell>{t(`category.${d.category}`)}</TableCell>
-                <TableCell>
-                  <Badge variant={d.status === 'available' ? 'default' : 'secondary'}>
-                    {t(`status.${d.status}`)}
-                  </Badge>
-                </TableCell>
-                <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                  {dualDate(d.expiryDate, locale) ?? t('none')}
-                </TableCell>
-                <TableCell>
-                  <div className="flex justify-end gap-2">
-                    {d.status === 'available' && (
-                      <Button variant="outline" size="sm" onClick={() => void download(d)}>
-                        {t('download')}
-                      </Button>
-                    )}
-                    {canDelete && d.status !== 'deleted' && (
-                      <Button variant="ghost" size="sm" onClick={() => void remove(d)}>
-                        {t('delete')}
-                      </Button>
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-            {documents.length === 0 && !loading && (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center text-sm text-muted-foreground">
-                  {t('empty')}
-                </TableCell>
-              </TableRow>
+      <DataTable
+        rows={documents}
+        loading={loading}
+        rowKey={(d) => d.id}
+        searchPlaceholder={t('searchPlaceholder')}
+        initialSort={{ key: 'title', dir: 'asc' }}
+        emptyTitle={t('empty')}
+        // The filter form above is SERVER-side, so an empty result there is
+        // indistinguishable from an empty table unless we say so.
+        filtersActive={fClient !== ALL || fCategory !== ALL || fExpiring !== ''}
+        onClearFilters={onClear}
+        columns={[
+          {
+            key: 'title',
+            header: t('colTitle'),
+            sortValue: (d) => d.title,
+            searchValues: (d) => [d.title, t(`category.${d.category}`), d.category],
+            cell: (d) => <span className="font-medium">{d.title}</span>,
+          },
+          {
+            key: 'category',
+            header: t('colCategory'),
+            sortValue: (d) => t(`category.${d.category}`),
+            cell: (d) => t(`category.${d.category}`),
+          },
+          {
+            key: 'status',
+            header: t('colStatus'),
+            sortValue: (d) => d.status,
+            cell: (d) => (
+              <StatusPill tone={toneFor('document', d.status)}>{t(`status.${d.status}`)}</StatusPill>
+            ),
+          },
+          {
+            key: 'expiry',
+            header: t('colExpiry'),
+            // Raw ISO, never the rendered dual-calendar string.
+            sortValue: (d) => d.expiryDate,
+            cell: (d) => (
+              <span className="whitespace-nowrap text-sm text-muted-foreground">
+                {dualDate(d.expiryDate, locale) ?? t('none')}
+              </span>
+            ),
+          },
+        ]}
+        actions={(d) => (
+          <div className="flex justify-end gap-2">
+            {d.status === 'available' && (
+              <Button variant="outline" size="sm" onClick={() => void download(d)}>
+                {t('download')}
+              </Button>
             )}
-          </TableBody>
-        </Table>
-      </div>
+            {canDelete && d.status !== 'deleted' && (
+              <Button variant="ghost" size="sm" onClick={() => void remove(d)}>
+                {t('delete')}
+              </Button>
+            )}
+          </div>
+        )}
+      />
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>

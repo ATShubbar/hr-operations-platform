@@ -9,8 +9,8 @@ import type {
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { dualDate, type Locale } from '@/lib/employee-format';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { DataTable } from '@/components/ui/data-table';
 import {
   Dialog,
   DialogContent,
@@ -27,14 +27,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { StatusPill } from '@/components/ui/status-pill';
+import { toneFor } from '@/lib/status-tone';
 
 interface Form {
   kind: 'interview' | 'meeting';
@@ -170,56 +164,67 @@ export default function IntegrationsPage() {
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
-      <div className="overflow-x-auto rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('colReference')}</TableHead>
-              <TableHead>{t('colKind')}</TableHead>
-              <TableHead>{t('colSummary')}</TableHead>
-              <TableHead>{t('colStart')}</TableHead>
-              <TableHead>{t('colStatus')}</TableHead>
-              <TableHead className="text-end">{t('colActions')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {invitations.map((inv) => (
-              <TableRow key={inv.id}>
-                <TableCell className="font-medium">{inv.referenceCode}</TableCell>
-                <TableCell>{t(`kind.${inv.kind}`)}</TableCell>
-                <TableCell className="text-sm">{inv.payload.summary}</TableCell>
-                <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                  {dualDate(inv.startAt, locale)}
-                </TableCell>
-                <TableCell>
-                  <Badge variant={inv.status === 'scheduled' ? 'default' : 'destructive'}>
-                    {t(`status.${inv.status}`)}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setInspect(inv)}>
-                      {t('inspect')}
-                    </Button>
-                    {inv.status === 'scheduled' && (
-                      <Button variant="ghost" size="sm" onClick={() => void cancel(inv)}>
-                        {t('cancel')}
-                      </Button>
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-            {invitations.length === 0 && !loading && (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center text-sm text-muted-foreground">
-                  {t('empty')}
-                </TableCell>
-              </TableRow>
+      <DataTable
+        rows={invitations}
+        loading={loading}
+        rowKey={(inv) => inv.id}
+        searchPlaceholder={t('searchPlaceholder')}
+        initialSort={{ key: 'start', dir: 'desc' }}
+        emptyTitle={t('empty')}
+        columns={[
+          {
+            key: 'reference',
+            header: t('colReference'),
+            sortValue: (inv) => inv.referenceCode,
+            searchValues: (inv) => [inv.referenceCode, inv.payload.summary],
+            cell: (inv) => <span className="font-medium">{inv.referenceCode}</span>,
+          },
+          {
+            key: 'kind',
+            header: t('colKind'),
+            sortValue: (inv) => t(`kind.${inv.kind}`),
+            cell: (inv) => t(`kind.${inv.kind}`),
+          },
+          {
+            key: 'summary',
+            header: t('colSummary'),
+            sortValue: (inv) => inv.payload.summary,
+            cell: (inv) => <span className="text-sm">{inv.payload.summary}</span>,
+          },
+          {
+            key: 'start',
+            header: t('colStart'),
+            sortValue: (inv) => inv.startAt,
+            cell: (inv) => (
+              <span className="whitespace-nowrap text-sm text-muted-foreground">
+                {dualDate(inv.startAt, locale)}
+              </span>
+            ),
+          },
+          {
+            key: 'status',
+            header: t('colStatus'),
+            sortValue: (inv) => inv.status,
+            cell: (inv) => (
+              <StatusPill tone={toneFor('invitation', inv.status)}>
+                {t(`status.${inv.status}`)}
+              </StatusPill>
+            ),
+          },
+        ]}
+        actions={(inv) => (
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={() => setInspect(inv)}>
+              {t('inspect')}
+            </Button>
+            {inv.status === 'scheduled' && (
+              <Button variant="ghost" size="sm" onClick={() => void cancel(inv)}>
+                {t('cancel')}
+              </Button>
             )}
-          </TableBody>
-        </Table>
-      </div>
+          </div>
+        )}
+      />
 
       {/* Schedule dialog */}
       <Dialog open={open} onOpenChange={setOpen}>

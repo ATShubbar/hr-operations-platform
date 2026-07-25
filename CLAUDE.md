@@ -421,7 +421,33 @@ reading was URL@18ms, sheet removed@171ms. Beyond the card: Today's rows reflow 
 keyboard-reachable (WCAG 2.1.1 — **205px of Employees columns were unreachable by keyboard**),
 fixed in `DataTable` because UX-03c migrates every list onto it. Found-not-fixed:
 `/ar/calendar` leaks a raw `open` enum (same class as the UX-04 defect), filed separately.
-Next: UX-03c list sweep or UX-06 states.
+**UX-03c done — the DataTable sweep.** NINE lists migrated (clients, documents,
+requests, tasks, gro, vacancies, **integrations** — a real list neither card had counted —
+plus the two portal lists), so every list in the app is on `DataTable` except `/audit`
+(`/expiry` is a bucketed dashboard and `/reports` a generic renderer, not lists).
+**`/audit` is deliberately excluded**: it is the one genuinely SERVER-PAGED list
+(`limit`+`beforeId`+`nextCursor`+"load more"), and DataTable filters a complete in-memory
+array — migrating it would leave a search box that searches only the rows fetched so far
+and reports "no results" for entries that exist, the same silent-failure class as
+unnormalised Arabic search. It migrates when DataTable gets a real server-side mode.
+**The sweep forced one component change:** five screens filter SERVER-side, so DataTable
+could not distinguish filtered-to-nothing from an empty table and would have shown a
+create/upload CTA to someone who had just filtered — added `filtersActive`, measured on
+Documents (filter to `expiring before 2020` → no-results + a clear that resets the server
+filter and refetches). Verified per role by logging in as each: **Clients as hr_officer
+renders TWO headers, not an empty third** (no `client.update` → no actions column at all);
+Requests `process`, GRO `change status`, Vacancies status-Select appear only for holders;
+Tasks hides "assign to me" on tasks already yours; portal employees still redacts (no
+salary, no identifier numbers, regex-checked in the rendered page). Arabic search
+re-proved on migrated screens (`شركة الالف` → 2 rows, `احمد` → 2 rows, where `includes()`
+returns false); GRO due-date sorting is correct only because it sorts raw ISO — all three
+rows share a Hijri month name. Four dead `STATUS_VARIANT` maps died with the migration
+(Requests' painted `resolved` solid and `closed` outline for two states that both mean
+finished — the original audit finding), and two domains joined the tone table: `client`
+(inactive = neutral, not a fault) and `invitation` (**cancelled = neutral, was
+`destructive`** — it read as failure for an action that succeeded). Dev data restored:
+the verification invitation deleted, the temporarily-enabled `flag.client-self-service`
+row deleted. Next: UX-06 states or UX-09 (SelectValue leak + unified workflow controls).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

@@ -13,8 +13,8 @@ import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useCan } from '@/lib/session';
 import { dualDate, type Locale } from '@/lib/employee-format';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { DataTable } from '@/components/ui/data-table';
 import {
   Dialog,
   DialogContent,
@@ -32,14 +32,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { StatusPill } from '@/components/ui/status-pill';
+import { toneFor } from '@/lib/status-tone';
 
 const TYPES = ['letter', 'certificate', 'document', 'gro_service', 'general'] as const;
 const STATUSES = ['open', 'in_progress', 'resolved', 'closed', 'cancelled'] as const;
@@ -54,14 +48,6 @@ const NEXT: Record<RequestStatus, readonly RequestStatus[]> = {
   resolved: ['closed', 'in_progress'],
   closed: [],
   cancelled: [],
-};
-
-const STATUS_VARIANT: Record<RequestStatus, 'default' | 'secondary' | 'outline' | 'destructive'> = {
-  open: 'secondary',
-  in_progress: 'default',
-  resolved: 'default',
-  closed: 'outline',
-  cancelled: 'destructive',
 };
 
 interface CreateForm {
@@ -274,55 +260,77 @@ export default function RequestsPage() {
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
-      <div className="overflow-x-auto rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('colTitle')}</TableHead>
-              <TableHead>{t('colClient')}</TableHead>
-              <TableHead>{t('colType')}</TableHead>
-              <TableHead>{t('colStatus')}</TableHead>
-              <TableHead>{t('colPriority')}</TableHead>
-              <TableHead>{t('colDue')}</TableHead>
-              <TableHead className="text-end">{t('colActions')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {requests.map((r) => (
-              <TableRow key={r.id}>
-                <TableCell className="font-medium">{r.title}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {clientName(r.clientId)}
-                </TableCell>
-                <TableCell>{t(`type.${r.type}`)}</TableCell>
-                <TableCell>
-                  <Badge variant={STATUS_VARIANT[r.status]}>{t(`status.${r.status}`)}</Badge>
-                </TableCell>
-                <TableCell>{t(`priority.${r.priority}`)}</TableCell>
-                <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                  {dualDate(r.dueDate, locale) ?? t('none')}
-                </TableCell>
-                <TableCell>
-                  <div className="flex justify-end">
-                    {canProcess && NEXT[r.status].length > 0 && (
-                      <Button variant="outline" size="sm" onClick={() => openProcess(r)}>
-                        {t('process')}
-                      </Button>
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-            {requests.length === 0 && !loading && (
-              <TableRow>
-                <TableCell colSpan={7} className="text-center text-sm text-muted-foreground">
-                  {t('empty')}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <DataTable
+        rows={requests}
+        loading={loading}
+        rowKey={(r) => r.id}
+        searchPlaceholder={t('searchPlaceholder')}
+        initialSort={{ key: 'due', dir: 'asc' }}
+        emptyTitle={t('empty')}
+        filtersActive={fClient !== ALL || fStatus !== ALL}
+        onClearFilters={onClear}
+        columns={[
+          {
+            key: 'title',
+            header: t('colTitle'),
+            sortValue: (r) => r.title,
+            searchValues: (r) => [r.title, r.description, t(`type.${r.type}`)],
+            cell: (r) => <span className="font-medium">{r.title}</span>,
+          },
+          {
+            key: 'client',
+            header: t('colClient'),
+            sortValue: (r) => clientName(r.clientId),
+            searchValues: (r) => [clientName(r.clientId)],
+            cell: (r) => (
+              <span className="text-sm text-muted-foreground">{clientName(r.clientId)}</span>
+            ),
+          },
+          {
+            key: 'type',
+            header: t('colType'),
+            sortValue: (r) => t(`type.${r.type}`),
+            cell: (r) => t(`type.${r.type}`),
+          },
+          {
+            key: 'status',
+            header: t('colStatus'),
+            sortValue: (r) => r.status,
+            cell: (r) => (
+              <StatusPill tone={toneFor('request', r.status)}>{t(`status.${r.status}`)}</StatusPill>
+            ),
+          },
+          {
+            key: 'priority',
+            header: t('colPriority'),
+            sortValue: (r) => r.priority,
+            cell: (r) => t(`priority.${r.priority}`),
+          },
+          {
+            key: 'due',
+            header: t('colDue'),
+            sortValue: (r) => r.dueDate,
+            cell: (r) => (
+              <span className="whitespace-nowrap text-sm text-muted-foreground">
+                {dualDate(r.dueDate, locale) ?? t('none')}
+              </span>
+            ),
+          },
+        ]}
+        actions={
+          canProcess
+            ? (r) => (
+                <div className="flex justify-end">
+                  {NEXT[r.status].length > 0 && (
+                    <Button variant="outline" size="sm" onClick={() => openProcess(r)}>
+                      {t('process')}
+                    </Button>
+                  )}
+                </div>
+              )
+            : undefined
+        }
+      />
 
       {/* Create dialog */}
       <Dialog open={open} onOpenChange={setOpen}>

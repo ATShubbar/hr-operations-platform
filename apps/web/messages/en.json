@@ -121,7 +121,8 @@
       "available": "Available",
       "quarantined": "Quarantined",
       "deleted": "Deleted"
-    }
+    },
+    "searchPlaceholder": "Search title or category…"
   },
   "settings": {
     "title": "Settings",
@@ -291,7 +292,8 @@
     "saving": "Saving…",
     "cancel": "Cancel",
     "saveError": "Could not save — you may not have permission.",
-    "archiveError": "Could not archive — you may not have permission."
+    "archiveError": "Could not archive — you may not have permission.",
+    "searchPlaceholder": "Search client name…"
   },
   "audit": {
     "title": "Audit log",
@@ -432,7 +434,8 @@
       "low": "Low",
       "normal": "Normal",
       "high": "High"
-    }
+    },
+    "searchPlaceholder": "Search title, type or client…"
   },
   "tasks": {
     "title": "Tasks",
@@ -483,7 +486,8 @@
       "low": "Low",
       "normal": "Normal",
       "high": "High"
-    }
+    },
+    "searchPlaceholder": "Search task or client…"
   },
   "vacancies": {
     "title": "Vacancies",
@@ -520,7 +524,8 @@
       "filled": "Filled",
       "closed": "Closed",
       "cancelled": "Cancelled"
-    }
+    },
+    "searchPlaceholder": "Search title, department or client…"
   },
   "candidates": {
     "title": "Candidate pipeline",
@@ -603,7 +608,8 @@
     "status": {
       "scheduled": "Scheduled",
       "cancelled": "Cancelled"
-    }
+    },
+    "searchPlaceholder": "Search reference or title…"
   },
   "calendar": {
     "title": "Calendar",
@@ -684,7 +690,8 @@
       "rejected": "Rejected",
       "completed": "Completed",
       "cancelled": "Cancelled"
-    }
+    },
+    "searchPlaceholder": "Search employee, reference or type…"
   },
   "portal": {
     "loading": "Loading…",
@@ -717,7 +724,8 @@
         "on_leave": "On leave",
         "suspended": "Suspended",
         "terminated": "Terminated"
-      }
+      },
+      "searchPlaceholder": "Search name or job title…"
     },
     "documents": {
       "title": "My documents",
@@ -738,7 +746,8 @@
         "national_id": "National ID",
         "cv": "CV",
         "other": "Other"
-      }
+      },
+      "searchPlaceholder": "Search title or category…"
     }
   },
   "reports": {

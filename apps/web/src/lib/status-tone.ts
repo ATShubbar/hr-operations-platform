@@ -76,8 +76,26 @@ const CANDIDATE: Record<string, StatusTone> = {
   withdrawn: 'neutral',
 };
 
+// Added in UX-03c, when the clients console moved off a decorative Badge onto a
+// semantic StatusPill. An archived client is not a fault or a warning — it is
+// simply not current, which is what neutral means here.
+const CLIENT: Record<string, StatusTone> = {
+  active: 'ok',
+  inactive: 'neutral',
+};
+
+// Google Calendar invitations (UX-03c). A cancelled invitation is not a failure —
+// the withdrawal succeeded — so it is neutral, not critical. The screen previously
+// painted it `destructive`, which read as "something went wrong".
+const INVITATION: Record<string, StatusTone> = {
+  scheduled: 'ok',
+  cancelled: 'neutral',
+};
+
 const DOMAINS = {
   vacancy: VACANCY,
+  client: CLIENT,
+  invitation: INVITATION,
   gro: GRO,
   request: REQUEST,
   task: TASK,

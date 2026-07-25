@@ -6,15 +6,9 @@ import type { EmployeeListResponse, EmployeeResponse } from '@hr/contracts';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { dualDate, EMPLOYMENT_STATUS_KEY, type Locale } from '@/lib/employee-format';
-import { Badge } from '@/components/ui/badge';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { DataTable } from '@/components/ui/data-table';
+import { StatusPill } from '@/components/ui/status-pill';
+import { toneFor } from '@/lib/status-tone';
 
 // Client portal — employees (PORTAL-04) over GET /portal/employees. The rep sees
 // only their OWN employees, redacted to core + government STATUS/EXPIRY: no
@@ -64,51 +58,69 @@ export default function PortalEmployeesPage() {
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       {!disabled && !error && (
-        <div className="overflow-x-auto rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t('employees.colName')}</TableHead>
-                <TableHead>{t('employees.colJobTitle')}</TableHead>
-                <TableHead>{t('employees.colDepartment')}</TableHead>
-                <TableHead>{t('employees.colStatus')}</TableHead>
-                <TableHead>{t('employees.colIqamaExpiry')}</TableHead>
-                <TableHead>{t('employees.colWorkPermitExpiry')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {employees.map((e) => (
-                <TableRow key={e.id}>
-                  <TableCell className="font-medium">
-                    {locale === 'ar' ? e.name.ar : e.name.en}
-                  </TableCell>
-                  <TableCell>
-                    {(locale === 'ar' ? e.jobTitle.ar : e.jobTitle.en) ?? t('employees.none')}
-                  </TableCell>
-                  <TableCell>{e.department ?? t('employees.none')}</TableCell>
-                  <TableCell>
-                    <Badge variant={e.employmentStatus === 'active' ? 'default' : 'secondary'}>
-                      {t(`employees.${EMPLOYMENT_STATUS_KEY[e.employmentStatus]}`)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                    {dualDate(e.govdata?.iqamaExpiry ?? null, locale) ?? t('employees.none')}
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                    {dualDate(e.govdata?.workPermitExpiry ?? null, locale) ?? t('employees.none')}
-                  </TableCell>
-                </TableRow>
-              ))}
-              {employees.length === 0 && !loading && (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center text-sm text-muted-foreground">
-                    {t('employees.empty')}
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
+        <DataTable
+          rows={employees}
+          loading={loading}
+          rowKey={(e) => e.id}
+          searchPlaceholder={t('employees.searchPlaceholder')}
+          initialSort={{ key: 'name', dir: 'asc' }}
+          emptyTitle={t('employees.empty')}
+          columns={[
+            {
+              key: 'name',
+              header: t('employees.colName'),
+              sortValue: (e) => (locale === 'ar' ? e.name.ar : e.name.en),
+              searchValues: (e) => [e.name.ar, e.name.en],
+              cell: (e) => (
+                <span className="font-medium">{locale === 'ar' ? e.name.ar : e.name.en}</span>
+              ),
+            },
+            {
+              key: 'jobTitle',
+              header: t('employees.colJobTitle'),
+              sortValue: (e) => (locale === 'ar' ? e.jobTitle.ar : e.jobTitle.en) ?? '',
+              searchValues: (e) => [e.jobTitle.ar, e.jobTitle.en, e.department],
+              cell: (e) =>
+                (locale === 'ar' ? e.jobTitle.ar : e.jobTitle.en) ?? t('employees.none'),
+            },
+            {
+              key: 'department',
+              header: t('employees.colDepartment'),
+              sortValue: (e) => e.department ?? '',
+              cell: (e) => e.department ?? t('employees.none'),
+            },
+            {
+              key: 'status',
+              header: t('employees.colStatus'),
+              sortValue: (e) => e.employmentStatus,
+              cell: (e) => (
+                <StatusPill tone={toneFor('employee', e.employmentStatus)}>
+                  {t(`employees.${EMPLOYMENT_STATUS_KEY[e.employmentStatus]}`)}
+                </StatusPill>
+              ),
+            },
+            {
+              key: 'iqamaExpiry',
+              header: t('employees.colIqamaExpiry'),
+              sortValue: (e) => e.govdata?.iqamaExpiry,
+              cell: (e) => (
+                <span className="whitespace-nowrap text-sm text-muted-foreground">
+                  {dualDate(e.govdata?.iqamaExpiry ?? null, locale) ?? t('employees.none')}
+                </span>
+              ),
+            },
+            {
+              key: 'workPermitExpiry',
+              header: t('employees.colWorkPermitExpiry'),
+              sortValue: (e) => e.govdata?.workPermitExpiry,
+              cell: (e) => (
+                <span className="whitespace-nowrap text-sm text-muted-foreground">
+                  {dualDate(e.govdata?.workPermitExpiry ?? null, locale) ?? t('employees.none')}
+                </span>
+              ),
+            },
+          ]}
+        />
       )}
     </div>
   );

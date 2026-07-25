@@ -13,8 +13,8 @@ import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useCan } from '@/lib/session';
 import { type Locale } from '@/lib/employee-format';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { DataTable } from '@/components/ui/data-table';
 import {
   Dialog,
   DialogContent,
@@ -31,14 +31,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { StatusPill } from '@/components/ui/status-pill';
+import { toneFor } from '@/lib/status-tone';
 
 const STATUSES = ['draft', 'open', 'filled', 'closed', 'cancelled'] as const;
 const ALL = 'all';
@@ -51,14 +45,6 @@ const NEXT: Record<VacancyStatus, readonly VacancyStatus[]> = {
   filled: ['closed'],
   closed: [],
   cancelled: [],
-};
-
-const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
-  draft: 'secondary',
-  open: 'default',
-  filled: 'outline',
-  closed: 'outline',
-  cancelled: 'destructive',
 };
 
 interface CreateForm {
@@ -129,6 +115,13 @@ export default function VacanciesPage() {
   }, []);
 
   const shown = vacancies.filter((v) => fStatus === ALL || v.status === fStatus);
+
+  // Client is a server query param, status is the `shown` filter — clear both.
+  const onClearFilters = () => {
+    setFStatus(ALL);
+    setFClient(ALL);
+    void load(ALL);
+  };
 
   function openCreate() {
     setForm({ ...EMPTY_CREATE, clientId: clients.find((c) => c.status === 'active')?.id ?? '' });
@@ -226,68 +219,86 @@ export default function VacanciesPage() {
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
-      <div className="overflow-x-auto rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('colTitle')}</TableHead>
-              <TableHead>{t('colClient')}</TableHead>
-              <TableHead>{t('colDepartment')}</TableHead>
-              <TableHead>{t('colHeadcount')}</TableHead>
-              <TableHead>{t('colStatus')}</TableHead>
-              {canApprove && <TableHead className="text-end">{t('colActions')}</TableHead>}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {shown.map((v) => (
-              <TableRow key={v.id}>
-                <TableCell className="font-medium">
-                  {locale === 'ar' ? v.title.ar : v.title.en}
-                </TableCell>
-                <TableCell>{clientName(v.clientId)}</TableCell>
-                <TableCell>{v.department ?? t('none')}</TableCell>
-                <TableCell>{v.headcount}</TableCell>
-                <TableCell>
-                  <Badge variant={STATUS_VARIANT[v.status] ?? 'secondary'}>
-                    {t(`status.${v.status}`)}
-                  </Badge>
-                </TableCell>
-                {canApprove && (
-                  <TableCell>
-                    <div className="flex justify-end">
-                      {NEXT[v.status].length > 0 ? (
-                        <Select value="" onValueChange={(s) => s && void changeStatus(v, s as VacancyStatus)}>
-                          <SelectTrigger className="w-36">
-                            <SelectValue placeholder={t('changeStatus')}>
-                              {() => t('changeStatus')}
-                            </SelectValue>
-                          </SelectTrigger>
-                          <SelectContent>
-                            {NEXT[v.status].map((s) => (
-                              <SelectItem key={s} value={s}>
-                                {t(`status.${s}`)}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">{t('terminal')}</span>
-                      )}
-                    </div>
-                  </TableCell>
-                )}
-              </TableRow>
-            ))}
-            {shown.length === 0 && !loading && (
-              <TableRow>
-                <TableCell colSpan={canApprove ? 6 : 5} className="text-center text-sm text-muted-foreground">
-                  {t('empty')}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <DataTable
+        rows={shown}
+        loading={loading}
+        rowKey={(v) => v.id}
+        searchPlaceholder={t('searchPlaceholder')}
+        initialSort={{ key: 'title', dir: 'asc' }}
+        emptyTitle={t('empty')}
+        filtersActive={fClient !== ALL || fStatus !== ALL}
+        onClearFilters={onClearFilters}
+        columns={[
+          {
+            key: 'title',
+            header: t('colTitle'),
+            sortValue: (v) => (locale === 'ar' ? v.title.ar : v.title.en),
+            // Both title languages are searchable: a vacancy is often created in
+            // English and looked up in the Arabic UI.
+            searchValues: (v) => [v.title.ar, v.title.en, v.department],
+            cell: (v) => (
+              <span className="font-medium">{locale === 'ar' ? v.title.ar : v.title.en}</span>
+            ),
+          },
+          {
+            key: 'client',
+            header: t('colClient'),
+            sortValue: (v) => clientName(v.clientId),
+            searchValues: (v) => [clientName(v.clientId)],
+            cell: (v) => clientName(v.clientId),
+          },
+          {
+            key: 'department',
+            header: t('colDepartment'),
+            sortValue: (v) => v.department ?? '',
+            cell: (v) => v.department ?? t('none'),
+          },
+          {
+            key: 'headcount',
+            header: t('colHeadcount'),
+            numeric: true,
+            sortValue: (v) => v.headcount,
+            cell: (v) => v.headcount,
+          },
+          {
+            key: 'status',
+            header: t('colStatus'),
+            sortValue: (v) => v.status,
+            cell: (v) => (
+              <StatusPill tone={toneFor('vacancy', v.status)}>{t(`status.${v.status}`)}</StatusPill>
+            ),
+          },
+        ]}
+        actions={
+          canApprove
+            ? (v) => (
+                <div className="flex justify-end">
+                  {NEXT[v.status].length > 0 ? (
+                    <Select
+                      value=""
+                      onValueChange={(s) => s && void changeStatus(v, s as VacancyStatus)}
+                    >
+                      <SelectTrigger className="w-36">
+                        <SelectValue placeholder={t('changeStatus')}>
+                          {() => t('changeStatus')}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {NEXT[v.status].map((s) => (
+                          <SelectItem key={s} value={s}>
+                            {t(`status.${s}`)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">{t('terminal')}</span>
+                  )}
+                </div>
+              )
+            : undefined
+        }
+      />
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>

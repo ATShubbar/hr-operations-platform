@@ -7,14 +7,7 @@ import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { dualDate, type Locale } from '@/lib/employee-format';
 import { Button } from '@/components/ui/button';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { DataTable } from '@/components/ui/data-table';
 
 const CATEGORIES = [
   'iqama',
@@ -89,43 +82,46 @@ export default function PortalDocumentsPage() {
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       {!disabled && !error && (
-        <div className="overflow-x-auto rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t('documents.colTitle')}</TableHead>
-                <TableHead>{t('documents.colCategory')}</TableHead>
-                <TableHead>{t('documents.colExpiry')}</TableHead>
-                <TableHead className="text-end">{t('documents.colActions')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {documents.map((d) => (
-                <TableRow key={d.id}>
-                  <TableCell className="font-medium">{d.title}</TableCell>
-                  <TableCell>{categoryLabel(d.category)}</TableCell>
-                  <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                    {dualDate(d.expiryDate, locale) ?? t('documents.none')}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex justify-end">
-                      <Button variant="outline" size="sm" onClick={() => void download(d)}>
-                        {t('documents.download')}
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {documents.length === 0 && !loading && (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center text-sm text-muted-foreground">
-                    {t('documents.empty')}
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
+        <DataTable
+          rows={documents}
+          loading={loading}
+          rowKey={(d) => d.id}
+          searchPlaceholder={t('documents.searchPlaceholder')}
+          initialSort={{ key: 'title', dir: 'asc' }}
+          emptyTitle={t('documents.empty')}
+          columns={[
+            {
+              key: 'title',
+              header: t('documents.colTitle'),
+              sortValue: (d) => d.title,
+              searchValues: (d) => [d.title, categoryLabel(d.category)],
+              cell: (d) => <span className="font-medium">{d.title}</span>,
+            },
+            {
+              key: 'category',
+              header: t('documents.colCategory'),
+              sortValue: (d) => categoryLabel(d.category),
+              cell: (d) => categoryLabel(d.category),
+            },
+            {
+              key: 'expiry',
+              header: t('documents.colExpiry'),
+              sortValue: (d) => d.expiryDate,
+              cell: (d) => (
+                <span className="whitespace-nowrap text-sm text-muted-foreground">
+                  {dualDate(d.expiryDate, locale) ?? t('documents.none')}
+                </span>
+              ),
+            },
+          ]}
+          actions={(d) => (
+            <div className="flex justify-end">
+              <Button variant="outline" size="sm" onClick={() => void download(d)}>
+                {t('documents.download')}
+              </Button>
+            </div>
+          )}
+        />
       )}
     </div>
   );

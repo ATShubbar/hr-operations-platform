@@ -121,7 +121,8 @@
       "available": "متاح",
       "quarantined": "محجوز",
       "deleted": "محذوف"
-    }
+    },
+    "searchPlaceholder": "ابحث بالعنوان أو الفئة…"
   },
   "settings": {
     "title": "الإعدادات",
@@ -291,7 +292,8 @@
     "saving": "جارٍ الحفظ…",
     "cancel": "إلغاء",
     "saveError": "تعذّر الحفظ — قد لا تملك الصلاحية.",
-    "archiveError": "تعذّرت الأرشفة — قد لا تملك الصلاحية."
+    "archiveError": "تعذّرت الأرشفة — قد لا تملك الصلاحية.",
+    "searchPlaceholder": "ابحث باسم العميل…"
   },
   "audit": {
     "title": "سجل التدقيق",
@@ -432,7 +434,8 @@
       "low": "منخفضة",
       "normal": "عادية",
       "high": "عالية"
-    }
+    },
+    "searchPlaceholder": "ابحث بالعنوان أو النوع أو العميل…"
   },
   "tasks": {
     "title": "المهام",
@@ -483,7 +486,8 @@
       "low": "منخفضة",
       "normal": "عادية",
       "high": "عالية"
-    }
+    },
+    "searchPlaceholder": "ابحث بالمهمة أو العميل…"
   },
   "vacancies": {
     "title": "الشواغر",
@@ -520,7 +524,8 @@
       "filled": "مشغول",
       "closed": "مغلق",
       "cancelled": "ملغى"
-    }
+    },
+    "searchPlaceholder": "ابحث بالمسمى أو القسم أو العميل…"
   },
   "candidates": {
     "title": "مسار المرشحين",
@@ -603,7 +608,8 @@
     "status": {
       "scheduled": "مجدولة",
       "cancelled": "ملغاة"
-    }
+    },
+    "searchPlaceholder": "ابحث بالمرجع أو العنوان…"
   },
   "calendar": {
     "title": "التقويم",
@@ -684,7 +690,8 @@
       "rejected": "مرفوضة",
       "completed": "مكتملة",
       "cancelled": "ملغاة"
-    }
+    },
+    "searchPlaceholder": "ابحث بالموظف أو المرجع أو النوع…"
   },
   "portal": {
     "loading": "جارٍ التحميل…",
@@ -717,7 +724,8 @@
         "on_leave": "في إجازة",
         "suspended": "موقوف",
         "terminated": "منتهي"
-      }
+      },
+      "searchPlaceholder": "ابحث بالاسم أو المسمى الوظيفي…"
     },
     "documents": {
       "title": "مستنداتي",
@@ -738,7 +746,8 @@
         "national_id": "هوية وطنية",
         "cv": "سيرة ذاتية",
         "other": "أخرى"
-      }
+      },
+      "searchPlaceholder": "ابحث بالعنوان أو الفئة…"
     }
   },
   "reports": {

@@ -12,8 +12,8 @@ import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useCan, useSession } from '@/lib/session';
 import { dualDate, type Locale } from '@/lib/employee-format';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { DataTable } from '@/components/ui/data-table';
 import {
   Dialog,
   DialogContent,
@@ -31,26 +31,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { StatusPill } from '@/components/ui/status-pill';
+import { toneFor } from '@/lib/status-tone';
 
 const STATUSES = ['open', 'in_progress', 'done', 'cancelled'] as const;
 const PRIORITIES = ['low', 'normal', 'high'] as const;
 const ALL = 'all';
 const NO_CLIENT = 'none';
-
-const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
-  open: 'secondary',
-  in_progress: 'default',
-  done: 'outline',
-  cancelled: 'destructive',
-};
 
 interface EditForm {
   status: string;
@@ -270,75 +257,101 @@ export default function TasksPage() {
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
-      <div className="overflow-x-auto rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('colTitle')}</TableHead>
-              <TableHead>{t('colClient')}</TableHead>
-              <TableHead>{t('colStatus')}</TableHead>
-              <TableHead>{t('colPriority')}</TableHead>
-              <TableHead>{t('colAssignee')}</TableHead>
-              <TableHead>{t('colDue')}</TableHead>
-              <TableHead className="text-end">{t('colActions')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {tasks.map((task) => (
-              <TableRow key={task.id}>
-                <TableCell className="font-medium">
-                  {task.title}
-                  {task.requestId && (
-                    <span className="ms-2 text-xs text-muted-foreground">({t('fromRequest')})</span>
+      <DataTable
+        rows={tasks}
+        loading={loading}
+        rowKey={(task) => task.id}
+        searchPlaceholder={t('searchPlaceholder')}
+        initialSort={{ key: 'due', dir: 'asc' }}
+        emptyTitle={t('empty')}
+        filtersActive={fStatus !== ALL || fClient !== ALL}
+        onClearFilters={onClear}
+        columns={[
+          {
+            key: 'title',
+            header: t('colTitle'),
+            sortValue: (task) => task.title,
+            searchValues: (task) => [task.title, task.description],
+            cell: (task) => (
+              <span className="font-medium">
+                {task.title}
+                {task.requestId && (
+                  <span className="ms-2 text-xs text-muted-foreground">({t('fromRequest')})</span>
+                )}
+              </span>
+            ),
+          },
+          {
+            key: 'client',
+            header: t('colClient'),
+            sortValue: (task) => clientName(task.clientId),
+            searchValues: (task) => [clientName(task.clientId)],
+            cell: (task) => (
+              <span className="text-sm text-muted-foreground">{clientName(task.clientId)}</span>
+            ),
+          },
+          {
+            key: 'status',
+            header: t('colStatus'),
+            sortValue: (task) => task.status,
+            cell: (task) => (
+              <StatusPill tone={toneFor('task', task.status)}>
+                {t(`status.${task.status}`)}
+              </StatusPill>
+            ),
+          },
+          {
+            key: 'priority',
+            header: t('colPriority'),
+            sortValue: (task) => task.priority,
+            cell: (task) => t(`priority.${task.priority}`),
+          },
+          {
+            key: 'assignee',
+            header: t('colAssignee'),
+            sortValue: (task) => task.assigneeUserId ?? '',
+            cell: (task) => (
+              <span className="text-sm text-muted-foreground">
+                {task.assigneeUserId
+                  ? task.assigneeUserId === me
+                    ? t('assigned')
+                    : task.assigneeUserId.slice(0, 8)
+                  : t('unassigned')}
+              </span>
+            ),
+          },
+          {
+            key: 'due',
+            header: t('colDue'),
+            sortValue: (task) => task.dueDate,
+            cell: (task) => (
+              <span className="whitespace-nowrap text-sm text-muted-foreground">
+                {dualDate(task.dueDate, locale) ?? t('none')}
+              </span>
+            ),
+          },
+        ]}
+        actions={
+          canUpdate
+            ? (task) => (
+                <div className="flex justify-end gap-2">
+                  {task.assigneeUserId !== me && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => void patch(task.id, { assigneeUserId: me })}
+                    >
+                      {t('assignToMe')}
+                    </Button>
                   )}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {clientName(task.clientId)}
-                </TableCell>
-                <TableCell>
-                  <Badge variant={STATUS_VARIANT[task.status]}>{t(`status.${task.status}`)}</Badge>
-                </TableCell>
-                <TableCell>{t(`priority.${task.priority}`)}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {task.assigneeUserId
-                    ? task.assigneeUserId === me
-                      ? t('assigned')
-                      : task.assigneeUserId.slice(0, 8)
-                    : t('unassigned')}
-                </TableCell>
-                <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                  {dualDate(task.dueDate, locale) ?? t('none')}
-                </TableCell>
-                <TableCell>
-                  <div className="flex justify-end gap-2">
-                    {canUpdate && task.assigneeUserId !== me && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => void patch(task.id, { assigneeUserId: me })}
-                      >
-                        {t('assignToMe')}
-                      </Button>
-                    )}
-                    {canUpdate && (
-                      <Button variant="outline" size="sm" onClick={() => openEdit(task)}>
-                        {t('edit')}
-                      </Button>
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-            {tasks.length === 0 && !loading && (
-              <TableRow>
-                <TableCell colSpan={7} className="text-center text-sm text-muted-foreground">
-                  {t('empty')}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+                  <Button variant="outline" size="sm" onClick={() => openEdit(task)}>
+                    {t('edit')}
+                  </Button>
+                </div>
+              )
+            : undefined
+        }
+      />
 
       {/* Create dialog */}
       <Dialog open={open} onOpenChange={setOpen}>

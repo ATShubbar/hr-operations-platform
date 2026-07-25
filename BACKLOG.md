@@ -1723,10 +1723,10 @@ results** for the most common typing variants (`احمد` does not match `أحم
 | UX-01 | Semantic status token tier (separate from brand gold) + surface layering + `no-brand-in-status` guardrail | — | done ([evidence](evidence/ux/UX-01.md)) |
 | UX-02 | Primitives: StatusPill, Skeleton, Toast (Base UI), Textarea, EmptyState, Popover **+ DirectionProvider** | UX-01 | done ([evidence](evidence/ux/UX-02.md)) |
 | UX-03 | DataTable + **`@hr/text` Arabic search normaliser**: search, sort, pagination, empty/no-results split; adopted on Employees | UX-02 | done ([evidence](evidence/ux/UX-03.md)) |
-| UX-03c | Sweep the remaining seven lists onto DataTable (Documents, Requests, Tasks, GRO, Vacancies, Clients, Audit) | UX-03 | planned |
 | UX-03b | Bidi isolation: wrap Latin identifiers + dual-calendar dates in `<bdi>` (DirectionProvider shipped early in UX-02) | — | planned |
 | UX-04 | **"Today"** — the role-aware home screen (re-projects `/calendar/view` as an urgency-ordered work queue) | UX-02 | done ([evidence](evidence/ux/UX-04.md)) |
 | UX-05 | Mobile navigation + responsive lists and dialogs | UX-02 | **done** |
+| UX-03c | Sweep the remaining lists onto DataTable | UX-03, UX-05 | **done** |
 | UX-06 | States everywhere: skeletons, empty, error-with-retry, 403 | UX-02 | planned |
 | UX-07 | Realistic demo data (seed shows 0 expiring / 0 overdue today — the dashboard can't be evaluated) | — | planned |
 | UX-08 | Arabic typeface + bidi isolation polish | UX-03b | planned |
@@ -1800,6 +1800,33 @@ results** for the most common typing variants (`احمد` does not match `أحم
   336/336 passing then exits non-zero on the documented ioredis teardown noise;
   reproduced 3/3 under turbo's concurrency) — filed as a follow-up, kept separate
   from the supertest port-collision issue.
+
+### UX-03c — the DataTable sweep
+- **Objective:** finish UX-03 — every list gets search, sort, paging, the empty-vs-
+  no-results split and the keyboard-reachable scroll region, by migration.
+- **Files:** 9 page files (`clients`, `documents`, `requests`, `tasks`, `gro`,
+  `vacancies`, `integrations`, `portal/employees`, `portal/documents`);
+  `ui/data-table.tsx` (new `filtersActive`); `lib/status-tone.ts` (`client` +
+  `invitation` domains); `messages/{en,ar}.json` (9 × `searchPlaceholder`).
+- **DoD:** shadcn `Table` imports gone from every migrated screen; every filter and
+  row action preserved WITH its permission gate; dates sort on raw ISO; Arabic
+  hamza-less search verified on two screens; empty vs no-results distinct; both
+  locales; lint/typecheck/build 15/15; no API change.
+- **Evidence:** `evidence/ux/UX-03c.md`.
+- **Dependencies:** UX-03, UX-05. **Risks/decisions:** **NINE lists, not eight** —
+  `/integrations` was a real list neither card counted, and "every list except audit"
+  was false without it. **`/audit` deliberately NOT migrated**: it is the one
+  genuinely server-paged list (`limit`+`beforeId`+`nextCursor`), and DataTable filters
+  a complete in-memory array — migrating it would leave a search box that searches
+  only the rows fetched so far and says "no results" for entries that exist, the same
+  silent-failure class as unnormalised Arabic search. It migrates when DataTable gets
+  a real server-side mode. **Component change forced by the sweep:** five screens
+  filter server-side, so DataTable could not tell a filtered-empty list from an empty
+  table and would have shown a create CTA to someone who had just filtered — added
+  `filtersActive`, measured on Documents. Gating verified per role by logging in as
+  each (Clients as hr_officer renders TWO headers, not an empty third). Dev data
+  restored: the verification invitation deleted, the temporarily-enabled
+  `flag.client-self-service` row deleted.
 
 ### UX-05 — Mobile navigation + responsive dialogs
 - **Objective:** the app was unusable below 768px — the sidebar was `hidden md:flex`,

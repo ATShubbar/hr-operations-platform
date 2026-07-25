@@ -16,8 +16,8 @@ import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useCan } from '@/lib/session';
 import { dualDate, type Locale } from '@/lib/employee-format';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { DataTable } from '@/components/ui/data-table';
 import {
   Dialog,
   DialogContent,
@@ -34,14 +34,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { StatusPill } from '@/components/ui/status-pill';
+import { toneFor } from '@/lib/status-tone';
 
 const TYPES: readonly GroProcessType[] = [
   'iqama_issue',
@@ -84,16 +78,6 @@ const EXPIRY_TYPES: ReadonlySet<GroProcessType> = new Set([
   'exit_reentry',
   'work_permit_renewal',
 ]);
-
-const STATUS_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
-  not_started: 'secondary',
-  in_progress: 'default',
-  submitted: 'default',
-  approved: 'outline',
-  rejected: 'destructive',
-  completed: 'outline',
-  cancelled: 'destructive',
-};
 
 interface CreateForm {
   employeeId: string;
@@ -180,6 +164,14 @@ export default function GroPage() {
     () => processes.filter((p) => fStatus === ALL || p.status === fStatus),
     [processes, fStatus],
   );
+
+  // GRO's two filters live in different places — client is a server query param,
+  // status is the `shown` memo — so clearing has to reset both.
+  const onClearFilters = () => {
+    setFStatus(ALL);
+    setFClient(ALL);
+    void load(ALL);
+  };
 
   function openCreate() {
     setForm({ ...EMPTY_CREATE, employeeId: employees[0]?.id ?? '' });
@@ -305,63 +297,84 @@ export default function GroPage() {
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
-      <div className="overflow-x-auto rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('colEmployee')}</TableHead>
-              <TableHead>{t('colType')}</TableHead>
-              <TableHead>{t('colStatus')}</TableHead>
-              <TableHead>{t('colDue')}</TableHead>
-              <TableHead>{t('colReference')}</TableHead>
-              <TableHead>{t('colResultingExpiry')}</TableHead>
-              {canProcess && <TableHead className="text-end">{t('colActions')}</TableHead>}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {shown.map((p) => (
-              <TableRow key={p.id}>
-                <TableCell className="font-medium">{empName(p.employeeId)}</TableCell>
-                <TableCell>{t(`type.${p.type}`)}</TableCell>
-                <TableCell>
-                  <Badge variant={STATUS_VARIANT[p.status] ?? 'secondary'}>
-                    {t(`status.${p.status}`)}
-                  </Badge>
-                </TableCell>
-                <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                  {dualDate(p.dueDate, locale) ?? t('none')}
-                </TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {p.referenceNumber ?? t('none')}
-                </TableCell>
-                <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                  {dualDate(p.resultingExpiry, locale) ?? t('none')}
-                </TableCell>
-                {canProcess && (
-                  <TableCell>
-                    <div className="flex justify-end">
-                      {NEXT[p.status].length > 0 ? (
-                        <Button variant="outline" size="sm" onClick={() => openStatus(p)}>
-                          {t('changeStatus')}
-                        </Button>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">{t('terminal')}</span>
-                      )}
-                    </div>
-                  </TableCell>
-                )}
-              </TableRow>
-            ))}
-            {shown.length === 0 && !loading && (
-              <TableRow>
-                <TableCell colSpan={canProcess ? 7 : 6} className="text-center text-sm text-muted-foreground">
-                  {t('empty')}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <DataTable
+        rows={shown}
+        loading={loading}
+        rowKey={(p) => p.id}
+        searchPlaceholder={t('searchPlaceholder')}
+        initialSort={{ key: 'due', dir: 'asc' }}
+        emptyTitle={t('empty')}
+        filtersActive={fClient !== ALL || fStatus !== ALL}
+        onClearFilters={onClearFilters}
+        columns={[
+          {
+            key: 'employee',
+            header: t('colEmployee'),
+            sortValue: (p) => empName(p.employeeId),
+            // The reference number is searchable though it has its own column:
+            // it is how a GRO officer identifies a case on the phone to a ministry.
+            searchValues: (p) => [empName(p.employeeId), p.referenceNumber, t(`type.${p.type}`)],
+            cell: (p) => <span className="font-medium">{empName(p.employeeId)}</span>,
+          },
+          {
+            key: 'type',
+            header: t('colType'),
+            sortValue: (p) => t(`type.${p.type}`),
+            cell: (p) => t(`type.${p.type}`),
+          },
+          {
+            key: 'status',
+            header: t('colStatus'),
+            sortValue: (p) => p.status,
+            cell: (p) => (
+              <StatusPill tone={toneFor('gro', p.status)}>{t(`status.${p.status}`)}</StatusPill>
+            ),
+          },
+          {
+            key: 'due',
+            header: t('colDue'),
+            sortValue: (p) => p.dueDate,
+            cell: (p) => (
+              <span className="whitespace-nowrap text-sm text-muted-foreground">
+                {dualDate(p.dueDate, locale) ?? t('none')}
+              </span>
+            ),
+          },
+          {
+            key: 'reference',
+            header: t('colReference'),
+            sortValue: (p) => p.referenceNumber ?? '',
+            cell: (p) => (
+              <span className="text-sm text-muted-foreground">{p.referenceNumber ?? t('none')}</span>
+            ),
+          },
+          {
+            key: 'resultingExpiry',
+            header: t('colResultingExpiry'),
+            sortValue: (p) => p.resultingExpiry,
+            cell: (p) => (
+              <span className="whitespace-nowrap text-sm text-muted-foreground">
+                {dualDate(p.resultingExpiry, locale) ?? t('none')}
+              </span>
+            ),
+          },
+        ]}
+        actions={
+          canProcess
+            ? (p) => (
+                <div className="flex justify-end">
+                  {NEXT[p.status].length > 0 ? (
+                    <Button variant="outline" size="sm" onClick={() => openStatus(p)}>
+                      {t('changeStatus')}
+                    </Button>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">{t('terminal')}</span>
+                  )}
+                </div>
+              )
+            : undefined
+        }
+      />
 
       {/* Create dialog */}
       <Dialog open={open} onOpenChange={setOpen}>

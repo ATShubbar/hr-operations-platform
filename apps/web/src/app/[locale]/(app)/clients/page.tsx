@@ -6,8 +6,10 @@ import type { ClientListResponse, ClientResponse } from '@hr/contracts';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useCan } from '@/lib/session';
-import { Badge } from '@/components/ui/badge';
+import { toneFor } from '@/lib/status-tone';
 import { Button } from '@/components/ui/button';
+import { DataTable } from '@/components/ui/data-table';
+import { StatusPill } from '@/components/ui/status-pill';
 import {
   Dialog,
   DialogContent,
@@ -24,14 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 
 type Status = 'active' | 'inactive';
 interface FormState {
@@ -148,57 +142,59 @@ export default function ClientsPage() {
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
-      <div className="overflow-x-auto rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('colName')}</TableHead>
-              <TableHead>{t('colStatus')}</TableHead>
-              {(canUpdate || canDelete) && (
-                <TableHead className="text-end">{t('colActions')}</TableHead>
-              )}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {clients.map((c) => (
-              <TableRow key={c.id}>
-                <TableCell className="font-medium">{localizedName(c)}</TableCell>
-                <TableCell>
-                  <Badge variant={c.status === 'active' ? 'default' : 'secondary'}>
-                    {c.status === 'active' ? t('statusActive') : t('statusInactive')}
-                  </Badge>
-                </TableCell>
-                {(canUpdate || canDelete) && (
-                  <TableCell>
-                    <div className="flex justify-end gap-2">
-                      {canUpdate && (
-                        <Button variant="outline" size="sm" onClick={() => openEdit(c)}>
-                          {t('edit')}
-                        </Button>
-                      )}
-                      {canDelete && c.status === 'active' && (
-                        <Button variant="ghost" size="sm" onClick={() => void archive(c)}>
-                          {t('archive')}
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                )}
-              </TableRow>
-            ))}
-            {clients.length === 0 && !loading && (
-              <TableRow>
-                <TableCell
-                  colSpan={canUpdate || canDelete ? 3 : 2}
-                  className="text-center text-sm text-muted-foreground"
-                >
-                  {t('empty')}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      {/* UX-03c. The actions column is passed only when the actor can actually do
+          something — DataTable renders the trailing cell whenever `actions` is
+          given, so gating inside the renderer would leave everyone else an empty
+          column with a header. */}
+      <DataTable
+        rows={clients}
+        loading={loading}
+        rowKey={(c) => c.id}
+        searchPlaceholder={t('searchPlaceholder')}
+        initialSort={{ key: 'name', dir: 'asc' }}
+        emptyTitle={t('empty')}
+        emptyAction={canCreate ? <Button onClick={openCreate}>{t('new')}</Button> : undefined}
+        columns={[
+          {
+            key: 'name',
+            header: t('colName'),
+            sortValue: (c) => localizedName(c),
+            // Both names are searchable regardless of locale: staff switch
+            // languages, and a client is often known by its English name even in
+            // the Arabic UI.
+            searchValues: (c) => [c.name.ar, c.name.en],
+            cell: (c) => <span className="font-medium">{localizedName(c)}</span>,
+          },
+          {
+            key: 'status',
+            header: t('colStatus'),
+            sortValue: (c) => c.status,
+            cell: (c) => (
+              <StatusPill tone={toneFor('client', c.status)}>
+                {c.status === 'active' ? t('statusActive') : t('statusInactive')}
+              </StatusPill>
+            ),
+          },
+        ]}
+        actions={
+          canUpdate || canDelete
+            ? (c) => (
+                <div className="flex justify-end gap-2">
+                  {canUpdate && (
+                    <Button variant="outline" size="sm" onClick={() => openEdit(c)}>
+                      {t('edit')}
+                    </Button>
+                  )}
+                  {canDelete && c.status === 'active' && (
+                    <Button variant="ghost" size="sm" onClick={() => void archive(c)}>
+                      {t('archive')}
+                    </Button>
+                  )}
+                </div>
+              )
+            : undefined
+        }
+      />
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
