@@ -254,48 +254,67 @@ export default function DocumentsPage() {
         // indistinguishable from an empty table unless we say so.
         filtersActive={fClient !== ALL || fCategory !== ALL || fExpiring !== ''}
         onClearFilters={onClear}
-        // UX-13 — beside the search, no Apply button.
+        // Beside the search, no Apply button (UX-13) — but WITH visible labels.
+        //
+        // Three filters reading "All / All / dd-mm-yyyy" say nothing about what
+        // they filter, and this is the only screen with that many. The labels are
+        // real `htmlFor` associations, not decorative text beside an aria-label:
+        // <button> is a labelable element, so a <label for> pointing at the
+        // Select's trigger is a genuine one, and the aria-label it replaces is
+        // gone rather than left to duplicate the name.
         filters={
           <>
-            <Select value={fClient} onValueChange={(v) => applyFilters({ client: v ?? ALL })}>
-              <SelectTrigger className="w-44" aria-label={t('filterClient')}>
-                <SelectValue>
-                  {(v) => (v === ALL ? t('filterAll') : clientName(String(v)))}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={ALL}>{t('filterAll')}</SelectItem>
-                {clients.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {locale === 'ar' ? c.name.ar : c.name.en}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={fCategory} onValueChange={(v) => applyFilters({ category: v ?? ALL })}>
-              <SelectTrigger className="w-40" aria-label={t('filterCategory')}>
-                <SelectValue>
-                  {(v) => (v === ALL ? t('filterAll') : t(`category.${String(v)}`))}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={ALL}>{t('filterAll')}</SelectItem>
-                {CATEGORIES.map((c) => (
-                  <SelectItem key={c} value={c}>
-                    {t(`category.${c}`)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {/* The one non-Select filter in the app. `onChange` on a date input
-                fires on commit, not per keystroke — verified, one request. */}
-            <Input
-              type="date"
-              aria-label={t('filterExpiring')}
-              value={fExpiring}
-              onChange={(e) => applyFilters({ expiring: e.target.value })}
-              className="h-8 w-44"
-            />
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="f-client">{t('filterClient')}</Label>
+              <Select value={fClient} onValueChange={(v) => applyFilters({ client: v ?? ALL })}>
+                <SelectTrigger id="f-client" className="w-44">
+                  <SelectValue>
+                    {(v) => (v === ALL ? t('filterAll') : clientName(String(v)))}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL}>{t('filterAll')}</SelectItem>
+                  {clients.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {locale === 'ar' ? c.name.ar : c.name.en}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="f-category">{t('filterCategory')}</Label>
+              <Select
+                value={fCategory}
+                onValueChange={(v) => applyFilters({ category: v ?? ALL })}
+              >
+                <SelectTrigger id="f-category" className="w-40">
+                  <SelectValue>
+                    {(v) => (v === ALL ? t('filterAll') : t(`category.${String(v)}`))}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL}>{t('filterAll')}</SelectItem>
+                  {CATEGORIES.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {t(`category.${c}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="f-exp">{t('filterExpiring')}</Label>
+              {/* The one non-Select filter in the app. `onChange` on a date input
+                  fires on commit, not per keystroke — verified, one request. */}
+              <Input
+                id="f-exp"
+                type="date"
+                value={fExpiring}
+                onChange={(e) => applyFilters({ expiring: e.target.value })}
+                className="h-8 w-44"
+              />
+            </div>
           </>
         }
         columns={[

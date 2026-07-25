@@ -1828,9 +1828,18 @@ results** for the most common typing variants (`احمد` does not match `أحم
   Documents needed a single `applyFilters(patch)` merging over current state — three
   independent setters would race into a stale `load()`; verified date+category COMPOSE
   (20→8→6) rather than replace. Its date input fires on `change`, which for `type="date"`
-  means on commit, so no request-per-keystroke. **Trade-off stated, not hidden:** sighted
-  users lose the visible `<Label>` above each control (it survives as `aria-label`), which
-  matters most on the three-filter documents screen.
+  means on commit, so no request-per-keystroke. **Trade-off raised, then reversed by the owner on
+  documents only:** the labels are back there (three controls reading "All / All /
+  dd-mm-yyyy" say nothing about what they filter); the two-control screens stay compact.
+  They are REAL associations — `<button>` is labelable, so `<Label htmlFor>` on the Select
+  trigger is genuine, and the `aria-label` was removed rather than left to duplicate the
+  name; proven by clicking the label and watching the Select open. That exposed an
+  alignment bug: with `space-y-1.5` the Select wrappers measured 58px vs the date's 52px,
+  because Base UI renders a hidden `position: fixed` input as a trigger sibling and
+  `space-y-*` (`> * + *`) still counted it — `flex flex-col gap-1.5` makes it not a flex
+  item at all. DataTable's toolbar moved to `items-end` so a labelled control and a bare
+  search box share a baseline (identical where nothing is labelled; re-verified on all
+  five).
 
 ### UX-12 — the Company column and filter on Employees
 - **Objective:** Employees was the ONLY cross-client list with neither a client column nor

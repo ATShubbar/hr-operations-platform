@@ -655,8 +655,19 @@ requests) rather than replace, and its date input fires on `change`, which for `
 means on commit, so no request-per-keystroke. Verified per screen: one row, all controls 32px,
 0 stray Apply, one request per change, Clear absent before filtering and present after; Tasks
 correctly narrows within its own-scope (hr_officer sees 4, not 10 — no `task.read-all`). Both
-locales, 0px overflow at 375px (documents wraps to 4 rows). **Trade-off stated:** sighted users
-lose the visible `<Label>` above each control (it survives as `aria-label`).
+locales, 0px overflow at 375px (documents wraps to 4 rows). **The trade-off was raised and then
+reversed by the owner on documents only** — visible labels are back on that screen (three
+controls reading "All / All / dd-mm-yyyy" say nothing about what they filter); the two-control
+screens stay compact. They are REAL associations, not decorative text: `<button>` is a labelable
+element, so `<Label htmlFor>` pointing at the Select trigger is genuine, and the `aria-label` it
+replaces was REMOVED rather than left to duplicate the accessible name — proven by clicking the
+label and watching the Select open. **That exposed an alignment bug worth remembering:** with
+`space-y-1.5` the Select wrappers measured **58px vs the date field's 52px**, so their triggers
+sat 6px above the baseline — Base UI renders a hidden `position: fixed` input as a sibling of the
+trigger, and `space-y-*` (a `> * + *` margin rule) still counted it; `flex flex-col gap-1.5`
+makes it not a flex item at all. DataTable's toolbar moved `items-center` → `items-end` so a
+labelled control and a bare search box share a baseline (identical where nothing is labelled;
+re-verified on all five).
 Next: OCI-02 (owner-run) unblocking OCI-03/04/05.
 
 ## Technical landmines (each cost real debugging — do not rediscover)

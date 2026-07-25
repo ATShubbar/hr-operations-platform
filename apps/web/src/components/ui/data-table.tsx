@@ -145,7 +145,11 @@ export function DataTable<T>({
 
   return (
     <div className={cn('space-y-3', className)}>
-      <div className="flex flex-wrap items-center gap-2">
+      {/* `items-end`, not `items-center`: a screen may give its filters visible
+          labels (documents does), which makes those children taller than the
+          bare search box. Aligning on the bottom keeps every control on one
+          baseline. Identical to `items-center` where nothing is labelled. */}
+      <div className="flex flex-wrap items-end gap-2">
         {searchable.length > 0 && (
           <Input
             type="search"
