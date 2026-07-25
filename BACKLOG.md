@@ -1577,7 +1577,7 @@ data is.
 |---|---|---|---|
 | REP-01 | `modules/reporting` + the typed report catalog (permissions per report) + `ReportingService` — six read models composed from the owning modules' services | 4.1–4.4, 5.2 | done ([evidence](evidence/reporting/REP-01.md)) |
 | REP-02 | HTTP API — `GET /reports` (catalog filtered to what the caller can run) + `GET /reports/:id` (run), `report.read` granted per the matrix | REP-01 | done ([evidence](evidence/reporting/REP-02.md)) |
-| REP-03 | Export — `GET /reports/:id/export?format=csv` gated by `report.export` and **audited** (the first audited READ: bulk export of HR data is a privacy event) | REP-02 | planned |
+| REP-03 | Export — `GET /reports/:id/export?format=csv` gated by `report.export` and **audited** (the first audited READ: bulk export of HR data is a privacy event) | REP-02 | done ([evidence](evidence/reporting/REP-03.md)) |
 | REP-04 | Reports web UI — catalog, run, view, export | REP-03 | planned |
 
 ### REP-01 — Reporting module + report catalog + read models
@@ -1617,6 +1617,28 @@ data is.
   404) because the catalog is static and documented and a named permission is
   debuggable; ALL requiredPermissions must be held (AND); no client path — the
   matrix's "Client Admin R (own summary)" is a portal surface (REP-05 decision).
+
+### REP-03 — CSV export (`report.export`, audited)
+- **Objective:** the download surface — one CSV renderer for all six reports, a
+  DISTINCT export capability, and the platform's first audited READ.
+- **Files:** `reporting/domain/report-csv.ts` (NEW); `reporting.service.ts`
+  (`recordExport`); `reports.controller.ts` (export route); `reporting.module.ts`
+  (+AuditModule); `permissions.ts` (`report.export` + 6 grants); isolation registry;
+  `audit/audited-writes.ts` (**new `AUDITED_READS`**) + `write-coverage` spec;
+  `test/reports-export.e2e-spec.ts`.
+- **DoD:** CSV with download headers, UTF-8 BOM and RFC-4180 quoting (a client name
+  with a comma AND quotes round-trips); CSV row/column count matches the JSON run;
+  one export → exactly one audit row whose `after` key set carries NO exported
+  values; Read Only reads but cannot export (403, no audit row); the data gate still
+  applies (Recruiter → payroll export 403); bad format → 400; unknown → 404; unauth
+  → 401; suite + lint + typecheck + build green.
+- **Evidence:** `evidence/reporting/REP-03.md`.
+- **Dependencies:** REP-02, Audit. **Risks:** audit is written BEFORE the bytes are
+  returned (a failed audit fails the export — no unrecorded extraction); the audit
+  records the ACT not the payload (copying rows would duplicate gated salary data
+  into a differently-governed table); `AUDITED_READS` is an allow-list, not a
+  coverage requirement — auditing reads by default would be a log, not an audit
+  trail.
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

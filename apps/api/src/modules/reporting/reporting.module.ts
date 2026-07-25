@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AuditModule } from '../audit/public-api';
 import { AuthModule } from '../auth/public-api';
 import { ClientsModule } from '../clients/public-api';
 import { EmployeesModule } from '../employees/public-api';
@@ -19,6 +20,7 @@ import { ReportingService } from './application/reporting.service';
 // decides which reports they may list and run.
 @Module({
   imports: [
+    AuditModule, // REP-03: exporting is an audited READ
     AuthModule,
     ClientsModule,
     EmployeesModule,

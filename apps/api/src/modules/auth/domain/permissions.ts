@@ -127,6 +127,11 @@ export const PERMISSIONS = [
   // catalog), so `report.read` alone never exposes salary or GRO figures.
   // Client Admin's "own summary" (matrix) is a portal surface, not this route.
   'report.read',
+  // Exporting a report (REP-03) is a DISTINCT capability from reading it: a bulk
+  // extraction is the point where data leaves the platform's authorization
+  // boundary, and it is audited. Granted to every staff role that reads reports
+  // EXCEPT Read Only, whose whole identity is passive access.
+  'report.export',
   // Client Portal (PORTAL-01): client-only self-service access. Gates /portal/*.
   'portal.read',
   // Session lifecycle — every authenticated principal may end their session.
@@ -234,6 +239,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'salary.read',
     'govdata.read',
     'config.write',
+    'report.export',
     'task.read-all',
     'vacancy.read',
     'candidate.read',
@@ -253,6 +259,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'salary.read',
     'govdata.read',
     'config.write-client',
+    'report.export',
     'document.upload',
     'document.delete',
     // Requests: Company Admin has full CRUD (create + update here; delete later)
@@ -301,6 +308,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'candidate.update',
     'candidate.advance',
     'candidate.delete',
+    'report.export',
     // Calendar: CRU own (matrix) — no read-all, no delete.
     'calendar.create',
     'calendar.update',
@@ -316,6 +324,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'salary.read',
     'salary.update',
     'govdata.read',
+    'report.export',
     'document.upload',
     'document.delete',
     'request.process',
@@ -345,6 +354,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'task.update',
     'gro.read',
     'gro.process',
+    'report.export',
     // Calendar: CRU own (matrix).
     'calendar.create',
     'calendar.update',
@@ -356,6 +366,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     ...STAFF_BASE,
     'salary.read',
     'salary.update',
+    'report.export',
     'task.create',
     'task.update',
     'calendar.create',

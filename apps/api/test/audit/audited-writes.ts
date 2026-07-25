@@ -65,6 +65,16 @@ export const AUDITED_WRITES: Record<string, string> = {
   'DELETE /integrations/google-calendar/invitations/:id': 'gcal-invitation.cancel',
 };
 
+// AUDITED_READS (REP-03) — the rare READ routes that still write an audit row,
+// because the act of reading is itself significant: a bulk export is the point
+// where data leaves the platform's authorization boundary. Reads are NOT
+// audited by default (that would be a log, not an audit trail), so this map is
+// deliberately an allow-list, not a coverage requirement — the coverage spec
+// only checks that each entry is still a live GET route.
+export const AUDITED_READS: Record<string, string> = {
+  'GET /reports/:id/export': 'report.export',
+};
+
 export const AUDIT_EXEMPT_WRITES: Record<string, string> = {
   'POST /auth/login': 'creates a Redis session only; no business-table mutation (auth-event audit is a separate concern)',
   'POST /auth/logout': 'revokes a Redis session only; no business-table mutation',

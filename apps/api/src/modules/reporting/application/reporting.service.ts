@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../../prisma/prisma.service';
+import { AuditService } from '../../audit/public-api';
 import { ClientsService } from '../../clients/public-api';
 import { EmployeesService } from '../../employees/public-api';
 import { DocumentsService } from '../../documents/public-api';
@@ -29,6 +31,8 @@ import { bump, expiryBucket, isPastDue, money, round2 } from '../domain/report-m
 @Injectable()
 export class ReportingService {
   constructor(
+    private readonly prisma: PrismaService,
+    private readonly audit: AuditService,
     private readonly clients: ClientsService,
     private readonly employees: EmployeesService,
     private readonly documents: DocumentsService,
@@ -55,6 +59,32 @@ export class ReportingService {
       case 'payroll-cost':
         return this.payrollCost(now);
     }
+  }
+
+  // Record an export (REP-03). Exporting is the FIRST audited READ in the system:
+  // pulling a client's whole payroll into a spreadsheet is a privacy-relevant act
+  // even though it changes nothing, and it is the moment data leaves the platform's
+  // authorization boundary.
+  //
+  // The entry records the ACT, never the payload — reportId, format and shape.
+  // Copying the rows into aud_entries would duplicate the very salary/government
+  // data the report gates, into a table with different (append-only, admin-read)
+  // access rules. The audit answers "who extracted what, when", not "what did it
+  // say".
+  async recordExport(result: ReportResult, format: string): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      await this.audit.record(tx, {
+        resource: 'report',
+        action: 'export',
+        after: {
+          reportId: result.id,
+          format,
+          rows: result.rows.length,
+          columns: result.columns.length,
+          generatedAt: result.generatedAt,
+        },
+      });
+    });
   }
 
   // Headcount and composition by client. Clients with no employees are still

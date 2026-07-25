@@ -252,7 +252,18 @@ listed and runnable — so a Recruiter's catalog is recruitment-shaped and `payr
 neither listed nor runnable for them (403 naming `salary.read`; unknown id → 404; clients →
 403). No client path — the matrix's "Client Admin R (own summary)" is a portal surface
 (REP-05 decision). 2 isolation routes, 0 audited writes (auditing the EXPORT is REP-03).
-Contracts add `report.ts`. API suite **329/329**. **Remaining: REP-03..04; the
+Contracts add `report.ts`. **REP-03: the CSV export** (`GET /reports/:id/export?format=csv`)
+— ONE renderer for all six reports (the payoff of REP-01's single table shape): RFC-4180
+quoting + **UTF-8 BOM** (Excel opens Arabic correctly) + the summary appended after a blank
+line. `report.export` is a **distinct capability** granted to every report-reading staff role
+**except Read Only** (passive access ≠ bulk extraction), and the report's own data gate still
+applies (Recruiter can't export payroll). **The FIRST audited READ in the system** —
+`resource:'report', action:'export'`, written BEFORE the bytes return (a failed audit fails
+the export), recording the **ACT not the payload** (`{reportId, format, rows, columns,
+generatedAt}` — copying rows would duplicate gated salary data into a differently-governed
+table). New **`AUDITED_READS`** allow-list in the audit harness (the write registry is
+mutation-scoped; auditing reads by default would be a log, not an audit trail). API suite
+**336/336**. **Remaining: REP-04; the
 real Google client + attachments (infra, deferred per ADR-009); AWS/OCI decision (ADR-006)
 open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
 2026-07-24: ECS throttle + RDS InvalidAction persist)

@@ -2,7 +2,7 @@ import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AppModule } from '../../src/app.module';
-import { AUDITED_WRITES, AUDIT_EXEMPT_WRITES } from './audited-writes';
+import { AUDITED_READS, AUDITED_WRITES, AUDIT_EXEMPT_WRITES } from './audited-writes';
 
 // AUDIT-03: enforce that every mutating route is classified as audited or
 // explicitly exempt — the CI "can't-forget" guarantee that justifies the
@@ -67,6 +67,16 @@ describe('Write-audit coverage — every mutation is audited or exempt (AUDIT-03
       [],
     );
     expect(doubled, `Routes in BOTH audited and exempt: ${doubled.join(', ')}`).toEqual([]);
+  });
+
+  it('audited READ routes are live GET routes (REP-03)', () => {
+    const live = liveRoutes(app)
+      .filter((r) => r.method === 'GET')
+      .map((r) => `GET ${r.path}`);
+    for (const [route, action] of Object.entries(AUDITED_READS)) {
+      expect(live, `Stale audited-read entry: ${route}`).toContain(route);
+      expect(action, route).toMatch(/^[a-z-]+\.[a-z-]+$/);
+    }
   });
 
   it('audited routes name a resource.action', () => {

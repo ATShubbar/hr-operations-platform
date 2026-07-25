@@ -178,6 +178,9 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   // the REP-02 e2e: a Recruiter cannot list or run payroll-cost).
   'GET /reports': 'staff',
   'GET /reports/:id': 'staff',
+  // REP-03: the CSV export — same data gate plus the distinct `report.export`
+  // capability, and audited (resource 'report', action 'export').
+  'GET /reports/:id/export': 'staff',
   'GET /example/greeting': 'staff',
   'GET /example-consumer/relay': 'staff',
   'GET /scope-check': 'client-scoped',
