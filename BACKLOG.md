@@ -1564,6 +1564,41 @@ deferred behind a pluggable dev-capture seam.
 
 **Google Calendar epic (5.3) COMPLETE — GCAL-01..03 (adapter+structural minimization, persisted+audited API, web UI+transparency view).**
 
+## Priority 5 — Reporting epic (ACTION-PLAN 5.4, architecture module 11)
+
+The last product epic. A delivery-layer module that owns no tables and reads every
+domain module below it. The design idea: **each report DECLARES the permissions it
+requires**, so the architecture's Reports matrix row ("Recruiter R (recruitment) ·
+HR Officer R (HR ops) · GRO Officer R (GRO) · Finance R (financial)") falls out of
+the existing permission catalog — a report is readable exactly when its underlying
+data is.
+
+| Task | Objective | Deps | Status |
+|---|---|---|---|
+| REP-01 | `modules/reporting` + the typed report catalog (permissions per report) + `ReportingService` — six read models composed from the owning modules' services | 4.1–4.4, 5.2 | done ([evidence](evidence/reporting/REP-01.md)) |
+| REP-02 | HTTP API — `GET /reports` (catalog filtered to what the caller can run) + `GET /reports/:id` (run), `report.read` granted per the matrix | REP-01 | planned |
+| REP-03 | Export — `GET /reports/:id/export?format=csv` gated by `report.export` and **audited** (the first audited READ: bulk export of HR data is a privacy event) | REP-02 | planned |
+| REP-04 | Reports web UI — catalog, run, view, export | REP-03 | planned |
+
+### REP-01 — Reporting module + report catalog + read models
+- **Objective:** the foundation — a typed catalog of report definitions, each
+  declaring the permissions required to run it, and a permission-agnostic service
+  that computes each report from the owning modules' services. No HTTP.
+- **Files:** `modules/reporting/{reporting.module, public-api, domain/report-catalog,
+  domain/report-result, domain/report-metrics, application/reporting.service}`;
+  `app.module.ts`; `test/reporting-service.e2e-spec.ts`.
+- **DoD:** six definitions, each with non-empty `requiredPermissions` that all exist
+  in `PERMISSIONS`; `run(id, now)` returns typed columns/rows/summary for each,
+  asserted against fixtures; every row fills every declared column; cross-module
+  reads via `public-api` only, no cycle; suite + lint + typecheck + build green.
+- **Evidence:** `evidence/reporting/REP-01.md`.
+- **Dependencies:** Employees, Documents, Recruitment, GRO, Requests, Tasks, Clients.
+  **Risks:** **materialized views deliberately NOT used in v1** — an MV spanning
+  several modules' tables would break "own your data"; if a report is provably slow
+  the MV belongs to the owning module (recorded, not drifted). `payroll-cost` salary
+  figures are only reachable through the salary.read-gated route in REP-02. The
+  fixture is anchored a year out so the document-expiry 60-day scan can't claim it.
+
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 
 | Epic | Source | Gate |

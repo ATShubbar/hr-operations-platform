@@ -23,6 +23,7 @@ import { GroModule } from './modules/gro/public-api';
 import { CalendarModule } from './modules/calendar/public-api';
 import { IntegrationsModule } from './modules/integrations/public-api';
 import { PortalModule } from './modules/portal/public-api';
+import { ReportingModule } from './modules/reporting/public-api';
 import { ExampleModule } from './modules/example/public-api';
 import { ExampleConsumerModule } from './modules/example-consumer/public-api';
 import { ScopeCheckModule } from './modules/scope-check/public-api';
@@ -49,6 +50,7 @@ import { ScopeCheckModule } from './modules/scope-check/public-api';
     CalendarModule,
     IntegrationsModule,
     PortalModule,
+    ReportingModule,
     ExampleModule,
     ExampleConsumerModule,
     ScopeCheckModule,

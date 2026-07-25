@@ -229,9 +229,24 @@ start/end/location/attendees/external-id, nothing else) + a guardrail banner; na
 `integration.google-calendar`. Verified live: scheduled an interview through the UI, the
 transparency dialog showed `Interview — <name> — <role>` + `Ref: <code>` only, persisted
 end-to-end, both locales (ar RTL). **Google Calendar epic (5.3) COMPLETE — GCAL-01..03.**
-Sixteen product screens. **Priorities 2–4 + Client Portal (5.1) + Calendar (5.2) + Google
-Calendar (5.3) done. Remaining: 5.4 Reporting; the real Google client + attachments (infra,
-deferred per ADR-009); AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
+Sixteen product screens. **Priority 5 — Reporting epic (5.4) STARTED: REP-01 done** —
+`modules/reporting`, the LAST delivery-layer module: owns no tables, reads every domain
+module through their public APIs (Clients/Employees/Documents/Recruitment/GRO/Requests/
+Tasks), nothing imports it (leaf at the top of the graph). The epic's idea is the **report
+catalog**: six typed definitions each DECLARING `requiredPermissions`, so the matrix's
+Reports row ("Recruiter R (recruitment) · GRO Officer R (GRO) · Finance R (financial)")
+falls out of the existing permission catalog — **a report is readable exactly when its
+underlying data is** (`payroll-cost` needs `salary.read`, `gro-workload` needs `gro.read`,
+`compliance-expiry` needs `govdata.read` → Recruiter/Finance excluded). Reports:
+workforce · compliance-expiry · recruitment-pipeline · gro-workload · service-operations ·
+payroll-cost. ONE generic result shape (columns+rows+summary) so CSV export (REP-03) and
+the web table (REP-04) stay per-report-code-free. `ReportingService` is deliberately
+PERMISSION-AGNOSTIC (it computes; REP-02 gates) and takes an injectable `now`.
+**Materialized views deliberately NOT used in v1** — an MV spanning several modules' tables
+would break "own your data"; if a report is provably slow the MV belongs to the owning
+module (decision recorded, not drift). API suite **320/320**. **Remaining: REP-02..04; the
+real Google client + attachments (infra, deferred per ADR-009); AWS/OCI decision (ADR-006)
+open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
 2026-07-24: ECS throttle + RDS InvalidAction persist)
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback
