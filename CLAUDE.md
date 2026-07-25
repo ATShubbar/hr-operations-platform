@@ -215,9 +215,16 @@ data-minimization is **structural**. The adapter formats the title itself (`Inte
 <name> — <role>`) — callers never compose payloads. Pluggable `GOOGLE_CALENDAR_CLIENT`
 seam with a `CaptureGoogleCalendarClient` dev impl (records outbound payloads, mints
 `gcal-dev-<uuid>` ids); real Google client deferred. Attachments deferred (need the
-real-client guard). API suite **305/305**. **Next: GCAL-02 (persist + HTTP —
-`int_gcal_invitations` + create/update/cancel invitation endpoints, audited). AWS/OCI
-decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
+real-client guard). API suite **305/305**. **GCAL-02: the invitations API** — `int_gcal_invitations` STAFF-OWNED
+table (external Google id + reference code + **the exact whitelisted payload that left**,
+JsonB) + `POST/GET/PATCH/DELETE /integrations/google-calendar/invitations` (`integration.
+google-calendar`, staff-only). The service SENDS via the adapter first (which now returns
+the payload it built — the sole builder), then persists + audits; the stored payload is
+the adapter's, never rebuilt, so the service can't widen what leaves. Perm granted to
+Company Admin + Recruiter + HR/GRO Officers (Finance/Read-Only/clients excluded). 5
+isolation routes, 3 audited writes. Contracts add `integration.ts`. API suite **312/312**.
+**Next: GCAL-03 (web UI — schedule + inspect Google invitations, showing exactly what
+would leave). AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
 2026-07-24: ECS throttle + RDS InvalidAction persist)
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback

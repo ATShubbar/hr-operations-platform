@@ -1507,7 +1507,7 @@ deferred behind a pluggable dev-capture seam.
 | Task | Objective | Deps | Status |
 |---|---|---|---|
 | GCAL-01 | `modules/integrations` + the Google Calendar adapter (typed `CalendarInvitation` → whitelisted payload builder) + `GOOGLE_CALENDAR_CLIENT` seam (dev-capture) + structural-minimization tests | 5.2, ADR-009 | done ([evidence](evidence/integrations/GCAL-01.md)) |
-| GCAL-02 | Persist + HTTP — `int_gcal_invitations` + `POST/PATCH/DELETE /integrations/google-calendar/invitations` (typed contract, `integration.google-calendar` perm, audited) | GCAL-01 | todo |
+| GCAL-02 | Persist + HTTP — `int_gcal_invitations` + `POST/PATCH/DELETE /integrations/google-calendar/invitations` (typed contract, `integration.google-calendar` perm, audited) | GCAL-01 | done ([evidence](evidence/integrations/GCAL-02.md)) |
 | GCAL-03 | Web UI — schedule + inspect Google invitations (dev-capture view of what would leave) | GCAL-02 | todo |
 
 ### GCAL-01 — Integrations module + Google Calendar adapter (structural minimization)
@@ -1526,6 +1526,25 @@ deferred behind a pluggable dev-capture seam.
   input has NO identifier/salary field and the builder formats the title itself (no
   free-form text the caller controls); attachments deferred (need the real-client
   guard); real Google client bound at the DI token in production.
+
+### GCAL-02 — Persist + HTTP: Google Calendar invitations API
+- **Objective:** staff schedule outbound invitations over the adapter; the record
+  stores the external Google id + exactly the whitelisted payload that left; audited.
+- **Files:** `schema.prisma` (GcalInvitation + enums) + migration (staff-only grant +
+  RLS); `contracts/integration.ts` (+index); `integrations/api/gcal-invitations.
+  controller.ts` + `application/gcal-invitations.service.ts` (NEW); adapter returns the
+  sent payload; `integrations.module.ts` (+Audit, service, controller); `permissions.ts`
+  (`integration.google-calendar` + grants); isolation (5 staff routes) + audited-writes
+  (3); `test/gcal-invitations-api.e2e-spec.ts`.
+- **DoD:** recruiter schedules → sent (captured) + persisted with the whitelisted
+  payload (keys = whitelist only); list/read/update(re-send)/cancel; bad email → 400;
+  Finance/clients → 403; unauth → 401; all mutations audited; isolation + catalog +
+  write-coverage green; suite + lint + typecheck + build green.
+- **Evidence:** `evidence/integrations/GCAL-02.md`.
+- **Dependencies:** GCAL-01, Audit. **Risks:** the stored payload is the ADAPTER's
+  (returned), never rebuilt in the service — so the service can't widen what leaves;
+  staff-owned table (no client access); send-then-persist order (a real client would
+  want compensation on a persist failure — noted).
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

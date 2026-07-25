@@ -1,4 +1,7 @@
 import { Module } from '@nestjs/common';
+import { AuditModule } from '../audit/public-api';
+import { GcalInvitationsController } from './api/gcal-invitations.controller';
+import { GcalInvitationsService } from './application/gcal-invitations.service';
 import { GoogleCalendarAdapter } from './application/google-calendar.adapter';
 import {
   CaptureGoogleCalendarClient,
@@ -10,13 +13,17 @@ import {
 // Google Calendar adapter, whose typed input + whitelisted payload builder make data-
 // minimization structural. The concrete client is a dev CAPTURE here (records outbound
 // payloads); production binds a real client to GOOGLE_CALENDAR_CLIENT. GCAL-02 adds the
-// persisted, audited HTTP surface.
+// persisted, audited HTTP surface (GcalInvitationsService/Controller over int_gcal_
+// invitations). AuditModule provides the transactional audit; Prisma is @Global.
 @Module({
+  imports: [AuditModule],
+  controllers: [GcalInvitationsController],
   providers: [
     GoogleCalendarAdapter,
+    GcalInvitationsService,
     CaptureGoogleCalendarClient,
     captureGoogleCalendarClientProvider,
   ],
-  exports: [GoogleCalendarAdapter, CaptureGoogleCalendarClient],
+  exports: [GoogleCalendarAdapter, GcalInvitationsService, CaptureGoogleCalendarClient],
 })
 export class IntegrationsModule {}

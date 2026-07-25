@@ -60,6 +60,9 @@ export const AUDITED_WRITES: Record<string, string> = {
   'POST /calendar/events': 'calendar-event.create',
   'PATCH /calendar/events/:id': 'calendar-event.update',
   'DELETE /calendar/events/:id': 'calendar-event.delete',
+  'POST /integrations/google-calendar/invitations': 'gcal-invitation.create',
+  'PATCH /integrations/google-calendar/invitations/:id': 'gcal-invitation.update',
+  'DELETE /integrations/google-calendar/invitations/:id': 'gcal-invitation.cancel',
 };
 
 export const AUDIT_EXEMPT_WRITES: Record<string, string> = {

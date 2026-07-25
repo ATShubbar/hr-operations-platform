@@ -117,6 +117,10 @@ export const PERMISSIONS = [
   'calendar.create',
   'calendar.update',
   'calendar.delete',
+  // Google Calendar integration (GCAL-02; ADR-009). One coarse permission gates the
+  // outbound invitation surface (create/update/cancel/read) — the staff who schedule
+  // interviews and meetings hold it (Company Admin + Recruiter + HR/GRO Officers).
+  'integration.google-calendar',
   // Client Portal (PORTAL-01): client-only self-service access. Gates /portal/*.
   'portal.read',
   // Session lifecycle — every authenticated principal may end their session.
@@ -265,6 +269,8 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'calendar.create',
     'calendar.update',
     'calendar.delete',
+    // Google Calendar: schedules outbound invitations (GCAL-02).
+    'integration.google-calendar',
   ],
   // core R · salary – · govdata – · documents: recruitment (category-scoped).
   // The primary recruitment role: full vacancy CRUD + approve (matrix).
@@ -287,6 +293,8 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     // Calendar: CRU own (matrix) — no read-all, no delete.
     'calendar.create',
     'calendar.update',
+    // Google Calendar: schedules interview invitations (GCAL-02).
+    'integration.google-calendar',
   ],
   // core CRUD · salary RU · govdata R · documents: all
   hr_officer: [
@@ -309,6 +317,8 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'gro.read',
     'calendar.create',
     'calendar.update',
+    // Google Calendar: schedules meeting invitations (GCAL-02).
+    'integration.google-calendar',
   ],
   // core RU · salary – · govdata CRUD · documents: government (category-scoped).
   // The primary GRO role: full process management (matrix CRUD → gro.read + gro.process).
@@ -327,6 +337,8 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     // Calendar: CRU own (matrix).
     'calendar.create',
     'calendar.update',
+    // Google Calendar: schedules government-appointment invitations (GCAL-02).
+    'integration.google-calendar',
   ],
   // core R · salary RU · govdata – (no recruitment/GRO; Calendar CRU own — matrix)
   finance: [

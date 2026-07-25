@@ -149,6 +149,20 @@ export {
   type RequestQuery,
 } from './request.js';
 export {
+  gcalInvitationKindSchema,
+  gcalInvitationStatusSchema,
+  createGcalInvitationRequestSchema,
+  gcalEventPayloadSchema,
+  gcalInvitationResponseSchema,
+  gcalInvitationListResponseSchema,
+  type GcalInvitationKind,
+  type GcalInvitationStatus,
+  type CreateGcalInvitationRequest,
+  type GcalEventPayload,
+  type GcalInvitationResponse,
+  type GcalInvitationListResponse,
+} from './integration.js';
+export {
   calendarEventResponseSchema,
   calendarEventListResponseSchema,
   createCalendarEventRequestSchema,

@@ -246,3 +246,19 @@ export const GroProcessStatus = {
 } as const
 
 export type GroProcessStatus = (typeof GroProcessStatus)[keyof typeof GroProcessStatus]
+
+
+export const GcalInvitationKind = {
+  interview: 'interview',
+  meeting: 'meeting'
+} as const
+
+export type GcalInvitationKind = (typeof GcalInvitationKind)[keyof typeof GcalInvitationKind]
+
+
+export const GcalInvitationStatus = {
+  scheduled: 'scheduled',
+  cancelled: 'cancelled'
+} as const
+
+export type GcalInvitationStatus = (typeof GcalInvitationStatus)[keyof typeof GcalInvitationStatus]

@@ -401,6 +401,7 @@ export const ModelName = {
   Vacancy: 'Vacancy',
   Candidate: 'Candidate',
   GroProcess: 'GroProcess',
+  GcalInvitation: 'GcalInvitation',
   CalendarEvent: 'CalendarEvent'
 } as const
 
@@ -417,7 +418,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "authUser" | "coreScopeCheck" | "auditEntry" | "systemSetting" | "clientSetting" | "userSetting" | "client" | "employee" | "document" | "notification" | "expiryAlert" | "notificationPreference" | "request" | "task" | "vacancy" | "candidate" | "groProcess" | "calendarEvent"
+    modelProps: "authUser" | "coreScopeCheck" | "auditEntry" | "systemSetting" | "clientSetting" | "userSetting" | "client" | "employee" | "document" | "notification" | "expiryAlert" | "notificationPreference" | "request" | "task" | "vacancy" | "candidate" | "groProcess" | "gcalInvitation" | "calendarEvent"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1679,6 +1680,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    GcalInvitation: {
+      payload: Prisma.$GcalInvitationPayload<ExtArgs>
+      fields: Prisma.GcalInvitationFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.GcalInvitationFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GcalInvitationPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.GcalInvitationFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GcalInvitationPayload>
+        }
+        findFirst: {
+          args: Prisma.GcalInvitationFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GcalInvitationPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.GcalInvitationFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GcalInvitationPayload>
+        }
+        findMany: {
+          args: Prisma.GcalInvitationFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GcalInvitationPayload>[]
+        }
+        create: {
+          args: Prisma.GcalInvitationCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GcalInvitationPayload>
+        }
+        createMany: {
+          args: Prisma.GcalInvitationCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.GcalInvitationCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GcalInvitationPayload>[]
+        }
+        delete: {
+          args: Prisma.GcalInvitationDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GcalInvitationPayload>
+        }
+        update: {
+          args: Prisma.GcalInvitationUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GcalInvitationPayload>
+        }
+        deleteMany: {
+          args: Prisma.GcalInvitationDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.GcalInvitationUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.GcalInvitationUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GcalInvitationPayload>[]
+        }
+        upsert: {
+          args: Prisma.GcalInvitationUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GcalInvitationPayload>
+        }
+        aggregate: {
+          args: Prisma.GcalInvitationAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateGcalInvitation>
+        }
+        groupBy: {
+          args: Prisma.GcalInvitationGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GcalInvitationGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.GcalInvitationCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GcalInvitationCountAggregateOutputType> | number
+        }
+      }
+    }
     CalendarEvent: {
       payload: Prisma.$CalendarEventPayload<ExtArgs>
       fields: Prisma.CalendarEventFieldRefs
@@ -2069,6 +2144,25 @@ export const GroProcessScalarFieldEnum = {
 } as const
 
 export type GroProcessScalarFieldEnum = (typeof GroProcessScalarFieldEnum)[keyof typeof GroProcessScalarFieldEnum]
+
+
+export const GcalInvitationScalarFieldEnum = {
+  id: 'id',
+  externalEventId: 'externalEventId',
+  referenceCode: 'referenceCode',
+  kind: 'kind',
+  status: 'status',
+  clientId: 'clientId',
+  startAt: 'startAt',
+  endAt: 'endAt',
+  timezone: 'timezone',
+  payload: 'payload',
+  createdByUserId: 'createdByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GcalInvitationScalarFieldEnum = (typeof GcalInvitationScalarFieldEnum)[keyof typeof GcalInvitationScalarFieldEnum]
 
 
 export const CalendarEventScalarFieldEnum = {
@@ -2556,6 +2650,34 @@ export type ListEnumGroProcessStatusFieldRefInput<$PrismaModel> = FieldRefInputT
 
 
 /**
+ * Reference to a field of type 'GcalInvitationKind'
+ */
+export type EnumGcalInvitationKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GcalInvitationKind'>
+    
+
+
+/**
+ * Reference to a field of type 'GcalInvitationKind[]'
+ */
+export type ListEnumGcalInvitationKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GcalInvitationKind[]'>
+    
+
+
+/**
+ * Reference to a field of type 'GcalInvitationStatus'
+ */
+export type EnumGcalInvitationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GcalInvitationStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'GcalInvitationStatus[]'
+ */
+export type ListEnumGcalInvitationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GcalInvitationStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -2695,6 +2817,7 @@ export type GlobalOmitConfig = {
   vacancy?: Prisma.VacancyOmit
   candidate?: Prisma.CandidateOmit
   groProcess?: Prisma.GroProcessOmit
+  gcalInvitation?: Prisma.GcalInvitationOmit
   calendarEvent?: Prisma.CalendarEventOmit
 }
 

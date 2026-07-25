@@ -68,6 +68,7 @@ export const ModelName = {
   Vacancy: 'Vacancy',
   Candidate: 'Candidate',
   GroProcess: 'GroProcess',
+  GcalInvitation: 'GcalInvitation',
   CalendarEvent: 'CalendarEvent'
 } as const
 
@@ -364,6 +365,25 @@ export const GroProcessScalarFieldEnum = {
 } as const
 
 export type GroProcessScalarFieldEnum = (typeof GroProcessScalarFieldEnum)[keyof typeof GroProcessScalarFieldEnum]
+
+
+export const GcalInvitationScalarFieldEnum = {
+  id: 'id',
+  externalEventId: 'externalEventId',
+  referenceCode: 'referenceCode',
+  kind: 'kind',
+  status: 'status',
+  clientId: 'clientId',
+  startAt: 'startAt',
+  endAt: 'endAt',
+  timezone: 'timezone',
+  payload: 'payload',
+  createdByUserId: 'createdByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GcalInvitationScalarFieldEnum = (typeof GcalInvitationScalarFieldEnum)[keyof typeof GcalInvitationScalarFieldEnum]
 
 
 export const CalendarEventScalarFieldEnum = {

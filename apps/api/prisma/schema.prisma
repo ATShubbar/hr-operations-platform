@@ -607,6 +607,41 @@ enum GroProcessStatus {
   cancelled
 }
 
+// Google Calendar invitations (GCAL-02, ADR-009). The platform-side record of an
+// outbound invitation: the external Google event id, the reference code that links
+// back (the platform record is the source of truth), and the exact WHITELISTED
+// payload that left the system (for audit/inspection). STAFF-INTERNAL — clients have
+// no access, so like task_tasks app_client is granted nothing. start/end stored UTC.
+model GcalInvitation {
+  id              String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  externalEventId String               @map("external_event_id")
+  referenceCode   String               @map("reference_code")
+  kind            GcalInvitationKind
+  status          GcalInvitationStatus @default(scheduled)
+  clientId        String?              @map("client_id") @db.Uuid
+  startAt         DateTime             @map("start_at")
+  endAt           DateTime             @map("end_at")
+  timezone        String
+  payload         Json                 @db.JsonB // the whitelisted GoogleEventPayload that was sent
+  createdByUserId String?              @map("created_by_user_id") @db.Uuid
+  createdAt       DateTime             @default(now()) @map("created_at")
+  updatedAt       DateTime             @updatedAt @map("updated_at")
+
+  @@index([externalEventId])
+  @@index([createdByUserId])
+  @@map("int_gcal_invitations")
+}
+
+enum GcalInvitationKind {
+  interview
+  meeting
+}
+
+enum GcalInvitationStatus {
+  scheduled
+  cancelled
+}
+
 // Calendar events (CAL-01, ACTION-PLAN 5.2). Staff scheduling primitives (meetings,
 // interviews). STAFF-ONLY — clients have no calendar access (matrix), so like
 // task_tasks this table grants app_client nothing. `ownerUserId` is the own-scope

@@ -816,6 +816,40 @@ export type EnumGroProcessStatusWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumGroProcessStatusFilter<$PrismaModel>
 }
 
+export type EnumGcalInvitationKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.GcalInvitationKind | Prisma.EnumGcalInvitationKindFieldRefInput<$PrismaModel>
+  in?: $Enums.GcalInvitationKind[] | Prisma.ListEnumGcalInvitationKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.GcalInvitationKind[] | Prisma.ListEnumGcalInvitationKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumGcalInvitationKindFilter<$PrismaModel> | $Enums.GcalInvitationKind
+}
+
+export type EnumGcalInvitationStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.GcalInvitationStatus | Prisma.EnumGcalInvitationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.GcalInvitationStatus[] | Prisma.ListEnumGcalInvitationStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.GcalInvitationStatus[] | Prisma.ListEnumGcalInvitationStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumGcalInvitationStatusFilter<$PrismaModel> | $Enums.GcalInvitationStatus
+}
+
+export type EnumGcalInvitationKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.GcalInvitationKind | Prisma.EnumGcalInvitationKindFieldRefInput<$PrismaModel>
+  in?: $Enums.GcalInvitationKind[] | Prisma.ListEnumGcalInvitationKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.GcalInvitationKind[] | Prisma.ListEnumGcalInvitationKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumGcalInvitationKindWithAggregatesFilter<$PrismaModel> | $Enums.GcalInvitationKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumGcalInvitationKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumGcalInvitationKindFilter<$PrismaModel>
+}
+
+export type EnumGcalInvitationStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.GcalInvitationStatus | Prisma.EnumGcalInvitationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.GcalInvitationStatus[] | Prisma.ListEnumGcalInvitationStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.GcalInvitationStatus[] | Prisma.ListEnumGcalInvitationStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumGcalInvitationStatusWithAggregatesFilter<$PrismaModel> | $Enums.GcalInvitationStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumGcalInvitationStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumGcalInvitationStatusFilter<$PrismaModel>
+}
+
 export type NestedUuidFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -1571,6 +1605,40 @@ export type NestedEnumGroProcessStatusWithAggregatesFilter<$PrismaModel = never>
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumGroProcessStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumGroProcessStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumGcalInvitationKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.GcalInvitationKind | Prisma.EnumGcalInvitationKindFieldRefInput<$PrismaModel>
+  in?: $Enums.GcalInvitationKind[] | Prisma.ListEnumGcalInvitationKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.GcalInvitationKind[] | Prisma.ListEnumGcalInvitationKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumGcalInvitationKindFilter<$PrismaModel> | $Enums.GcalInvitationKind
+}
+
+export type NestedEnumGcalInvitationStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.GcalInvitationStatus | Prisma.EnumGcalInvitationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.GcalInvitationStatus[] | Prisma.ListEnumGcalInvitationStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.GcalInvitationStatus[] | Prisma.ListEnumGcalInvitationStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumGcalInvitationStatusFilter<$PrismaModel> | $Enums.GcalInvitationStatus
+}
+
+export type NestedEnumGcalInvitationKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.GcalInvitationKind | Prisma.EnumGcalInvitationKindFieldRefInput<$PrismaModel>
+  in?: $Enums.GcalInvitationKind[] | Prisma.ListEnumGcalInvitationKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.GcalInvitationKind[] | Prisma.ListEnumGcalInvitationKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumGcalInvitationKindWithAggregatesFilter<$PrismaModel> | $Enums.GcalInvitationKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumGcalInvitationKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumGcalInvitationKindFilter<$PrismaModel>
+}
+
+export type NestedEnumGcalInvitationStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.GcalInvitationStatus | Prisma.EnumGcalInvitationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.GcalInvitationStatus[] | Prisma.ListEnumGcalInvitationStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.GcalInvitationStatus[] | Prisma.ListEnumGcalInvitationStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumGcalInvitationStatusWithAggregatesFilter<$PrismaModel> | $Enums.GcalInvitationStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumGcalInvitationStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumGcalInvitationStatusFilter<$PrismaModel>
 }
 
 

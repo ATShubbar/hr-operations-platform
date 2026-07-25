@@ -155,6 +155,13 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'PATCH /calendar/events/:id': 'staff',
   'DELETE /calendar/events/:id': 'staff',
   'GET /calendar/view': 'staff',
+  // Google Calendar invitations (GCAL-02): STAFF-ONLY (integration data; clients have
+  // no access), so every route is 'staff'. Outbound-only, adapter-enforced payloads.
+  'POST /integrations/google-calendar/invitations': 'staff',
+  'GET /integrations/google-calendar/invitations': 'staff',
+  'GET /integrations/google-calendar/invitations/:id': 'staff',
+  'PATCH /integrations/google-calendar/invitations/:id': 'staff',
+  'DELETE /integrations/google-calendar/invitations/:id': 'staff',
   // Client Portal (PORTAL-01/02/03): client-only self-service reads, scoped to
   // the caller's own client (proven in the portal-* e2e specs); 401 on unauth.
   // Employees are redacted to core + govdata:status (PORTAL-02); documents are
