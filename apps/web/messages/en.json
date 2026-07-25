@@ -72,6 +72,7 @@
     "vacancies": "Vacancies",
     "candidates": "Candidates",
     "gro": "GRO",
+    "calendar": "Calendar",
     "portalCompany": "My company",
     "portalEmployees": "My employees",
     "portalDocuments": "My documents"
@@ -555,6 +556,33 @@
       "hired": "Hired",
       "rejected": "Rejected",
       "withdrawn": "Withdrawn"
+    }
+  },
+  "calendar": {
+    "title": "Calendar",
+    "subtitle": "Your events and upcoming deadlines from tasks, requests, and GRO.",
+    "new": "New event",
+    "prev": "‹ Previous",
+    "next": "Next ›",
+    "due": "Due",
+    "empty": "Nothing scheduled this month.",
+    "error": "Something went wrong. Please try again.",
+    "saveError": "Could not save. Please try again.",
+    "createTitle": "New event",
+    "editTitle": "Edit event",
+    "fieldTitle": "Title",
+    "fieldStart": "Start",
+    "fieldEnd": "End",
+    "fieldLocation": "Location",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving…",
+    "delete": "Delete",
+    "kind": {
+      "event": "Event",
+      "task": "Task",
+      "request": "Request",
+      "gro": "GRO"
     }
   },
   "gro": {

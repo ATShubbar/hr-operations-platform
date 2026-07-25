@@ -190,9 +190,16 @@ GRO **deadlines** for a `[from,to]` window, each source gated by its read permis
 a recruiter's view omits GRO). Terminal items excluded. 5 `calendar.*` perms
 (`calendar.read` in STAFF_BASE). Calendar imports Tasks/Requests/GRO **read-only**
 (one-way, no cycle). 6 isolation routes, 3 audited writes. Contracts add `calendar.ts`.
-API suite **296/296**. **Next: CAL-03 (Calendar web UI — agenda/month view over
-`/calendar/view`, dual-calendar Hijri, create/edit), then the epic closes. AWS/OCI
-decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
+API suite **296/296**. **CAL-03: the Calendar web UI** — an agenda over `/calendar/view`
+grouped by day (**dual-calendar Hijri headers**, kind-coded Event/Task/Request/GRO
+items, event times / "Due · status"), month navigation, and create/edit own events
+(delete shown only for `calendar.delete` holders). Nav gated on `calendar.read` (all
+staff). Verified live: the gro_officer's agenda merged their own event with Request +
+GRO deadlines, created an event through the UI, both locales (ar RTL); fixed a month-
+boundary label bug (UTC-anchored the window). **Calendar epic (5.2) COMPLETE — CAL-01..03.**
+Fifteen product screens. **Priorities 2–4 + Client Portal (5.1) + Calendar (5.2) done.
+Next: 5.3 Google Calendar (outbound sync + PII whitelist), 5.4 Reporting, or
+`DocumentExpiring → GRO` auto-spawn. AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
 2026-07-24: ECS throttle + RDS InvalidAction persist)
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback

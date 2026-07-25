@@ -72,6 +72,7 @@
     "vacancies": "الشواغر",
     "candidates": "المرشحون",
     "gro": "الجوازات",
+    "calendar": "التقويم",
     "portalCompany": "شركتي",
     "portalEmployees": "موظفيّ",
     "portalDocuments": "مستنداتي"
@@ -555,6 +556,33 @@
       "hired": "موظّف",
       "rejected": "مرفوض",
       "withdrawn": "منسحب"
+    }
+  },
+  "calendar": {
+    "title": "التقويم",
+    "subtitle": "أحداثك والمواعيد النهائية القادمة من المهام والطلبات والمعاملات الحكومية.",
+    "new": "حدث جديد",
+    "prev": "‹ السابق",
+    "next": "التالي ›",
+    "due": "الاستحقاق",
+    "empty": "لا شيء مجدول هذا الشهر.",
+    "error": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+    "saveError": "تعذّر الحفظ. يرجى المحاولة مرة أخرى.",
+    "createTitle": "حدث جديد",
+    "editTitle": "تعديل الحدث",
+    "fieldTitle": "العنوان",
+    "fieldStart": "البداية",
+    "fieldEnd": "النهاية",
+    "fieldLocation": "المكان",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "saving": "جارٍ الحفظ…",
+    "delete": "حذف",
+    "kind": {
+      "event": "حدث",
+      "task": "مهمة",
+      "request": "طلب",
+      "gro": "معاملة"
     }
   },
   "gro": {

@@ -1423,7 +1423,7 @@ from the domain modules below it).
 |---|---|---|---|
 | CAL-01 | `cal_events` staff-owned table + `CalendarService` (CRUD, own-scoped) + seed | 4.4, 4.2 | done ([evidence](evidence/calendar/CAL-01.md)) |
 | CAL-02 | Calendar HTTP API — event CRUD (own-scope; `calendar.read-all` lifts) + a **calendar-view** endpoint merging Tasks/Requests/GRO deadlines; `calendar.*` catalog | CAL-01 | done ([evidence](evidence/calendar/CAL-02.md)) |
-| CAL-03 | Calendar web UI — agenda/month view (events + deadlines, dual-calendar Hijri) + create/edit | CAL-02 | todo |
+| CAL-03 | Calendar web UI — agenda/month view (events + deadlines, dual-calendar Hijri) + create/edit | CAL-02 | done ([evidence](evidence/calendar/CAL-03.md)) |
 
 ### CAL-01 — `cal_events` table + CalendarService (staff path) + seed
 - **Objective:** the calendar foundation — a STAFF-OWNED `cal_events` table (like
@@ -1459,6 +1459,23 @@ from the domain modules below it).
   service + filters in-memory (dueDate ∈ range + active) — fine at scale, no new
   domain queries; Calendar imports Tasks/Requests/GRO read-only (one-way, no cycle);
   each deadline source gated by its read permission (GRO only for gro.read holders).
+
+### CAL-03 — Calendar web UI (agenda view + create/edit)
+- **Objective:** the staff calendar console over `/calendar/view` — an agenda grouped
+  by day (dual-calendar Hijri headers, kind-coded items) with month navigation +
+  create/edit own events.
+- **Files:** `(app)/calendar/page.tsx` (NEW); `app-shell.tsx` (Calendar nav gated on
+  calendar.read); `messages/{en,ar}.json` (`nav.calendar` + `calendar.*`). Front-end only.
+- **DoD:** all staff see the nav; agenda merges own events + Task/Request/GRO deadlines
+  with dual-calendar headers; month nav; create an event (verified live); edit own
+  events; delete shown only for calendar.delete holders; RTL + logical utilities; web
+  typecheck + lint green; verified in the browser (both locales).
+- **Evidence:** `evidence/calendar/CAL-03.md`.
+- **Dependencies:** CAL-02. **Risks:** fixed a month-boundary bug (local-midnight ISO
+  shifted the label a day under a +UTC offset → UTC-anchored the window); deadlines
+  are read-only (only Event items are editable).
+
+**Calendar epic (5.2) COMPLETE — CAL-01..03 (events table, API+aggregated view, web UI).**
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 
