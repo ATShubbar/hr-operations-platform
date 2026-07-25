@@ -1,3 +1,9 @@
+# ⛔ SUPERSEDED by ADR-006 rev. 5 (2026-07-25) — the active target is OCI Riyadh, see PROVISIONING-OCI.md
+
+> Kept for the reasoning trail and for the **teardown** of the resources listed
+> below (task OCI-06 — the ALB alone meters ~$22/mo). The interim AWS UAE
+> environment was a residency compromise; OCI Riyadh removes the need for it.
+
 # AWS UAE (me-central-1) — ACTIVE interim staging guide (WS-20/21)
 
 Per ADR-006 rev. 4. This is the **interim staging** environment in the

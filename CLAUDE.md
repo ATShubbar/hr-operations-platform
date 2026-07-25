@@ -15,8 +15,10 @@ build contract. Changes go through ADRs (adr/), never through drift.
 3. **Commits:** small, reviewable, `WS-XX:` (or task-id) prefixed, pushed to
    origin main. Co-author trailer per harness convention.
 4. **Verify before building on assumptions** — the AWS region saga in
-   ADR-006 (rev. 1→4) is the cautionary tale: press releases lied, the
-   console and official docs told the truth.
+   ADR-006 (rev. 1→5) is the cautionary tale: press releases lied, the
+   console and official docs told the truth. ADR-006 rev. 5 (OCI) therefore
+   asserts NOTHING: every service line is an unchecked box until seen in the
+   account's own console.
 5. Deviating from the frozen architecture requires surfacing the conflict,
    not improvising around it.
 
@@ -25,12 +27,13 @@ build contract. Changes go through ADRs (adr/), never through drift.
 | File | What |
 |---|---|
 | architecture.md | Frozen v1.4 build contract |
-| adr/README.md | Decision index (ADR-001..009, statuses) |
+| adr/README.md | Decision index (ADR-001..010, statuses) |
 | BACKLOG.md | Task board + cards + working rules |
 | ACTION-PLAN.md | Phased plan, DoD checklists with evidence rule |
 | evidence/skeleton/ | Per-task proof (WS-01..) |
 | docs/FIELD-MAPPING.md | ACTIVE: reference-system (Qiwa/GOSI/Muqeem/Mudad/Absher) Employee fields, sensitivity-tagged (0.8) — source for the Employees schema |
-| docs/PROVISIONING-AWS.md | ACTIVE: AWS UAE interim staging + status log |
+| docs/PROVISIONING-OCI.md | ACTIVE: OCI Riyadh provisioning runbook + verification checklist + status log |
+| docs/PROVISIONING-AWS.md | SUPERSEDED (ADR-006 rev. 5) — kept for history + the OCI-06 teardown |
 | docs/HANDOFF-WS20.md | In-flight infra state + exact next commands |
 | apps/api/src/modules/README.md | Module layout contract + RLS table checklist |
 
@@ -278,13 +281,28 @@ call, so under 63-worker load a request can be answered by ANOTHER app instance 
 unauth `GET /documents`→200, `expected 401 got 404`, `Parse Error: Expected HTTP/`). App
 authz verified deterministic (200 sequential unauth probes → all 401; ALS context is
 correct); ~20 concurrent supertest calls reliably ECONNRESET. Isolation harness now lists
-ALL offending routes; the harness fix itself is filed as a follow-up. **Remaining: the
-real Google client + attachments (infra, deferred per ADR-009); AWS/OCI decision (ADR-006)
-open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
-2026-07-24: ECS throttle + RDS InvalidAction persist)
-(ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
-support case escalated; decision point → fresh account or OCI fallback
-(ADR-006). Infra pickup: docs/HANDOFF-WS20.md.
+ALL offending routes; the harness fix itself is filed as a follow-up. **INFRASTRUCTURE: ADR-006 is DECIDED (rev. 5, 2026-07-25) — OCI, home region
+Riyadh, Jeddah second, OKE (managed Kubernetes) as the runtime.** Owner attached a hard
+condition — *must be easily migratable later to AWS/Google/anyone* — recorded as its own
+decision, **ADR-010 (cloud portability)**: six interface clauses each PAIRED WITH A DETECTION
+METHOD (containers+K8s manifests in `infra/k8s/`; vanilla PG16 over a URL; object storage
+**only** via the S3-compat API — no `oci-sdk` under `apps/`, greppable; Redis over a URL and
+never source-of-truth; env-var config/secrets, no secret-manager SDK; no provider metadata
+calls), explicit NON-goals (no multi-cloud abstraction, no avoiding managed services,
+**Terraform is not portable and isn't expected to be** — the topology+runbook is), and an
+**exit drill**: the WS-21 restore test passes only when a dump restores onto DIFFERENT
+infrastructure and the app boots with only env changes. OKE was chosen over Container
+Instances precisely for clause 1. OCI's two in-Kingdom regions dissolve the residency
+compromise the AWS UAE interim carried (its no-real-data guard was legal; on Riyadh it's just
+a production-readiness gate). ADR-006 rev. 5 **asserts no service availability** — every line
+is an unchecked box until seen in the account console (the rev. 1 me-central-2 saga is cited
+in the ADR as the reason). Epic: OCI-01 done (ADRs+runbook); **OCI-02 is OWNER-run** (signup +
+console verification — I must not create accounts or enter credentials); OCI-03 Terraform,
+OCI-04 manifests+deploy (closes WS-20), OCI-05 backups/exit drill (closes WS-21), OCI-06 AWS
+teardown (~$22/mo ALB still metering). Runbook: docs/PROVISIONING-OCI.md. AWS UAE abandoned
+(account fully restricted since signup; re-verified 2026-07-24: ECS throttle + RDS
+InvalidAction persist). Also remaining: the real Google client + attachments (infra, deferred
+per ADR-009).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

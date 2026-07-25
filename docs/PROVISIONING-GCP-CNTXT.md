@@ -1,3 +1,8 @@
+# ⛔ SUPERSEDED by ADR-006 rev. 5 (2026-07-25) — the active target is OCI Riyadh, see PROVISIONING-OCI.md
+
+> Kept for the reasoning trail. The CNTXT reseller gate (legal documents,
+> indefinite timeline) is precisely what OCI's self-service KSA regions avoid.
+
 # Google Cloud Dammam via CNTXT — provisioning guide (WS-20/21)
 
 Per ADR-006 rev. 3. **Access model:** KSA-based customers purchase Google

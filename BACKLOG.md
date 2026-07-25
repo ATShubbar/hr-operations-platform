@@ -33,8 +33,8 @@
 | WS-17 | Hijri/Gregorian shared date utility | WS-04 | done ([evidence](evidence/skeleton/WS-17.md)) |
 | WS-18 | Cross-client isolation test harness in CI | WS-13, WS-15, WS-09 | done ([evidence](evidence/skeleton/WS-18.md)) |
 | WS-19 | Seed script (2 clients, all roles) | WS-13 | done ([evidence](evidence/skeleton/WS-19.md)) |
-| WS-20 | Finalize ADR-006 + deploy pipeline to KSA host | WS-09 | in progress — ADR-006 **rev. 4: interim staging on AWS UAE** (no-production-data guard, [guide](docs/PROVISIONING-AWS.md)); KSA cutover tracked follow-up |
-| WS-21 | Backups + restore test | WS-20 | todo |
+| WS-20 | Finalize ADR-006 + deploy pipeline to KSA host | WS-09 | in progress — **ADR-006 rev. 5: OCI Riyadh + OKE** ([guide](docs/PROVISIONING-OCI.md), portability contract [ADR-010](adr/ADR-010-cloud-portability.md)); AWS UAE interim abandoned. Closed by OCI-04 |
+| WS-21 | Backups + restore test | WS-20 | todo — closed by OCI-05, which runs it as the ADR-010 cross-provider exit drill |
 | WS-22 | Skeleton exit review (evidence walkthrough) | WS-01…WS-21 | done with recorded gaps ([review](evidence/skeleton/WS-22-exit-review.md)) — WS-20/21 remain open, external-blocked |
 
 ---
@@ -1662,6 +1662,43 @@ data is.
   app instance (app authz verified deterministic); filed as a follow-up.
 
 **Reporting epic (5.4) COMPLETE — REP-01..04 (catalog + read models, filtered API, audited CSV export, web console). Seventeen product screens. Priorities 2–5 done.**
+
+## Infrastructure — OCI epic (ADR-006 rev. 5, ADR-010; closes WS-20/21)
+
+Owner decision 2026-07-25: **move to OCI (Riyadh)**, with the explicit condition
+that whatever we build stays **easily migratable** to AWS/Google/anyone. That
+condition is recorded as **ADR-010** — six interface clauses, each paired with a
+detection method — and drove the runtime choice (**OKE**: Kubernetes manifests are
+the most portable runtime contract available). OCI's two in-Kingdom regions also
+dissolve the residency compromise the AWS UAE interim was living with.
+
+| Task | Objective | Deps | Status |
+|---|---|---|---|
+| OCI-01 | ADR-006 rev. 5 (OCI Riyadh + OKE) + **ADR-010 cloud-portability contract** + `docs/PROVISIONING-OCI.md` runbook; supersede the AWS/GCP guides | — | done ([evidence](evidence/infra/OCI-01.md)) |
+| OCI-02 | **Owner-run** account signup + provisioning-day **service verification** (console, create nothing) + CLI profile | OCI-01 | todo — owner |
+| OCI-03 | Terraform: compartment, VCN, managed PostgreSQL 16, bucket, OKE cluster, OCIR | OCI-02 | todo |
+| OCI-04 | `infra/k8s/` manifests + GitHub Actions deploy (build → push → migrate → apply → health gate) + deliberate rollback | OCI-03 | todo — **closes WS-20** |
+| OCI-05 | Backups + restore test executed as the **ADR-010 exit drill** (restore on different infrastructure, boot the app with only env changes); measured RPO/RTO | OCI-04 | todo — **closes WS-21** |
+| OCI-06 | AWS UAE teardown (stops the ~$22/mo ALB meter); account may stay dormant at zero cost | OCI-04 | todo — approval-gated |
+
+### OCI-01 — ADR-006 rev. 5 + ADR-010 (portability contract)
+- **Objective:** record the decision, and turn "must be migratable later" into a
+  contract with testable clauses **before** any infrastructure exists to violate it.
+- **Files:** `adr/ADR-006-ksa-cloud-provider.md` (rev. 5 + unfilled verification
+  checklist), `adr/ADR-010-cloud-portability.md` (NEW), `adr/README.md`,
+  `docs/PROVISIONING-OCI.md` (rewritten as ACTIVE), `docs/PROVISIONING-AWS.md` +
+  `docs/PROVISIONING-GCP-CNTXT.md` (superseded banners), `BACKLOG.md`, `CLAUDE.md`.
+- **DoD:** ADR-006 rev. 5 asserts **no** service availability — every line is an
+  unchecked box until seen in the account's console; ADR-010 Accepted with each of
+  the six clauses paired with a detection method, explicit non-goals, and a defined
+  exit drill; index updated; runbook carries the standing guards; docs-only (no
+  infra touched, no app code changed).
+- **Evidence:** `evidence/infra/OCI-01.md`.
+- **Dependencies:** none. **Risks:** the tempting failure is asserting OCI service
+  availability from marketing pages — the ADR-006 rev. 1 saga is cited *in* the ADR
+  as the reason it does not; portability clauses are worthless unenforced, so each
+  names how a violation is caught; OKE adds Kubernetes complexity for a one-person
+  team — accepted cost, mitigated by a minimal manifest set (no mesh, no operators).
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 
