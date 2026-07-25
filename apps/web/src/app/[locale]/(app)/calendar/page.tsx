@@ -250,7 +250,7 @@ export default function CalendarPage() {
               <Label htmlFor="c-title">{t('fieldTitle')}</Label>
               <Input id="c-title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor="c-start">{t('fieldStart')}</Label>
                 <Input id="c-start" type="datetime-local" value={form.startAt} onChange={(e) => setForm({ ...form, startAt: e.target.value })} required />

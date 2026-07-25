@@ -69,7 +69,9 @@
     "portalEmployees": "موظفيّ",
     "portalDocuments": "مستنداتي",
     "reports": "التقارير",
-    "today": "اليوم"
+    "today": "اليوم",
+    "openMenu": "فتح القائمة",
+    "closeMenu": "إغلاق"
   },
   "documents": {
     "title": "المستندات",
@@ -858,7 +860,8 @@
     "perPage": "صفوف بالصفحة",
     "prev": "السابق",
     "next": "التالي",
-    "pageOf": "صفحة {page} من {pages}"
+    "pageOf": "صفحة {page} من {pages}",
+    "regionLabel": "جدول البيانات"
   },
   "today": {
     "title": "اليوم",

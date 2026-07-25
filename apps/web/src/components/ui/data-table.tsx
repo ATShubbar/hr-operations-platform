@@ -59,6 +59,7 @@ export function DataTable<T>({
   emptyDescription,
   emptyAction,
   initialSort,
+  label,
   className,
 }: {
   rows: T[];
@@ -76,6 +77,8 @@ export function DataTable<T>({
   emptyDescription?: string;
   emptyAction?: ReactNode;
   initialSort?: SortState;
+  /** Accessible name for the scrollable table region. */
+  label?: string;
   className?: string;
 }) {
   const t = useTranslations('table');
@@ -145,7 +148,18 @@ export function DataTable<T>({
         {filters}
       </div>
 
-      <div className="overflow-x-auto rounded-lg border bg-card">
+      {/* A horizontally scrolling region must be reachable by keyboard (WCAG
+          2.1.1): without tabindex, a table wider than the viewport — which is the
+          normal case on a phone — has columns a keyboard-only user cannot reach
+          at all. Focusable + role=region + a name is the standard pairing.
+          Fixed here rather than on the twelve raw tables because UX-03c migrates
+          them onto this component. */}
+      <div
+        role="region"
+        aria-label={label ?? t('regionLabel')}
+        tabIndex={0}
+        className="overflow-x-auto rounded-lg border bg-card focus-visible:outline-2 focus-visible:outline-ring"
+      >
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="border-b bg-muted/40">

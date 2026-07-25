@@ -314,7 +314,7 @@ export default function VacanciesPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor="v-ar">{t('fieldTitleAr')}</Label>
                 <Input id="v-ar" value={form.titleAr} onChange={(e) => setForm({ ...form, titleAr: e.target.value })} required dir="rtl" />
@@ -324,7 +324,7 @@ export default function VacanciesPage() {
                 <Input id="v-en" value={form.titleEn} onChange={(e) => setForm({ ...form, titleEn: e.target.value })} required dir="ltr" />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor="v-dep">{t('fieldDepartment')}</Label>
                 <Input id="v-dep" value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} />

@@ -297,26 +297,33 @@ export default function TodayPage() {
                               : 'var(--status-neutral-line)',
                       }}
                     />
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-medium">{item.title}</span>
-                      <span className="block text-xs text-muted-foreground">
-                        {t(`kind.${item.kind}`)}
-                        {label(item.kind, item.status) ? ` · ${label(item.kind, item.status)}` : ''}
+                    {/* Stacks below sm (UX-05). Side by side, the fixed date block
+                        left the title about 180px at 375px, so every row read as
+                        an ellipsis. Nothing is dropped on mobile — it reflows. */}
+                    <span className="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-medium">{item.title}</span>
+                        <span className="block text-xs text-muted-foreground">
+                          {t(`kind.${item.kind}`)}
+                          {label(item.kind, item.status)
+                            ? ` · ${label(item.kind, item.status)}`
+                            : ''}
+                        </span>
                       </span>
-                    </span>
-                    <span className="shrink-0 text-end">
-                      <span className="block text-xs tabular-nums">
-                        {item.days < 0
-                          ? t('overdueBy', { days: -item.days })
-                          : item.days === 0
-                            ? t('dueToday')
-                            : t('inDays', { days: item.days })}
-                      </span>
-                      {/* Absolute date stays on screen next to the relative one —
-                          this is a compliance domain, and "in 3 days" is not
-                          something you can book a government appointment against. */}
-                      <span className="block text-[11px] text-muted-foreground">
-                        {dualDate(item.when, locale)}
+                      <span className="flex shrink-0 items-baseline gap-2 text-start sm:block sm:text-end">
+                        <span className="text-xs tabular-nums">
+                          {item.days < 0
+                            ? t('overdueBy', { days: -item.days })
+                            : item.days === 0
+                              ? t('dueToday')
+                              : t('inDays', { days: item.days })}
+                        </span>
+                        {/* Absolute date stays on screen next to the relative one —
+                            this is a compliance domain, and "in 3 days" is not
+                            something you can book a government appointment against. */}
+                        <span className="text-[11px] text-muted-foreground">
+                          {dualDate(item.when, locale)}
+                        </span>
                       </span>
                     </span>
                   </Link>

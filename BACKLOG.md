@@ -1726,7 +1726,7 @@ results** for the most common typing variants (`احمد` does not match `أحم
 | UX-03c | Sweep the remaining seven lists onto DataTable (Documents, Requests, Tasks, GRO, Vacancies, Clients, Audit) | UX-03 | planned |
 | UX-03b | Bidi isolation: wrap Latin identifiers + dual-calendar dates in `<bdi>` (DirectionProvider shipped early in UX-02) | — | planned |
 | UX-04 | **"Today"** — the role-aware home screen (re-projects `/calendar/view` as an urgency-ordered work queue) | UX-02 | done ([evidence](evidence/ux/UX-04.md)) |
-| UX-05 | Mobile navigation + responsive lists and dialogs | UX-02 | planned |
+| UX-05 | Mobile navigation + responsive lists and dialogs | UX-02 | **done** |
 | UX-06 | States everywhere: skeletons, empty, error-with-retry, 403 | UX-02 | planned |
 | UX-07 | Realistic demo data (seed shows 0 expiring / 0 overdue today — the dashboard can't be evaluated) | — | planned |
 | UX-08 | Arabic typeface + bidi isolation polish | UX-03b | planned |
@@ -1800,6 +1800,41 @@ results** for the most common typing variants (`احمد` does not match `أحم
   336/336 passing then exits non-zero on the documented ioredis teardown noise;
   reproduced 3/3 under turbo's concurrency) — filed as a follow-up, kept separate
   from the supertest port-collision issue.
+
+### UX-05 — Mobile navigation + responsive dialogs
+- **Objective:** the app was unusable below 768px — the sidebar was `hidden md:flex`,
+  so 13 nav links sat in the DOM with 0 visible and no menu button. The last blocking
+  finding from the audit.
+- **Files:** NEW `components/app-nav.tsx` (the link list, extracted so the sidebar and
+  the sheet render THE SAME component); NEW `components/mobile-nav.tsx` (Base UI Dialog
+  primitives, not a restyled `DialogContent`); `app-shell.tsx`; `ui/dialog.tsx`
+  (`max-h-[calc(100dvh-2rem)]` + `overflow-y-auto`); `ui/data-table.tsx` (keyboard-
+  reachable scroll region); `(app)/today/page.tsx` (rows stack below `sm`); 15 dialog
+  grids across 9 screens → `grid-cols-1 sm:grid-cols-2`; `messages/{en,ar}.json`;
+  `.claude/launch.json` (`web-prod` preview).
+- **DoD:** 13 links reachable at 375px with 44px targets; `aria-expanded`/`aria-controls`,
+  focus trap, Escape + focus-return, scroll lock; sheet enters from the START edge in
+  BOTH locales from one class; auto-closes when the viewport crosses to desktop;
+  **0px page overflow on every screen the seeded roles reach** (13 staff + 3 portal +
+  login); a tall dialog scrolls internally with its submit reachable; desktop pixel-
+  unchanged; lint/typecheck/build 15/15.
+- **Evidence:** `evidence/ux/UX-05.md`.
+- **Dependencies:** UX-02 (`DirectionProvider`). **Risks/decisions:** **`dvh` not `vh`**
+  (`100vh` excludes mobile URL-bar chrome, so a `vh`-capped modal still hides its own
+  footer). The sheet uses Base UI primitives because `DialogContent` hard-codes
+  `rtl:translate-x-1/2`, which tailwind-merge will not override from a className.
+  **Bug this card produced and fixed:** closing the sheet in the link's `onClick`
+  CANCELLED navigation (`next/link` runs `startTransition`, and closing unmounts the
+  subtree owning it) — bisected against the identical link in the desktop sidebar, fixed
+  by closing on pathname change. **A deferred-close variant was built, measured and NOT
+  shipped**: all timings came back as multiples of ~1000ms (Chrome clamping `setTimeout`
+  in a non-foreground tab), so the instrumentation could not distinguish it — an
+  unmeasurable win is not worth a magic timer. Foreground production reading: URL at
+  18ms, sheet removed at 171ms. **`/audit` not swept** — both admin roles are MFA-gated
+  and no seed user is enrolled, so reaching it would mutate seeded state. Beyond the
+  card: Today's rows reflowed (titles were ellipsed to ~180px) and WCAG 2.1.1 keyboard
+  access for table scroll regions (205px of Employees columns were unreachable), fixed
+  in DataTable since UX-03c migrates every list onto it.
 
 ### UX-04 — "Today": the role-aware home screen
 - **Objective:** the product had no home screen and its root URL rendered the WS-01

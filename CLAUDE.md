@@ -393,8 +393,35 @@ defects caught while verifying: `/calendar/view` returns RAW enums and uses the 
 as the title, so `iqama_renewal`/`in_progress` were about to headline the most-read screen —
 fixed by reusing each domain's existing label maps with raw-value fallback; and the dead `home`
 i18n namespace was serialising "Walking skeleton" into EVERY page's HTML (next-intl ships the
-whole messages object) — removed. Next: UX-05 mobile nav (the last blocking finding) or UX-03c
-list sweep.
+whole messages object) — removed.
+**UX-05 done — the app is usable on a phone.** The sidebar was `hidden md:flex`, so 13 nav
+links sat in the DOM with **0 visible and no menu button**: not a degraded experience, a
+product with no navigation below 768px. Now a **sheet** built from Base UI Dialog PRIMITIVES
+(not a restyled `DialogContent` — that hard-codes `rtl:translate-x-1/2`, which tailwind-merge
+won't override from a className), with the link list extracted into **one `AppNav`** that both
+surfaces render (a second copy drifts, and invisibly on whichever surface you aren't looking
+at). Measured at 375px: 13 links, 44px targets, aria-expanded/aria-controls, focus trap,
+Escape + focus-return, scroll lock, **start-edge in BOTH locales from one class**
+(`slide-in-from-start` resolves through `:dir()`), auto-close when the viewport crosses to
+desktop, and **0px page overflow on every screen the seeded roles reach** (13 staff + 3 portal
++ login; `/audit` NOT swept — both admin roles are MFA-gated and no seed user is enrolled, so
+reaching it would mutate seeded state). `DialogContent` gained `max-h-[calc(100dvh-2rem)]` +
+`overflow-y-auto` — **`dvh` not `vh`**, since `100vh` excludes mobile URL-bar chrome; before
+this the integrations form's submit sat **154px below the visible viewport** on a
+`position: fixed` modal the page cannot scroll. 15 dialog grids across 9 screens →
+`grid-cols-1 sm:grid-cols-2`. **The bug this card produced:** closing the sheet in the link's
+`onClick` CANCELLED the navigation — `next/link` runs `startTransition(() => router.push())`
+and closing unmounts the subtree owning that transition; bisected against the identical link
+in the desktop sidebar, fixed by closing on **pathname change**. A deferred-close variant was
+built, measured and **NOT shipped**: every timing came back a multiple of ~1000ms (**Chrome
+clamps `setTimeout` in a non-foreground tab** — a landmine for any future in-browser timing),
+so it couldn't be distinguished from the shipped behaviour; the one foreground production
+reading was URL@18ms, sheet removed@171ms. Beyond the card: Today's rows reflow below `sm`
+(the fixed date block had ellipsed titles to ~180px), and table scroll containers are now
+keyboard-reachable (WCAG 2.1.1 — **205px of Employees columns were unreachable by keyboard**),
+fixed in `DataTable` because UX-03c migrates every list onto it. Found-not-fixed:
+`/ar/calendar` leaks a raw `open` enum (same class as the UX-04 defect), filed separately.
+Next: UX-03c list sweep or UX-06 states.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
@@ -409,6 +436,13 @@ list sweep.
 - Local ports: Postgres 5433, Redis 6380, MinIO 9002 (API) / 9003 (console) — non-default because 5432/6379/9000 belong to other local tooling. `docker compose up -d` now includes MinIO; storage e2e (STOR-01) requires it up. StorageService is endpoint-configurable + `forcePathStyle` (MinIO); prod object-store provider is still ADR-006-open. Presigned uploads go browser→object-store DIRECTLY (never through the API); this works on MinIO's default CORS locally — a stricter production object store must have CORS configured for the web origin (DOC-05).
 - Tailwind v4 `@theme` only EMITS a utility when the class appears in scanned source — a new token is not a usable class until something references it. Verify with a real consumer, not by injecting a class at runtime.
 - Do NOT run `next build` (prod) while the web dev/preview server is running — it clobbers `.next` and the dev server then throws `Cannot find module './NNN.js'`. Stop the dev server first, or verify only via the dev server (AUTH-08).
+- Chrome throttles `setTimeout` to ~1s in a non-foreground tab, so ANY in-browser timing
+  measured through timers is quantised to multiples of 1000ms (UX-05: readings of 999/1000/
+  3999/5001/6000 looked like an app bug and were the browser). Foreground the tab, or don't
+  claim the number.
+- Closing a dialog inside a `<Link>`'s onClick CANCELS the navigation — `next/link` runs
+  `startTransition(() => router.push())` and the close unmounts the subtree owning that
+  transition. Close on pathname change instead (UX-05).
 - BullMQ (NOTIF-01): the connection needs `maxRetriesPerRequest: null`. A Worker holds a blocking Redis connection whose teardown emits a benign "Connection is closed" unhandled rejection in EVERY app-creating spec → suite exit 1. Fix in place: producer (`QueueModule` in `AppModule`) is split from the worker (`DispatchWorkerModule`), which runs only in `MainModule` (main.ts) + the queue e2e. Keep workers out of `AppModule`.
 
 ## Commands

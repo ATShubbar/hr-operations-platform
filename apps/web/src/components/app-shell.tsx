@@ -2,34 +2,17 @@
 
 import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
-import { Link } from '@/i18n/navigation';
+import { AppNav } from '@/components/app-nav';
 import { LanguageSwitcher } from '@/components/language-switcher';
+import { MobileNav } from '@/components/mobile-nav';
 import { NotificationBell } from '@/components/notification-bell';
 import { SignOutButton } from '@/components/sign-out-button';
-import { useCan } from '@/lib/session';
 
-const NAV_LINK =
-  'flex items-center rounded-md px-3 py-2 text-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground';
-
-// Authenticated app shell (AUDIT-05, made role-aware in AUTH-08). Nav links
-// appear only for capabilities the actor holds. Rendered inside SessionProvider
-// (the route guard), so useCan is always resolved here.
+// Authenticated app shell (AUDIT-05, made role-aware in AUTH-08). The link list
+// itself moved to AppNav in UX-05 so the sidebar and the mobile sheet render the
+// same thing — see that file for why.
 export function AppShell({ children }: { children: ReactNode }) {
   const t = useTranslations();
-  const canClients = useCan('client.read');
-  const canEmployees = useCan('employee.read');
-  const canDocuments = useCan('document.read');
-  const canRequests = useCan('request.read');
-  const canTasks = useCan('task.read');
-  const canVacancies = useCan('vacancy.read');
-  const canCandidates = useCan('candidate.read');
-  const canGro = useCan('gro.read');
-  const canCalendar = useCan('calendar.read');
-  const canIntegrations = useCan('integration.google-calendar');
-  const canReports = useCan('report.read');
-  const canAudit = useCan('audit.read');
-  const canSettings = useCan('config.read-self'); // every authenticated principal
-  const canPortal = useCan('portal.read'); // client-only self-service surface (PORTAL-04)
 
   return (
     <div className="flex min-h-dvh">
@@ -37,109 +20,16 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="flex h-14 items-center px-4 text-sm font-semibold">
           {t('common.appName')}
         </div>
-        <nav className="flex flex-col gap-1 px-2 py-2" aria-label={t('nav.console')}>
-          {/* Today is the front door for staff (UX-04). Client reps have their own
-              portal landing, so it is hidden for them rather than showing a work
-              queue they have no work in. */}
-          {!canPortal && (
-            <Link href="/today" className={NAV_LINK}>
-              {t('nav.today')}
-            </Link>
-          )}
-          {/* Client portal self-service nav (PORTAL-04) — client-only. Staff never
-              hold portal.read, so this whole group is hidden for the staff console. */}
-          {canPortal && (
-            <Link href="/portal/company" className={NAV_LINK}>
-              {t('nav.portalCompany')}
-            </Link>
-          )}
-          {canPortal && (
-            <Link href="/portal/employees" className={NAV_LINK}>
-              {t('nav.portalEmployees')}
-            </Link>
-          )}
-          {canPortal && (
-            <Link href="/portal/documents" className={NAV_LINK}>
-              {t('nav.portalDocuments')}
-            </Link>
-          )}
-          {canClients && (
-            <Link href="/clients" className={NAV_LINK}>
-              {t('nav.clients')}
-            </Link>
-          )}
-          {canEmployees && (
-            <Link href="/employees" className={NAV_LINK}>
-              {t('nav.employees')}
-            </Link>
-          )}
-          {canDocuments && (
-            <Link href="/documents" className={NAV_LINK}>
-              {t('nav.documents')}
-            </Link>
-          )}
-          {canDocuments && (
-            <Link href="/expiry" className={NAV_LINK}>
-              {t('nav.expiry')}
-            </Link>
-          )}
-          {canRequests && (
-            <Link href="/requests" className={NAV_LINK}>
-              {t('nav.requests')}
-            </Link>
-          )}
-          {canTasks && (
-            <Link href="/tasks" className={NAV_LINK}>
-              {t('nav.tasks')}
-            </Link>
-          )}
-          {canVacancies && (
-            <Link href="/vacancies" className={NAV_LINK}>
-              {t('nav.vacancies')}
-            </Link>
-          )}
-          {canCandidates && (
-            <Link href="/candidates" className={NAV_LINK}>
-              {t('nav.candidates')}
-            </Link>
-          )}
-          {canGro && (
-            <Link href="/gro" className={NAV_LINK}>
-              {t('nav.gro')}
-            </Link>
-          )}
-          {canCalendar && (
-            <Link href="/calendar" className={NAV_LINK}>
-              {t('nav.calendar')}
-            </Link>
-          )}
-          {canIntegrations && (
-            <Link href="/integrations" className={NAV_LINK}>
-              {t('nav.integrations')}
-            </Link>
-          )}
-          {canReports && (
-            <Link href="/reports" className={NAV_LINK}>
-              {t('nav.reports')}
-            </Link>
-          )}
-          {canAudit && (
-            <Link href="/audit" className={NAV_LINK}>
-              {t('nav.auditLog')}
-            </Link>
-          )}
-          {canSettings && (
-            <Link href="/settings" className={NAV_LINK}>
-              {t('nav.settings')}
-            </Link>
-          )}
-        </nav>
+        <AppNav />
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 items-center gap-4 border-b px-4">
-          <span className="text-sm font-medium md:hidden">{t('nav.console')}</span>
-          <div className="ms-auto flex items-center gap-2">
+        <header className="flex h-14 items-center gap-2 border-b px-4 md:gap-4">
+          {/* The mobile entry point into the nav (UX-05); the sidebar takes over
+              at md, so both the trigger and the sheet are md:hidden. */}
+          <MobileNav />
+          <span className="truncate text-sm font-medium md:hidden">{t('nav.console')}</span>
+          <div className="ms-auto flex shrink-0 items-center gap-1 md:gap-2">
             <NotificationBell />
             <LanguageSwitcher />
             <SignOutButton />

@@ -356,7 +356,7 @@ export default function TasksPage() {
                 required
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label>{t('fieldClient')}</Label>
                 <Select
@@ -440,7 +440,7 @@ export default function TasksPage() {
           {editTarget && (
             <form onSubmit={saveEdit} className="space-y-4">
               <div className="text-sm font-medium">{editTarget.title}</div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label>{t('fieldStatus')}</Label>
                   <Select

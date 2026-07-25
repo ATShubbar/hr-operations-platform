@@ -228,7 +228,7 @@ export default function IntegrationsPage() {
             <DialogTitle>{t('createTitle')}</DialogTitle>
           </DialogHeader>
           <form onSubmit={create} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label>{t('fieldKind')}</Label>
                 <Select value={form.kind} onValueChange={(v) => setForm({ ...form, kind: (v as Form['kind']) ?? 'interview' })}>
@@ -247,7 +247,7 @@ export default function IntegrationsPage() {
               </div>
             </div>
             {form.kind === 'interview' ? (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label htmlFor="g-name">{t('fieldPersonName')}</Label>
                   <Input id="g-name" value={form.personName} onChange={(e) => setForm({ ...form, personName: e.target.value })} />
@@ -263,7 +263,7 @@ export default function IntegrationsPage() {
                 <Input id="g-mtitle" value={form.meetingTitle} onChange={(e) => setForm({ ...form, meetingTitle: e.target.value })} />
               </div>
             )}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor="g-start">{t('fieldStart')}</Label>
                 <Input id="g-start" type="datetime-local" value={form.start} onChange={(e) => setForm({ ...form, start: e.target.value })} required />
@@ -273,7 +273,7 @@ export default function IntegrationsPage() {
                 <Input id="g-end" type="datetime-local" value={form.end} onChange={(e) => setForm({ ...form, end: e.target.value })} required />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor="g-tz">{t('fieldTimezone')}</Label>
                 <Input id="g-tz" value={form.timezone} onChange={(e) => setForm({ ...form, timezone: e.target.value })} dir="ltr" />

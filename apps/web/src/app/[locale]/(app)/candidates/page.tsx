@@ -282,7 +282,7 @@ export default function CandidatesPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor="c-ar">{t('fieldNameAr')}</Label>
                 <Input id="c-ar" value={form.nameAr} onChange={(e) => setForm({ ...form, nameAr: e.target.value })} required dir="rtl" />
@@ -292,7 +292,7 @@ export default function CandidatesPage() {
                 <Input id="c-en" value={form.nameEn} onChange={(e) => setForm({ ...form, nameEn: e.target.value })} required dir="ltr" />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label htmlFor="c-nat">{t('fieldNationality')}</Label>
                 <Input id="c-nat" value={form.nationality} maxLength={2} placeholder="SA" onChange={(e) => setForm({ ...form, nationality: e.target.value })} />

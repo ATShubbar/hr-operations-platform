@@ -387,7 +387,7 @@ export default function GroPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label>{t('fieldType')}</Label>
                 <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: (v as GroProcessType) ?? 'other' })}>

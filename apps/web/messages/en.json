@@ -69,7 +69,9 @@
     "portalEmployees": "My employees",
     "portalDocuments": "My documents",
     "reports": "Reports",
-    "today": "Today"
+    "today": "Today",
+    "openMenu": "Open menu",
+    "closeMenu": "Close"
   },
   "documents": {
     "title": "Documents",
@@ -858,7 +860,8 @@
     "perPage": "Rows per page",
     "prev": "Previous",
     "next": "Next",
-    "pageOf": "Page {page} of {pages}"
+    "pageOf": "Page {page} of {pages}",
+    "regionLabel": "Data table"
   },
   "today": {
     "title": "Today",
