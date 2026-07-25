@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { AppNav } from '@/components/app-nav';
+import { BrandMark } from '@/components/brand-mark';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { MobileNav } from '@/components/mobile-nav';
 import { NotificationBell } from '@/components/notification-bell';
@@ -32,8 +33,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       </a>
 
       <aside className="hidden w-60 shrink-0 border-e bg-sidebar text-sidebar-foreground md:flex md:flex-col">
-        <div className="flex h-14 items-center px-4 text-sm font-semibold">
-          {t('common.appName')}
+        <div className="flex h-14 items-center px-4">
+          <BrandMark width={132} />
         </div>
         <AppNav />
       </aside>

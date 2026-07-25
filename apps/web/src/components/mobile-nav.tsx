@@ -6,6 +6,7 @@ import { Dialog as DialogPrimitive } from '@base-ui/react/dialog';
 import { MenuIcon } from 'lucide-react';
 
 import { AppNav } from '@/components/app-nav';
+import { BrandMark } from '@/components/brand-mark';
 import { Button } from '@/components/ui/button';
 import { usePathname } from '@/i18n/navigation';
 
@@ -75,9 +76,12 @@ export function MobileNav() {
           // sheet enters from the right without a second class.
         >
           <div className="flex h-14 shrink-0 items-center justify-between gap-2 px-4">
-            <DialogPrimitive.Title className="text-sm font-semibold">
+            {/* The title still carries the NAME for assistive tech — the mark is
+                an image, and a dialog needs a text accessible name (UX-15). */}
+            <DialogPrimitive.Title className="sr-only">
               {t('common.appName')}
             </DialogPrimitive.Title>
+            <BrandMark width={120} decorative />
             <DialogPrimitive.Close
               render={<Button variant="ghost" size="sm" />}
               aria-label={t('nav.closeMenu')}

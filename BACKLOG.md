@@ -1737,6 +1737,7 @@ results** for the most common typing variants (`احمد` does not match `أحم
 | UX-12 | Employees: Company column + company filter beside the search | UX-03c | **done** ([evidence](evidence/ux/UX-12.md)) |
 | UX-13 | One filtering idiom: the five remaining screens onto the inline filter shape | UX-12 | **done** ([evidence](evidence/ux/UX-13.md)) |
 | UX-14 | Fix `GET /requests?status=` being accepted and ignored | UX-13 | **done** ([evidence](evidence/ux/UX-14.md)) |
+| UX-15 | PEOPLE&GRO as the product's name and mark | — | **done** ([evidence](evidence/ux/UX-15.md)) |
 
 ### UX-01 — Semantic status tokens + surface layering
 - **Objective:** give status its own token tier, structurally separated from the brand
@@ -1804,6 +1805,33 @@ results** for the most common typing variants (`احمد` does not match `أحم
   336/336 passing then exits non-zero on the documented ioredis teardown noise;
   reproduced 3/3 under turbo's concurrency) — filed as a follow-up, kept separate
   from the supertest port-collision issue.
+
+### UX-15 — PEOPLE&GRO as the product's name and mark
+- **Objective:** the product identified itself with a placeholder, "HR Operations Platform".
+  Replace it with the company's actual name and logo wherever it introduces itself.
+- **Files:** NEW `components/brand-mark.tsx`, `public/brand/wordmark.webp`,
+  `src/app/{icon,apple-icon}.png`; `components/app-shell.tsx`, `components/mobile-nav.tsx`,
+  `(login)/page.tsx`; `messages/{en,ar}.json`.
+- **DoD:** no "HR Operations Platform" left as a NAME; the mark ≥4.5:1 wherever it lands,
+  MEASURED; both locales; sidebar 240px and sheet 375px verified for fit;
+  lint/typecheck/build 15/15; no API change.
+- **Evidence:** `evidence/ux/UX-15.md`.
+- **Dependencies:** none. **Risks/decisions:** **The measurement drove the design** — the gold
+  is 12.69:1 on the brand navy and **1.45:1 on our near-white sidebar**, i.e. invisible. Owner
+  chose the NAVY CHIP over a dark-mono wordmark: the brand's colours stay exact and nothing
+  about the logo is redrawn to suit our theme (`plate={false}` for already-dark surfaces).
+  `appName` is **PEOPLE&GRO in BOTH locales** — a company name is not translated, the same
+  reasoning that keeps the wordmark Latin on the Arabic login; "HR Operations Platform"
+  survives as a descriptor, never as the name. The wordmark is **cut from the artwork, not
+  re-typeset** — an earlier pass set it in Inter (a neo-grotesque; this is a geometric sans
+  with a circular O and flat-crossbar G) and no weight would have matched. **Bug caught in the
+  extraction:** the first cut left a median alpha of 2/255 across the rectangle — sky noise
+  surviving as a ghost box, invisible on navy and obvious on the favicon tile; fixed by
+  treating anything under 6% as background. The favicon is the **ampersand**, located by
+  column-profiling the alpha into ten glyph runs. **Not announced twice:** the sheet keeps an
+  `sr-only` text title for the dialog's accessible name and marks the image `decorative`.
+  `riyadh-skyline.webp` + `lockup.webp` stay UNTRACKED with the login-02 preview, which is
+  undecided — only what the product renders is committed.
 
 ### UX-14 — the requests status filter actually filters
 - **Objective:** `GET /requests?status=` had been accepted and silently ignored since REQ-02.

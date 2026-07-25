@@ -687,6 +687,29 @@ A's requests are all open) — it is a regression guard, not a red-green proof. 
 status against true counts (open 4/4, in_progress 2/2, resolved 1/1, closed 1/1, cancelled 1/1)
 and composing with `clientId` (2 rows). **API suite 352/352** (350 + 2). No web change — the
 screen had been sending `?status=` all along.
+**UX-15 done — the product has its real name and mark.** It had been identifying itself with a
+placeholder ("HR Operations Platform"); the company is **PEOPLE&GRO**. One key fed every site,
+so the rename is one line per locale: `common.appName` is **PEOPLE&GRO in BOTH locales** — a
+company name is not translated, the same reasoning that keeps the wordmark Latin on the Arabic
+login — and "HR Operations Platform" survives as a descriptor, never as the name;
+`auth.signInSubtitle` became the slogan. **The measurement drove the design:** the artwork's gold
+is **12.69:1 on the brand navy and 1.45:1 on our near-white sidebar**, i.e. invisible, so the
+mark could not simply be dropped in. Owner chose the **navy chip** over a dark-mono wordmark —
+the brand's colours stay exact and nothing about the logo is redrawn to suit our theme
+(`BrandMark`, `plate={false}` for already-dark surfaces). The wordmark is **cut from the
+artwork, not re-typeset**: an earlier pass set it in Inter, a neo-grotesque, where this is a
+geometric sans (circular O, flat-crossbar G) — no weight would have matched, so the glyphs are
+lifted at full resolution and **unpremultiplied** against the flat navy sky to keep their
+anti-aliased edges. **Bug caught in the extraction:** the first cut left a median alpha of
+**2/255** across the whole rectangle — sky sensor noise surviving as a ghost box, invisible on
+navy and unmistakable on the favicon tile; fixed by treating anything under 6% as background,
+not edge. The favicon is the **ampersand**, located by column-profiling the wordmark's alpha
+into ten glyph runs. Verified: tab title `PEOPLE&GRO` both locales; sidebar mark 132×14 in a
+`rgb(4,10,49)` chip with **7.73× pixels available** (the card's "14px of thin strokes may be too
+fine" risk did not materialise); sheet 120×12, 0px overflow; **the mark is not announced twice**
+— the sheet keeps an `sr-only` text title for the dialog's accessible name and marks the image
+`decorative` (`alt=""`), measured. `riyadh-skyline.webp` + `lockup.webp` stay UNTRACKED with the
+login-02 preview route, which is undecided — only what the product renders is committed.
 Next: OCI-02 (owner-run) unblocking OCI-03/04/05.
 
 ## Technical landmines (each cost real debugging — do not rediscover)

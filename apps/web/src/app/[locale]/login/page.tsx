@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { BrandMark } from '@/components/brand-mark';
 import { LanguageSwitcher } from '@/components/language-switcher';
 
 interface LoginResponse {
@@ -145,12 +146,17 @@ export default function LoginPage() {
     <main className="flex min-h-dvh items-center justify-center ps-4 pe-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <div className="flex items-center justify-between gap-4">
-            {/* The login card carries the page's only title, so this is the h1
-                rather than the h2 a card title is elsewhere (UX-11). */}
-            <CardTitle as="h1">{titles[step]}</CardTitle>
+          {/* The mark sits above the heading rather than beside it: this is the
+              one screen where the product introduces itself, and the wordmark is
+              8:1 wide — sharing a row with the title would leave neither room
+              (UX-15). Not decorative, so it keeps its alt text. */}
+          <div className="mb-1 flex items-start justify-between gap-4">
+            <BrandMark width={148} />
             <LanguageSwitcher />
           </div>
+          {/* The login card carries the page's only title, so this is the h1
+              rather than the h2 a card title is elsewhere (UX-11). */}
+          <CardTitle as="h1">{titles[step]}</CardTitle>
           <CardDescription>{subtitles[step]}</CardDescription>
         </CardHeader>
         <CardContent>

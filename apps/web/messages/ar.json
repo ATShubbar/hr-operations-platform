@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "منصة عمليات الموارد البشرية",
+    "appName": "PEOPLE&GRO",
     "switchLanguage": "English"
   },
   "rtlCheck": {
@@ -29,7 +29,7 @@
   },
   "auth": {
     "signInTitle": "تسجيل الدخول",
-    "signInSubtitle": "منصة عمليات الموارد البشرية",
+    "signInSubtitle": "شريكك في عمليات الموارد البشرية وحلول المواهب",
     "email": "البريد الإلكتروني",
     "emailPlaceholder": "you@example.com",
     "password": "كلمة المرور",
