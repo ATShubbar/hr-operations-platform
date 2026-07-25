@@ -49,11 +49,10 @@ export default function LoginPage() {
   async function goToApp() {
     try {
       const me = await apiFetch<MeResponse>('/auth/me');
-      const target = me.permissions.includes('portal.read')
-        ? '/portal/company'
-        : me.permissions.includes('audit.read')
-          ? '/audit'
-          : '/clients';
+      // UX-04: staff land on Today — their work queue — rather than on a list of
+      // clients or the audit log. Client reps still land on the portal, which is
+      // their only surface.
+      const target = me.permissions.includes('portal.read') ? '/portal/company' : '/today';
       let preferred: 'ar' | 'en' | undefined;
       try {
         const cfg = await apiFetch<ConfigEffectiveResponse>('/config/me');
@@ -64,7 +63,7 @@ export default function LoginPage() {
       }
       router.replace(target, preferred ? { locale: preferred } : undefined);
     } catch {
-      router.replace('/clients');
+      router.replace('/today');
     }
   }
 

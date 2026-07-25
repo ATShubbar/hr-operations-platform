@@ -373,8 +373,28 @@ found `أحمد حسن`. Landmines learned: literal invisible bidi chars in sour
 running Next dev server does NOT pick up a newly-linked workspace package (tsc resolved it, the
 browser 404'd — restart the dev server). **`turbo run test` is currently RED for a pre-existing
 reason: @hr/api reports 336/336 passing then exits non-zero on the documented ioredis
-`Connection is closed.` teardown noise — reproduced 3/3 under turbo (load-sensitive).** Next:
-UX-03c sweep, then UX-04 "Today".
+`Connection is closed.` teardown noise — reproduced 3/3 under turbo (load-sensitive).** **UX-04 done — the product finally has a
+home screen.** `(app)/today`: an urgency-ordered WORK QUEUE (Overdue → Due today → This week →
+Coming up), each section shown only when non-empty, Linear-"My Issues"-shaped rather than a
+monitoring dashboard, because the objects are work items with owners and deadlines. **Adds no
+data** — re-projects `/calendar/view` (which already merges own events + active Task/Request/GRO
+deadlines, each permission-gated) by urgency instead of by day, plus expiring documents for
+`document.read` holders. **Role-awareness MEASURED**: gro_officer gets gro+request+event,
+finance and recruiter get NO GRO (matrix exclusion flows straight through) — so Finance gets a
+shorter page, not four empty sections. **Deliberately NO KPI tile strip**: the four-ingredient
+rule needs a baseline + trend, there is no history table, and a fabricated sparkline on a
+compliance screen is worse than none — counts live in section headers (threshold-native +
+click-through); a real strip needs a snapshot mechanism = a Reporting decision. **No greeting by
+name** — `/auth/me` has no display name (UX-10 directory gap); shows the role instead of
+inventing one from an email. Absolute date sits beside the relative one (compliance domain: "in
+3 days" can't book an Absher appointment). The **root URL now redirects to /today** (was the
+WS-01 walking-skeleton demo with no way into the app) and staff land there post-login. Two
+defects caught while verifying: `/calendar/view` returns RAW enums and uses the GRO process TYPE
+as the title, so `iqama_renewal`/`in_progress` were about to headline the most-read screen —
+fixed by reusing each domain's existing label maps with raw-value fallback; and the dead `home`
+i18n namespace was serialising "Walking skeleton" into EVERY page's HTML (next-intl ships the
+whole messages object) — removed. Next: UX-05 mobile nav (the last blocking finding) or UX-03c
+list sweep.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

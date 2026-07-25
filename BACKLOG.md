@@ -1725,7 +1725,7 @@ results** for the most common typing variants (`احمد` does not match `أحم
 | UX-03 | DataTable + **`@hr/text` Arabic search normaliser**: search, sort, pagination, empty/no-results split; adopted on Employees | UX-02 | done ([evidence](evidence/ux/UX-03.md)) |
 | UX-03c | Sweep the remaining seven lists onto DataTable (Documents, Requests, Tasks, GRO, Vacancies, Clients, Audit) | UX-03 | planned |
 | UX-03b | Bidi isolation: wrap Latin identifiers + dual-calendar dates in `<bdi>` (DirectionProvider shipped early in UX-02) | — | planned |
-| UX-04 | **"Today"** — the role-aware home screen (re-projects `/calendar/view` as an urgency-ordered work queue) | UX-02 | planned |
+| UX-04 | **"Today"** — the role-aware home screen (re-projects `/calendar/view` as an urgency-ordered work queue) | UX-02 | done ([evidence](evidence/ux/UX-04.md)) |
 | UX-05 | Mobile navigation + responsive lists and dialogs | UX-02 | planned |
 | UX-06 | States everywhere: skeletons, empty, error-with-retry, 403 | UX-02 | planned |
 | UX-07 | Realistic demo data (seed shows 0 expiring / 0 overdue today — the dashboard can't be evaluated) | — | planned |
@@ -1800,6 +1800,29 @@ results** for the most common typing variants (`احمد` does not match `أحم
   336/336 passing then exits non-zero on the documented ioredis teardown noise;
   reproduced 3/3 under turbo's concurrency) — filed as a follow-up, kept separate
   from the supertest port-collision issue.
+
+### UX-04 — "Today": the role-aware home screen
+- **Objective:** the product had no home screen and its root URL rendered the WS-01
+  walking-skeleton demo. Ship an urgency-ordered work queue and make it the front door.
+- **Files:** NEW `(app)/today/page.tsx`; `[locale]/page.tsx` (demo → redirect);
+  `login/page.tsx` (staff land on /today); `app-shell.tsx` (Today first + nav
+  aria-label); `messages/{en,ar}.json` (`today.*`, `nav.today`, roles; **dead `home`
+  namespace removed**).
+- **DoD:** sections in urgency order, each shown only when non-empty; absolute date
+  beside the relative one (compliance domain); affirmative all-clear state; root
+  redirects to /today; role-awareness MEASURED per role (finance/recruiter receive no
+  GRO); both locales; web typecheck + lint green; API untouched (336).
+- **Evidence:** `evidence/ux/UX-04.md`.
+- **Dependencies:** UX-02. **Risks/decisions:** **no KPI tile strip** — the mockup had
+  sparklines, but the four-ingredient rule needs a baseline and a trend, and with no
+  history table those would be INVENTED; counts live in section headers instead
+  (threshold-native + click-through), and a real metric strip needs a snapshot
+  mechanism, which is a Reporting decision. **No greeting by name** — `/auth/me` has
+  no display name (the UX-10 directory gap), so the role is shown rather than a name
+  derived from an email. Two defects found while verifying: raw API enums were about
+  to ship on the most-read screen (fixed by reusing each domain's existing label
+  maps, with raw-value fallback), and the dead `home` namespace was serialising
+  "Walking skeleton" into EVERY page's HTML payload (next-intl ships all messages).
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

@@ -3,15 +3,6 @@
     "appName": "منصة عمليات الموارد البشرية",
     "switchLanguage": "English"
   },
-  "home": {
-    "subtitle": "الهيكل الأساسي — واجهة الويب",
-    "contractCheck": "فحص العقود المشتركة",
-    "clientLabel": "العميل",
-    "statusLabel": "الحالة",
-    "statusActive": "نشط",
-    "rtlCheckLink": "صفحة فحص المكونات",
-    "todayHijri": "تاريخ اليوم الهجري"
-  },
   "rtlCheck": {
     "title": "فحص المكونات في الاتجاهين",
     "subtitle": "قائمة مكونات واجهة المستخدم المعتمدة للمراحل الأولى",
@@ -77,7 +68,8 @@
     "portalCompany": "شركتي",
     "portalEmployees": "موظفيّ",
     "portalDocuments": "مستنداتي",
-    "reports": "التقارير"
+    "reports": "التقارير",
+    "today": "اليوم"
   },
   "documents": {
     "title": "المستندات",
@@ -867,5 +859,42 @@
     "prev": "السابق",
     "next": "التالي",
     "pageOf": "صفحة {page} من {pages}"
+  },
+  "today": {
+    "title": "اليوم",
+    "refresh": "تحديث",
+    "loading": "جارٍ تحميل أعمالك…",
+    "error": "تعذّر تحميل أعمالك",
+    "retry": "إعادة المحاولة",
+    "allClear": "لا يوجد ما يتطلب انتباهك الآن",
+    "allClearHint": "لا مواعيد متأخرة ولا شيء مستحق خلال الثلاثين يوماً القادمة.",
+    "overdueBy": "متأخر {days} يوماً",
+    "dueToday": "مستحق اليوم",
+    "inDays": "خلال {days} يوماً",
+    "scopeNote": "{count} عنصراً من مواعيدك وطلباتك والمستندات المنتهية.",
+    "section": {
+      "overdue": "متأخر",
+      "today": "مستحق اليوم",
+      "week": "هذا الأسبوع",
+      "later": "قادم"
+    },
+    "kind": {
+      "task": "مهمة",
+      "request": "طلب",
+      "gro": "معاملة حكومية",
+      "event": "موعد بالتقويم",
+      "document": "انتهاء مستند"
+    },
+    "role": {
+      "system_admin": "مدير النظام",
+      "company_admin": "مدير الشركة",
+      "recruiter": "أخصائي توظيف",
+      "hr_officer": "أخصائي موارد بشرية",
+      "gro_officer": "مسؤول علاقات حكومية",
+      "finance": "المالية",
+      "read_only": "قراءة فقط",
+      "client_admin": "مدير العميل",
+      "client_user": "مستخدم العميل"
+    }
   }
 }

@@ -37,7 +37,15 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="flex h-14 items-center px-4 text-sm font-semibold">
           {t('common.appName')}
         </div>
-        <nav className="flex flex-col gap-1 px-2 py-2">
+        <nav className="flex flex-col gap-1 px-2 py-2" aria-label={t('nav.console')}>
+          {/* Today is the front door for staff (UX-04). Client reps have their own
+              portal landing, so it is hidden for them rather than showing a work
+              queue they have no work in. */}
+          {!canPortal && (
+            <Link href="/today" className={NAV_LINK}>
+              {t('nav.today')}
+            </Link>
+          )}
           {/* Client portal self-service nav (PORTAL-04) — client-only. Staff never
               hold portal.read, so this whole group is hidden for the staff console. */}
           {canPortal && (

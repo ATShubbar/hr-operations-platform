@@ -3,15 +3,6 @@
     "appName": "HR Operations Platform",
     "switchLanguage": "العربية"
   },
-  "home": {
-    "subtitle": "Walking skeleton — web app",
-    "contractCheck": "Shared contract check",
-    "clientLabel": "Client",
-    "statusLabel": "Status",
-    "statusActive": "Active",
-    "rtlCheckLink": "Component check page",
-    "todayHijri": "Today (Hijri)"
-  },
   "rtlCheck": {
     "title": "Bidirectional component check",
     "subtitle": "UI components approved for the early phases",
@@ -77,7 +68,8 @@
     "portalCompany": "My company",
     "portalEmployees": "My employees",
     "portalDocuments": "My documents",
-    "reports": "Reports"
+    "reports": "Reports",
+    "today": "Today"
   },
   "documents": {
     "title": "Documents",
@@ -867,5 +859,42 @@
     "prev": "Previous",
     "next": "Next",
     "pageOf": "Page {page} of {pages}"
+  },
+  "today": {
+    "title": "Today",
+    "refresh": "Refresh",
+    "loading": "Loading your work…",
+    "error": "Couldn't load your work",
+    "retry": "Try again",
+    "allClear": "Nothing needs you right now",
+    "allClearHint": "No overdue deadlines and nothing due in the next 30 days.",
+    "overdueBy": "{days}d overdue",
+    "dueToday": "Due today",
+    "inDays": "in {days}d",
+    "scopeNote": "{count} items across your deadlines, requests and expiring documents.",
+    "section": {
+      "overdue": "Overdue",
+      "today": "Due today",
+      "week": "This week",
+      "later": "Coming up"
+    },
+    "kind": {
+      "task": "Task",
+      "request": "Request",
+      "gro": "Government process",
+      "event": "Calendar event",
+      "document": "Document expiry"
+    },
+    "role": {
+      "system_admin": "System Admin",
+      "company_admin": "Company Admin",
+      "recruiter": "Recruiter",
+      "hr_officer": "HR Officer",
+      "gro_officer": "GRO Officer",
+      "finance": "Finance",
+      "read_only": "Read Only",
+      "client_admin": "Client Admin",
+      "client_user": "Client User"
+    }
   }
 }
