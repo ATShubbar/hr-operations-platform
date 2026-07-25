@@ -1732,7 +1732,7 @@ results** for the most common typing variants (`احمد` does not match `أحم
 | UX-08 | Arabic typeface + bidi isolation polish | UX-03b | **done** |
 | UX-09 | Fix the `SelectValue` raw-value leak; unify workflow controls | UX-02 | **done** |
 | UX-10a | Missing surfaces: client-users admin + per-client settings (UI over existing APIs) | UX-03 | **done** |
-| UX-10b | Staff-user module: `staff-user.*` permissions, API, directory UI, name resolution | UX-10a | planned |
+| UX-10b | Staff-user module: `staff-user.*` permissions, API, directory UI, name resolution | UX-10a | **done** |
 | UX-11 | Accessibility pass (active nav state, keyboard agenda rows, popover semantics, heading outline) | UX-02 | planned |
 
 ### UX-01 — Semantic status tokens + surface layering
@@ -1801,6 +1801,33 @@ results** for the most common typing variants (`احمد` does not match `أحم
   336/336 passing then exits non-zero on the documented ioredis teardown noise;
   reproduced 3/3 under turbo's concurrency) — filed as a follow-up, kept separate
   from the supertest port-collision issue.
+
+### UX-10b — the staff-user module
+- **Objective:** `auth_users` had no name column and nothing listed staff users — one root
+  cause behind a truncated UUID on Tasks, a UUID actor in Audit, and Today's missing greeting.
+- **Files:** migration `add_auth_user_display_name`; NEW `auth/application/staff-users.service.ts`,
+  `auth/api/staff-users.controller.ts`, `packages/contracts/src/staff-user.ts`,
+  `test/staff-users.e2e-spec.ts`, `(app)/staff-users/page.tsx`, `lib/staff-directory.ts`;
+  `permissions.ts`, `auth.module.ts`, `auth.controller.ts`, `seed.ts`, harness registries,
+  `tasks/`, `audit/`, `today/`, `app-nav.tsx`.
+- **DoD:** 6 routes in the isolation harness, 3 audited writes; e2e covers System Admin CRUD
+  vs Company Admin read-only vs other staff 403 vs client reps 403; directory keys asserted
+  EXACTLY; self-protection (no self-demote/disable) tested; API 350/350; Tasks shows names
+  with zero id fragments; Today greets; both locales; lint/typecheck/build 15/15.
+- **Evidence:** `evidence/ux/UX-10b.md`.
+- **Dependencies:** UX-10a. **Risks/decisions:** **The matrix conflict was surfaced, not
+  improvised around.** The row "System config & staff users" is System Admin CRUD / Company
+  Admin R / "–" for six roles, but an HR Officer must see WHO a task is assigned to. Owner
+  chose option 2: a separate, strictly narrower `staff-user.directory` capability in
+  STAFF_BASE returning ONLY id + displayName + role — recorded as a CATALOG ADDITION, not a
+  matrix change. The spec asserts the directory's keys exactly so a field added to the
+  management shape cannot ride along. **Self-protection:** an admin cannot disable or demote
+  their own account (one system_admin seat; lockout is unrecoverable without DB access);
+  renaming yourself is allowed. **Deactivate, never delete** — audit entries and sessions
+  reference these ids, asserted by a test. Two audit rows still show short ids: their actors
+  are DELETED e2e helper accounts (verified by SQL — the join returns NULL), which is the
+  designed fallback, not a bug. Landmine learned: admin-role e2e logins need
+  `loginAsEnrolledStaff`, not `loginAsStaff` (AUTH-06 MFA), or every request is 401.
 
 ### UX-10a — the two surfaces whose APIs already existed
 - **Objective:** ship UI for two fully built, permission-gated APIs that had no way to be

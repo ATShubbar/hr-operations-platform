@@ -8,6 +8,7 @@ import { apiFetch, ApiError } from '@/lib/api';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LoadError, NoAccess } from '@/components/ui/load-state';
+import { useStaffDirectory } from '@/lib/staff-directory';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -21,6 +22,9 @@ import {
 
 const PAGE_SIZE = 25;
 
+// Still used for the CLIENT column: that id is a company, not a person, and the
+// staff directory has nothing to say about it. Resolving client names here would
+// mean pulling /clients into the audit screen — a separate decision.
 function short(id: string | null): string | null {
   return id ? id.slice(0, 8) : null;
 }
@@ -31,6 +35,7 @@ function short(id: string | null): string | null {
 // → back to sign-in.
 export default function AuditPage() {
   const t = useTranslations('audit');
+  const { nameFor } = useStaffDirectory();
   const format = useFormatter();
   const router = useRouter();
 
@@ -160,7 +165,10 @@ export default function AuditPage() {
                   })}
                 </TableCell>
                 <TableCell className="font-mono text-xs">
-                  {short(entry.actorId) ?? t('none')}
+                  {/* Was a truncated UUID: an audit trail whose actor is
+                      `a1b2c3d4` answers "what happened" but not "who" (UX-10b).
+                      Falls back to the short id when the person has no name. */}
+                  {nameFor(entry.actorId) ?? t('none')}
                 </TableCell>
                 <TableCell className="text-sm">{entry.actorRole ?? t('none')}</TableCell>
                 <TableCell className="font-mono text-xs">

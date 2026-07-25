@@ -566,7 +566,32 @@ company_admin is MFA-gated with no enrolled seed user, so TOTP was enrolled for 
 and the secret CLEARED afterwards (9 users, 0 enrolled) — the seed still never fakes enrollment
 (AUTH-06). Re-hit the documented landmine: a prod `next build` while the dev server runs
 clobbers `.next` — it now presents as a `vendor-chunks/@base-ui…` module error rather than the
-`./NNN.js` form recorded. Next: UX-10b (staff-user module + name resolution) or UX-11 (a11y).
+`./NNN.js` form recorded. 
+**UX-10b done — the product knows who its staff are.** `auth_users` had **no name column** and
+nothing listed staff users: one root cause behind three symptoms (Tasks assignee `a1b2c3d4`,
+Audit actor a UUID, Today unable to greet — UX-04 had refused to fake a name from an email).
+**The matrix conflict was surfaced, not improvised around:** the row "System config & staff
+users" is System Admin CRUD / Company Admin R / "–" for six roles, yet an HR Officer must see
+WHO a task is assigned to. Owner chose **option 2** — a separate, strictly narrower
+**`staff-user.directory`** capability in STAFF_BASE whose endpoint returns ONLY id +
+displayName + role (no email, no status, no MFA state), recorded as a **catalog addition, not
+a matrix change**. The e2e spec asserts the directory's keys EXACTLY
+(`['displayName','id','role']`) so a field added to the management shape cannot ride along.
+API: nullable `display_name` migration; `StaffUsersService`/`StaffUsersController` in the
+**auth** module (auth owns `auth_users`; `ClientUsersService` in `clients` is the mirror image);
+`/auth/me` carries `displayName` (a lookup per app mount, not stored in the Redis session where
+a rename would go stale); 6 isolation routes, 3 audited writes; **self-protection** — an admin
+cannot disable or demote their own account (one system_admin seat, lockout is unrecoverable
+without DB access), renaming yourself is fine; **deactivate, never delete** (sessions and audit
+entries reference these ids). API suite **350/350** (336 + 14). Verified per role: gro_officer
+greeted by name with NO staff-users nav entry; company_admin sees the directory and it is
+**read-only — no add button, no row actions** (CRUD-vs-R enforced in the UI, not only the API);
+Tasks with `task.read-all` shows 7 rows, every assignee a name, **zero id fragments**. Two audit
+rows still show short ids — their actors are DELETED e2e helper accounts (verified by SQL: the
+join returns NULL), which is the designed fallback and an argument for deactivating rather than
+deleting real accounts. **Landmine:** admin-role e2e logins need `loginAsEnrolledStaff`, not
+`loginAsStaff` (AUTH-06 MFA), or every request is 401. Next: UX-11 (accessibility pass) — the
+last card in the UI/UX epic.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

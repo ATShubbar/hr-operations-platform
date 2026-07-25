@@ -176,17 +176,19 @@ export default function TodayPage() {
     ].filter((s) => s.items.length > 0);
   }, [items]);
 
-  // No greeting by name: there is no staff-user directory yet, so /auth/me gives a
-  // userId and a role but no display name. Inventing one from an email local-part
-  // would be worse than not greeting. The role is honest and actually useful —
-  // it tells you which slice of work this page is showing.
+  // UX-04 refused to greet by name because /auth/me had no name to give, and
+  // deriving one from an email local-part is inventing data. It carries a real
+  // display_name since UX-10b — so the greeting appears only when there IS one,
+  // and the page falls back to the date + role exactly as before otherwise.
   const todayLabel = dualDate(new Date().toISOString(), locale);
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">{t('title')}</h1>
+          <h1 className="text-2xl font-semibold">
+            {me?.displayName ? t('greeting', { name: me.displayName }) : t('title')}
+          </h1>
           <p className="text-sm text-muted-foreground">
             {todayLabel}
             {me ? ` · ${t(`role.${me.role}`)}` : ''}

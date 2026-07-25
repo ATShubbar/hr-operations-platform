@@ -72,7 +72,8 @@
     "today": "Today",
     "openMenu": "Open menu",
     "closeMenu": "Close",
-    "portalUsers": "Portal users"
+    "portalUsers": "Portal users",
+    "staffUsers": "Staff users"
   },
   "documents": {
     "title": "Documents",
@@ -945,7 +946,8 @@
       "read_only": "Read Only",
       "client_admin": "Client Admin",
       "client_user": "Client User"
-    }
+    },
+    "greeting": "Hello, {name}"
   },
   "states": {
     "retry": "Try again",
@@ -956,5 +958,43 @@
     "forbiddenWithCapability": "This screen needs the <cap>{capability}</cap> permission. Ask an administrator to grant it.",
     "loading": "Loading…",
     "terminal": "No further steps"
+  },
+  "staffUsers": {
+    "title": "Staff users",
+    "subtitle": "Consultancy staff accounts and their roles.",
+    "new": "Add staff user",
+    "createTitle": "Add a staff user",
+    "editTitle": "Edit staff user",
+    "colName": "Name",
+    "colEmail": "Email",
+    "colRole": "Role",
+    "colStatus": "Status",
+    "colMfa": "Two-factor",
+    "colCreated": "Added",
+    "mfaOn": "Enrolled",
+    "mfaOff": "Not enrolled",
+    "initialPassword": "Initial password",
+    "initialPasswordHint": "They sign in with this and should change it. At least 8 characters.",
+    "empty": "No staff users yet.",
+    "searchPlaceholder": "Search name or email…",
+    "edit": "Edit",
+    "save": "Save",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "error": "Could not load staff users.",
+    "saveError": "Could not save. You cannot change your own role or disable your own account.",
+    "role": {
+      "system_admin": "System administrator",
+      "company_admin": "Company administrator",
+      "recruiter": "Recruiter",
+      "hr_officer": "HR officer",
+      "gro_officer": "GRO officer",
+      "finance": "Finance",
+      "read_only": "Read only"
+    },
+    "status": {
+      "active": "Active",
+      "disabled": "Disabled"
+    }
   }
 }

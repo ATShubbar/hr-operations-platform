@@ -52,6 +52,7 @@ export function AppNav({
   const canIntegrations = useCan('integration.google-calendar');
   const canReports = useCan('report.read');
   const canAudit = useCan('audit.read');
+  const canStaffUsers = useCan('staff-user.read'); // System + Company Admin (matrix)
   const canSettings = useCan('config.read-self'); // every authenticated principal
   const canPortal = useCan('portal.read'); // client-only self-service surface (PORTAL-04)
   const canPortalUsers = useCan('client-user.read'); // Client Admin only (matrix)
@@ -85,6 +86,7 @@ export function AppNav({
     ...(canCalendar ? [{ href: '/calendar', label: t('nav.calendar') }] : []),
     ...(canIntegrations ? [{ href: '/integrations', label: t('nav.integrations') }] : []),
     ...(canReports ? [{ href: '/reports', label: t('nav.reports') }] : []),
+    ...(canStaffUsers ? [{ href: '/staff-users', label: t('nav.staffUsers') }] : []),
     ...(canAudit ? [{ href: '/audit', label: t('nav.auditLog') }] : []),
     ...(canSettings ? [{ href: '/settings', label: t('nav.settings') }] : []),
   ];

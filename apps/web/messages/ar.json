@@ -72,7 +72,8 @@
     "today": "اليوم",
     "openMenu": "فتح القائمة",
     "closeMenu": "إغلاق",
-    "portalUsers": "مستخدمو البوابة"
+    "portalUsers": "مستخدمو البوابة",
+    "staffUsers": "مستخدمو النظام"
   },
   "documents": {
     "title": "المستندات",
@@ -945,7 +946,8 @@
       "read_only": "قراءة فقط",
       "client_admin": "مدير العميل",
       "client_user": "مستخدم العميل"
-    }
+    },
+    "greeting": "مرحباً، {name}"
   },
   "states": {
     "retry": "إعادة المحاولة",
@@ -956,5 +958,43 @@
     "forbiddenWithCapability": "تتطلب هذه الشاشة صلاحية <cap>{capability}</cap>. اطلب من المسؤول منحها لك.",
     "loading": "جارٍ التحميل…",
     "terminal": "لا خطوات إضافية"
+  },
+  "staffUsers": {
+    "title": "مستخدمو النظام",
+    "subtitle": "حسابات موظفي الاستشارية وأدوارهم.",
+    "new": "إضافة مستخدم",
+    "createTitle": "إضافة مستخدم للنظام",
+    "editTitle": "تعديل مستخدم النظام",
+    "colName": "الاسم",
+    "colEmail": "البريد الإلكتروني",
+    "colRole": "الدور",
+    "colStatus": "الحالة",
+    "colMfa": "التحقق بخطوتين",
+    "colCreated": "أُضيف",
+    "mfaOn": "مُفعّل",
+    "mfaOff": "غير مُفعّل",
+    "initialPassword": "كلمة المرور الأولية",
+    "initialPasswordHint": "يسجّل الدخول بها ويُستحسن تغييرها. 8 أحرف على الأقل.",
+    "empty": "لا يوجد مستخدمون بعد.",
+    "searchPlaceholder": "ابحث بالاسم أو البريد الإلكتروني…",
+    "edit": "تعديل",
+    "save": "حفظ",
+    "saving": "جارٍ الحفظ…",
+    "cancel": "إلغاء",
+    "error": "تعذّر تحميل مستخدمي النظام.",
+    "saveError": "تعذّر الحفظ. لا يمكنك تغيير دورك أو تعطيل حسابك.",
+    "role": {
+      "system_admin": "مدير النظام",
+      "company_admin": "مدير الشركة",
+      "recruiter": "أخصائي توظيف",
+      "hr_officer": "أخصائي موارد بشرية",
+      "gro_officer": "مسؤول علاقات حكومية",
+      "finance": "مالية",
+      "read_only": "اطّلاع فقط"
+    },
+    "status": {
+      "active": "نشط",
+      "disabled": "معطّل"
+    }
   }
 }

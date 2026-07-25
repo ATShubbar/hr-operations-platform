@@ -33,6 +33,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { StatusPill } from '@/components/ui/status-pill';
+import { useStaffDirectory } from '@/lib/staff-directory';
 import { toneFor } from '@/lib/status-tone';
 
 const STATUSES = ['open', 'in_progress', 'done', 'cancelled'] as const;
@@ -65,6 +66,7 @@ const EMPTY_CREATE: CreateForm = {
 // hidden without the capability. Some tasks are spawned from requests (TASK-03).
 export default function TasksPage() {
   const t = useTranslations('tasks');
+  const { nameFor } = useStaffDirectory();
   const locale = useLocale() as Locale;
   const router = useRouter();
   const me = useSession().userId;
@@ -334,7 +336,8 @@ export default function TasksPage() {
                 {task.assigneeUserId
                   ? task.assigneeUserId === me
                     ? t('assigned')
-                    : task.assigneeUserId.slice(0, 8)
+                    : // Was a truncated UUID (UX-10b).
+                      nameFor(task.assigneeUserId)
                   : t('unassigned')}
               </span>
             ),
