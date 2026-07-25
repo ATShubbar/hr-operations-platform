@@ -2060,6 +2060,7 @@ export const GroProcessScalarFieldEnum = {
   referenceNumber: 'referenceNumber',
   dueDate: 'dueDate',
   resultingExpiry: 'resultingExpiry',
+  sourceDocumentId: 'sourceDocumentId',
   assigneeUserId: 'assigneeUserId',
   notes: 'notes',
   createdByUserId: 'createdByUserId',

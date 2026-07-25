@@ -1,3 +1,4 @@
+import type { DocumentCategory } from '@hr/contracts';
 import type { GroProcessStatus, GroProcessType } from '../../../generated/prisma/client';
 
 // Which employee govdata expiry field a completed GRO process writes back (GRO-03).
@@ -14,6 +15,18 @@ const EXPIRY_FIELD: Partial<Record<GroProcessType, ExpiryField>> = {
 
 export function expiryFieldFor(type: GroProcessType): ExpiryField | null {
   return EXPIRY_FIELD[type] ?? null;
+}
+
+// Which GRO process an expiring document category should auto-spawn (GRO-05).
+// Conservative — only the categories that map to a clear renewal procedure. Other
+// categories (passport, contract, gosi, national_id, cv, other) spawn nothing.
+const SPAWN_TYPE: Partial<Record<DocumentCategory, GroProcessType>> = {
+  iqama: 'iqama_renewal',
+  visa: 'work_permit_renewal',
+};
+
+export function spawnTypeFor(category: DocumentCategory): GroProcessType | null {
+  return SPAWN_TYPE[category] ?? null;
 }
 
 // Bilingual labels for the status-change notification (GRO-03).

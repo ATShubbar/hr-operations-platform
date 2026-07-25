@@ -13,6 +13,7 @@ export interface CreateGroProcessInput {
   assigneeUserId?: string | null;
   notes?: string | null;
   createdByUserId?: string | null;
+  sourceDocumentId?: string | null; // set when auto-spawned from an expiring document (GRO-05)
 }
 
 // Editable core fields (GRO-02). Status is NOT here — advancing it is the workflow

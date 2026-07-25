@@ -53,6 +53,7 @@ describe('DocumentExpiring event → Notifications (NOTIF-05, e2e)', () => {
       new DocumentExpiringEvent(
         documentId,
         randomUUID(), // clientId
+        null, // employeeId
         'iqama',
         `${MARK} passport of Ahmed`,
         '2026-08-20',
@@ -80,6 +81,7 @@ describe('DocumentExpiring event → Notifications (NOTIF-05, e2e)', () => {
       new DocumentExpiringEvent(
         documentId,
         randomUUID(),
+        null, // employeeId
         'contract',
         `${MARK} contract`,
         '2026-07-01',
@@ -102,7 +104,7 @@ describe('DocumentExpiring event → Notifications (NOTIF-05, e2e)', () => {
       where: { recipientUserId: { in: [alice.userId, bob.userId] } },
     });
     await bus.publish(
-      new DocumentExpiringEvent(randomUUID(), randomUUID(), 'visa', `${MARK} x`, '2026-09-01', 7, 3, [], null),
+      new DocumentExpiringEvent(randomUUID(), randomUUID(), null, 'visa', `${MARK} x`, '2026-09-01', 7, 3, [], null),
     );
     const after = await owner.notification.count({
       where: { recipientUserId: { in: [alice.userId, bob.userId] } },

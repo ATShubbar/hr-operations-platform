@@ -57,6 +57,13 @@ export class GroProcessesService {
     return this.prisma.groProcess.findUnique({ where: { id } });
   }
 
+  // GRO-05 idempotency: has a process already been auto-spawned for this document?
+  // (The DocumentExpiring event fires once per tier, so the handler must not create
+  // a duplicate on each subsequent alert.)
+  async existsForDocument(sourceDocumentId: string): Promise<boolean> {
+    return (await this.prisma.groProcess.count({ where: { sourceDocumentId } })) > 0;
+  }
+
   async update(id: string, data: UpdateGroProcessInput): Promise<GroProcessRecord | null> {
     return this.prisma.$transaction(async (tx) => {
       const before = await tx.groProcess.findUnique({ where: { id } });
@@ -151,6 +158,7 @@ function toCreateData(input: CreateGroProcessInput): Prisma.GroProcessUncheckedC
     assigneeUserId: input.assigneeUserId ?? null,
     notes: input.notes ?? null,
     createdByUserId: input.createdByUserId ?? null,
+    sourceDocumentId: input.sourceDocumentId ?? null,
   };
 }
 

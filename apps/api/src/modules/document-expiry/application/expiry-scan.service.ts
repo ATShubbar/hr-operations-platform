@@ -70,6 +70,7 @@ export class ExpiryScanService {
         new DocumentExpiringEvent(
           doc.id,
           doc.clientId,
+          doc.employeeId,
           doc.category,
           doc.title,
           doc.expiryDate.toISOString().slice(0, 10),

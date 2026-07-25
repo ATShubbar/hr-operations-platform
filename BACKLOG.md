@@ -1339,6 +1339,7 @@ operating over Employees + Documents. The frozen catalog names exactly `gro.read
 | GRO-02 | GRO HTTP API — staff CRUD + `gro.process` status workflow + client-rep read-own (status-only) dual-path; `gro.read`/`gro.process` catalog | GRO-01 | done ([evidence](evidence/gro/GRO-02.md)) |
 | GRO-03 | Cross-module: completing a renewal **updates the employee's govdata expiry** + notify on status change (poss. `DocumentExpiring → GRO` auto-spawn) | GRO-02, 3.1/3.3 | done ([evidence](evidence/gro/GRO-03.md)) |
 | GRO-04 | GRO web UI (process list/board with dual-calendar Hijri deadlines) | GRO-02 | done ([evidence](evidence/gro/GRO-04.md)) |
+| GRO-05 | `DocumentExpiring → GRO` auto-spawn (5th ADR-004 flow) — an expiring iqama/visa doc opens a renewal process; idempotent via `sourceDocumentId` | GRO-01, 3.4 | done ([evidence](evidence/gro/GRO-05.md)) |
 
 ### GRO-01 — `gro_processes` table + GroProcessesService (staff path) + seed
 - **Objective:** the GRO foundation — a client-scoped `gro_processes` table (ADR-001
@@ -1410,7 +1411,26 @@ operating over Employees + Documents. The frozen catalog names exactly `gro.read
   Requests/Tasks consoles; employee-name resolution fetches `/employees` (gro_officer
   has employee.read via STAFF_BASE).
 
-**GRO epic (4.2) COMPLETE — GRO-01..04 (processes, API+workflow, completion→govdata+notify, web UI).**
+### GRO-05 — `DocumentExpiring → GRO` auto-spawn (5th ADR-004 flow)
+- **Objective:** an expiring document auto-opens a GRO renewal process for its
+  employee — a second, decoupled consumer of the document-expiry event (Notifications
+  is the first). Idempotent.
+- **Files:** `document-expiry/domain/document-expiring.event.ts` (+employeeId) +
+  `expiry-scan.service.ts` (pass doc.employeeId) + the 3 test call-sites; `schema.prisma`
+  + migration (add `sourceDocumentId` + index); `gro/domain/{gro-process, gro-effects}`
+  (thread it + `spawnTypeFor` category→type map); `gro-processes.service.ts`
+  (+`existsForDocument`); `gro/application/document-expiring.handler.ts` (NEW,
+  `@OnEvent`) + `gro.module.ts` register; `test/gro-document-expiring.e2e-spec.ts`.
+- **DoD:** expiring iqama (with employeeId) → one iqama_renewal process (dueDate =
+  expiry, sourceDocumentId set); repeat tiers → no duplicate; visa → work_permit_renewal;
+  non-mapping / no-employee → nothing; no DI cycle; suite + lint + typecheck + build green.
+- **Evidence:** `evidence/gro/GRO-05.md`.
+- **Dependencies:** GRO-01, EXP/NOTIF-05. **Risks:** an EVENT here (not GRO-03's direct
+  call) is the clean one-way case — document-expiry doesn't import GRO, GRO imports only
+  the event type (no cycle, the CandidateHired pattern); idempotency keyed on
+  `sourceDocumentId` — load-bearing, since the event fires once per tier.
+
+**GRO epic (4.2) COMPLETE — GRO-01..05 (processes, API+workflow, completion→govdata+notify, web UI, DocumentExpiring→GRO auto-spawn).**
 
 ## Priority 5 — Calendar epic (ACTION-PLAN 5.2, architecture.md module 9)
 

@@ -197,9 +197,18 @@ items, event times / "Due · status"), month navigation, and create/edit own eve
 staff). Verified live: the gro_officer's agenda merged their own event with Request +
 GRO deadlines, created an event through the UI, both locales (ar RTL); fixed a month-
 boundary label bug (UTC-anchored the window). **Calendar epic (5.2) COMPLETE — CAL-01..03.**
-Fifteen product screens. **Priorities 2–4 + Client Portal (5.1) + Calendar (5.2) done.
-Next: 5.3 Google Calendar (outbound sync + PII whitelist), 5.4 Reporting, or
-`DocumentExpiring → GRO` auto-spawn. AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
+Fifteen product screens. **GRO-05: `DocumentExpiring → GRO` auto-spawn** — the deferred
+**5th ADR-004 flow**: a document nearing expiry auto-opens a GRO renewal process for its
+employee (GRO is a second, decoupled consumer of the document-expiry event alongside
+Notifications). Added `employeeId` to `DocumentExpiringEvent` (scan passes `doc.employeeId`);
+GRO `@OnEvent` maps category→type (iqama→iqama_renewal, visa→work_permit_renewal), creates
+a `not_started` process (dueDate = expiry). **Idempotent** via a new `sourceDocumentId`
+column + `existsForDocument` — the event fires once per tier (60/30/14/7/1/0d), so at most
+one process per document. An EVENT (not GRO-03's direct call) is the clean one-way case:
+document-expiry doesn't import GRO, GRO imports only the event type (no cycle, the
+CandidateHired pattern). API suite **301/301**. **Five ADR-004 flows now live.** **Priorities
+2–4 + Client Portal (5.1) + Calendar (5.2) done. Next: 5.3 Google Calendar (outbound sync +
+PII whitelist) or 5.4 Reporting. AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
 2026-07-24: ECS throttle + RDS InvalidAction persist)
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback

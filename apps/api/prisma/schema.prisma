@@ -568,6 +568,10 @@ model GroProcess {
   // expiry after a renewal). On completion (GRO-03) it is written back to the
   // employee's matching govdata expiry field. Gregorian storage (Hijri = render).
   resultingExpiry DateTime?        @map("resulting_expiry") @db.Date
+  // The expiring document that auto-spawned this process (GRO-05), if any — a plain
+  // cross-module reference to doc_documents (no FK). Its presence is the idempotency
+  // key: the DocumentExpiring → GRO handler spawns at most one process per document.
+  sourceDocumentId String?         @map("source_document_id") @db.Uuid
   assigneeUserId  String?          @map("assignee_user_id") @db.Uuid
   notes           String?
   createdByUserId String?          @map("created_by_user_id") @db.Uuid
@@ -578,6 +582,7 @@ model GroProcess {
   @@index([employeeId])
   @@index([status])
   @@index([dueDate])
+  @@index([sourceDocumentId])
   @@map("gro_processes")
 }
 

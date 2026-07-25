@@ -14,6 +14,7 @@ export class DocumentExpiringEvent implements DomainEvent {
   constructor(
     readonly documentId: string,
     readonly clientId: string,
+    readonly employeeId: string | null, // the subject employee, when the doc is linked to one
     readonly category: DocumentCategory,
     readonly title: string,
     readonly expiryDate: string, // Gregorian ISO (YYYY-MM-DD)
