@@ -1,11 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import type {
+  ClientListResponse,
+  ClientResponse,
   ConfigCatalogResponse,
   ConfigEffectiveResponse,
   ConfigFlagsResponse,
+  ConfigSettingDescriptor,
 } from '@hr/contracts';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
@@ -16,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { LoadError } from '@/components/ui/load-state';
 import { Skeleton, SkeletonRegion } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { StatusPill } from '@/components/ui/status-pill';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -44,6 +48,9 @@ export default function SettingsPage() {
   const router = useRouter();
   const pathname = usePathname();
   const canWriteSystem = useCan('config.write');
+  // Per-client overrides are Company Admin's (matrix), distinct from the System
+  // Admin's system-level config.write.
+  const canWriteClient = useCan('config.write-client');
 
   const [me, setMe] = useState<Record<string, unknown> | null>(null);
   const [system, setSystem] = useState<Record<string, unknown> | null>(null);
@@ -52,6 +59,13 @@ export default function SettingsPage() {
   const [tz, setTz] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+
+  // Per-client overrides (UX-10a). The API has existed since CONF-02 with no way
+  // to reach it — enabling a client flag meant writing SQL by hand.
+  const [catalog, setCatalog] = useState<ConfigSettingDescriptor[]>([]);
+  const [clients, setClients] = useState<ClientResponse[]>([]);
+  const [selectedClient, setSelectedClient] = useState('');
+  const [clientSettings, setClientSettings] = useState<Record<string, unknown> | null>(null);
 
   async function load() {
     setError('');
@@ -68,6 +82,22 @@ export default function SettingsPage() {
         setFlags(fl.flags);
         setTz(String(sys.settings['timezone'] ?? ''));
         setDescriptions(Object.fromEntries(cat.settings.map((s) => [s.key, s.description])));
+        setCatalog(cat.settings);
+      }
+      if (canWriteClient) {
+        // The catalog is also needed for the per-client section, and a Company
+        // Admin may hold config.write-client without config.write.
+        if (!canWriteSystem) {
+          const [sys, cat] = await Promise.all([
+            apiFetch<ConfigEffectiveResponse>('/config'),
+            apiFetch<ConfigCatalogResponse>('/config/catalog'),
+          ]);
+          setSystem(sys.settings);
+          setCatalog(cat.settings);
+          setDescriptions(Object.fromEntries(cat.settings.map((s) => [s.key, s.description])));
+        }
+        const cl = await apiFetch<ClientListResponse>('/clients');
+        setClients(cl.clients);
       }
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
@@ -81,7 +111,60 @@ export default function SettingsPage() {
   useEffect(() => {
     void load();
     // eslint runs without exhaustive-deps here; reload only on mount.
-  }, [canWriteSystem]);
+  }, [canWriteSystem, canWriteClient]);
+
+  // Effective settings FOR A CLIENT: the API merges system defaults with that
+  // client's overrides, so `origin` below is derived by comparing the two.
+  const loadClientSettings = useCallback(
+    async (clientId: string) => {
+      if (!clientId) {
+        setClientSettings(null);
+        return;
+      }
+      setError('');
+      try {
+        const res = await apiFetch<ConfigEffectiveResponse>(`/config/client/${clientId}`);
+        setClientSettings(res.settings);
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
+        setError(t('error'));
+      }
+    },
+    [router, t],
+  );
+
+  async function patchClient(key: string, value: unknown) {
+    if (!selectedClient) return;
+    setBusy(true);
+    setError('');
+    try {
+      await apiFetch(`/config/client/${selectedClient}/${key}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ value }),
+      });
+      await loadClientSettings(selectedClient);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
+      setError(t('saveError'));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function clearClientOverride(key: string) {
+    if (!selectedClient) return;
+    setBusy(true);
+    setError('');
+    try {
+      await apiFetch(`/config/client/${selectedClient}/${key}`, { method: 'DELETE' });
+      await loadClientSettings(selectedClient);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
+      setError(t('saveError'));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   // Write a system-level setting, then reload (self values inherit from it).
   async function patchSystem(key: string, value: unknown) {
@@ -272,6 +355,114 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
         </>
+      )}
+
+      {/* ---- Per-client overrides (UX-10a, Company Admin) ---- */}
+      {canWriteClient && (
+        <Card>
+          <CardHeader className="border-b">
+            <CardTitle>{t('clientTitle')}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">{t('clientSubtitle')}</p>
+
+            <div className="space-y-1.5">
+              <Label>{t('clientPick')}</Label>
+              <Select
+                value={selectedClient}
+                onValueChange={(v) => {
+                  const id = v ?? '';
+                  setSelectedClient(id);
+                  void loadClientSettings(id);
+                }}
+              >
+                <SelectTrigger className="w-full max-w-sm">
+                  <SelectValue placeholder={t('clientPickPlaceholder')}>
+                    {(v) => {
+                      const c = clients.find((x) => x.id === v);
+                      if (!c) return t('clientPickPlaceholder');
+                      return locale === 'ar' ? c.name.ar : c.name.en;
+                    }}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {clients.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {locale === 'ar' ? c.name.ar : c.name.en}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {selectedClient && clientSettings && (
+              <div className="space-y-3">
+                {catalog
+                  .filter((def) => def.levels.includes('client'))
+                  .map((def) => {
+                    const clientValue = clientSettings[def.key];
+                    const systemValue = system?.[def.key];
+                    // The API returns the EFFECTIVE value, not the raw override,
+                    // so "overridden" is inferred by comparison. An override set
+                    // to the same value as the system default is indistinguish-
+                    // able here — showing that honestly would need the API to
+                    // return the override set, which is a contract change.
+                    const overridden = JSON.stringify(clientValue) !== JSON.stringify(systemValue);
+                    const isBool = typeof clientValue === 'boolean';
+                    return (
+                      <div
+                        key={def.key}
+                        className="flex flex-wrap items-center justify-between gap-3 border-b pb-3 last:border-0"
+                      >
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium">
+                              <bdi dir="ltr">{def.key}</bdi>
+                            </span>
+                            <StatusPill tone={overridden ? 'info' : 'neutral'}>
+                              {overridden ? t('originClient') : t('originSystem')}
+                            </StatusPill>
+                          </div>
+                          <div className="text-xs text-muted-foreground">{def.description}</div>
+                          <div className="mt-1 text-xs text-muted-foreground">
+                            {t('effectiveValue')}: <bdi dir="ltr">{JSON.stringify(clientValue)}</bdi>
+                          </div>
+                        </div>
+                        <div className="flex shrink-0 items-center gap-2">
+                          {/* Booleans get a real control. The other shapes —
+                              enums, arrays, timezone strings — have no editor
+                              metadata in the catalog (no options, no type), so
+                              rendering one would mean re-declaring every shape in
+                              the web app. They stay readable, and clearing an
+                              override still works. */}
+                          {isBool && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={busy}
+                              onClick={() => void patchClient(def.key, !clientValue)}
+                            >
+                              {clientValue ? t('disable') : t('enable')}
+                            </Button>
+                          )}
+                          {overridden && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              disabled={busy}
+                              onClick={() => void clearClientOverride(def.key)}
+                            >
+                              {t('clearOverride')}
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
     </div>
   );

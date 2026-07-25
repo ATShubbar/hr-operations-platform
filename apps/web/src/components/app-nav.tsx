@@ -54,6 +54,7 @@ export function AppNav({
   const canAudit = useCan('audit.read');
   const canSettings = useCan('config.read-self'); // every authenticated principal
   const canPortal = useCan('portal.read'); // client-only self-service surface (PORTAL-04)
+  const canPortalUsers = useCan('client-user.read'); // Client Admin only (matrix)
 
   const items: NavItem[] = [
     // Today is the front door for staff (UX-04). Client reps have their own
@@ -69,6 +70,9 @@ export function AppNav({
           { href: '/portal/documents', label: t('nav.portalDocuments') },
         ]
       : []),
+    // Client ADMIN only — the matrix gives client-user.* to that role alone, so a
+    // standard portal user does not see this entry (UX-10a).
+    ...(canPortalUsers ? [{ href: '/portal/users', label: t('nav.portalUsers') }] : []),
     ...(canClients ? [{ href: '/clients', label: t('nav.clients') }] : []),
     ...(canEmployees ? [{ href: '/employees', label: t('nav.employees') }] : []),
     ...(canDocuments ? [{ href: '/documents', label: t('nav.documents') }] : []),

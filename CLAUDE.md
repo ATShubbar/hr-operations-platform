@@ -543,9 +543,30 @@ in one click; a `submitted` GRO process correctly offered no "complete" (the wor
 `approved`); completing an approved work-permit renewal opened the one-field dialog and saved.
 Unification also exposed that the same control said two different things about terminal state
 (vacancies/GRO `terminal: '—'`, requests/candidates no key) — now one shared `states.terminal`.
-API 336/336, no API change. Next: UX-10 (staff-user directory, client-users admin, per-client
-settings — the gap behind Tasks showing a truncated UUID and Today having no name to greet) or
-UX-11 (accessibility pass).
+API 336/336, no API change. 
+**UX-10a done — two surfaces whose APIs already existed.** The backlog line bundled TWO KINDS
+of work, so it was split: client-portal user management and per-client settings are UI over
+complete, e2e-covered, permission-gated APIs; the staff-user DIRECTORY has no API at all (no
+`staff-user.*` permissions, no module) and is now **UX-10b**, a backend feature card —
+contract-sanctioned (architecture.md line 78 names `staff-user.create`; the matrix gives
+System Admin CRUD / Company Admin R) but deserving its own approval. **Portal users**
+(`(app)/portal/users`): a Client Admin held `client-user.*` since CLIENT-03 and had no button;
+the API derives clientId from the request context, so the screen cannot address another
+company. Verified per principal — Client Admin sees the nav entry and only client A's user;
+Client User and staff both get the `restricted` state naming `client-user.read`. Invite and
+deactivate driven through the UI. **No hard delete**: the DELETE route exists but deactivation
+preserves audit history. **Per-client settings** on `/settings` for `config.write-client`
+(company_admin): this is why enabling `flag.client-self-service` in UX-03c meant writing SQL by
+hand — now the flag flips `افتراضي النظام → تجاوز خاص بالعميل`, the DB shows 1 override row,
+and Clear returns it to 0. **Two limits stated, not hidden:** origin is INFERRED by comparing
+effective vs system (the API returns the effective map, not the override set — exact reporting
+is a contract change), and only booleans get an editor (the catalog exposes no options/type
+hints, so a generic editor would mean re-declaring every shape in the web app). **MFA:**
+company_admin is MFA-gated with no enrolled seed user, so TOTP was enrolled for verification
+and the secret CLEARED afterwards (9 users, 0 enrolled) — the seed still never fakes enrollment
+(AUTH-06). Re-hit the documented landmine: a prod `next build` while the dev server runs
+clobbers `.next` — it now presents as a `vendor-chunks/@base-ui…` module error rather than the
+`./NNN.js` form recorded. Next: UX-10b (staff-user module + name resolution) or UX-11 (a11y).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

@@ -92,10 +92,18 @@ const INVITATION: Record<string, StatusTone> = {
   cancelled: 'neutral',
 };
 
+// Portal users (UX-10a). A disabled account is not a fault — someone turned it
+// off deliberately — so it is neutral, the same reading as an archived client.
+const USER: Record<string, StatusTone> = {
+  active: 'ok',
+  disabled: 'neutral',
+};
+
 const DOMAINS = {
   vacancy: VACANCY,
   client: CLIENT,
   invitation: INVITATION,
+  user: USER,
   gro: GRO,
   request: REQUEST,
   task: TASK,

@@ -1731,7 +1731,8 @@ results** for the most common typing variants (`احمد` does not match `أحم
 | UX-07 | Realistic demo data (seed shows 0 expiring / 0 overdue today — the dashboard can't be evaluated) | — | **done** |
 | UX-08 | Arabic typeface + bidi isolation polish | UX-03b | **done** |
 | UX-09 | Fix the `SelectValue` raw-value leak; unify workflow controls | UX-02 | **done** |
-| UX-10 | Missing surfaces: staff-user directory, client-users admin, per-client settings | UX-03 | planned |
+| UX-10a | Missing surfaces: client-users admin + per-client settings (UI over existing APIs) | UX-03 | **done** |
+| UX-10b | Staff-user module: `staff-user.*` permissions, API, directory UI, name resolution | UX-10a | planned |
 | UX-11 | Accessibility pass (active nav state, keyboard agenda rows, popover semantics, heading outline) | UX-02 | planned |
 
 ### UX-01 — Semantic status tokens + surface layering
@@ -1800,6 +1801,31 @@ results** for the most common typing variants (`احمد` does not match `أحم
   336/336 passing then exits non-zero on the documented ioredis teardown noise;
   reproduced 3/3 under turbo's concurrency) — filed as a follow-up, kept separate
   from the supertest port-collision issue.
+
+### UX-10a — the two surfaces whose APIs already existed
+- **Objective:** ship UI for two fully built, permission-gated APIs that had no way to be
+  reached from the product.
+- **Files:** NEW `(app)/portal/users/page.tsx`; `settings/page.tsx` (per-client section);
+  `components/app-nav.tsx`; `lib/status-tone.ts` (`user` domain); `messages/{en,ar}.json`.
+- **DoD:** Client Admin lists/invites/deactivates OWN-client users; Client User and staff
+  both get the `restricted` state naming `client-user.read`; per-client override set and
+  cleared through the UI with the DB confirming 1 row → 0; both locales;
+  lint/typecheck/build 15/15; API 336/336, no API change.
+- **Evidence:** `evidence/ux/UX-10a.md`.
+- **Dependencies:** UX-03c, UX-06, UX-09. **Risks/decisions:** **The backlog line bundled
+  two kinds of work** — two UI-only surfaces over existing APIs, and a staff-user DIRECTORY
+  that has no API at all (no `staff-user.*` permissions, no module). The third is a backend
+  feature card, split out as UX-10b rather than absorbed; it is contract-sanctioned
+  (architecture.md line 78 + the matrix row), it just needs its own approval. **Two limits
+  stated rather than hidden:** per-client "origin" is INFERRED by comparing the effective
+  value against the system value, because the API returns the effective map and not the
+  override set (exact reporting = a contract change); and only booleans get an editor,
+  because the catalog exposes no options or type hints and a generic editor would mean
+  re-declaring every setting's shape in the web app. **No hard delete** for portal users —
+  deactivation preserves audit history; the DELETE route stays unexposed. **MFA:**
+  `config.write-client` is company_admin-only and no seed user is enrolled, so TOTP was
+  enrolled for verification and the secret CLEARED afterwards (9 users, 0 enrolled) — the
+  seed still never fakes enrollment (AUTH-06).
 
 ### UX-09 — the raw-value leak + one workflow control
 - **Objective:** stop showing users the database's vocabulary, and make "advance this

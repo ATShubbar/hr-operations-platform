@@ -71,7 +71,8 @@
     "reports": "Reports",
     "today": "Today",
     "openMenu": "Open menu",
-    "closeMenu": "Close"
+    "closeMenu": "Close",
+    "portalUsers": "Portal users"
   },
   "documents": {
     "title": "Documents",
@@ -159,7 +160,15 @@
       "4": "Thu",
       "5": "Fri",
       "6": "Sat"
-    }
+    },
+    "clientTitle": "Per-client settings",
+    "clientSubtitle": "Override system defaults for one client company. Anything not overridden follows the system value.",
+    "clientPick": "Client company",
+    "clientPickPlaceholder": "Choose a client…",
+    "originClient": "Client override",
+    "originSystem": "System default",
+    "effectiveValue": "Effective value",
+    "clearOverride": "Clear override"
   },
   "employees": {
     "title": "Employees",
@@ -748,6 +757,35 @@
         "other": "Other"
       },
       "searchPlaceholder": "Search title or category…"
+    },
+    "users": {
+      "title": "Portal users",
+      "subtitle": "People at your company who can sign in to this portal.",
+      "invite": "Invite user",
+      "inviteTitle": "Invite a portal user",
+      "editTitle": "Edit portal user",
+      "colEmail": "Email",
+      "colRole": "Role",
+      "colStatus": "Status",
+      "colCreated": "Added",
+      "initialPassword": "Initial password",
+      "initialPasswordHint": "The person signs in with this and should change it afterwards. At least 8 characters.",
+      "empty": "No portal users yet.",
+      "searchPlaceholder": "Search by email…",
+      "edit": "Edit",
+      "save": "Save",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "error": "Could not load portal users.",
+      "saveError": "Could not save. Check the details and try again.",
+      "role": {
+        "client_admin": "Administrator",
+        "client_user": "Standard user"
+      },
+      "status": {
+        "active": "Active",
+        "disabled": "Disabled"
+      }
     }
   },
   "reports": {
