@@ -29,7 +29,7 @@
   },
   "auth": {
     "signInTitle": "Sign in",
-    "signInSubtitle": "Your Partner in HR Operations & Talent Solutions",
+    "signInSubtitle": "Enter your email and password to continue.",
     "email": "Email",
     "emailPlaceholder": "you@example.com",
     "password": "Password",
@@ -48,7 +48,9 @@
     "codePlaceholder": "123456",
     "verify": "Verify",
     "verifying": "Verifying…",
-    "invalidCode": "Invalid code. Please try again."
+    "invalidCode": "Invalid code. Please try again.",
+    "accountsNote": "Accounts are created by an administrator.",
+    "slogan": "Your Partner in HR Operations & Talent Solutions"
   },
   "nav": {
     "console": "Console",

@@ -710,6 +710,26 @@ fine" risk did not materialise); sheet 120×12, 0px overflow; **the mark is not 
 — the sheet keeps an `sr-only` text title for the dialog's accessible name and marks the image
 `decorative` (`alt=""`), measured. `riyadh-skyline.webp` + `lockup.webp` stay UNTRACKED with the
 login-02 preview route, which is undecided — only what the product renders is committed.
+**UX-16 done — the login page now uses the login-02 two-column layout** (owner reviewed a live
+preview first, then approved). Form on the start side, brand panel on the end side from `lg`;
+**`grid-cols-2` not positioned halves, so RTL mirrors for free**. **The block was NOT taken
+as-is:** three of its elements have no counterpart here (no password-reset flow, no OAuth, no
+self-signup — accounts come from a System Admin, UX-10b), replaced by one honest line shown on
+the CREDENTIALS STEP ONLY; its `field` dependency was not installed either, since UX-13
+standardised on `<Label htmlFor>`. **Below `lg` the panel is HIDDEN, not stacked** — it carries
+identity, not information, and a phone should reach the password field without scrolling past a
+photograph (measured at 375px: submit at 508 of 760, 0 vertical scroll, 0px overflow). Image fit
+carried over from the preview: the artwork is 1.79:1 and the column ~0.84:1, so `object-cover`
+shows only ~46% of the width — asset pre-cropped to the skyline at **1130×1340 (0.843)**, which
+also kills the baked wordmark at any panel shape; name and slogan drawn on top. `BRAND_NAVY`/
+`BRAND_GOLD` are SAMPLED from the artwork (the panel ground must match the photo's sky or the
+seam shows; the rule's gold is not our `--primary`). **Duplication caught on first render:** the
+slogan printed TWICE — form subtitle and panel — and wrapped over two lines in the narrow
+column; `auth.signInSubtitle` became a functional prompt and the slogan moved to `auth.slogan`.
+**Verified with a REAL sign-in** (hr_officer → `/ar/today`, the AUTH-08 stored-language redirect
+intact) plus the MFA enroll step — and **without mutating state**: `/auth/mfa/enroll` writes the
+pending secret to the REDIS SESSION only (`auth_users.mfa_secret` is set at verify), confirmed 9
+users / 0 enrolled afterwards. `login-preview/` and `lockup.webp` deleted.
 Next: OCI-02 (owner-run) unblocking OCI-03/04/05.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
@@ -729,6 +749,11 @@ Next: OCI-02 (owner-run) unblocking OCI-03/04/05.
   measured through timers is quantised to multiples of 1000ms (UX-05: readings of 999/1000/
   3999/5001/6000 looked like an app bug and were the browser). Foreground the tab, or don't
   claim the number.
+- `npx prettier --write` from the repo root does NOT pick up the shared config: each
+  package references `packages/config/prettier.config.mjs` and there is no root
+  `.prettierrc`, so prettier falls back to defaults and rewrites the file to double
+  quotes against `singleQuote: true`. Pass `--config packages/config/prettier.config.mjs`
+  (UX-16).
 - Editing `apps/web/messages/*.json` while the dev server runs reaches the SERVER render
   but not the CLIENT bundle: the served HTML has the new string, the browser renders a
   fallback, and `MISSING_MESSAGE` appears only in the console — so it looks like a wrong

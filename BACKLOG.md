@@ -1738,6 +1738,7 @@ results** for the most common typing variants (`احمد` does not match `أحم
 | UX-13 | One filtering idiom: the five remaining screens onto the inline filter shape | UX-12 | **done** ([evidence](evidence/ux/UX-13.md)) |
 | UX-14 | Fix `GET /requests?status=` being accepted and ignored | UX-13 | **done** ([evidence](evidence/ux/UX-14.md)) |
 | UX-15 | PEOPLE&GRO as the product's name and mark | — | **done** ([evidence](evidence/ux/UX-15.md)) |
+| UX-16 | Login page adopts the shadcn login-02 two-column layout | UX-15 | **done** ([evidence](evidence/ux/UX-16.md)) |
 
 ### UX-01 — Semantic status tokens + surface layering
 - **Objective:** give status its own token tier, structurally separated from the brand
@@ -1805,6 +1806,31 @@ results** for the most common typing variants (`احمد` does not match `أحم
   336/336 passing then exits non-zero on the documented ioredis teardown noise;
   reproduced 3/3 under turbo's concurrency) — filed as a follow-up, kept separate
   from the supertest port-collision issue.
+
+### UX-16 — the login page adopts the login-02 layout
+- **Objective:** replace the single centred card with shadcn's login-02 two-column shape,
+  carrying the brand panel — owner reviewed a live preview first and approved the shape.
+- **Files:** `(login)/page.tsx`; `public/brand/riyadh-skyline.webp` (now tracked);
+  `messages/{en,ar}.json`. Deleted: the `login-preview` route, `public/brand/lockup.webp`.
+- **DoD:** two columns from `lg`, panel hidden below; all three auth steps intact; a REAL
+  sign-in verified end to end; both locales; 0px overflow at 375px with the submit in view;
+  lint/typecheck/build 15/15; no API change.
+- **Evidence:** `evidence/ux/UX-16.md`.
+- **Dependencies:** UX-15. **Risks/decisions:** **the block was not taken as-is** — three of its
+  elements have no counterpart here (no reset flow, no OAuth, no self-signup — accounts come
+  from a System Admin, UX-10b), replaced by one honest line shown on the CREDENTIALS STEP ONLY;
+  and its `field` dependency was not installed, since UX-13 standardised on `<Label htmlFor>`.
+  `grid-cols-2` rather than positioned halves, so RTL mirrors for free. **Below `lg` the panel
+  is HIDDEN, not stacked** — it carries identity, not information, and a phone should reach the
+  password field without scrolling past a photograph (measured: submit at 508 of 760, 0 scroll).
+  **Duplication caught on first render:** the slogan printed twice — form subtitle AND panel —
+  and wrapped over two lines in the narrow column; `auth.signInSubtitle` became a functional
+  prompt and the slogan moved to `auth.slogan`. **MFA verified without mutating state:**
+  `/auth/mfa/enroll` writes the pending secret to the REDIS SESSION only (`auth_users.mfa_secret`
+  is set at verify), confirmed 9 users / 0 enrolled afterwards. **Landmine:** `npx prettier
+  --write` from the repo root does NOT pick up `packages/config/prettier.config.mjs` (no root
+  `.prettierrc`) and reformatted the file to double quotes against `singleQuote: true` — pass
+  `--config packages/config/prettier.config.mjs`.
 
 ### UX-15 — PEOPLE&GRO as the product's name and mark
 - **Objective:** the product identified itself with a placeholder, "HR Operations Platform".
