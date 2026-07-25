@@ -1721,9 +1721,9 @@ results** for the most common typing variants (`احمد` does not match `أحم
 | Task | Objective | Deps | Status |
 |---|---|---|---|
 | UX-01 | Semantic status token tier (separate from brand gold) + surface layering + `no-brand-in-status` guardrail | — | done ([evidence](evidence/ux/UX-01.md)) |
-| UX-02 | Primitives: StatusPill, Skeleton, Toast (Base UI), Textarea, EmptyState, Popover | UX-01 | planned |
+| UX-02 | Primitives: StatusPill, Skeleton, Toast (Base UI), Textarea, EmptyState, Popover **+ DirectionProvider** | UX-01 | done ([evidence](evidence/ux/UX-02.md)) |
 | UX-03 | DataTable: search (+ Arabic normaliser), sort, pagination, filter chips, always-visible row actions | UX-02 | planned |
-| UX-03b | Bidi correctness: `DirectionProvider` + isolate Latin identifiers and dual-calendar dates | — | planned |
+| UX-03b | Bidi isolation: wrap Latin identifiers + dual-calendar dates in `<bdi>` (DirectionProvider shipped early in UX-02) | — | planned |
 | UX-04 | **"Today"** — the role-aware home screen (re-projects `/calendar/view` as an urgency-ordered work queue) | UX-02 | planned |
 | UX-05 | Mobile navigation + responsive lists and dialogs | UX-02 | planned |
 | UX-06 | States everywhere: skeletons, empty, error-with-retry, 403 | UX-02 | planned |
@@ -1751,6 +1751,29 @@ results** for the most common typing variants (`احمد` does not match `أحم
   labelled control's boundary); unlabelled fills must use the tone not the tint
   (tints are ~1.05:1 vs page); and a monotonic greyscale ramp across five hues is
   incompatible with 4.5:1 on light tints, so redundancy comes from label + icon.
+
+### UX-02 — Component primitives + the missing DirectionProvider
+- **Objective:** the vocabulary every later card assembles from, so nothing else is
+  hand-rolled — which is how we ended up with two `window.confirm` calls and a
+  popover with no Escape key.
+- **Files:** NEW `ui/{status-pill,skeleton,textarea,empty-state,popover,toast}.tsx`,
+  `components/app-providers.tsx`, `lib/status-tone.ts`; `app/[locale]/layout.tsx`;
+  `notification-bell.tsx`; `(app)/expiry/page.tsx`; `(app)/{requests,tasks}/page.tsx`;
+  `messages/{en,ar}.json`.
+- **DoD:** six primitives built on the UX-01 tokens; StatusPill kept SEPARATE from
+  Badge (decorative vs semantic colour); one tone table for all seven domains;
+  expiry buckets show three severities not four identical reds; bell popover gains
+  aria-expanded/haspopup, Escape, focus return and RTL collision handling (measured);
+  both hand-rolled textareas replaced; web typecheck + lint green; API suite
+  unaffected (336).
+- **Evidence:** `evidence/ux/UX-02.md`.
+- **Dependencies:** UX-01. **Risks/decisions:** **`DirectionProvider` pulled forward
+  from UX-03b** — Base UI does not read `dir` from the DOM, so shipping a portalled
+  Popover without it would knowingly add a broken RTL surface (it was a latent bug on
+  every screen since the first Select, on the default locale). Adoptions deliberately
+  limited to three strict improvements; sweeping StatusPill across all screens is
+  UX-09 and states are UX-06, so those stay pure migrations. EmptyState/Toast ship
+  without consumers on purpose for the same reason.
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

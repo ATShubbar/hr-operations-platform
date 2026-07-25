@@ -346,7 +346,21 @@ card). Measurement corrected three card assumptions: **dots draw from the tone, 
 fills must use the tone, not the surface tint** (tints are ~1.05:1 vs page — a bar would be
 invisible); and **a monotonic greyscale ramp across 5 hues is incompatible with 4.5:1 on light
 tints**, so non-colour redundancy comes from label + icon (what 1.4.1 actually requires) and
-ordered data uses the existing `--chart-1..5` lightness ramp. Next: UX-02 primitives.
+ordered data uses the existing `--chart-1..5` lightness ramp. **UX-02 done** — six primitives
+(`StatusPill`, `Skeleton`, `Toast`, `Textarea`, `EmptyState`, `Popover`) + `lib/status-tone.ts`
+(ONE table mapping all 7 domains onto exactly 5 tones — fixes the audit's inconsistency where
+`terminated` shared a grey with `on_leave`). **StatusPill is deliberately NOT Badge**: Badge
+colour is decorative metadata, StatusPill colour is semantic — same line the `no-brand-in-status`
+rule draws. **`DirectionProvider` pulled forward from UX-03b** (3 lines in
+`components/app-providers.tsx`): Base UI does NOT read `dir` from the DOM, so shipping a portalled
+Popover without it would knowingly add a broken RTL surface — it was a latent bug on EVERY screen
+since the first Select, on the default locale. Adoptions limited to three strict improvements:
+the expiry dashboard (StatusPill + the 6→3 collapse — `expired` and `d7` were BOTH `destructive`,
+i.e. already-expired looked identical to due-in-a-week), the notification bell (hand-rolled panel
+→ Popover: gained aria-expanded/haspopup + Escape + focus-return + **0px RTL overflow at 472px**,
+all measured), and both duplicated textareas. EmptyState/Toast ship consumer-less on purpose so
+UX-06 (states across 21 screens) and UX-09 (StatusPill sweep) stay pure migrations. Next: UX-03
+DataTable (search + the Arabic normaliser, sort, pagination, filter chips).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

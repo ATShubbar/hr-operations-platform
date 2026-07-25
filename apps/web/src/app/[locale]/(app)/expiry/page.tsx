@@ -13,7 +13,7 @@ import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useCan } from '@/lib/session';
 import { dualDate, type Locale } from '@/lib/employee-format';
-import { Badge } from '@/components/ui/badge';
+import { StatusPill, type StatusTone } from '@/components/ui/status-pill';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
@@ -45,13 +45,19 @@ const CATEGORIES = [
 const ALL = 'all';
 const HORIZON_DAYS = 60;
 
+// UX-02: four buckets, but THREE visual severities. `expired` and `d7` were both
+// `destructive`, so an already-expired document looked identical to one due in a
+// week — the two states that most need telling apart. The 30/60-day buckets are
+// awareness-only for most staff, so they get no colour at all; spending a hue on
+// something nobody will action today is what turns a dashboard into a wall of
+// colour and trains people to stop reading it.
 type Bucket = 'expired' | 'd7' | 'd30' | 'd60';
 const BUCKETS: Bucket[] = ['expired', 'd7', 'd30', 'd60'];
-const BADGE: Record<Bucket, 'destructive' | 'default' | 'secondary' | 'outline'> = {
-  expired: 'destructive',
-  d7: 'destructive',
-  d30: 'default',
-  d60: 'secondary',
+const BUCKET_TONE: Record<Bucket, StatusTone> = {
+  expired: 'critical',
+  d7: 'warning',
+  d30: 'neutral',
+  d60: 'neutral',
 };
 
 // Whole days from today (local midnight) to an ISO date; negative = overdue.
@@ -275,7 +281,7 @@ export default function ExpiryPage() {
         BUCKETS.filter((b) => grouped[b].length > 0).map((b) => (
           <section key={b} className="space-y-2">
             <div className="flex items-center gap-2">
-              <Badge variant={BADGE[b]}>{t(`bucket.${b}`)}</Badge>
+              <StatusPill tone={BUCKET_TONE[b]}>{t(`bucket.${b}`)}</StatusPill>
               <span className="text-sm text-muted-foreground">{grouped[b].length}</span>
             </div>
             <div className="overflow-x-auto rounded-lg border">

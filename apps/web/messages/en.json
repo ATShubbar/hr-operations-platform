@@ -378,7 +378,8 @@
       "request": "Requests",
       "general": "General",
       "system": "System"
-    }
+    },
+    "unreadCount": "{count} unread notifications"
   },
   "requests": {
     "title": "Requests",

@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -400,13 +401,12 @@ export default function TasksPage() {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="tk-desc">{t('fieldDescription')}</Label>
-              <textarea
+              <Textarea
                 id="tk-desc"
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 rows={3}
-                className="w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
-              />
+                />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="tk-due">{t('fieldDue')}</Label>

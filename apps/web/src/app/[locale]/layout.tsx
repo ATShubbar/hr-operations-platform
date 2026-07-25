@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google';
 import { NextIntlClientProvider, hasLocale } from 'next-intl';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
+import { AppProviders } from '@/components/app-providers';
 import { directionFor, routing } from '@/i18n/routing';
 import '../globals.css';
 
@@ -41,7 +42,12 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} dir={directionFor(locale)} className={inter.variable}>
       <body>
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider>
+          {/* dir on <html> styles the layout; DirectionProvider is what makes
+              Base UI's BEHAVIOUR direction-aware (UX-02) — it does not read the
+              DOM attribute, and its popups portal outside this tree. */}
+          <AppProviders direction={directionFor(locale)}>{children}</AppProviders>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

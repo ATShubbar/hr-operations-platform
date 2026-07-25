@@ -1,10 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { NotificationListResponse, NotificationResponse } from '@hr/contracts';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Skeleton, SkeletonRegion } from '@/components/ui/skeleton';
 
 type Locale = 'ar' | 'en';
 const POLL_MS = 60_000;
@@ -58,7 +60,6 @@ export function NotificationBell() {
   const [items, setItems] = useState<NotificationResponse[]>([]);
   const [unread, setUnread] = useState(0);
   const [loading, setLoading] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
 
   const refresh = useCallback(
     async (withList: boolean) => {
@@ -80,18 +81,12 @@ export function NotificationBell() {
     return () => clearInterval(id);
   }, [refresh]);
 
-  // Close on outside click.
-  useEffect(() => {
-    if (!open) return;
-    const onDown = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener('mousedown', onDown);
-    return () => document.removeEventListener('mousedown', onDown);
-  }, [open]);
-
-  async function toggleOpen() {
-    const next = !open;
+  // Outside-click, Escape, focus return and collision handling all come from
+  // Base UI's Popover now (UX-02). The previous hand-rolled panel had a mousedown
+  // listener and nothing else: no Escape, no aria-expanded, no focus management,
+  // and `end-0` with no collision detection, so in Arabic it opened toward the
+  // viewport edge with nothing to push it back.
+  async function onOpenChange(next: boolean) {
     setOpen(next);
     if (next) {
       setLoading(true);
@@ -126,23 +121,33 @@ export function NotificationBell() {
   const hasUnread = items.some((x) => !x.readAt);
 
   return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        aria-label={t('open')}
-        onClick={() => void toggleOpen()}
-        className="relative flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+    <Popover open={open} onOpenChange={(next) => void onOpenChange(next)}>
+      <PopoverTrigger
+        render={
+          <button
+            type="button"
+            aria-label={t('open')}
+            className="relative flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+          />
+        }
       >
         <BellIcon />
         {unread > 0 && (
-          <span className="absolute -top-0.5 -end-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
+          <span
+            className="absolute -top-0.5 -end-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground"
+            // The count is decoration next to an already-labelled button; the
+            // label below carries it for assistive tech instead of announcing a
+            // bare number.
+            aria-hidden
+          >
             {unread > 99 ? '99+' : unread}
           </span>
         )}
-      </button>
+        <span className="sr-only">{unread > 0 ? t('unreadCount', { count: unread }) : ''}</span>
+      </PopoverTrigger>
 
-      {open && (
-        <div className="absolute end-0 z-50 mt-2 w-80 overflow-hidden rounded-lg border bg-popover text-popover-foreground shadow-lg">
+      <PopoverContent className="overflow-hidden">
+        <div>
           <div className="flex items-center justify-between border-b px-3 py-2">
             <span className="text-sm font-semibold">{t('title')}</span>
             {hasUnread && (
@@ -157,7 +162,14 @@ export function NotificationBell() {
           </div>
           <div className="max-h-96 overflow-y-auto">
             {loading ? (
-              <p className="px-3 py-6 text-center text-sm text-muted-foreground">{t('loading')}</p>
+              <SkeletonRegion label={t('loading')} className="px-3 py-2">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="flex flex-col gap-1.5 py-2">
+                    <Skeleton className="h-3 w-2/3" />
+                    <Skeleton className="h-3 w-11/12" />
+                  </div>
+                ))}
+              </SkeletonRegion>
             ) : items.length === 0 ? (
               <p className="px-3 py-6 text-center text-sm text-muted-foreground">{t('empty')}</p>
             ) : (
@@ -189,7 +201,7 @@ export function NotificationBell() {
             )}
           </div>
         </div>
-      )}
-    </div>
+      </PopoverContent>
+    </Popover>
   );
 }

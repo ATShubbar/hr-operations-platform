@@ -378,7 +378,8 @@
       "request": "الطلبات",
       "general": "عام",
       "system": "النظام"
-    }
+    },
+    "unreadCount": "{count} إشعارات غير مقروءة"
   },
   "requests": {
     "title": "الطلبات",
