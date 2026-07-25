@@ -22,6 +22,23 @@ export const PERMISSIONS = [
   'client.create',
   'client.update',
   'client.delete',
+  // Staff users (permission matrix row "System config & staff users", UX-10b).
+  // Management is System Admin CRUD / Company Admin R — the row says "–" for
+  // every other role.
+  'staff-user.read',
+  'staff-user.create',
+  'staff-user.update',
+  'staff-user.delete',
+  // …and a DELIBERATELY NARROWER capability, held by every staff role.
+  //
+  // The matrix row above governs ADMINISTERING accounts. Knowing which colleague
+  // a task is assigned to is not that: without it an HR Officer sees a truncated
+  // UUID where a name belongs, which is the bug UX-10b exists to fix. Rather than
+  // widen the restricted row (drift), this grants a separate, strictly smaller
+  // capability whose endpoint returns ONLY id + display name + role — no email,
+  // no status, no MFA state. Owner-approved as a catalog addition, not a matrix
+  // change (UX-10b, option 2).
+  'staff-user.directory',
   // Client portal users (permission matrix): Client Admin manages its own
   // client's users (CRUD own). Client User has none of these.
   'client-user.read',
@@ -162,6 +179,8 @@ export type RoleName = StaffRole | ClientRole;
 const STAFF_BASE: readonly Permission[] = [
   'example.read',
   'session.end',
+  // Name resolution for assignees and audit actors — see the catalog note.
+  'staff-user.directory',
   'client.read',
   'employee.read',
   'config.read',
@@ -187,6 +206,8 @@ const STAFF_BASE: readonly Permission[] = [
 // the document-expiry scan on demand (EXP-02).
 const ADMIN_EXTRA: readonly Permission[] = [
   'audit.read',
+  // Matrix: System Admin CRUD, Company Admin R. The writes live on system_admin.
+  'staff-user.read',
   'client.create',
   'client.update',
   'client.delete',
@@ -236,6 +257,9 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
   system_admin: [
     ...STAFF_BASE,
     ...ADMIN_EXTRA,
+    'staff-user.create',
+    'staff-user.update',
+    'staff-user.delete',
     'salary.read',
     'govdata.read',
     'config.write',

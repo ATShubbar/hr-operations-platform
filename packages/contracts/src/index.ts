@@ -29,6 +29,24 @@ export {
   type ClientUserListResponse,
 } from './client-user.js';
 export {
+  staffUserStatusSchema,
+  staffUserRoleSchema,
+  createStaffUserRequestSchema,
+  updateStaffUserRequestSchema,
+  staffUserResponseSchema,
+  staffUserListResponseSchema,
+  staffDirectoryEntrySchema,
+  staffDirectoryResponseSchema,
+  type StaffUserStatus,
+  type StaffUserRole,
+  type CreateStaffUserRequest,
+  type UpdateStaffUserRequest,
+  type StaffUserResponse,
+  type StaffUserListResponse,
+  type StaffDirectoryEntry,
+  type StaffDirectoryResponse,
+} from './staff-user.js';
+export {
   genderSchema,
   employmentStatusSchema,
   contractTypeSchema,

@@ -57,13 +57,18 @@ export class AuthController {
   // provider: route guard + role-aware UI.
   @Public()
   @Get('me')
-  me(): MeResponse {
+  async me(): Promise<MeResponse> {
     const ctx = requestContext.get();
     if (!ctx?.actorId || !ctx.role || !ctx.principalType) {
       throw new UnauthorizedException('Authentication required');
     }
+    // One lookup per app mount. The session (Redis) could carry the name, but it
+    // would then go stale until the next sign-in — and a renamed person seeing
+    // their old name is exactly the sort of small wrongness nobody reports.
+    const user = await this.users.findById(ctx.actorId);
     return {
       userId: ctx.actorId,
+      displayName: user?.displayName ?? null,
       principalType: ctx.principalType,
       role: ctx.role,
       clientId: ctx.clientId,

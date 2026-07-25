@@ -80,6 +80,24 @@ const CLIENT_REP_ASSIGNMENTS: ReadonlyArray<{ clientId: string; role: ClientRole
 const clientLetter = (clientId: string): string =>
   clientId === SEED_CLIENT_A ? 'a' : 'b';
 
+// Real names for the seeded staff (UX-10b). Without them the directory is a list
+// of email addresses, Tasks still shows an id where a person belongs, and
+// "Today" still has nothing to greet anyone with.
+const STAFF_NAMES: Record<string, string> = {
+  system_admin: 'Layla Al-Rashid',
+  company_admin: 'Faisal Al-Otaibi',
+  recruiter: 'Huda Al-Qahtani',
+  hr_officer: 'Omar Al-Shehri',
+  gro_officer: 'Turki Al-Harbi',
+  finance: 'Maha Al-Dossary',
+  read_only: 'Sami Al-Zahrani',
+};
+
+const CLIENT_REP_NAMES: Record<string, string> = {
+  client_admin: 'Abdulaziz Al-Ghamdi',
+  client_user: 'Reem Al-Mutairi',
+};
+
 async function seedUsers(prisma: PrismaClient): Promise<number> {
   const passwords = new PasswordService();
 
@@ -93,6 +111,7 @@ async function seedUsers(prisma: PrismaClient): Promise<number> {
       passwordHash: await passwords.hash(SEED_PASSWORD),
       principalType: 'staff' as const,
       role,
+      displayName: STAFF_NAMES[role] ?? null,
     })),
   );
 
@@ -103,6 +122,7 @@ async function seedUsers(prisma: PrismaClient): Promise<number> {
       principalType: 'client_rep' as const,
       role,
       clientId,
+      displayName: CLIENT_REP_NAMES[role] ?? null,
     })),
   );
 

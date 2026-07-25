@@ -13,6 +13,10 @@ datasource db {
 model AuthUser {
   id            String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   email         String        @unique
+  // The person's name (UX-10b). Nullable: identity has always been the email,
+  // and existing rows predate this. Its absence is exactly why Tasks rendered a
+  // truncated UUID for an assignee and "Today" had nothing to greet you with.
+  displayName   String?       @map("display_name")
   passwordHash  String        @map("password_hash")
   principalType PrincipalType @map("principal_type")
   role          Role          @default(read_only)

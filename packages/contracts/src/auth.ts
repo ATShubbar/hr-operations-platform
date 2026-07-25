@@ -25,6 +25,10 @@ export const mfaCodeRequestSchema = z.object({
 // actor's capability list — the UI shows/hides actions from it.
 export const meResponseSchema = z.object({
   userId: z.uuid(),
+  // The person's name, when they have one (UX-10b). Nullable because identity
+  // has always been the email — "Today" greets only when this is present rather
+  // than inventing a name from an email local-part.
+  displayName: z.string().nullable(),
   principalType: z.enum(['staff', 'client_rep']),
   role: z.string(),
   clientId: z.uuid().nullable(),

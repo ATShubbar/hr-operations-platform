@@ -185,6 +185,14 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'GET /example-consumer/relay': 'staff',
   'GET /scope-check': 'client-scoped',
   'POST /scope-check': 'client-write',
+  // Staff users (UX-10b). NOT client-scoped — staff have no client_id, so there
+  // is no scope key to isolate on; the permission is the whole gate.
+  'GET /staff-users': 'staff',
+  'GET /staff-users/directory': 'staff',
+  'GET /staff-users/:id': 'staff',
+  'POST /staff-users': 'staff',
+  'PATCH /staff-users/:id': 'staff',
+  'DELETE /staff-users/:id': 'staff',
   'GET /client-users': 'client-read',
   'GET /client-users/:id': 'client-read',
   'POST /client-users': 'client-write',
