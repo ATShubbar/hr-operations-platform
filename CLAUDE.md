@@ -34,7 +34,7 @@ build contract. Changes go through ADRs (adr/), never through drift.
 | docs/FIELD-MAPPING.md | ACTIVE: reference-system (Qiwa/GOSI/Muqeem/Mudad/Absher) Employee fields, sensitivity-tagged (0.8) — source for the Employees schema |
 | docs/PROVISIONING-OCI.md | ACTIVE: OCI Riyadh provisioning runbook + verification checklist + status log |
 | docs/PROVISIONING-AWS.md | SUPERSEDED (ADR-006 rev. 5) — kept for history + the OCI-06 teardown |
-| docs/HANDOFF-WS20.md | In-flight infra state + exact next commands |
+| docs/HANDOFF-WS20.md | HISTORICAL — the AWS resources it describes were torn down (OCI-06) |
 | apps/api/src/modules/README.md | Module layout contract + RLS table checklist |
 
 ## Current state (2026-07-22)
@@ -298,10 +298,16 @@ a production-readiness gate). ADR-006 rev. 5 **asserts no service availability**
 is an unchecked box until seen in the account console (the rev. 1 me-central-2 saga is cited
 in the ADR as the reason). Epic: OCI-01 done (ADRs+runbook); **OCI-02 is OWNER-run** (signup +
 console verification — I must not create accounts or enter credentials); OCI-03 Terraform,
-OCI-04 manifests+deploy (closes WS-20), OCI-05 backups/exit drill (closes WS-21), OCI-06 AWS
-teardown (~$22/mo ALB still metering). Runbook: docs/PROVISIONING-OCI.md. AWS UAE abandoned
-(account fully restricted since signup; re-verified 2026-07-24: ECS throttle + RDS
-InvalidAction persist). Also remaining: the real Google client + attachments (infra, deferred
+OCI-04 manifests+deploy (closes WS-20), OCI-05 backups/exit drill (closes WS-21).
+**OCI-06 DONE (brought forward, owner-approved): the AWS UAE environment is TORN DOWN — ALB,
+target groups, ECR repos, S3 bucket, SSM secret, 3 SGs, 3 IAM roles + the GitHub OIDC provider
+all deleted; AWS spend is now ZERO.** Inventory first proved nothing held data (ALB stuck
+`provisioning` 6 days, 0 ECS/RDS, 0 ECR images, 0 S3 objects) — the environment never got past
+the account restriction. Two empty log groups survive (`DeleteLogGroup` → ServiceUnavailable,
+same restriction; 0 stored bytes = no cost) + the budget alarm, kept as a tripwire; the account
+stays dormant. `docs/HANDOFF-WS20.md` + `docs/PROVISIONING-AWS.md` are now HISTORICAL (their
+resource IDs are dead) and ci.yml's AWS deploy job is marked a DEAD PATH until OCI-04 replaces
+it. Runbook: docs/PROVISIONING-OCI.md. Also remaining: the real Google client + attachments (infra, deferred
 per ADR-009).
 
 ## Technical landmines (each cost real debugging — do not rediscover)

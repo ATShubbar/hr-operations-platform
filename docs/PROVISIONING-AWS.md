@@ -1,8 +1,10 @@
 # ⛔ SUPERSEDED by ADR-006 rev. 5 (2026-07-25) — the active target is OCI Riyadh, see PROVISIONING-OCI.md
 
-> Kept for the reasoning trail and for the **teardown** of the resources listed
-> below (task OCI-06 — the ALB alone meters ~$22/mo). The interim AWS UAE
-> environment was a residency compromise; OCI Riyadh removes the need for it.
+> **TEARDOWN COMPLETE (OCI-06, 2026-07-25) — every resource described below has
+> been deleted; AWS spend on this project is zero.** Only two empty log groups
+> remain (`DeleteLogGroup` is blocked by the same account restriction; 0 stored
+> bytes, no cost) and the budget alarm, kept as a tripwire. The account stays
+> open and dormant. This file is now purely historical.
 
 # AWS UAE (me-central-1) — ACTIVE interim staging guide (WS-20/21)
 

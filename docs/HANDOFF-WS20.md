@@ -1,3 +1,10 @@
+# ⛔ HISTORICAL (2026-07-25) — the infrastructure described below NO LONGER EXISTS
+
+> ADR-006 rev. 5 moved the target to **OCI Riyadh**, and OCI-06 tore down the AWS
+> UAE environment: every resource ID, ARN and command sequence in this document is
+> dead. Kept for the reasoning trail only. The active runbook is
+> **`docs/PROVISIONING-OCI.md`**; do not execute anything below.
+
 # WS-20 in-flight handoff — AWS UAE staging (written 2026-07-19)
 
 Session handoff: exact infra state + remaining sequence. Region:

@@ -1679,7 +1679,7 @@ dissolve the residency compromise the AWS UAE interim was living with.
 | OCI-03 | Terraform: compartment, VCN, managed PostgreSQL 16, bucket, OKE cluster, OCIR | OCI-02 | todo |
 | OCI-04 | `infra/k8s/` manifests + GitHub Actions deploy (build → push → migrate → apply → health gate) + deliberate rollback | OCI-03 | todo — **closes WS-20** |
 | OCI-05 | Backups + restore test executed as the **ADR-010 exit drill** (restore on different infrastructure, boot the app with only env changes); measured RPO/RTO | OCI-04 | todo — **closes WS-21** |
-| OCI-06 | AWS UAE teardown (stops the ~$22/mo ALB meter); account may stay dormant at zero cost | OCI-04 | todo — approval-gated |
+| OCI-06 | AWS UAE teardown (stops the ~$22/mo ALB meter); account may stay dormant at zero cost | — | **done** ([evidence](evidence/infra/OCI-06.md)) — brought forward, owner-approved; AWS spend now zero |
 
 ### OCI-01 — ADR-006 rev. 5 + ADR-010 (portability contract)
 - **Objective:** record the decision, and turn "must be migratable later" into a
