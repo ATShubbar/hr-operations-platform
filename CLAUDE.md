@@ -359,8 +359,22 @@ the expiry dashboard (StatusPill + the 6→3 collapse — `expired` and `d7` wer
 i.e. already-expired looked identical to due-in-a-week), the notification bell (hand-rolled panel
 → Popover: gained aria-expanded/haspopup + Escape + focus-return + **0px RTL overflow at 472px**,
 all measured), and both duplicated textareas. EmptyState/Toast ship consumer-less on purpose so
-UX-06 (states across 21 screens) and UX-09 (StatusPill sweep) stay pure migrations. Next: UX-03
-DataTable (search + the Arabic normaliser, sort, pagination, filter chips).
+UX-06 (states across 21 screens) and UX-09 (StatusPill sweep) stay pure migrations. **UX-03 done** — `ui/data-table.tsx`
+(search, sortable real-`<button>` headers with `aria-sort`, offset pagination WITH a real total,
+empty-vs-no-results as separate states, always-visible row actions, 40px/14px density,
+`tabular-nums`) + **NEW `packages/text` (`@hr/text`)**: the Arabic search normaliser, 18 tests.
+**Why a shared package:** server-side search MUST use the same fold or client and API disagree
+about what matches. The tests assert the naive `includes()` failure alongside the fix so the
+regression stays visible if someone "simplifies" it away. Adopted on Employees (hardest screen);
+**adoption re-scoped 8 screens → 1, sweep moved to UX-03c** (eight careful rewrites in one commit
+= large diff, real regression surface, no way to verify each). Verified live: typed `احمد` →
+found `أحمد حسن`. Landmines learned: literal invisible bidi chars in source fail
+`no-irregular-whitespace` (use `\u` escapes — ironic, the file's own comment said so); and a
+running Next dev server does NOT pick up a newly-linked workspace package (tsc resolved it, the
+browser 404'd — restart the dev server). **`turbo run test` is currently RED for a pre-existing
+reason: @hr/api reports 336/336 passing then exits non-zero on the documented ioredis
+`Connection is closed.` teardown noise — reproduced 3/3 under turbo (load-sensitive).** Next:
+UX-03c sweep, then UX-04 "Today".
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

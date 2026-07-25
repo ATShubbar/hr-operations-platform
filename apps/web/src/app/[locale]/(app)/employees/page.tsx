@@ -21,7 +21,6 @@ import {
   GENDER_VALUES,
   type Locale,
 } from '@/lib/employee-format';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -32,6 +31,9 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { DataTable } from '@/components/ui/data-table';
+import { StatusPill } from '@/components/ui/status-pill';
+import { toneFor } from '@/lib/status-tone';
 import {
   Select,
   SelectContent,
@@ -39,14 +41,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 
 interface CreateForm {
   clientId: string;
@@ -182,47 +176,69 @@ export default function EmployeesPage() {
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
-      <div className="overflow-x-auto rounded-lg border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('colName')}</TableHead>
-              <TableHead>{t('colNationality')}</TableHead>
-              <TableHead>{t('colJobTitle')}</TableHead>
-              <TableHead>{t('colStatus')}</TableHead>
-              <TableHead>{t('colHireDate')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {employees.map((e) => (
-              <TableRow key={e.id}>
-                <TableCell className="font-medium">
-                  <Link href={`/employees/${e.id}`} className="hover:underline">
-                    {localizedName(e)}
-                  </Link>
-                </TableCell>
-                <TableCell>{e.nationality}</TableCell>
-                <TableCell>{localizedJob(e)}</TableCell>
-                <TableCell>
-                  <Badge variant={e.employmentStatus === 'active' ? 'default' : 'secondary'}>
-                    {t(EMPLOYMENT_STATUS_KEY[e.employmentStatus])}
-                  </Badge>
-                </TableCell>
-                <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                  {dualDate(e.hireDate, locale) ?? t('none')}
-                </TableCell>
-              </TableRow>
-            ))}
-            {employees.length === 0 && !loading && (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center text-sm text-muted-foreground">
-                  {t('empty')}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      {/* UX-03: search (Arabic-aware), sortable columns, pagination and a
+          proper empty/no-results split. Employees is the primary entity, so it
+          was the worst case of the no-search problem. */}
+      <DataTable
+        rows={employees}
+        loading={loading}
+        rowKey={(e) => e.id}
+        searchPlaceholder={t('searchPlaceholder')}
+        initialSort={{ key: 'name', dir: 'asc' }}
+        emptyTitle={t('empty')}
+        columns={[
+          {
+            key: 'name',
+            header: t('colName'),
+            sortValue: (e) => localizedName(e),
+            // Identifiers are searchable even though they are not a column:
+            // staff look people up by iqama number, and it would be a poor search
+            // that could not find one.
+            searchValues: (e) => [e.name.ar, e.name.en, e.govdata?.iqamaNumber, e.govdata?.nationalId],
+            cell: (e) => (
+              <Link href={`/employees/${e.id}`} className="font-medium hover:underline">
+                {localizedName(e)}
+              </Link>
+            ),
+          },
+          {
+            key: 'nationality',
+            header: t('colNationality'),
+            sortValue: (e) => e.nationality,
+            searchValues: (e) => [e.nationality],
+            cell: (e) => e.nationality,
+          },
+          {
+            key: 'jobTitle',
+            header: t('colJobTitle'),
+            sortValue: (e) => localizedJob(e) ?? '',
+            searchValues: (e) => [e.jobTitle.ar, e.jobTitle.en, e.department],
+            cell: (e) => localizedJob(e),
+          },
+          {
+            key: 'status',
+            header: t('colStatus'),
+            sortValue: (e) => e.employmentStatus,
+            cell: (e) => (
+              <StatusPill tone={toneFor('employee', e.employmentStatus)}>
+                {t(EMPLOYMENT_STATUS_KEY[e.employmentStatus])}
+              </StatusPill>
+            ),
+          },
+          {
+            key: 'hireDate',
+            header: t('colHireDate'),
+            // Sorts on the raw ISO date, not the rendered dual-calendar string —
+            // sorting the display text would order by Hijri month name.
+            sortValue: (e) => e.hireDate,
+            cell: (e) => (
+              <span className="text-sm text-muted-foreground">
+                {dualDate(e.hireDate, locale) ?? t('none')}
+              </span>
+            ),
+          },
+        ]}
+      />
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>

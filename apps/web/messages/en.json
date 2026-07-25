@@ -271,7 +271,8 @@
       "registered": "Registered",
       "pending": "Pending",
       "not_registered": "Not registered"
-    }
+    },
+    "searchPlaceholder": "Search name, iqama, job title…"
   },
   "clients": {
     "title": "Clients",
@@ -854,5 +855,17 @@
       "other": "Other",
       "(no client)": "(no client)"
     }
+  },
+  "table": {
+    "search": "Search…",
+    "loading": "Loading…",
+    "noResults": "No matches",
+    "noResultsHint": "No records match your search or filters.",
+    "clearFilters": "Clear filters",
+    "showing": "Showing {from}–{to} of {total}",
+    "perPage": "Rows per page",
+    "prev": "Previous",
+    "next": "Next",
+    "pageOf": "Page {page} of {pages}"
   }
 }

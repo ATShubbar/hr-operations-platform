@@ -1722,7 +1722,8 @@ results** for the most common typing variants (`احمد` does not match `أحم
 |---|---|---|---|
 | UX-01 | Semantic status token tier (separate from brand gold) + surface layering + `no-brand-in-status` guardrail | — | done ([evidence](evidence/ux/UX-01.md)) |
 | UX-02 | Primitives: StatusPill, Skeleton, Toast (Base UI), Textarea, EmptyState, Popover **+ DirectionProvider** | UX-01 | done ([evidence](evidence/ux/UX-02.md)) |
-| UX-03 | DataTable: search (+ Arabic normaliser), sort, pagination, filter chips, always-visible row actions | UX-02 | planned |
+| UX-03 | DataTable + **`@hr/text` Arabic search normaliser**: search, sort, pagination, empty/no-results split; adopted on Employees | UX-02 | done ([evidence](evidence/ux/UX-03.md)) |
+| UX-03c | Sweep the remaining seven lists onto DataTable (Documents, Requests, Tasks, GRO, Vacancies, Clients, Audit) | UX-03 | planned |
 | UX-03b | Bidi isolation: wrap Latin identifiers + dual-calendar dates in `<bdi>` (DirectionProvider shipped early in UX-02) | — | planned |
 | UX-04 | **"Today"** — the role-aware home screen (re-projects `/calendar/view` as an urgency-ordered work queue) | UX-02 | planned |
 | UX-05 | Mobile navigation + responsive lists and dialogs | UX-02 | planned |
@@ -1774,6 +1775,31 @@ results** for the most common typing variants (`احمد` does not match `أحم
   limited to three strict improvements; sweeping StatusPill across all screens is
   UX-09 and states are UX-06, so those stay pure migrations. EmptyState/Toast ship
   without consumers on purpose for the same reason.
+
+### UX-03 — DataTable + Arabic search normalisation
+- **Objective:** the single worst usability problem in the product — no list had
+  search, sort or paging. Ships with the Arabic normaliser, because a search box
+  without it is worse than none: it fails SILENTLY on the default language.
+- **Files:** NEW `packages/text/` (`@hr/text`, mirroring `@hr/dates`); NEW
+  `ui/data-table.tsx`; `employees/page.tsx` (adopted); `apps/web/package.json`;
+  `messages/{en,ar}.json`.
+- **DoD:** `احمد` finds `أحمد حسن` (verified live, both locales); 18 normaliser tests
+  that assert the naive `includes()` failure alongside the fix, so the regression
+  stays visible; sortable headers are real buttons with `aria-sort`; offset
+  pagination with a real total; empty vs no-results are separate states with
+  different CTAs; web typecheck + lint green.
+- **Evidence:** `evidence/ux/UX-03.md`.
+- **Dependencies:** UX-02. **Risks/decisions:** hand-rolled rather than a table
+  engine because the API returns complete arrays — revisit at server-side
+  pagination. `@hr/text` is a shared package on purpose: server-side search must use
+  the SAME fold or client and API disagree about what matches. **Adoption re-scoped
+  from eight screens to one** (Employees, the hardest) with the sweep moved to
+  UX-03c — eight careful rewrites in one commit is a large diff with real regression
+  surface and no way to verify each properly. Surfaced rather than quietly delivered
+  as less. Also noted: `turbo run test` is red for a PRE-EXISTING reason (API reports
+  336/336 passing then exits non-zero on the documented ioredis teardown noise;
+  reproduced 3/3 under turbo's concurrency) — filed as a follow-up, kept separate
+  from the supertest port-collision issue.
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

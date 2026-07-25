@@ -271,7 +271,8 @@
       "registered": "مسجّل",
       "pending": "قيد المعالجة",
       "not_registered": "غير مسجّل"
-    }
+    },
+    "searchPlaceholder": "ابحث بالاسم أو رقم الإقامة أو المسمى…"
   },
   "clients": {
     "title": "العملاء",
@@ -854,5 +855,17 @@
       "other": "أخرى",
       "(no client)": "(بدون عميل)"
     }
+  },
+  "table": {
+    "search": "ابحث…",
+    "loading": "جارٍ التحميل…",
+    "noResults": "لا نتائج مطابقة",
+    "noResultsHint": "لا توجد سجلات تطابق البحث أو عوامل التصفية.",
+    "clearFilters": "إزالة التصفية",
+    "showing": "عرض {from}–{to} من {total}",
+    "perPage": "صفوف بالصفحة",
+    "prev": "السابق",
+    "next": "التالي",
+    "pageOf": "صفحة {page} من {pages}"
   }
 }

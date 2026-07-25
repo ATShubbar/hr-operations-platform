@@ -1,0 +1,25 @@
+{
+  "name": "@hr/text",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Shared text utilities: Arabic search normalisation (folds orthographic variants so search does not silently miss records)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@hr/config": "workspace:*",
+    "vitest": "^3.0.0"
+  }
+}
