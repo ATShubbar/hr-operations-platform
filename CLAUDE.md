@@ -656,9 +656,10 @@ means on commit, so no request-per-keystroke. Verified per screen: one row, all 
 0 stray Apply, one request per change, Clear absent before filtering and present after; Tasks
 correctly narrows within its own-scope (hr_officer sees 4, not 10 — no `task.read-all`). Both
 locales, 0px overflow at 375px (documents wraps to 4 rows). **The trade-off was raised and then
-reversed by the owner on documents only** — visible labels are back on that screen (three
-controls reading "All / All / dd-mm-yyyy" say nothing about what they filter); the two-control
-screens stay compact. They are REAL associations, not decorative text: `<button>` is a labelable
+reversed by the owner** — visible labels back on documents first, then on the remaining five,
+so ALL SIX are labelled and the compact experiment is over (employees uses the COLUMN HEADER's
+word "Company"/"الشركة", not the aria-label's wordier "Filter by company"). They are REAL
+associations, not decorative text: `<button>` is a labelable
 element, so `<Label htmlFor>` pointing at the Select trigger is genuine, and the `aria-label` it
 replaces was REMOVED rather than left to duplicate the accessible name — proven by clicking the
 label and watching the Select open. **That exposed an alignment bug worth remembering:** with
@@ -666,8 +667,13 @@ label and watching the Select open. **That exposed an alignment bug worth rememb
 sat 6px above the baseline — Base UI renders a hidden `position: fixed` input as a sibling of the
 trigger, and `space-y-*` (a `> * + *` margin rule) still counted it; `flex flex-col gap-1.5`
 makes it not a flex item at all. DataTable's toolbar moved `items-center` → `items-end` so a
-labelled control and a bare search box share a baseline (identical where nothing is labelled;
-re-verified on all five).
+labelled control and a bare search box share a baseline. **Found not fixed —
+`/requests?status=` has NEVER worked:** `requestQuerySchema` declares `status`, the controller
+parses it and keeps only `clientId`, and the service signature is `list(clientId?: string)`;
+measured `?status=open` → 9 rows against 4 actually open. Pre-existing since REQ-02 and hidden
+by the Apply button (you pressed it and watched nothing happen, which reads as "no matches") —
+filtering on change made the non-response obvious. Tasks passes `status` through correctly;
+vacancies/GRO filter status client-side. It is an API change, so it is filed as its own card.
 Next: OCI-02 (owner-run) unblocking OCI-03/04/05.
 
 ## Technical landmines (each cost real debugging — do not rediscover)

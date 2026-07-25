@@ -249,36 +249,42 @@ export default function RequestsPage() {
         // to aria-label, which is what it was for.
         filters={
           <>
-            <Select value={fClient} onValueChange={(v) => onFilterClient(v ?? ALL)}>
-              <SelectTrigger className="w-44" aria-label={t('filterClient')}>
-                <SelectValue>
-                  {(v) => (v === ALL ? t('filterAll') : clientName(String(v)))}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={ALL}>{t('filterAll')}</SelectItem>
-                {clients.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {locale === 'ar' ? c.name.ar : c.name.en}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={fStatus} onValueChange={(v) => onFilterStatus(v ?? ALL)}>
-              <SelectTrigger className="w-40" aria-label={t('filterStatus')}>
-                <SelectValue>
-                  {(v) => (v === ALL ? t('filterAll') : t(`status.${String(v)}`))}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={ALL}>{t('filterAll')}</SelectItem>
-                {STATUSES.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {t(`status.${s}`)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="f-client">{t('filterClient')}</Label>
+              <Select value={fClient} onValueChange={(v) => onFilterClient(v ?? ALL)}>
+                <SelectTrigger id="f-client" className="w-44">
+                  <SelectValue>
+                    {(v) => (v === ALL ? t('filterAll') : clientName(String(v)))}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL}>{t('filterAll')}</SelectItem>
+                  {clients.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {locale === 'ar' ? c.name.ar : c.name.en}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="f-status">{t('filterStatus')}</Label>
+              <Select value={fStatus} onValueChange={(v) => onFilterStatus(v ?? ALL)}>
+                <SelectTrigger id="f-status" className="w-40">
+                  <SelectValue>
+                    {(v) => (v === ALL ? t('filterAll') : t(`status.${String(v)}`))}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ALL}>{t('filterAll')}</SelectItem>
+                  {STATUSES.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {t(`status.${s}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </>
         }
         columns={[

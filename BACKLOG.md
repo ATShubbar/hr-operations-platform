@@ -1828,9 +1828,16 @@ results** for the most common typing variants (`احمد` does not match `أحم
   Documents needed a single `applyFilters(patch)` merging over current state — three
   independent setters would race into a stale `load()`; verified date+category COMPOSE
   (20→8→6) rather than replace. Its date input fires on `change`, which for `type="date"`
-  means on commit, so no request-per-keystroke. **Trade-off raised, then reversed by the owner on
-  documents only:** the labels are back there (three controls reading "All / All /
-  dd-mm-yyyy" say nothing about what they filter); the two-control screens stay compact.
+  means on commit, so no request-per-keystroke. **Trade-off raised, then reversed by the owner:** labels
+  back on documents first, then on the remaining five — all six are labelled and the
+  compact experiment is over. Employees uses the COLUMN HEADER's word ("Company") rather
+  than the aria-label's "Filter by company", which reads well spoken and long above a
+  control. **Found not fixed:** `/requests?status=` has NEVER worked — the schema declares
+  `status`, the controller parses it and keeps only `clientId`, and the service signature
+  is `list(clientId?: string)`; measured 9 rows for `?status=open` against 4 actually open.
+  Pre-existing since REQ-02, hidden behind the Apply button (you pressed it and watched
+  nothing happen, which reads as "no matches"); filtering on change made it obvious. It is
+  an API change and this card's DoD says none, so it is filed separately.
   They are REAL associations — `<button>` is labelable, so `<Label htmlFor>` on the Select
   trigger is genuine, and the `aria-label` was removed rather than left to duplicate the
   name; proven by clicking the label and watching the Select open. That exposed an

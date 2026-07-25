@@ -251,21 +251,26 @@ export default function EmployeesPage() {
         // since UX-03 and this is its first consumer; the other five
         // cross-client screens still use the older form.
         filters={
-          <Select value={fClient} onValueChange={(v) => onFilterClient(v ?? ALL)}>
-            <SelectTrigger className="w-52" aria-label={t('filterClient')}>
-              <SelectValue>
-                {(v) => (v === ALL ? t('filterAllClients') : clientName(String(v)))}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>{t('filterAllClients')}</SelectItem>
-              {clients.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
-                  {locale === 'ar' ? c.name.ar : c.name.en}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex flex-col gap-1.5">
+            {/* The column header's word, not the aria-label's "Filter by
+                company" — that reads well spoken and long above a control. */}
+            <Label htmlFor="f-client">{t('colClient')}</Label>
+            <Select value={fClient} onValueChange={(v) => onFilterClient(v ?? ALL)}>
+              <SelectTrigger id="f-client" className="w-52">
+                <SelectValue>
+                  {(v) => (v === ALL ? t('filterAllClients') : clientName(String(v)))}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>{t('filterAllClients')}</SelectItem>
+                {clients.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {locale === 'ar' ? c.name.ar : c.name.en}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         }
         columns={[
           {
