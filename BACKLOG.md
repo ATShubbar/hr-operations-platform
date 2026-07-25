@@ -1728,7 +1728,7 @@ results** for the most common typing variants (`احمد` does not match `أحم
 | UX-05 | Mobile navigation + responsive lists and dialogs | UX-02 | **done** |
 | UX-03c | Sweep the remaining lists onto DataTable | UX-03, UX-05 | **done** |
 | UX-06 | States everywhere: skeletons, empty, error-with-retry, 403 | UX-02 | **done** |
-| UX-07 | Realistic demo data (seed shows 0 expiring / 0 overdue today — the dashboard can't be evaluated) | — | planned |
+| UX-07 | Realistic demo data (seed shows 0 expiring / 0 overdue today — the dashboard can't be evaluated) | — | **done** |
 | UX-08 | Arabic typeface + bidi isolation polish | UX-03b | planned |
 | UX-09 | Fix the `SelectValue` raw-value leak; unify workflow controls | UX-02 | planned |
 | UX-10 | Missing surfaces: staff-user directory, client-users admin, per-client settings | UX-03 | planned |
@@ -1800,6 +1800,30 @@ results** for the most common typing variants (`احمد` does not match `أحم
   336/336 passing then exits non-zero on the documented ioredis teardown noise;
   reproduced 3/3 under turbo's concurrency) — filed as a follow-up, kept separate
   from the supertest port-collision issue.
+
+### UX-07 — realistic demo data
+- **Objective:** make the seed produce a SCENARIO, not a smoke test, so the compliance
+  screens can be reviewed without sabotaging rows by hand before every demo.
+- **Files:** `apps/api/prisma/seed.ts` (the whole card). No app code, no API change.
+- **DoD:** dates RELATIVE to seed time (`daysFromNow`), so the shape is stable whenever
+  it runs; documents spanning every alert tier (3 expired / 1 ≤1d / 3 ≤14d / 8 ≤60d);
+  39 employees so pagination engages (`عرض 1–25 من 39`); `job_title_ar` on every row;
+  all 7 candidate stages, all 5 vacancy statuses, overdue requests/tasks/GRO; 1709 orphan
+  notifications purged; idempotent across three runs; API suite 336/336.
+- **Evidence:** `evidence/ux/UX-07.md`.
+- **Dependencies:** none. **Risks/decisions:** **The mistake this card made:** the three new
+  clients were given the obvious `33333333-…`/`4444…`/`5555…` ids, and FOUR e2e specs use
+  `33333333-3333-4333-8333-333333333333` as their sentinel for a client that does NOT exist —
+  three assertions went red because the id had quietly become real. Moved to a `c1000000-…`
+  range and documented in the seed. (The risk I predicted — expiry-scan tests reacting to
+  near-expiry documents — did not materialise.) **A flow demonstrated itself:** after the
+  suite ran, gro_processes held 17 rows vs the seed's 9, the extra 8 carrying
+  `source_document_id` — GRO-05's document-expiry → GRO auto-spawn firing on the new
+  near-expiry documents, one per document, exactly as its idempotency guarantee says. Kept.
+  Also removed three verification artifacts from earlier sessions (an employee with English
+  text in the Arabic name field, a `DOC-05 browser upload` document, an `interview` event),
+  and the seed now deletes three superseded candidate ids that would otherwise linger as
+  duplicates after the id renumbering.
 
 ### UX-06 — states everywhere
 - **Objective:** every screen answers loading / empty / failed / forbidden, instead

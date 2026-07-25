@@ -472,9 +472,30 @@ announced the literal string **"calendar.loading"** (now one shared `states.load
 the retry below it unreachable. The 403 copy wraps the permission id in `<bdi>` rather than
 adding a NEW instance of the bidi bug UX-08 will clean up. Form/mutation errors
 deliberately stay inline next to their submit (34 → 16 remaining, every one a
-formError/procError/stError or the login form). Next: UX-09 (SelectValue leak + unified
-workflow controls) or UX-07 (realistic demo data — the seed still shows 0 expiring/0
-overdue, so several states can only be seen by sabotaging data).
+formError/procError/stError or the login form). 
+**UX-07 done — the seed produces a SCENARIO, not a smoke test.** Baseline: nearest document
+expiry **99 days out** (all four expiry tiles read 0), **4 employees** (first page size is 25,
+so pagination never engaged), `job_title_ar` empty on 3 of 4 (Arabic job-title search matched
+nothing), **1709 orphan notifications** from test runs. Root cause: every date in `seed.ts`
+was a HARDCODED ABSOLUTE written when it was near-future — the fixture didn't break, it **aged
+out**, which is why the last three cards each had to sabotage data by hand. Dates are now
+**relative to seed time** (`daysFromNow`), so the shape is stable whenever it runs. After: 5
+clients (one archived), **39 employees**, 20 documents spanning EVERY alert tier (3 expired /
+1 ≤1d / 3 ≤14d / 8 ≤60d), 9 requests + 10 tasks (several overdue; tasks across five owners +
+unassigned), 9 vacancies across all statuses, 12 candidates across **all seven stages**, 9 GRO
+processes, 5 notifications. Expiry dashboard now reads **3 expired · 3 ≤7d · 5 ≤30d · 4 ≤60d**;
+Today shows **11 overdue · 12 this week · 11 coming up**; `محاسب` returns 3 accountants (the
+exact query recorded as returning nothing in UX-03); pagination reads `عرض 1–25 من 39`.
+**The mistake this card made:** the new clients got the obvious `33333333-…`/`4444…`/`5555…`
+ids, and FOUR e2e specs use `33333333-3333-4333-8333-333333333333` as their sentinel for a
+client that does NOT exist — three assertions went red because the id had become real. Moved
+to a `c1000000-…` range, documented in the seed. (The risk I predicted, expiry-scan tests
+reacting to near-expiry docs, did not materialise.) **A flow demonstrated itself:** after the
+suite, gro_processes held 17 rows vs the seed's 9, the extra 8 carrying `source_document_id` —
+GRO-05's document-expiry → GRO auto-spawn firing on the new near-expiry documents, one per
+document, exactly as its idempotency guarantee says. Kept. API suite 336/336. Next: UX-09
+(SelectValue leak + unified workflow controls) or UX-08 (Arabic typeface + bidi isolation, now
+more visible since every screen carries far more Arabic text).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
