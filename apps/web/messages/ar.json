@@ -278,7 +278,10 @@
       "pending": "قيد المعالجة",
       "not_registered": "غير مسجّل"
     },
-    "searchPlaceholder": "ابحث بالاسم أو رقم الإقامة أو المسمى…"
+    "searchPlaceholder": "ابحث بالاسم أو رقم الإقامة أو المسمى…",
+    "colClient": "الشركة",
+    "filterClient": "تصفية حسب الشركة",
+    "filterAllClients": "كل الشركات"
   },
   "clients": {
     "title": "العملاء",

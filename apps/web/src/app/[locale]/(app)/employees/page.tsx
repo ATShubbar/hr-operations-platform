@@ -57,6 +57,10 @@ interface CreateForm {
   employmentStatus: string;
 }
 
+// Sentinel for "every company" in the filter. A Select needs a real value; an
+// empty string would be indistinguishable from "not chosen yet".
+const ALL = 'all';
+
 const EMPTY_FORM: CreateForm = {
   clientId: '',
   nameEn: '',
@@ -89,15 +93,39 @@ export default function EmployeesPage() {
 
   const [open, setOpen] = useState(false);
   const [clients, setClients] = useState<ClientResponse[]>([]);
+  const [fClient, setFClient] = useState(ALL);
   const [form, setForm] = useState<CreateForm>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState('');
 
-  async function load() {
+  // UX-12. Falls back to a short id for a client the list does not cover — the
+  // same shape the other cross-client screens use.
+  const clientName = (id: string) => {
+    const c = clients.find((x) => x.id === id);
+    return c ? (locale === 'ar' ? c.name.ar : c.name.en) : id.slice(0, 8);
+  };
+
+  // Every company, including archived ones: their employees still have to
+  // render a name. The create dialog narrows to active separately.
+  async function loadClients() {
+    try {
+      const res = await apiFetch<ClientListResponse>('/clients');
+      setClients(res.clients);
+    } catch {
+      // Non-fatal: the column degrades to a short id and the filter is empty,
+      // rather than the whole screen failing over a label lookup.
+    }
+  }
+
+  // Filtered SERVER-side (`?clientId=`) — this is the only list controller that
+  // accepts it, and the endpoint is unpaginated, so narrowing here means the
+  // browser is not handed every employee in the consultancy to hide most of them.
+  async function load(clientId = fClient) {
     setLoading(true);
     setError('');
     try {
-      const res = await apiFetch<EmployeeListResponse>('/employees');
+      const qs = clientId !== ALL ? `?clientId=${encodeURIComponent(clientId)}` : '';
+      const res = await apiFetch<EmployeeListResponse>(`/employees${qs}`);
       setEmployees(res.employees);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
@@ -112,21 +140,27 @@ export default function EmployeesPage() {
   }
 
   useEffect(() => {
-    // Initial load, once on mount.
+    // Initial load, once on mount. Clients come with it now — the Client column
+    // needs them on first paint, not only once the create dialog is opened.
     void load();
+    void loadClients();
   }, []);
+
+  // Narrowing the filter re-queries; there is no Apply button, because the
+  // Select IS the action.
+  const onFilterClient = (v: string) => {
+    setFClient(v);
+    void load(v);
+  };
+  const onClearFilters = () => onFilterClient(ALL);
 
   async function openCreate() {
     setForm(EMPTY_FORM);
     setFormError('');
     setOpen(true);
-    try {
-      const res = await apiFetch<ClientListResponse>('/clients');
-      setClients(res.clients.filter((c) => c.status === 'active'));
-    } catch {
-      // Non-fatal: the client select will be empty and the form unsubmittable.
-      setClients([]);
-    }
+    // The picker offers only ACTIVE companies — you should not be able to hire
+    // into an archived one — while the column above resolves all of them.
+    if (clients.length === 0) await loadClients();
   }
 
   async function save(e: FormEvent) {
@@ -205,6 +239,29 @@ export default function EmployeesPage() {
         searchPlaceholder={t('searchPlaceholder')}
         initialSort={{ key: 'name', dir: 'asc' }}
         emptyTitle={t('empty')}
+        filtersActive={fClient !== ALL}
+        onClearFilters={onClearFilters}
+        // DataTable's `filters` slot, beside the search rather than in a
+        // separate form with an Apply button (UX-12). The slot has existed
+        // since UX-03 and this is its first consumer; the other five
+        // cross-client screens still use the older form.
+        filters={
+          <Select value={fClient} onValueChange={(v) => onFilterClient(v ?? ALL)}>
+            <SelectTrigger className="h-9 w-52" aria-label={t('filterClient')}>
+              <SelectValue>
+                {(v) => (v === ALL ? t('filterAllClients') : clientName(String(v)))}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL}>{t('filterAllClients')}</SelectItem>
+              {clients.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {locale === 'ar' ? c.name.ar : c.name.en}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        }
         columns={[
           {
             key: 'name',
@@ -219,6 +276,20 @@ export default function EmployeesPage() {
                 {localizedName(e)}
               </Link>
             ),
+          },
+          {
+            // The screen said "across all client companies" and then never said
+            // WHICH — the one cross-client list without this column (UX-12).
+            // Searchable in both languages: the fold in @hr/text is what makes
+            // `شركة الالف` match `شركة الألف`.
+            key: 'client',
+            header: t('colClient'),
+            sortValue: (e) => clientName(e.clientId),
+            searchValues: (e) => {
+              const c = clients.find((x) => x.id === e.clientId);
+              return c ? [c.name.ar, c.name.en] : [e.clientId];
+            },
+            cell: (e) => <span className="text-sm">{clientName(e.clientId)}</span>,
           },
           {
             key: 'nationality',
@@ -282,11 +353,15 @@ export default function EmployeesPage() {
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  {clients.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {locale === 'ar' ? c.name.ar : c.name.en}
-                    </SelectItem>
-                  ))}
+                  {/* Active only — the list is now loaded unfiltered for the
+                      Client column, so the narrowing moved here (UX-12). */}
+                  {clients
+                    .filter((c) => c.status === 'active')
+                    .map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {locale === 'ar' ? c.name.ar : c.name.en}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>

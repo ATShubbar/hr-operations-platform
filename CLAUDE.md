@@ -619,6 +619,23 @@ inside a 343px column, missed by the UX-05 sweep. Verified across **14 screens �
 one `h1`, exactly one `aria-current`, 0px overflow each. Deliberately out: route-change live region,
 axe harness, `/audit` visual check (MFA-gated; same one-line change verified on `/reports` +
 `/expiry`). No API change (0 files under `apps/api`). **UI/UX epic COMPLETE — UX-01..11.**
+**UX-12 done (owner-reported):** Employees was the ONLY cross-client list with neither a client
+column nor a client filter, while its own subtitle read "across all client companies". Adds a
+sortable/searchable **Company** column (Arabic fold: `الالف` → 12 rows of `شركة الألف التجارية`,
+where `includes()` returns false) and a filter **beside the search** — `DataTable`'s `filters`
+slot, built in UX-03 and until now with **zero consumers** — with **no Apply button** (the Select
+IS the action) and **server-side** narrowing via `?clientId=` (`/employees` is unpaginated, so
+client-side would ship all 39 to hide 32; measured 39→7 in one request). Employees therefore
+looks slightly different from the five screens that already had this (documents/requests/tasks/
+vacancies/GRO use a form + Apply) — proving the shape on one screen beat sweeping six uninvited;
+the conversion is a follow-up card. Clients now load on MOUNT and **unfiltered** (an archived
+company's employees still need a name), with the active-only narrowing moved to the create
+picker. The sixth column did NOT reintroduce overflow (0px at 375px; the scroll region is
+keyboard-reachable per UX-11). **Landmine:** editing `messages/*.json` while the dev server runs
+updates the SERVER render but NOT the client bundle — the page rendered `All` while the served
+HTML said `All companies`, with `MISSING_MESSAGE` only in the console, so it read as a wrong
+translation rather than a missing one. Restart the dev server (same family as the UX-03
+newly-linked-package landmine).
 Next: OCI-02 (owner-run) unblocking OCI-03/04/05.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
@@ -638,6 +655,10 @@ Next: OCI-02 (owner-run) unblocking OCI-03/04/05.
   measured through timers is quantised to multiples of 1000ms (UX-05: readings of 999/1000/
   3999/5001/6000 looked like an app bug and were the browser). Foreground the tab, or don't
   claim the number.
+- Editing `apps/web/messages/*.json` while the dev server runs reaches the SERVER render
+  but not the CLIENT bundle: the served HTML has the new string, the browser renders a
+  fallback, and `MISSING_MESSAGE` appears only in the console — so it looks like a wrong
+  translation, not a missing key. Restart the dev server (UX-12).
 - The browser-automation harness sends key events that are trusted but INCOMPLETE
   (`code: ""`, `keyCode: 0`), and Chrome's default activation keys off `keyCode` — so
   Enter/Space on a `<button>` fires `keydown` and NO click, and arrow keys do not scroll

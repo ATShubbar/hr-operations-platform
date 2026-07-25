@@ -1734,6 +1734,7 @@ results** for the most common typing variants (`احمد` does not match `أحم
 | UX-10a | Missing surfaces: client-users admin + per-client settings (UI over existing APIs) | UX-03 | **done** |
 | UX-10b | Staff-user module: `staff-user.*` permissions, API, directory UI, name resolution | UX-10a | **done** |
 | UX-11 | Accessibility pass (active nav state, skip link, keyboard agenda rows, heading outline) | UX-02 | **done** ([evidence](evidence/ux/UX-11.md)) |
+| UX-12 | Employees: Company column + company filter beside the search | UX-03c | **done** ([evidence](evidence/ux/UX-12.md)) |
 
 ### UX-01 — Semantic status tokens + surface layering
 - **Objective:** give status its own token tier, structurally separated from the brand
@@ -1801,6 +1802,30 @@ results** for the most common typing variants (`احمد` does not match `أحم
   336/336 passing then exits non-zero on the documented ioredis teardown noise;
   reproduced 3/3 under turbo's concurrency) — filed as a follow-up, kept separate
   from the supertest port-collision issue.
+
+### UX-12 — the Company column and filter on Employees
+- **Objective:** Employees was the ONLY cross-client list with neither a client column nor
+  a client filter, while its subtitle said "across all client companies". Owner-reported.
+- **Files:** `(app)/employees/page.tsx`; `messages/{en,ar}.json`.
+- **DoD:** Company column sortable + searchable in both languages (Arabic fold: `الالف`
+  matches `الألف`); filter drives `?clientId=` server-side with no Apply button; filtering
+  to an empty company shows no-results + Clear, not the create CTA; 0px overflow at 375px;
+  both locales; lint/typecheck/build 15/15; no API change.
+- **Evidence:** `evidence/ux/UX-12.md`.
+- **Dependencies:** UX-03, UX-03c. **Risks/decisions:** **Two deliberate departures from the
+  five screens that already had this** — the filter goes in `DataTable`'s `filters` slot
+  (built in UX-03, **zero consumers until now**) beside the search rather than in a form with
+  an Apply button; and it filters SERVER-side, because `/employees` is unpaginated and
+  client-side narrowing would ship every employee to hide most of them. Employees therefore
+  looks slightly different from documents/requests/tasks/vacancies/GRO — proving the shape on
+  one screen beats sweeping six uninvited; converting them is a follow-up card. Clients now
+  load on MOUNT and unfiltered (the column needs archived companies too, or their employees
+  render an id); the active-only narrowing moved to the create picker, where it belongs.
+  Verified the no-results state with a temporary empty client, inserted and deleted (5 clients
+  before and after). **Landmine:** editing `messages/*.json` while the dev server runs updates
+  the SERVER render but not the client bundle — the page rendered `All` while the server HTML
+  said `All companies`, with `MISSING_MESSAGE` only in the console, so it read as a wrong
+  translation rather than a missing one. Restart the dev server.
 
 ### UX-11 — the accessibility pass
 - **Objective:** close the four gaps a survey of `apps/web` turned up — two of them

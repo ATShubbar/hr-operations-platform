@@ -278,7 +278,10 @@
       "pending": "Pending",
       "not_registered": "Not registered"
     },
-    "searchPlaceholder": "Search name, iqama, job title…"
+    "searchPlaceholder": "Search name, iqama, job title…",
+    "colClient": "Company",
+    "filterClient": "Filter by company",
+    "filterAllClients": "All companies"
   },
   "clients": {
     "title": "Clients",
