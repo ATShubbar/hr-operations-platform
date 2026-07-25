@@ -32,11 +32,17 @@ export function AppShell({ children }: { children: ReactNode }) {
         {t('nav.skipToContent')}
       </a>
 
-      <aside className="hidden w-60 shrink-0 border-e bg-sidebar text-sidebar-foreground md:flex md:flex-col">
-        <div className="flex h-14 items-center px-4">
+      {/* 260px, up from 240: the grouped nav (UX-17) adds an icon column and an
+          identity block, and at 240 the longest labels truncated. */}
+      {/* `sticky top-0 h-dvh`: the nav now ends in a footer group pinned with
+          `mt-auto`, and without a viewport-height box that "bottom" is the
+          bottom of the PAGE — measured, Settings sat 2243px down on a long
+          screen. The sidebar owns its own scroll instead. */}
+      <aside className="hidden w-[260px] shrink-0 border-e bg-sidebar text-sidebar-foreground md:sticky md:top-0 md:flex md:h-dvh md:flex-col">
+        <div className="flex h-14 shrink-0 items-center px-4">
           <BrandMark width={132} />
         </div>
-        <AppNav />
+        <AppNav className="min-h-0 overflow-y-auto" />
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">

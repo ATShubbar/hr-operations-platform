@@ -730,6 +730,30 @@ column; `auth.signInSubtitle` became a functional prompt and the slogan moved to
 intact) plus the MFA enroll step — and **without mutating state**: `/auth/mfa/enroll` writes the
 pending secret to the REDIS SESSION only (`auth_users.mfa_secret` is set at verify), confirmed 9
 users / 0 enrolled afterwards. `login-preview/` and `lockup.webp` deleted.
+**UX-17 done — the nav is grouped and icon-led.** Owner supplied a sidebar they liked; a live
+preview wired to our data was reviewed, then approved. **The source was REWRITTEN, not copied** —
+it failed three of our own gates: every row was a `<div onClick>` (no keyboard — WCAG 2.1.1
+Level A, the UX-11 calendar defect again), it was built on physical utilities that
+`hr/rtl-safe-classes` rejects and that would draw its tree guides on the wrong side in Arabic,
+and it carried `dark:` variants for a mode we deliberately do not ship. Now: 14 real `<Link>`s,
+**zero `div` click handlers**, RTL mirroring with no direction-specific CSS. **Dropped:** the
+workspace switcher (staff work across EVERY client at once — there is nothing to switch, and a
+picker would misdescribe how the product scopes data; its slot now carries name + role from
+`/auth/me`, real since UX-10b) and the ⌘K search row (the epic ruled a palette out). **Its
+headline feature — collapsible children — has NO DATA here**, since our routes are flat; nothing
+was invented to fill it. **No badge shipped** either: the preview wired one to unread
+notifications, but the bell already owns that count in the same viewport and Today is a work
+queue, not an inbox — the row markup takes a badge the day a count exists that is genuinely
+about a screen. **The grouping (Clients / Operations / Recruitment) is EDITORIAL and the
+component says so** — the routes imply no hierarchy, so it is maintained by hand; Today sits
+ABOVE the groups (it is the whole queue, not a category of it) and administration sits at the
+foot behind a rule. **An empty group renders nothing** — finance gets no Recruitment heading at
+all, recruiter no GRO. **Bug the change introduced, caught by measuring:** the new `mt-auto`
+footer had no viewport-height box, so "bottom" meant the bottom of the PAGE — Settings sat
+**2243px** down a long screen; fixed with `md:sticky md:top-0 md:h-dvh` on the aside plus an
+internally-scrolling nav (after: 792 of 800). Sidebar 240 → **260px** (icon column + identity
+block; no label truncates, measured `scrollWidth` vs `clientWidth`); the sheet keeps its 44px
+rows (WCAG 2.5.5) from the SAME component (the UX-05 rule).
 Next: OCI-02 (owner-run) unblocking OCI-03/04/05.
 
 ## Technical landmines (each cost real debugging — do not rediscover)

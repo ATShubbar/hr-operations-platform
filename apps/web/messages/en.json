@@ -76,7 +76,10 @@
     "closeMenu": "Close",
     "portalUsers": "Portal users",
     "staffUsers": "Staff users",
-    "skipToContent": "Skip to content"
+    "skipToContent": "Skip to content",
+    "groupClients": "Clients",
+    "groupOperations": "Operations",
+    "groupRecruitment": "Recruitment"
   },
   "documents": {
     "title": "Documents",
@@ -1002,5 +1005,16 @@
       "active": "Active",
       "disabled": "Disabled"
     }
+  },
+  "roles": {
+    "system_admin": "System Administrator",
+    "company_admin": "Company Administrator",
+    "hr_officer": "HR Officer",
+    "gro_officer": "GRO Officer",
+    "recruiter": "Recruiter",
+    "finance": "Finance",
+    "read_only": "Read Only",
+    "client_admin": "Client Administrator",
+    "client_user": "Client User"
   }
 }

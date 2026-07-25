@@ -1739,6 +1739,7 @@ results** for the most common typing variants (`احمد` does not match `أحم
 | UX-14 | Fix `GET /requests?status=` being accepted and ignored | UX-13 | **done** ([evidence](evidence/ux/UX-14.md)) |
 | UX-15 | PEOPLE&GRO as the product's name and mark | — | **done** ([evidence](evidence/ux/UX-15.md)) |
 | UX-16 | Login page adopts the shadcn login-02 two-column layout | UX-15 | **done** ([evidence](evidence/ux/UX-16.md)) |
+| UX-17 | Grouped, icon-led navigation with an identity block | UX-15 | **done** ([evidence](evidence/ux/UX-17.md)) |
 
 ### UX-01 — Semantic status tokens + surface layering
 - **Objective:** give status its own token tier, structurally separated from the brand
@@ -1806,6 +1807,33 @@ results** for the most common typing variants (`احمد` does not match `أحم
   336/336 passing then exits non-zero on the documented ioredis teardown noise;
   reproduced 3/3 under turbo's concurrency) — filed as a follow-up, kept separate
   from the supertest port-collision issue.
+
+### UX-17 — grouped, icon-led navigation
+- **Objective:** replace the flat sixteen-link sidebar with grouped, icon-led sections and an
+  identity block — owner supplied a sidebar they liked and approved a live preview wired to
+  our data.
+- **Files:** `components/app-nav.tsx` (rewritten), `components/app-shell.tsx`;
+  `messages/{en,ar}.json` (`nav.group*`, new `roles.*`).
+- **DoD:** both surfaces from one component; empty groups render no heading; `aria-current`
+  on exactly one link; 44px rows in the sheet; no label truncated at the sidebar width;
+  both locales; lint/typecheck/build 15/15; no API change.
+- **Evidence:** `evidence/ux/UX-17.md`.
+- **Dependencies:** UX-15. **Risks/decisions:** **the source was REWRITTEN, not copied** — it
+  failed three of our own gates: every row was a `<div onClick>` (no keyboard, WCAG 2.1.1 Level
+  A — the UX-11 defect again), it was built on physical utilities that `hr/rtl-safe-classes`
+  rejects and that would draw tree guides on the wrong side in Arabic, and it carried `dark:`
+  variants for a mode we do not ship. **Dropped:** the workspace switcher (staff work across
+  every client at once — nothing to switch, and a picker would misdescribe how data is scoped;
+  its slot now carries name + role from `/auth/me`) and the ⌘K search row (the epic ruled a
+  palette out). **Its headline feature — collapsible children — has no data**, since our routes
+  are flat; nothing was invented to fill it. **No badge shipped:** the preview wired one to
+  unread notifications, but the bell already owns that count in the same viewport, and Today is
+  a work queue not an inbox — the markup takes a badge when a count exists that is genuinely
+  about a screen. **The grouping is EDITORIAL and the component says so** — the routes imply no
+  hierarchy, so the headings are maintained by hand. **Bug the change introduced, caught by
+  measuring:** the new `mt-auto` footer had no viewport-height box, so "bottom" meant the bottom
+  of the PAGE — Settings sat 2243px down a long screen; fixed with `md:sticky md:top-0 md:h-dvh`
+  and an internally-scrolling nav (after: 792 of 800).
 
 ### UX-16 — the login page adopts the login-02 layout
 - **Objective:** replace the single centred card with shadcn's login-02 two-column shape,
