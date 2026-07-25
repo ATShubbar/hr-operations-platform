@@ -1735,6 +1735,7 @@ results** for the most common typing variants (`احمد` does not match `أحم
 | UX-10b | Staff-user module: `staff-user.*` permissions, API, directory UI, name resolution | UX-10a | **done** |
 | UX-11 | Accessibility pass (active nav state, skip link, keyboard agenda rows, heading outline) | UX-02 | **done** ([evidence](evidence/ux/UX-11.md)) |
 | UX-12 | Employees: Company column + company filter beside the search | UX-03c | **done** ([evidence](evidence/ux/UX-12.md)) |
+| UX-13 | One filtering idiom: the five remaining screens onto the inline filter shape | UX-12 | **done** ([evidence](evidence/ux/UX-13.md)) |
 
 ### UX-01 — Semantic status tokens + surface layering
 - **Objective:** give status its own token tier, structurally separated from the brand
@@ -1802,6 +1803,34 @@ results** for the most common typing variants (`احمد` does not match `أحم
   336/336 passing then exits non-zero on the documented ioredis teardown noise;
   reproduced 3/3 under turbo's concurrency) — filed as a follow-up, kept separate
   from the supertest port-collision issue.
+
+### UX-13 — one filtering idiom across the app
+- **Objective:** the app had two ways to filter a list. Employees (UX-12) filtered inline
+  beside the search; five other screens used a form above the table. Make them one.
+- **Files:** `components/ui/data-table.tsx`; `(app)/{documents,requests,tasks,vacancies,gro,employees}/page.tsx`.
+- **DoD:** all six render filters in DataTable's `filters` slot; each fires exactly one
+  request per change; Clear appears only while filtering and resets to unfiltered; verified
+  PER SCREEN in the browser; both locales; 0px overflow at 375px; lint/typecheck/build 15/15;
+  no API change.
+- **Evidence:** `evidence/ux/UX-13.md`.
+- **Dependencies:** UX-12. **Risks/decisions:** **The card's premise was partly wrong and is
+  corrected in the evidence** — it assumed five Apply buttons; there were two (requests,
+  documents… plus tasks). Vacancies and GRO already filtered on change, just in a labelled
+  row above the table. And UX-12's claim that `/employees` is the only list controller
+  accepting `clientId` is FALSE: all six accept it via `@Query() query: unknown` + a zod
+  schema, invisible to a `@Query('clientId')` grep. Every screen already filtered
+  server-side; this card is presentation only. **Two component changes made once rather than
+  six times:** Clear moved into the toolbar (it previously existed only in the no-results
+  state — when you need it least), and the search input dropped to 32px because `h-9` on a
+  `SelectTrigger` is DEAD CODE — the component carries `data-[size=default]:h-8`, an
+  attribute variant that outranks a plain utility and survives tailwind-merge (measured:
+  search 36px beside filters at 32px; same family as UX-11's `not-sr-only` padding).
+  Documents needed a single `applyFilters(patch)` merging over current state — three
+  independent setters would race into a stale `load()`; verified date+category COMPOSE
+  (20→8→6) rather than replace. Its date input fires on `change`, which for `type="date"`
+  means on commit, so no request-per-keystroke. **Trade-off stated, not hidden:** sighted
+  users lose the visible `<Label>` above each control (it survives as `aria-label`), which
+  matters most on the three-filter documents screen.
 
 ### UX-12 — the Company column and filter on Employees
 - **Objective:** Employees was the ONLY cross-client list with neither a client column nor

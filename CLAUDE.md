@@ -636,6 +636,27 @@ updates the SERVER render but NOT the client bundle — the page rendered `All` 
 HTML said `All companies`, with `MISSING_MESSAGE` only in the console, so it read as a wrong
 translation rather than a missing one. Restart the dev server (same family as the UX-03
 newly-linked-package landmine).
+**UX-13 done — one filtering idiom.** All six list screens now render their filters in
+`DataTable`'s `filters` slot beside the search. **The card's premise was partly wrong and the
+evidence says so:** it assumed five Apply-button forms; there were two (requests, tasks) plus
+documents — vacancies and GRO already filtered on change, in a labelled row above the table.
+**And UX-12's claim that `/employees` is the only list controller accepting `clientId` is
+FALSE** — all six accept it via `@Query() query: unknown` + a zod schema, which a grep for
+`@Query('clientId')` misses; every screen already filtered server-side, so this card is
+presentation only. Two component changes made ONCE rather than six times: **Clear moved into
+the toolbar** (it previously existed only in the no-results state — precisely when you need it
+least) rendered only while narrowed; and the search input dropped to **32px** because `h-9` on
+a `SelectTrigger` is **DEAD CODE** — the component carries `data-[size=default]:h-8`, an
+attribute variant that outranks a plain utility and survives tailwind-merge (measured: search
+36px beside filters at 32px, same failure family as UX-11's `not-sr-only` padding). Documents
+needed a single `applyFilters(patch)` merging over current state — three independent setters
+would race into a stale `load()`; verified date+category **COMPOSE** (20→8→6 docs, three
+requests) rather than replace, and its date input fires on `change`, which for `type="date"`
+means on commit, so no request-per-keystroke. Verified per screen: one row, all controls 32px,
+0 stray Apply, one request per change, Clear absent before filtering and present after; Tasks
+correctly narrows within its own-scope (hr_officer sees 4, not 10 — no `task.read-all`). Both
+locales, 0px overflow at 375px (documents wraps to 4 rows). **Trade-off stated:** sighted users
+lose the visible `<Label>` above each control (it survives as `aria-label`).
 Next: OCI-02 (owner-run) unblocking OCI-03/04/05.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
