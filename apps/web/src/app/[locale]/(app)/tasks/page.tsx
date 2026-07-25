@@ -134,9 +134,14 @@ export default function TasksPage() {
     void loadClients();
   }, []);
 
-  const onApply = (e: FormEvent) => {
-    e.preventDefault();
-    void load();
+  // UX-13: filtering on change, no Apply button.
+  const onFilterStatus = (v: string) => {
+    setFStatus(v);
+    void load({ status: v, client: fClient });
+  };
+  const onFilterClient = (v: string) => {
+    setFClient(v);
+    void load({ status: fStatus, client: v });
   };
   const onClear = () => {
     setFStatus(ALL);
@@ -233,47 +238,6 @@ export default function TasksPage() {
         {canCreate && <Button onClick={openCreate}>{t('new')}</Button>}
       </div>
 
-      <form onSubmit={onApply} className="flex flex-wrap items-end gap-3">
-        <div className="space-y-1.5">
-          <Label>{t('filterStatus')}</Label>
-          <Select value={fStatus} onValueChange={(v) => setFStatus(v ?? ALL)}>
-            <SelectTrigger className="w-40">
-              <SelectValue>{(v) => (v === ALL ? t('filterAll') : t(`status.${String(v)}`))}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>{t('filterAll')}</SelectItem>
-              {STATUSES.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {t(`status.${s}`)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1.5">
-          <Label>{t('filterClient')}</Label>
-          <Select value={fClient} onValueChange={(v) => setFClient(v ?? ALL)}>
-            <SelectTrigger className="w-44">
-              <SelectValue>{(v) => (v === ALL ? t('filterAll') : clientName(String(v)))}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>{t('filterAll')}</SelectItem>
-              {clients.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
-                  {locale === 'ar' ? c.name.ar : c.name.en}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <Button type="submit" disabled={loading}>
-          {t('apply')}
-        </Button>
-        <Button type="button" variant="outline" onClick={onClear} disabled={loading}>
-          {t('clear')}
-        </Button>
-      </form>
-
       {error && (
         <LoadError message={error} onRetry={() => void load()} hasContent={tasks.length > 0} />
       )}
@@ -287,6 +251,42 @@ export default function TasksPage() {
         emptyTitle={t('empty')}
         filtersActive={fStatus !== ALL || fClient !== ALL}
         onClearFilters={onClear}
+        // UX-13 — beside the search, no Apply. Names move from a visible
+        // <Label> to aria-label, so the row lines up with the search box.
+        filters={
+          <>
+            <Select value={fStatus} onValueChange={(v) => onFilterStatus(v ?? ALL)}>
+              <SelectTrigger className="w-40" aria-label={t('filterStatus')}>
+                <SelectValue>
+                  {(v) => (v === ALL ? t('filterAll') : t(`status.${String(v)}`))}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>{t('filterAll')}</SelectItem>
+                {STATUSES.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {t(`status.${s}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={fClient} onValueChange={(v) => onFilterClient(v ?? ALL)}>
+              <SelectTrigger className="w-44" aria-label={t('filterClient')}>
+                <SelectValue>
+                  {(v) => (v === ALL ? t('filterAll') : clientName(String(v)))}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>{t('filterAll')}</SelectItem>
+                {clients.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {locale === 'ar' ? c.name.ar : c.name.en}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </>
+        }
         columns={[
           {
             key: 'title',

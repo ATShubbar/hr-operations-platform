@@ -155,11 +155,37 @@ export function DataTable<T>({
               setPage(0); // a new query must not leave you on page 4 of 1
             }}
             placeholder={searchPlaceholder ?? t('search')}
-            className="h-9 w-full max-w-xs rounded-lg"
+            // 32px to match SelectTrigger's `data-[size=default]:h-8`, which is
+            // an attribute variant and therefore beats a plain `h-9` passed in
+            // by a filter — measured, search 36px vs filters 32px in the same
+            // row (UX-13). Aligning here rather than fighting the variant.
+            className="h-8 w-full max-w-xs rounded-lg"
             aria-label={searchPlaceholder ?? t('search')}
           />
         )}
         {filters}
+        {/* Clear lives in the toolbar, not in each screen's markup (UX-13).
+            The no-results state already offered it, which is exactly when you
+            need it LEAST — you can see there is nothing there. With two or three
+            filters active over a full table, resetting them one Select at a time
+            is the tedious case, and it was the one affordance the Apply-button
+            forms had that the inline shape dropped.
+
+            Rendered only while something is narrowing the list, so the toolbar
+            stays quiet by default. */}
+        {narrowed && onClearFilters && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-9"
+            onClick={() => {
+              setQuery('');
+              onClearFilters();
+            }}
+          >
+            {t('clearFilters')}
+          </Button>
+        )}
       </div>
 
       {/* A horizontally scrolling region must be reachable by keyboard (WCAG

@@ -117,9 +117,14 @@ export default function EmployeesPage() {
     }
   }
 
-  // Filtered SERVER-side (`?clientId=`) — this is the only list controller that
-  // accepts it, and the endpoint is unpaginated, so narrowing here means the
-  // browser is not handed every employee in the consultancy to hide most of them.
+  // Filtered SERVER-side (`?clientId=`). The endpoint is unpaginated, so
+  // narrowing here means the browser is not handed every employee in the
+  // consultancy in order to hide most of them.
+  //
+  // (UX-12 claimed this was the only list controller accepting clientId. It is
+  // not — documents, requests, tasks, vacancies and GRO all do, via
+  // `@Query() query: unknown` plus a zod schema, which a grep for
+  // `@Query('clientId')` does not find. Corrected in UX-13.)
   async function load(clientId = fClient) {
     setLoading(true);
     setError('');
@@ -247,7 +252,7 @@ export default function EmployeesPage() {
         // cross-client screens still use the older form.
         filters={
           <Select value={fClient} onValueChange={(v) => onFilterClient(v ?? ALL)}>
-            <SelectTrigger className="h-9 w-52" aria-label={t('filterClient')}>
+            <SelectTrigger className="w-52" aria-label={t('filterClient')}>
               <SelectValue>
                 {(v) => (v === ALL ? t('filterAllClients') : clientName(String(v)))}
               </SelectValue>

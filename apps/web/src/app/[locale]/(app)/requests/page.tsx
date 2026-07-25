@@ -139,9 +139,15 @@ export default function RequestsPage() {
     void loadClients();
   }, []);
 
-  const onApply = (e: FormEvent) => {
-    e.preventDefault();
-    void load();
+  // UX-13: the Select IS the action — there is no Apply button to forget to
+  // press, and no state where the controls disagree with the table.
+  const onFilterClient = (v: string) => {
+    setFClient(v);
+    void load({ client: v, status: fStatus });
+  };
+  const onFilterStatus = (v: string) => {
+    setFStatus(v);
+    void load({ client: fClient, status: v });
   };
   const onClear = () => {
     setFClient(ALL);
@@ -224,47 +230,6 @@ export default function RequestsPage() {
         {canCreate && <Button onClick={openCreate}>{t('new')}</Button>}
       </div>
 
-      <form onSubmit={onApply} className="flex flex-wrap items-end gap-3">
-        <div className="space-y-1.5">
-          <Label>{t('filterClient')}</Label>
-          <Select value={fClient} onValueChange={(v) => setFClient(v ?? ALL)}>
-            <SelectTrigger className="w-44">
-              <SelectValue>{(v) => (v === ALL ? t('filterAll') : clientName(String(v)))}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>{t('filterAll')}</SelectItem>
-              {clients.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
-                  {locale === 'ar' ? c.name.ar : c.name.en}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1.5">
-          <Label>{t('filterStatus')}</Label>
-          <Select value={fStatus} onValueChange={(v) => setFStatus(v ?? ALL)}>
-            <SelectTrigger className="w-40">
-              <SelectValue>{(v) => (v === ALL ? t('filterAll') : t(`status.${String(v)}`))}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>{t('filterAll')}</SelectItem>
-              {STATUSES.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {t(`status.${s}`)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <Button type="submit" disabled={loading}>
-          {t('apply')}
-        </Button>
-        <Button type="button" variant="outline" onClick={onClear} disabled={loading}>
-          {t('clear')}
-        </Button>
-      </form>
-
       {error && (
         <LoadError message={error} onRetry={() => void load()} hasContent={requests.length > 0} />
       )}
@@ -278,6 +243,44 @@ export default function RequestsPage() {
         emptyTitle={t('empty')}
         filtersActive={fClient !== ALL || fStatus !== ALL}
         onClearFilters={onClear}
+        // Beside the search rather than in a form above the table (UX-13). The
+        // visible <Label>s went with the form — the search box next to these has
+        // none, so stacked labels put the row out of alignment; the name moves
+        // to aria-label, which is what it was for.
+        filters={
+          <>
+            <Select value={fClient} onValueChange={(v) => onFilterClient(v ?? ALL)}>
+              <SelectTrigger className="w-44" aria-label={t('filterClient')}>
+                <SelectValue>
+                  {(v) => (v === ALL ? t('filterAll') : clientName(String(v)))}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>{t('filterAll')}</SelectItem>
+                {clients.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {locale === 'ar' ? c.name.ar : c.name.en}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={fStatus} onValueChange={(v) => onFilterStatus(v ?? ALL)}>
+              <SelectTrigger className="w-40" aria-label={t('filterStatus')}>
+                <SelectValue>
+                  {(v) => (v === ALL ? t('filterAll') : t(`status.${String(v)}`))}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>{t('filterAll')}</SelectItem>
+                {STATUSES.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {t(`status.${s}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </>
+        }
         columns={[
           {
             key: 'title',

@@ -194,47 +194,6 @@ export default function VacanciesPage() {
         {canCreate && <Button onClick={openCreate}>{t('new')}</Button>}
       </div>
 
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="space-y-1.5">
-          <Label>{t('filterClient')}</Label>
-          <Select
-            value={fClient}
-            onValueChange={(v) => {
-              setFClient(v ?? ALL);
-              void load(v ?? ALL);
-            }}
-          >
-            <SelectTrigger className="w-48">
-              <SelectValue>{(v) => (v === ALL ? t('filterAll') : clientName(String(v)))}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>{t('filterAll')}</SelectItem>
-              {clients.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
-                  {locale === 'ar' ? c.name.ar : c.name.en}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1.5">
-          <Label>{t('filterStatus')}</Label>
-          <Select value={fStatus} onValueChange={(v) => setFStatus(v ?? ALL)}>
-            <SelectTrigger className="w-40">
-              <SelectValue>{(v) => (v === ALL ? t('filterAll') : t(`status.${String(v)}`))}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>{t('filterAll')}</SelectItem>
-              {STATUSES.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {t(`status.${s}`)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
       {error && (
         <LoadError message={error} onRetry={() => void load()} hasContent={vacancies.length > 0} />
       )}
@@ -248,6 +207,49 @@ export default function VacanciesPage() {
         emptyTitle={t('empty')}
         filtersActive={fClient !== ALL || fStatus !== ALL}
         onClearFilters={onClearFilters}
+        // UX-13 — beside the search rather than in a labelled row above the
+        // table. The names move from a visible <Label> to aria-label, so the
+        // controls line up with the search box that has neither.
+        filters={
+          <>
+            <Select
+              value={fClient}
+              onValueChange={(v) => {
+                setFClient(v ?? ALL);
+                void load(v ?? ALL);
+              }}
+            >
+              <SelectTrigger className="w-48" aria-label={t('filterClient')}>
+                <SelectValue>
+                  {(v) => (v === ALL ? t('filterAll') : clientName(String(v)))}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>{t('filterAll')}</SelectItem>
+                {clients.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {locale === 'ar' ? c.name.ar : c.name.en}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={fStatus} onValueChange={(v) => setFStatus(v ?? ALL)}>
+              <SelectTrigger className="w-40" aria-label={t('filterStatus')}>
+                <SelectValue>
+                  {(v) => (v === ALL ? t('filterAll') : t(`status.${String(v)}`))}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>{t('filterAll')}</SelectItem>
+                {STATUSES.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {t(`status.${s}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </>
+        }
         columns={[
           {
             key: 'title',
