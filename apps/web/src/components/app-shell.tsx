@@ -16,6 +16,21 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-dvh">
+      {/* Bypass block (WCAG 2.4.1, UX-11). Up to sixteen nav links precede the
+          content on every screen, so without this a keyboard user re-tabs the
+          whole sidebar after every navigation.
+
+          Parked off-screen with a transform rather than `sr-only` +
+          `focus:not-sr-only`. `not-sr-only` sets `padding: 0`, and under a
+          `:focus` variant that outranks the plain `px-4 py-2` — measured, the
+          revealed link came back 91×20 with no padding at all. */}
+      <a
+        href="#main-content"
+        className="fixed top-3 start-3 z-50 -translate-y-20 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-md focus:translate-y-0 motion-safe:transition-transform"
+      >
+        {t('nav.skipToContent')}
+      </a>
+
       <aside className="hidden w-60 shrink-0 border-e bg-sidebar text-sidebar-foreground md:flex md:flex-col">
         <div className="flex h-14 items-center px-4 text-sm font-semibold">
           {t('common.appName')}
@@ -35,7 +50,13 @@ export function AppShell({ children }: { children: ReactNode }) {
             <SignOutButton />
           </div>
         </header>
-        <main className="min-w-0 flex-1 px-4 py-6 md:px-6">{children}</main>
+        {/* tabIndex={-1} is what makes the skip link actually SKIP: a hash link
+            to a non-focusable element scrolls and leaves focus where it was, so
+            the next Tab returns to the nav — the failure mode that makes half
+            the skip links on the web decorative. */}
+        <main id="main-content" tabIndex={-1} className="min-w-0 flex-1 px-4 py-6 outline-none md:px-6">
+          {children}
+        </main>
       </div>
     </div>
   );

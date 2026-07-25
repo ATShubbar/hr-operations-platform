@@ -230,12 +230,17 @@ export default function TodayPage() {
       {!loading &&
         sections.map((section) => (
           <section key={section.key} className="space-y-2">
-            <div className="flex items-center gap-2">
+            {/* A real heading (UX-11) — these are the page's four urgency
+                sections, and jumping between them by heading is how a screen
+                reader user skims a work queue. The count is inside it on
+                purpose: "Overdue, 11" is the whole heading, not a decoration
+                sitting beside one. */}
+            <h2 className="flex items-center gap-2">
               <StatusPill tone={section.tone}>{t(`section.${section.key}`)}</StatusPill>
               <span className="text-sm tabular-nums text-muted-foreground">
                 {section.items.length}
               </span>
-            </div>
+            </h2>
             <ul className="divide-y rounded-lg border bg-card">
               {section.items.map((item) => (
                 <li key={item.id}>

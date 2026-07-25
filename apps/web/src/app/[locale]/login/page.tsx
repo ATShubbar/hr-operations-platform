@@ -146,7 +146,9 @@ export default function LoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader>
           <div className="flex items-center justify-between gap-4">
-            <CardTitle>{titles[step]}</CardTitle>
+            {/* The login card carries the page's only title, so this is the h1
+                rather than the h2 a card title is elsewhere (UX-11). */}
+            <CardTitle as="h1">{titles[step]}</CardTitle>
             <LanguageSwitcher />
           </div>
           <CardDescription>{subtitles[step]}</CardDescription>

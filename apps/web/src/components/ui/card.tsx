@@ -33,9 +33,20 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
+// A card title is a section heading, so it renders as one (UX-11). The app had
+// thirty <h1>s and a single <h2>: every card title was a <div>, which reads as
+// bold text and is invisible to heading navigation — the primary way a screen
+// reader user skims a page.
+//
+// `as` exists for the one case where the level is genuinely different: the login
+// card carries the page's ONLY title, so there it is the h1.
+function CardTitle({
+  as: Tag = "h2",
+  className,
+  ...props
+}: React.ComponentProps<"div"> & { as?: "h1" | "h2" | "h3" | "div" }) {
   return (
-    <div
+    <Tag
       data-slot="card-title"
       className={cn("font-heading text-base font-medium", className)}
       {...props}

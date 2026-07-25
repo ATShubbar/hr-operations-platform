@@ -228,7 +228,15 @@ export default function CalendarPage() {
         <Button variant="outline" size="sm" onClick={() => shiftMonth(-1)}>
           {t('prev')}
         </Button>
-        <span className="min-w-64 text-sm font-medium">{monthLabel}</span>
+        {/* `min-w-64` reserved a fixed 256px so the buttons stop moving as the
+            month label changes width — which at 375px made this row 413px wide
+            inside a 343px column and pushed the whole page 54px sideways.
+            Measured on the unmodified screen, so it pre-dates this card and the
+            UX-05 sweep missed it. The reservation is kept from sm up, where
+            there is room for it. */}
+        <span className="min-w-0 flex-1 text-center text-sm font-medium sm:min-w-64 sm:flex-none sm:text-start">
+          {monthLabel}
+        </span>
         <Button variant="outline" size="sm" onClick={() => shiftMonth(1)}>
           {t('next')}
         </Button>
@@ -241,29 +249,64 @@ export default function CalendarPage() {
       <div className="space-y-4">
         {days.map(([day, dayItems]) => (
           <div key={day} className="rounded-lg border">
-            <div className="border-b bg-muted/30 px-4 py-2 text-sm font-medium">
+            {/* A real heading, so the agenda is navigable by heading and each day
+                names the list beneath it (UX-11). */}
+            <h2
+              id={`day-${day}`}
+              className="border-b bg-muted/30 px-4 py-2 text-sm font-medium"
+            >
               {dualDate(`${day}T00:00:00.000Z`, locale)}
-            </div>
-            <ul className="divide-y">
-              {dayItems.map((it) => (
-                <li
-                  key={`${it.kind}-${it.id}`}
-                  className={`flex items-center gap-3 px-4 py-2 text-sm ${it.kind === 'event' && canUpdate ? 'cursor-pointer hover:bg-muted/40' : ''}`}
-                  onClick={() => void openEdit(it)}
-                >
-                  <Badge variant={KIND_VARIANT[it.kind] ?? 'secondary'}>{t(`kind.${it.kind}`)}</Badge>
-                  {/* /calendar/view returns raw enums, and uses the GRO process
-                      TYPE as the title — so this row used to read
-                      "iqama_renewal … · open" in Arabic (UX-09). */}
-                  <span className="font-medium">{titleFor(it.kind as ViewItemKind, it.title)}</span>
-                  <span className="ms-auto whitespace-nowrap text-xs text-muted-foreground">
-                    {it.allDay ? t('due') : timeLabel(it.startAt, it.allDay)}
-                    {statusLabel(it.kind as ViewItemKind, it.status)
-                      ? ` · ${statusLabel(it.kind as ViewItemKind, it.status)}`
-                      : ''}
-                  </span>
-                </li>
-              ))}
+            </h2>
+            <ul className="divide-y" aria-labelledby={`day-${day}`}>
+              {dayItems.map((it) => {
+                // /calendar/view returns raw enums, and uses the GRO process TYPE
+                // as the title — so this row used to read "iqama_renewal … · open"
+                // in Arabic (UX-09).
+                const content = (
+                  <>
+                    <Badge variant={KIND_VARIANT[it.kind] ?? 'secondary'}>
+                      {t(`kind.${it.kind}`)}
+                    </Badge>
+                    {/* `min-w-0` + truncate: a flex item defaults to
+                        `min-width: auto`, so without this the longest title
+                        holds the row open and the agenda pushed the page 54px
+                        wide at 375px — measured, and pre-dating this card. */}
+                    <span className="min-w-0 flex-1 truncate font-medium">
+                      {titleFor(it.kind as ViewItemKind, it.title)}
+                    </span>
+                    <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
+                      {it.allDay ? t('due') : timeLabel(it.startAt, it.allDay)}
+                      {statusLabel(it.kind as ViewItemKind, it.status)
+                        ? ` · ${statusLabel(it.kind as ViewItemKind, it.status)}`
+                        : ''}
+                    </span>
+                  </>
+                );
+                // Only own events open an editor. The rest are read-only
+                // projections of Tasks/Requests/GRO deadlines, so they stay plain
+                // markup rather than becoming focus stops that do nothing — the
+                // usual way a keyboard fix makes a page worse.
+                const editable = it.kind === 'event' && canUpdate;
+                return (
+                  <li key={`${it.kind}-${it.id}`}>
+                    {editable ? (
+                      // Was `<li onClick>` — clickable with a mouse and by nothing
+                      // else (WCAG 2.1.1, Level A). A real button brings Enter,
+                      // Space, the focus ring and the announced role with it.
+                      // `w-full`/`text-start` because a button is neither by default.
+                      <button
+                        type="button"
+                        onClick={() => void openEdit(it)}
+                        className="flex w-full items-center gap-3 px-4 py-2 text-start text-sm hover:bg-muted/40 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+                      >
+                        {content}
+                      </button>
+                    ) : (
+                      <div className="flex items-center gap-3 px-4 py-2 text-sm">{content}</div>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           </div>
         ))}

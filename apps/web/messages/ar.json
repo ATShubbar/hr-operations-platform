@@ -73,7 +73,8 @@
     "openMenu": "فتح القائمة",
     "closeMenu": "إغلاق",
     "portalUsers": "مستخدمو البوابة",
-    "staffUsers": "مستخدمو النظام"
+    "staffUsers": "مستخدمو النظام",
+    "skipToContent": "تخطَّ إلى المحتوى"
   },
   "documents": {
     "title": "المستندات",

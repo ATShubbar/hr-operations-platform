@@ -143,8 +143,10 @@ export default function AuditPage() {
         <LoadError message={error} onRetry={() => void fetchPage({ resource, action, append: false })} hasContent={entries.length > 0} />
       )}
 
-      <div className="overflow-x-auto rounded-lg border">
-        <Table>
+      <div className="rounded-lg border">
+        {/* The tab stop belongs on <Table>'s own scroll container, not here
+            (UX-11) — this wrapper only draws the border. */}
+        <Table label={t('title')}>
           <TableHeader>
             <TableRow>
               <TableHead>{t('colTime')}</TableHead>

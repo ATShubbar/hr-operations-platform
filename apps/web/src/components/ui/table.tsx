@@ -4,11 +4,30 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-function Table({ className, ...props }: React.ComponentProps<"table">) {
+// The container — not the outer wrapper a page draws a border on — is the element
+// that actually scrolls, so it is the one that has to be reachable by keyboard
+// (WCAG 2.1.1, UX-11). DataTable got this in UX-05; the screens that are NOT
+// lists (audit, expiry, reports) still render raw <Table>s and kept the defect:
+// columns past the viewport edge that a mouse can reach and a keyboard cannot.
+//
+// A region needs a name to be exposed as one, so role=region is applied only when
+// a name is supplied — an unnamed region is worse than none. The tab stop is
+// unconditional, because reaching the columns is the point.
+function Table({
+  className,
+  label,
+  labelledBy,
+  ...props
+}: React.ComponentProps<"table"> & { label?: string; labelledBy?: string }) {
+  const named = Boolean(label || labelledBy)
   return (
     <div
       data-slot="table-container"
-      className="relative w-full overflow-x-auto"
+      role={named ? "region" : undefined}
+      aria-label={label}
+      aria-labelledby={labelledBy}
+      tabIndex={0}
+      className="relative w-full overflow-x-auto focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
     >
       <table
         data-slot="table"

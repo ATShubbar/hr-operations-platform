@@ -259,19 +259,29 @@ export default function CandidatesPage() {
         <LoadError message={error} onRetry={() => void load()} hasContent={candidates.length > 0} />
       )}
 
-      <div className="overflow-x-auto">
+      {/* The pipeline board is eight lanes wider than any phone, and it scrolled
+          with a mouse and nothing else (WCAG 2.1.1, UX-11). Same fix as the
+          tables — focusable, named, exposed as a region. */}
+      <div
+        role="region"
+        aria-label={t('title')}
+        tabIndex={0}
+        className="overflow-x-auto focus-visible:outline-2 focus-visible:outline-ring"
+      >
         <div className="flex min-w-max gap-3">
           {LANES.map((stage) => (
             <div key={stage} className="w-56 shrink-0 rounded-lg border bg-muted/30 p-2">
-              <div className="mb-2 flex items-center justify-between px-1">
+              {/* Lane titles are the board's structure, so they are headings —
+                  eight of them give this screen the outline it had none of. */}
+              <h2 className="mb-2 flex items-center justify-between px-1">
                 <span className="text-sm font-medium">{t(`stage.${stage}`)}</span>
                 <Badge variant="secondary">{inLane(stage).length}</Badge>
-              </div>
+              </h2>
               <div className="space-y-2">{inLane(stage).map(card)}</div>
             </div>
           ))}
           <div className="w-56 shrink-0 rounded-lg border bg-muted/30 p-2">
-            <div className="mb-2 px-1 text-sm font-medium">{t('laneClosed')}</div>
+            <h2 className="mb-2 px-1 text-sm font-medium">{t('laneClosed')}</h2>
             <div className="space-y-2">
               {CLOSED_LANE.flatMap((stage) => inLane(stage)).map(card)}
             </div>

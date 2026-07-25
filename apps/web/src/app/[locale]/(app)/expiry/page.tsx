@@ -311,13 +311,19 @@ export default function ExpiryPage() {
         <EmptyState variant="first-run" title={t('empty')} />
       ) : (
         BUCKETS.filter((b) => grouped[b].length > 0).map((b) => (
-          <section key={b} className="space-y-2">
-            <div className="flex items-center gap-2">
+          <section key={b} className="space-y-2" aria-labelledby={`bucket-${b}`}>
+            {/* A real heading (UX-11): these severity buckets are the structure
+                of the page, and they were <div>s — nothing to navigate by. */}
+            <h2 id={`bucket-${b}`} className="flex items-center gap-2">
               <StatusPill tone={BUCKET_TONE[b]}>{t(`bucket.${b}`)}</StatusPill>
               <span className="text-sm text-muted-foreground">{grouped[b].length}</span>
-            </div>
-            <div className="overflow-x-auto rounded-lg border">
-              <Table>
+            </h2>
+            <div className="rounded-lg border">
+              {/* The scroll container lives inside <Table>, so the keyboard fix
+                  and the accessible name go THERE, not on this border wrapper —
+                  putting tabIndex here would produce a focus stop that scrolls
+                  nothing. */}
+              <Table labelledBy={`bucket-${b}`}>
                 <TableHeader>
                   <TableRow>
                     <TableHead>{t('colTitle')}</TableHead>

@@ -590,8 +590,36 @@ Tasks with `task.read-all` shows 7 rows, every assignee a name, **zero id fragme
 rows still show short ids — their actors are DELETED e2e helper accounts (verified by SQL: the
 join returns NULL), which is the designed fallback and an argument for deactivating rather than
 deleting real accounts. **Landmine:** admin-role e2e logins need `loginAsEnrolledStaff`, not
-`loginAsStaff` (AUTH-06 MFA), or every request is 401. Next: UX-11 (accessibility pass) — the
-last card in the UI/UX epic.
+`loginAsStaff` (AUTH-06 MFA), or every request is 401.
+**UX-11 done — the UI/UX epic is CLOSED.** Four gaps, each verified in the tree before the card
+was written: `aria-current` appeared **0 times** in `apps/web` (no screen said which one you were
+on); the calendar's agenda rows were `<li onClick>` — clickable with a mouse and by nothing else
+(**2.1.1, Level A**); the app had **30 `<h1>`s and exactly ONE `<h2>`**, so every card title and
+section header was a `<div>` and heading navigation had one stop per screen; and there was **no
+skip link** past the 16 nav links that precede `<main>` (**2.4.1, Level A**). Fixes: `aria-current`
+in `AppNav` — ONE change covering both surfaces (the UX-05 extraction paying for itself) — carried
+by **weight as well as colour** (500 vs 400, so it survives greyscale) and matching nested routes
+via `pathname === href || startsWith(href + '/')` (the separator stops `/portal/company` matching a
+future `/portal/companies`); agenda rows → real `<button>`s **only where they do something** (2 of
+16 rows; the 14 read-only Task/Request/GRO projections stay plain, because a focus stop that does
+nothing is how a keyboard fix makes a page worse); `CardTitle` → `<h2>` with an `as` escape hatch
+for the login card, which holds the page's ONLY title (login previously had **no heading at all**);
+and a skip link proven to skip. **The obvious skip-link idiom is wrong here:** `sr-only` +
+`focus:not-sr-only` zeroes padding under the focus variant, outranking `px-4 py-2` — measured, the
+revealed link came back **91×20**; parked off-screen with a transform instead. **`tabIndex={-1}` on
+`<main>` is what makes it skip** — a hash link to a non-focusable target scrolls and leaves focus
+behind, so the next Tab returns to the nav (body→Tab→Tab→Enter→Tab now lands **inside** main, past
+18 focusable elements). Beyond the four: the screens that are NOT lists never got UX-05's
+`DataTable` scroll fix, and the tab stop had to go on **`<Table>`'s own container**, not the border
+wrapper each page draws (putting it there = a focus stop that scrolls nothing) — **1061px of the
+candidates pipeline board** and **351px of the expiry table** were mouse-only at 375px;
+`role="region"` only when a name exists. **The `/calendar` 54px overflow was NOT introduced here** —
+`git stash` + re-measure proved it pre-existing: `min-w-64` on the month label made that row 413px
+inside a 343px column, missed by the UX-05 sweep. Verified across **14 screens × 2 locales**: exactly
+one `h1`, exactly one `aria-current`, 0px overflow each. Deliberately out: route-change live region,
+axe harness, `/audit` visual check (MFA-gated; same one-line change verified on `/reports` +
+`/expiry`). No API change (0 files under `apps/api`). **UI/UX epic COMPLETE — UX-01..11.**
+Next: OCI-02 (owner-run) unblocking OCI-03/04/05.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
@@ -610,6 +638,11 @@ last card in the UI/UX epic.
   measured through timers is quantised to multiples of 1000ms (UX-05: readings of 999/1000/
   3999/5001/6000 looked like an app bug and were the browser). Foreground the tab, or don't
   claim the number.
+- The browser-automation harness sends key events that are trusted but INCOMPLETE
+  (`code: ""`, `keyCode: 0`), and Chrome's default activation keys off `keyCode` — so
+  Enter/Space on a `<button>` fires `keydown` and NO click, and arrow keys do not scroll
+  a focused region. Tab works (the focus manager needs no code). Do not read a
+  non-activating button as an app bug; confirm activation by mouse (UX-11).
 - Closing a dialog inside a `<Link>`'s onClick CANCELS the navigation — `next/link` runs
   `startTransition(() => router.push())` and the close unmounts the subtree owning that
   transition. Close on pathname change instead (UX-05).

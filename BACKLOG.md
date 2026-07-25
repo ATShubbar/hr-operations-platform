@@ -1733,7 +1733,7 @@ results** for the most common typing variants (`احمد` does not match `أحم
 | UX-09 | Fix the `SelectValue` raw-value leak; unify workflow controls | UX-02 | **done** |
 | UX-10a | Missing surfaces: client-users admin + per-client settings (UI over existing APIs) | UX-03 | **done** |
 | UX-10b | Staff-user module: `staff-user.*` permissions, API, directory UI, name resolution | UX-10a | **done** |
-| UX-11 | Accessibility pass (active nav state, keyboard agenda rows, popover semantics, heading outline) | UX-02 | planned |
+| UX-11 | Accessibility pass (active nav state, skip link, keyboard agenda rows, heading outline) | UX-02 | **done** ([evidence](evidence/ux/UX-11.md)) |
 
 ### UX-01 — Semantic status tokens + surface layering
 - **Objective:** give status its own token tier, structurally separated from the brand
@@ -1801,6 +1801,38 @@ results** for the most common typing variants (`احمد` does not match `أحم
   336/336 passing then exits non-zero on the documented ioredis teardown noise;
   reproduced 3/3 under turbo's concurrency) — filed as a follow-up, kept separate
   from the supertest port-collision issue.
+
+### UX-11 — the accessibility pass
+- **Objective:** close the four gaps a survey of `apps/web` turned up — two of them
+  Level A — and verify keyboard operability on every screen the seeded roles reach.
+- **Files:** `components/app-nav.tsx`, `components/app-shell.tsx`,
+  `components/ui/{card,table}.tsx`; `(app)/{calendar,today,expiry,candidates,reports,audit}/page.tsx`,
+  `login/page.tsx`; `messages/{en,ar}.json`.
+- **DoD:** `aria-current="page"` in BOTH nav surfaces with a non-colour-only treatment and
+  nested routes lighting the parent; agenda rows real `<button>`s (and ONLY the editable
+  ones); a skip link that actually moves focus into `<main>`; a real h1→h2 outline dumped
+  from the live DOM per screen; both locales; 0px page overflow everywhere;
+  lint/typecheck/build 15/15; no API change.
+- **Evidence:** `evidence/ux/UX-11.md`.
+- **Dependencies:** UX-02, UX-05. **Risks/decisions:** **Baseline measured, not assumed** —
+  `aria-current` appeared 0 times; the app had 30 `<h1>`s and exactly ONE `<h2>`; login had
+  no heading at all. **The obvious skip-link idiom is wrong here:** `focus:not-sr-only` sets
+  `padding: 0` and outranks `px-4 py-2` under the focus variant, so the revealed link
+  measured 91×20 — parked off-screen with a transform instead. **`tabIndex={-1}` on `<main>`
+  is what makes a skip link skip**; without it focus stays put and the next Tab returns to
+  the nav. Read-only agenda rows deliberately stay non-focusable — a focus stop that does
+  nothing is how a keyboard fix makes a page worse. Scroll containers: the tab stop belongs
+  on `<Table>`'s own container, not the page's border wrapper (1061px of the candidates board
+  and 351px of the expiry table were mouse-only); the stop is unconditional, matching the
+  UX-05 DataTable precedent, and `role="region"` is applied only when a name exists.
+  **The 54px `/calendar` overflow was NOT mine** — measured on the stashed baseline; the cause
+  was `min-w-64` on the month label, pre-dating this card and missed by the UX-05 sweep.
+  **Harness limit recorded:** the browser tool's key events arrive with `code: ""` and
+  `keyCode: 0`, so Chrome synthesises no click and Enter/Space activation cannot be driven
+  through it — Tab works, activation was confirmed by mouse. Out of scope by decision: no
+  route-change live region (needs its own next-intl/App-Router decision), no axe harness
+  (test infrastructure), `/audit` not visually verified (MFA-gated, same one-line change
+  verified on `/reports` and `/expiry`).
 
 ### UX-10b — the staff-user module
 - **Objective:** `auth_users` had no name column and nothing listed staff users — one root

@@ -226,8 +226,8 @@ export default function ReportsPage() {
               {t('noRows')}
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-lg border">
-              <Table>
+            <div className="rounded-lg border">
+              <Table label={t(`report.${result.id}`)}>
                 <TableHeader>
                   <TableRow>
                     {result.columns.map((c) => (

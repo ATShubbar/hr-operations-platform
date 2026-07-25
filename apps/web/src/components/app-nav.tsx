@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Link } from '@/i18n/navigation';
+import { Link, usePathname } from '@/i18n/navigation';
 import { useCan } from '@/lib/session';
 import { cn } from '@/lib/utils';
 
@@ -24,9 +24,28 @@ const SIDEBAR_LINK =
 const SHEET_LINK =
   'flex min-h-11 items-center rounded-md px-3 py-2 text-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground';
 
+// The current screen (UX-11). Sixteen identical links with nothing marking which
+// one you are on is a "where am I" hole on every screen in the app.
+//
+// Colour is not the only signal: the weight change carries it independently, so
+// the state survives a greyscale render (1.4.1). `aria-current="page"` is the
+// half a screen reader hears — a background tint tells it nothing.
+const ACTIVE_LINK = 'bg-sidebar-accent font-medium text-sidebar-accent-foreground';
+
 interface NavItem {
   href: string;
   label: string;
+}
+
+// A nav entry is current when you are on its screen OR inside it — `/employees/
+// <id>` must light up `/employees`, or the deepest screens in the app show no
+// location at all.
+//
+// The separator in the prefix test is load-bearing: a bare `startsWith` would
+// make `/portal/company` match a future `/portal/companies`, lighting up two
+// entries at once.
+function isCurrent(pathname: string, href: string): boolean {
+  return pathname === href || pathname.startsWith(`${href}/`);
 }
 
 export function AppNav({
@@ -37,6 +56,7 @@ export function AppNav({
   className?: string;
 }) {
   const t = useTranslations();
+  const pathname = usePathname();
 
   // Hooks must run unconditionally, so every capability is read up front and the
   // list is assembled from the results.
@@ -96,15 +116,19 @@ export function AppNav({
       className={cn('flex flex-col gap-1 px-2 py-2', className)}
       aria-label={t('nav.console')}
     >
-      {items.map((item) => (
-        <Link
-          key={item.href}
-          href={item.href}
-          className={variant === 'sheet' ? SHEET_LINK : SIDEBAR_LINK}
-        >
-          {item.label}
-        </Link>
-      ))}
+      {items.map((item) => {
+        const current = isCurrent(pathname, item.href);
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            aria-current={current ? 'page' : undefined}
+            className={cn(variant === 'sheet' ? SHEET_LINK : SIDEBAR_LINK, current && ACTIVE_LINK)}
+          >
+            {item.label}
+          </Link>
+        );
+      })}
     </nav>
   );
 }
