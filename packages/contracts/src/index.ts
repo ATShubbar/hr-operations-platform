@@ -231,6 +231,22 @@ export {
   type CandidateQuery,
 } from './candidate.js';
 export {
+  reportIdSchema,
+  reportCategorySchema,
+  reportDescriptorSchema,
+  reportCatalogResponseSchema,
+  reportColumnSchema,
+  reportCellSchema,
+  reportResultResponseSchema,
+  type ReportIdContract,
+  type ReportCategoryContract,
+  type ReportDescriptor,
+  type ReportCatalogResponse,
+  type ReportColumnContract,
+  type ReportCellContract,
+  type ReportResultResponse,
+} from './report.js';
+export {
   taskStatusSchema,
   taskPrioritySchema,
   taskResponseSchema,

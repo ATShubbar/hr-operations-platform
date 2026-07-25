@@ -121,6 +121,12 @@ export const PERMISSIONS = [
   // outbound invitation surface (create/update/cancel/read) — the staff who schedule
   // interviews and meetings hold it (Company Admin + Recruiter + HR/GRO Officers).
   'integration.google-calendar',
+  // Reporting (REP-02; permission matrix — every staff role reads reports). This
+  // is the COARSE gate on /reports; WHICH reports a caller sees is a second,
+  // finer check against each report's declared requiredPermissions (the report
+  // catalog), so `report.read` alone never exposes salary or GRO figures.
+  // Client Admin's "own summary" (matrix) is a portal surface, not this route.
+  'report.read',
   // Client Portal (PORTAL-01): client-only self-service access. Gates /portal/*.
   'portal.read',
   // Session lifecycle — every authenticated principal may end their session.
@@ -166,6 +172,11 @@ const STAFF_BASE: readonly Permission[] = [
   // Calendar: every staff role reads the calendar (own events by default —
   // calendar.read-all lifts the scope to all events).
   'calendar.read',
+  // Reporting (REP-02): the matrix gives every staff role R on Reports. The
+  // per-role parentheticals ("Recruiter R (recruitment)", "Finance R
+  // (financial)") are enforced by each report's own requiredPermissions, not by
+  // withholding this one.
+  'report.read',
 ];
 // System/Company Admin extra: audit read + client CRUD (matrix) + triggering
 // the document-expiry scan on demand (EXP-02).

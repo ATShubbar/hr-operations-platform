@@ -172,6 +172,12 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'GET /portal/documents': 'client-read',
   'GET /portal/documents/:id': 'client-read',
   'GET /portal/documents/:id/download': 'client-read',
+  // Reporting (REP-02): STAFF-ONLY, read-only, cross-client by permission — so
+  // 'staff'. `report.read` admits the caller; each report's own
+  // requiredPermissions decide which reports are listed and runnable (proven in
+  // the REP-02 e2e: a Recruiter cannot list or run payroll-cost).
+  'GET /reports': 'staff',
+  'GET /reports/:id': 'staff',
   'GET /example/greeting': 'staff',
   'GET /example-consumer/relay': 'staff',
   'GET /scope-check': 'client-scoped',

@@ -244,7 +244,15 @@ the web table (REP-04) stay per-report-code-free. `ReportingService` is delibera
 PERMISSION-AGNOSTIC (it computes; REP-02 gates) and takes an injectable `now`.
 **Materialized views deliberately NOT used in v1** — an MV spanning several modules' tables
 would break "own your data"; if a report is provably slow the MV belongs to the owning
-module (decision recorded, not drift). API suite **320/320**. **Remaining: REP-02..04; the
+module (decision recorded, not drift). **REP-02: the reports HTTP API** — `GET /reports`
+(the catalog **filtered** to what the caller may run) + `GET /reports/:id` (run), staff-only
+read-only. **TWO gates**: `report.read` (in STAFF_BASE — matrix gives every staff role R)
+admits a caller; each report's `requiredPermissions` (ALL of them, AND) decides which are
+listed and runnable — so a Recruiter's catalog is recruitment-shaped and `payroll-cost` is
+neither listed nor runnable for them (403 naming `salary.read`; unknown id → 404; clients →
+403). No client path — the matrix's "Client Admin R (own summary)" is a portal surface
+(REP-05 decision). 2 isolation routes, 0 audited writes (auditing the EXPORT is REP-03).
+Contracts add `report.ts`. API suite **329/329**. **Remaining: REP-03..04; the
 real Google client + attachments (infra, deferred per ADR-009); AWS/OCI decision (ADR-006)
 open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
 2026-07-24: ECS throttle + RDS InvalidAction persist)

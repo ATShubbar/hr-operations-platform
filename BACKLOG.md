@@ -1576,7 +1576,7 @@ data is.
 | Task | Objective | Deps | Status |
 |---|---|---|---|
 | REP-01 | `modules/reporting` + the typed report catalog (permissions per report) + `ReportingService` — six read models composed from the owning modules' services | 4.1–4.4, 5.2 | done ([evidence](evidence/reporting/REP-01.md)) |
-| REP-02 | HTTP API — `GET /reports` (catalog filtered to what the caller can run) + `GET /reports/:id` (run), `report.read` granted per the matrix | REP-01 | planned |
+| REP-02 | HTTP API — `GET /reports` (catalog filtered to what the caller can run) + `GET /reports/:id` (run), `report.read` granted per the matrix | REP-01 | done ([evidence](evidence/reporting/REP-02.md)) |
 | REP-03 | Export — `GET /reports/:id/export?format=csv` gated by `report.export` and **audited** (the first audited READ: bulk export of HR data is a privacy event) | REP-02 | planned |
 | REP-04 | Reports web UI — catalog, run, view, export | REP-03 | planned |
 
@@ -1598,6 +1598,25 @@ data is.
   the MV belongs to the owning module (recorded, not drifted). `payroll-cost` salary
   figures are only reachable through the salary.read-gated route in REP-02. The
   fixture is anchored a year out so the document-expiry 60-day scan can't claim it.
+
+### REP-02 — Reports HTTP API (permission-filtered catalog + gated runs)
+- **Objective:** the staff read-only surface — `GET /reports` filtered to what the
+  caller may run, `GET /reports/:id` enforcing that report's own declared
+  permissions. Two gates: `report.read` admits; `requiredPermissions` decides.
+- **Files:** `contracts/report.ts` (+index); `reporting/api/reports.controller.ts`
+  (NEW); `reporting.module.ts` (+AuthModule, controller); `permissions.ts`
+  (`report.read` + STAFF_BASE); isolation registry (2 staff routes);
+  `test/reports-api.e2e-spec.ts`.
+- **DoD:** every staff role's catalog matches the matrix (Recruiter: no payroll/GRO/
+  compliance; Finance: no recruitment/GRO; GRO Officer: no payroll); running an
+  unentitled report → 403 naming the missing permission; unknown id → 404; clients
+  → 403; unauth → 401; contract enum matches `REPORT_IDS`; isolation + catalog
+  coverage green; suite + lint + typecheck + build green.
+- **Evidence:** `evidence/reporting/REP-02.md`.
+- **Dependencies:** REP-01, Auth (PolicyService). **Risks:** un-runnable → 403 (not
+  404) because the catalog is static and documented and a named permission is
+  debuggable; ALL requiredPermissions must be held (AND); no client path — the
+  matrix's "Client Admin R (own summary)" is a portal surface (REP-05 decision).
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 
