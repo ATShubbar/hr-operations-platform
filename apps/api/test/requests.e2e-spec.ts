@@ -68,7 +68,7 @@ describe('Requests service (REQ-01, e2e)', () => {
       createdByUserId: randomUUID(),
     });
 
-    const list = await requests.list(clientId);
+    const list = await requests.list({ clientId });
     expect(list.length).toBeGreaterThanOrEqual(2);
     expect(list.map((r) => r.id)).toContain(b.id);
 

@@ -673,7 +673,20 @@ parses it and keeps only `clientId`, and the service signature is `list(clientId
 measured `?status=open` → 9 rows against 4 actually open. Pre-existing since REQ-02 and hidden
 by the Apply button (you pressed it and watched nothing happen, which reads as "no matches") —
 filtering on change made the non-response obvious. Tasks passes `status` through correctly;
-vacancies/GRO filter status client-side. It is an API change, so it is filed as its own card.
+vacancies/GRO filter status client-side.
+**UX-14 done — that filter now filters.** Filters moved into an object on
+`RequestsService.list`/`listForClient`, matching the shape Tasks already used; the controller
+parses ONCE and feeds both paths. **`clientId` is deliberately NOT a filter on the client-rep
+path** — RLS decides whose rows exist, and accepting one would read as though the caller could
+choose (asserted: a rep passing another client's id still gets only their own rows). **The
+test's load-bearing assertions are NEGATIVE** — "every returned row has status X" passes against
+a filter that does nothing whenever the fixture is uniform, so it asserts the excluded row is
+ABSENT and the filtered count is SMALLER; proven red by stashing `modules/requests` and watching
+it fail, then green. Stated honestly: the rep-path test passes either way on this fixture (rep
+A's requests are all open) — it is a regression guard, not a red-green proof. Verified per
+status against true counts (open 4/4, in_progress 2/2, resolved 1/1, closed 1/1, cancelled 1/1)
+and composing with `clientId` (2 rows). **API suite 352/352** (350 + 2). No web change — the
+screen had been sending `?status=` all along.
 Next: OCI-02 (owner-run) unblocking OCI-03/04/05.
 
 ## Technical landmines (each cost real debugging — do not rediscover)

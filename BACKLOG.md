@@ -1736,6 +1736,7 @@ results** for the most common typing variants (`احمد` does not match `أحم
 | UX-11 | Accessibility pass (active nav state, skip link, keyboard agenda rows, heading outline) | UX-02 | **done** ([evidence](evidence/ux/UX-11.md)) |
 | UX-12 | Employees: Company column + company filter beside the search | UX-03c | **done** ([evidence](evidence/ux/UX-12.md)) |
 | UX-13 | One filtering idiom: the five remaining screens onto the inline filter shape | UX-12 | **done** ([evidence](evidence/ux/UX-13.md)) |
+| UX-14 | Fix `GET /requests?status=` being accepted and ignored | UX-13 | **done** ([evidence](evidence/ux/UX-14.md)) |
 
 ### UX-01 — Semantic status tokens + surface layering
 - **Objective:** give status its own token tier, structurally separated from the brand
@@ -1803,6 +1804,26 @@ results** for the most common typing variants (`احمد` does not match `أحم
   336/336 passing then exits non-zero on the documented ioredis teardown noise;
   reproduced 3/3 under turbo's concurrency) — filed as a follow-up, kept separate
   from the supertest port-collision issue.
+
+### UX-14 — the requests status filter actually filters
+- **Objective:** `GET /requests?status=` had been accepted and silently ignored since REQ-02.
+  Found by UX-13, fixed here because an accepted-and-ignored parameter is worse than a
+  rejected one — the screen showed everything under a filter claiming to narrow it.
+- **Files:** `modules/requests/application/requests.service.ts`,
+  `modules/requests/api/requests.controller.ts`; `test/requests-api.e2e-spec.ts`,
+  `test/requests.e2e-spec.ts`. No web change — the screen always sent the parameter.
+- **DoD:** `?status=` narrows on BOTH paths; composes with `clientId`; the new test proven to
+  FAIL against the unfixed source; API suite green; lint/typecheck/build 15/15.
+- **Evidence:** `evidence/ux/UX-14.md`. **API suite 352/352** (350 + 2).
+- **Dependencies:** UX-13. **Risks/decisions:** filters move into an object, matching the shape
+  Tasks already used. **`clientId` is deliberately NOT a filter on the client-rep path** — RLS
+  decides whose rows exist, and accepting one would read as though the caller could choose;
+  asserted by a spoof test (a rep passing another client's id still gets only their own).
+  **The test's load-bearing assertions are negative** — "every row has status X" passes against
+  a filter that does nothing whenever the fixture is uniform, so it asserts the excluded row is
+  ABSENT and the filtered count is SMALLER. Red-green proven by stashing `modules/requests` and
+  watching it fail. **Stated honestly:** the second test (rep path) passes either way on this
+  fixture, since rep A's requests are all open — it is a regression guard, not a red-green proof.
 
 ### UX-13 — one filtering idiom across the app
 - **Objective:** the app had two ways to filter a list. Employees (UX-12) filtered inline

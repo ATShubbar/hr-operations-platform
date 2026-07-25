@@ -45,15 +45,26 @@ export class RequestsService {
     return row;
   }
 
-  list(clientId?: string): Promise<RequestRecord[]> {
+  // The signature used to be `list(clientId?: string)`, which is why
+  // `GET /requests?status=` was accepted and silently ignored: the query schema
+  // has always declared `status`, the controller parsed it, and there was
+  // nowhere to put it. Filters go in an object here, as they do on Tasks.
+  list(filters?: {
+    clientId?: string;
+    status?: Prisma.RequestWhereInput['status'];
+  }): Promise<RequestRecord[]> {
+    const f = filters ?? {};
     return this.prisma.request.findMany({
-      where: clientId ? { clientId } : undefined,
+      where: {
+        ...(f.clientId ? { clientId: f.clientId } : {}),
+        ...(f.status ? { status: f.status } : {}),
+      },
       orderBy: { createdAt: 'desc' },
     });
   }
 
   listByClient(clientId: string): Promise<RequestRecord[]> {
-    return this.list(clientId);
+    return this.list({ clientId });
   }
 
   findById(id: string): Promise<RequestRecord | null> {
@@ -150,8 +161,17 @@ export class RequestsService {
     );
   }
 
-  listForClient(clientId: string): Promise<RequestRecord[]> {
-    return this.scoped.forClient(clientId).request.findMany({ orderBy: { createdAt: 'desc' } });
+  // The rep path takes the same filter. `clientId` is deliberately NOT a filter
+  // here — RLS decides which client's rows exist at all, and letting a caller
+  // pass one would read as though it were selectable.
+  listForClient(
+    clientId: string,
+    filters?: { status?: Prisma.RequestWhereInput['status'] },
+  ): Promise<RequestRecord[]> {
+    return this.scoped.forClient(clientId).request.findMany({
+      where: filters?.status ? { status: filters.status } : {},
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   // RLS filters the row to the caller's client, so a foreign id resolves to null.

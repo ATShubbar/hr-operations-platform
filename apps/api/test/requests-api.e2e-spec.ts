@@ -126,6 +126,64 @@ describe('Requests API (REQ-02, e2e)', () => {
     );
   });
 
+  // The status filter was declared in requestQuerySchema, parsed by the
+  // controller and then DROPPED — accepted and silently ignored, which on the
+  // screen read as "no matching records". The assertions that matter are the
+  // negative ones: that the excluded status is genuinely absent, and that the
+  // filtered count is SMALLER than the unfiltered one. A test that only checked
+  // "every row has status X" passes against a filter that does nothing whenever
+  // the fixture happens to be uniform.
+  it('staff filter by status, and it actually narrows', async () => {
+    await request(http)
+      .post(`/requests/${reqB}/process`)
+      .set('Cookie', admin.cookie)
+      .send({ status: 'in_progress' })
+      .expect(200);
+
+    const all = await request(http).get('/requests').set('Cookie', reader.cookie).expect(200);
+    const open = await request(http)
+      .get('/requests?status=open')
+      .set('Cookie', reader.cookie)
+      .expect(200);
+
+    const openRows = open.body.requests as Array<{ id: string; status: string }>;
+    expect(openRows.every((r) => r.status === 'open')).toBe(true);
+    expect(openRows.some((r) => r.id === reqB)).toBe(false); // now in_progress
+    expect(openRows.some((r) => r.id === reqA)).toBe(true);
+    expect(openRows.length).toBeLessThan(all.body.requests.length);
+
+    // …and it composes with the client filter rather than replacing it.
+    const both = await request(http)
+      .get(`/requests?clientId=${clientA}&status=open`)
+      .set('Cookie', reader.cookie)
+      .expect(200);
+    expect(
+      (both.body.requests as Array<{ clientId: string; status: string }>).every(
+        (r) => r.clientId === clientA && r.status === 'open',
+      ),
+    ).toBe(true);
+  });
+
+  it('the client-rep path takes the same status filter, still own-client only', async () => {
+    const open = await request(http)
+      .get('/requests?status=open')
+      .set('Cookie', repA.cookie)
+      .expect(200);
+    const rows = open.body.requests as Array<{ id: string; clientId: string; status: string }>;
+    expect(rows.every((r) => r.status === 'open' && r.clientId === clientA)).toBe(true);
+    expect(rows.some((r) => r.id === reqB)).toBe(false);
+
+    // A rep cannot widen their view by asking for someone else's client: RLS
+    // decides whose rows exist, and clientId is not read on this path at all.
+    const spoof = await request(http)
+      .get(`/requests?clientId=${clientB}`)
+      .set('Cookie', repA.cookie)
+      .expect(200);
+    expect(
+      (spoof.body.requests as Array<{ clientId: string }>).every((r) => r.clientId === clientA),
+    ).toBe(true);
+  });
+
   it('client_admin updates own request; client_user cannot (403); cross-client → 404', async () => {
     const upd = await request(http)
       .patch(`/requests/${reqA}`)

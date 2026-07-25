@@ -80,14 +80,19 @@ export class RequestsController {
   @RequirePermission('request.read')
   @Get()
   async list(@Query() query: unknown): Promise<RequestListResponse> {
+    // Parsed once, for both paths. Previously only `clientId` was taken from
+    // here and `status` was dropped on the floor, so a declared query parameter
+    // was accepted and ignored — the filter looked broken as "no matches".
+    const q = requestQuerySchema.safeParse(query);
+    const f = q.success ? q.data : {};
+
     const ctx = requestContext.get();
     if (ctx?.principalType === 'client_rep' && ctx.clientId) {
-      const rows = await this.requests.listForClient(ctx.clientId);
+      // No clientId here: RLS decides whose rows exist, not the caller.
+      const rows = await this.requests.listForClient(ctx.clientId, { status: f.status });
       return { requests: rows.map(toResponse) };
     }
-    const q = requestQuerySchema.safeParse(query);
-    const clientId = q.success ? q.data.clientId : undefined;
-    const rows = await this.requests.list(clientId);
+    const rows = await this.requests.list({ clientId: f.clientId, status: f.status });
     return { requests: rows.map(toResponse) };
   }
 
