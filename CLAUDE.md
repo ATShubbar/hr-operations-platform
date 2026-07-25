@@ -493,9 +493,36 @@ to a `c1000000-…` range, documented in the seed. (The risk I predicted, expiry
 reacting to near-expiry docs, did not materialise.) **A flow demonstrated itself:** after the
 suite, gro_processes held 17 rows vs the seed's 9, the extra 8 carrying `source_document_id` —
 GRO-05's document-expiry → GRO auto-spawn firing on the new near-expiry documents, one per
-document, exactly as its idempotency guarantee says. Kept. API suite 336/336. Next: UX-09
-(SelectValue leak + unified workflow controls) or UX-08 (Arabic typeface + bidi isolation, now
-more visible since every screen carries far more Arabic text).
+document, exactly as its idempotency guarantee says. Kept. API suite 336/336. 
+**UX-08 done — Arabic finally has a typeface.** The app loaded `Inter({subsets:['latin']})` and
+nothing else, and **Inter has NO ARABIC GLYPHS** — so the product's DEFAULT locale rendered in
+whatever each machine fell back to (Geeza Pro / Tahoma / Noto Naskh). Measured: the same string
+was 156.49px in "Inter", 156.32px in sans-serif, 154.99px in serif — three families, one width,
+because all three resolved to the same fallback. Now **IBM Plex Sans Arabic** (self-hosted via
+next/font, chosen to sit beside Inter — both neo-grotesques, so mixed runs like `Iqama — أحمد
+حسن` don't read as two typefaces fighting) in **ONE composed stack**
+(`var(--font-latin), var(--font-arabic), …`): the browser's per-CHARACTER fallback does the
+routing, so there is no locale-conditional CSS to forget. **The trap that took three attempts:**
+next/font emits TWO families per font — `Inter` plus a generated `"Inter Fallback"`, a local
+Arial with `size-adjust` — and that generated fallback is a real system font that **covers
+Arabic**, so it intercepted every Arabic glyph before the stack reached Plex (measured 482.41px,
+matching neither Plex 500.95 nor OS 479.77). `adjustFontFallback: false` fixes it; my first
+replacement (`fallback: ['ui-sans-serif','system-ui']`) re-created the same trap one line later,
+since generics also resolve to Arabic-capable faces. Proof it applies now: **129.86px app stack
+== 129.86px forced Plex** vs 106.73px OS (space-free word, so no cross-family space glyph skews
+the number); Latin still Inter (312.23 == 312.23); **CLS 0.0000**; three real weights
+(400/500/600 → 129.86/134.27/136.99px, none synthesised — `font-medium` appears 39× and would
+otherwise have resolved down to 400 beside Latin at 500). Cost measured, not estimated: **~117KB
+of Arabic outlines** across three weights, first visit only. **The bidi half was re-scoped DOWN
+by measurement:** dual-calendar dates already render correctly (Hijri paints right of Gregorian),
+hyphenated codes already render correctly (the strong-LTR prefix sets the run), and digits were
+already consistently Latin (457 vs 0) — none touched. What was real: `TextField`'s prop was typed
+**`dir?: 'rtl'`**, so an identifier field could not be marked LTR even in principle, and eight
+government-identifier inputs (iqama/national-id/border/passport/work-permit/GOSI/Absher/IBAN)
+inherited the page's RTL; the read-only `mono` identifier display now wraps values in
+`<bdi dir="ltr">`. Also corrected the Arabic-Indic digits I introduced in the UX-07 seed. Next:
+UX-09 (SelectValue leak + unified workflow controls), UX-10 (staff-user directory — the gap
+behind Tasks showing a truncated UUID and Today having no name to greet), or UX-11 (a11y pass).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

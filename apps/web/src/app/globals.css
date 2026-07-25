@@ -6,7 +6,12 @@
 
 @theme inline {
     --font-heading: var(--font-sans);
-    --font-sans: var(--font-sans);
+    /* One stack, not a locale switch (UX-08). Inter carries no Arabic glyphs, so
+       the browser's per-CHARACTER fallback already does the routing for us: Latin
+       resolves from Inter, Arabic falls through to IBM Plex Sans Arabic. A mixed
+       string — "Iqama — أحمد حسن" — gets the right face on each side without any
+       conditional CSS, and there is no locale-specific class to forget. */
+    --font-sans: var(--font-latin), var(--font-arabic), ui-sans-serif, system-ui, sans-serif;
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);

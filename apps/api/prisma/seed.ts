@@ -515,8 +515,8 @@ async function seedNotifications(prisma: PrismaClient): Promise<number> {
   if (!hr || !gro) return 0;
 
   const rows = [
-    { id: 'aa000001-0000-4000-8000-000000000001', recipientUserId: hr, category: 'document_expiry' as const, titleAr: 'إقامة منتهية', titleEn: 'Iqama expired', bodyAr: 'انتهت إقامة سيد علي قبل ٨ أيام.', bodyEn: 'Syed Ali\'s iqama expired 8 days ago.', readAt: null },
-    { id: 'aa000001-0000-4000-8000-000000000002', recipientUserId: hr, category: 'document_expiry' as const, titleAr: 'إقامة تنتهي قريباً', titleEn: 'Iqama expiring soon', bodyAr: 'تنتهي إقامة جوزيف سانتوس خلال ٥ أيام.', bodyEn: 'Joseph Santos\'s iqama expires in 5 days.', readAt: null },
+    { id: 'aa000001-0000-4000-8000-000000000001', recipientUserId: hr, category: 'document_expiry' as const, titleAr: 'إقامة منتهية', titleEn: 'Iqama expired', bodyAr: 'انتهت إقامة سيد علي قبل 8 أيام.', bodyEn: 'Syed Ali\'s iqama expired 8 days ago.', readAt: null },
+    { id: 'aa000001-0000-4000-8000-000000000002', recipientUserId: hr, category: 'document_expiry' as const, titleAr: 'إقامة تنتهي قريباً', titleEn: 'Iqama expiring soon', bodyAr: 'تنتهي إقامة جوزيف سانتوس خلال 5 أيام.', bodyEn: 'Joseph Santos\'s iqama expires in 5 days.', readAt: null },
     { id: 'aa000001-0000-4000-8000-000000000003', recipientUserId: hr, category: 'request' as const, titleAr: 'طلب جديد', titleEn: 'New request', bodyAr: 'طلب تصحيح رواتب من شركة الألف التجارية.', bodyEn: 'Payroll correction request from Alpha Trading Co.', readAt: null },
     { id: 'aa000001-0000-4000-8000-000000000004', recipientUserId: gro, category: 'task' as const, titleAr: 'مهمة متأخرة', titleEn: 'Overdue task', bodyAr: 'تسوية التأمينات الاجتماعية الربعية تجاوزت موعدها.', bodyEn: 'Quarterly GOSI reconciliation is past its due date.', readAt: null },
     // One already read, so the unread badge is a count rather than a total.

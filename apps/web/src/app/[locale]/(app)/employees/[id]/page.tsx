@@ -313,7 +313,20 @@ function Field({
   return (
     <div className="space-y-0.5">
       <div className="text-xs text-muted-foreground">{label}</div>
-      <div className={mono ? 'font-mono text-sm' : 'text-sm'}>{value ?? '—'}</div>
+      {/* `mono` marks an IDENTIFIER — an iqama number, an IBAN, a passport
+          number. Those are LTR strings displayed inside an RTL page, so they get
+          a <bdi> to isolate them from the surrounding text direction and an
+          explicit ltr direction so the digit groups keep their written order
+          (UX-08). */}
+      <div className={mono ? 'font-mono text-sm' : 'text-sm'}>
+        {mono && value ? (
+          <bdi dir="ltr" className="inline-block text-start">
+            {value}
+          </bdi>
+        ) : (
+          (value ?? '—')
+        )}
+      </div>
     </div>
   );
 }
@@ -408,12 +421,22 @@ function TextField({
   label: string;
   value: string;
   onChange: (v: string) => void;
-  dir?: 'rtl';
+  // Was `'rtl'` only — so an identifier field could not be marked LTR even in
+  // principle, and every iqama/passport/IBAN input inherited the page's RTL in
+  // the Arabic UI (UX-08).
+  dir?: 'rtl' | 'ltr';
 }) {
   return (
     <div className="space-y-1.5">
       <Label>{label}</Label>
-      <Input value={value} dir={dir} onChange={(e) => onChange(e.target.value)} />
+      <Input
+        value={value}
+        dir={dir}
+        // An LTR field in an RTL form still aligns its text to the field's start
+        // edge, so the column of inputs stays visually even.
+        className={dir === 'ltr' ? 'text-start' : undefined}
+        onChange={(e) => onChange(e.target.value)}
+      />
     </div>
   );
 }
@@ -577,14 +600,14 @@ function SalaryDialog({ emp, onClose, onSaved }: DialogProps) {
 
   return (
     <EditDialog title={t('editSalaryTitle')} onClose={onClose} onSubmit={onSubmit} saving={saving} err={err}>
-      <TextField label={t('fieldCurrency')} value={f.currency} onChange={set('currency')} />
+      <TextField label={t('fieldCurrency')} value={f.currency} onChange={set('currency')} dir="ltr" />
       <NumField label={t('fieldBasicSalary')} value={f.basicSalary} onChange={set('basicSalary')} />
       <NumField label={t('fieldHousing')} value={f.housingAllowance} onChange={set('housingAllowance')} />
       <NumField label={t('fieldTransport')} value={f.transportAllowance} onChange={set('transportAllowance')} />
       <NumField label={t('fieldOther')} value={f.otherAllowances} onChange={set('otherAllowances')} />
       <NumField label={t('fieldGosiWage')} value={f.gosiWage} onChange={set('gosiWage')} />
       <SelectField label={t('fieldGosiBasis')} value={f.gosiContributionBasis} onChange={set('gosiContributionBasis')} options={GOSI_BASIS_VALUES} labelFor={(v) => t(GOSI_BASIS_KEY[v])} />
-      <TextField label={t('fieldIban')} value={f.bankIban} onChange={set('bankIban')} />
+      <TextField label={t('fieldIban')} value={f.bankIban} onChange={set('bankIban')} dir="ltr" />
       <SelectField label={t('fieldWps')} value={f.wpsStatus} onChange={set('wpsStatus')} options={WPS_VALUES} labelFor={(v) => t(WPS_KEY[v])} />
     </EditDialog>
   );
@@ -633,17 +656,17 @@ function GovdataDialog({ emp, onClose, onSaved }: DialogProps) {
 
   return (
     <EditDialog title={t('editGovdataTitle')} onClose={onClose} onSubmit={onSubmit} saving={saving} err={err}>
-      <TextField label={t('fieldIqama')} value={f.iqamaNumber} onChange={set('iqamaNumber')} />
+      <TextField label={t('fieldIqama')} value={f.iqamaNumber} onChange={set('iqamaNumber')} dir="ltr" />
       <DateField label={t('fieldIqamaExpiry')} value={f.iqamaExpiry} onChange={set('iqamaExpiry')} />
-      <TextField label={t('fieldNationalId')} value={f.nationalId} onChange={set('nationalId')} />
-      <TextField label={t('fieldBorder')} value={f.borderNumber} onChange={set('borderNumber')} />
-      <TextField label={t('fieldPassport')} value={f.passportNumber} onChange={set('passportNumber')} />
+      <TextField label={t('fieldNationalId')} value={f.nationalId} onChange={set('nationalId')} dir="ltr" />
+      <TextField label={t('fieldBorder')} value={f.borderNumber} onChange={set('borderNumber')} dir="ltr" />
+      <TextField label={t('fieldPassport')} value={f.passportNumber} onChange={set('passportNumber')} dir="ltr" />
       <DateField label={t('fieldPassportExpiry')} value={f.passportExpiry} onChange={set('passportExpiry')} />
-      <TextField label={t('fieldWorkPermit')} value={f.workPermitNumber} onChange={set('workPermitNumber')} />
+      <TextField label={t('fieldWorkPermit')} value={f.workPermitNumber} onChange={set('workPermitNumber')} dir="ltr" />
       <DateField label={t('fieldWorkPermitExpiry')} value={f.workPermitExpiry} onChange={set('workPermitExpiry')} />
-      <TextField label={t('fieldGosiRegNo')} value={f.gosiRegistrationNumber} onChange={set('gosiRegistrationNumber')} />
+      <TextField label={t('fieldGosiRegNo')} value={f.gosiRegistrationNumber} onChange={set('gosiRegistrationNumber')} dir="ltr" />
       <SelectField label={t('fieldGosiRegStatus')} value={f.gosiRegistrationStatus} onChange={set('gosiRegistrationStatus')} options={GOSI_REG_VALUES} labelFor={(v) => t(GOSI_REG_KEY[v])} />
-      <TextField label={t('fieldAbsher')} value={f.absherServiceRef} onChange={set('absherServiceRef')} />
+      <TextField label={t('fieldAbsher')} value={f.absherServiceRef} onChange={set('absherServiceRef')} dir="ltr" />
       <SelectField label={t('fieldExitReentry')} value={f.exitReentryStatus} onChange={set('exitReentryStatus')} options={EXIT_REENTRY_VALUES} labelFor={(v) => t(EXIT_REENTRY_KEY[v])} />
       <DateField label={t('fieldExitReentryExpiry')} value={f.exitReentryExpiry} onChange={set('exitReentryExpiry')} />
     </EditDialog>

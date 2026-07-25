@@ -1729,7 +1729,7 @@ results** for the most common typing variants (`احمد` does not match `أحم
 | UX-03c | Sweep the remaining lists onto DataTable | UX-03, UX-05 | **done** |
 | UX-06 | States everywhere: skeletons, empty, error-with-retry, 403 | UX-02 | **done** |
 | UX-07 | Realistic demo data (seed shows 0 expiring / 0 overdue today — the dashboard can't be evaluated) | — | **done** |
-| UX-08 | Arabic typeface + bidi isolation polish | UX-03b | planned |
+| UX-08 | Arabic typeface + bidi isolation polish | UX-03b | **done** |
 | UX-09 | Fix the `SelectValue` raw-value leak; unify workflow controls | UX-02 | planned |
 | UX-10 | Missing surfaces: staff-user directory, client-users admin, per-client settings | UX-03 | planned |
 | UX-11 | Accessibility pass (active nav state, keyboard agenda rows, popover semantics, heading outline) | UX-02 | planned |
@@ -1800,6 +1800,34 @@ results** for the most common typing variants (`احمد` does not match `أحم
   336/336 passing then exits non-zero on the documented ioredis teardown noise;
   reproduced 3/3 under turbo's concurrency) — filed as a follow-up, kept separate
   from the supertest port-collision issue.
+
+### UX-08 — the Arabic typeface (+ the bidi work that was justified)
+- **Objective:** the app loaded Inter and nothing else, and Inter has NO ARABIC GLYPHS —
+  so the product's DEFAULT locale had no chosen typeface, rendering in whatever each
+  machine fell back to. Measured: the same Arabic string was 156.49px in "Inter",
+  156.32px in sans-serif, 154.99px in serif — three families, one width.
+- **Files:** `[locale]/layout.tsx`; `globals.css`; `employees/[id]/page.tsx`;
+  `apps/api/prisma/seed.ts` (digit consistency).
+- **DoD:** IBM Plex Sans Arabic self-hosted via next/font; ONE composed stack (per-glyph
+  fallback, no locale switch); Arabic proven to render in it (129.86px app == 129.86px
+  forced Plex, vs 106.73px OS); Latin still Inter (312.23 == 312.23); CLS 0.0000; three
+  real weights (400/500/600 measurably distinct); identifier inputs LTR; `<bdi>` on
+  displayed identifiers; both locales; lint/typecheck/build 15/15; API 336/336.
+- **Evidence:** `evidence/ux/UX-08.md`.
+- **Dependencies:** none in practice. **Risks/decisions:** **The trap that took three
+  attempts:** next/font emits TWO families per font — `Inter` plus a generated
+  `"Inter Fallback"` (a local Arial with size-adjust) — and that generated fallback is a
+  real system font that COVERS ARABIC, so it intercepted every Arabic glyph before the
+  stack reached Plex (measured 482.41px, matching neither Plex nor the OS sans).
+  `adjustFontFallback: false` fixes it; my first replacement (`fallback: ['ui-sans-serif',
+  'system-ui']`) re-created the same trap, because generics also resolve to Arabic-capable
+  faces. **The bidi half was re-scoped DOWN by measurement:** dual-calendar dates already
+  render correctly (Hijri paints right of Gregorian), hyphenated codes already render
+  correctly (strong-LTR prefix sets the run), and digits were already consistently Latin
+  (457 vs 0) — so none of those were touched. What was real: `TextField`'s prop was typed
+  `dir?: 'rtl'`, i.e. an identifier field could not be marked LTR even in principle, so
+  eight government-identifier inputs inherited RTL. Cost reported rather than estimated:
+  ~117KB of Arabic outlines across three weights, first visit only.
 
 ### UX-07 — realistic demo data
 - **Objective:** make the seed produce a SCENARIO, not a smoke test, so the compliance
