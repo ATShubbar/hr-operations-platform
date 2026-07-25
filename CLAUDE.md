@@ -206,9 +206,18 @@ a `not_started` process (dueDate = expiry). **Idempotent** via a new `sourceDocu
 column + `existsForDocument` — the event fires once per tier (60/30/14/7/1/0d), so at most
 one process per document. An EVENT (not GRO-03's direct call) is the clean one-way case:
 document-expiry doesn't import GRO, GRO imports only the event type (no cycle, the
-CandidateHired pattern). API suite **301/301**. **Five ADR-004 flows now live.** **Priorities
-2–4 + Client Portal (5.1) + Calendar (5.2) done. Next: 5.3 Google Calendar (outbound sync +
-PII whitelist) or 5.4 Reporting. AWS/OCI decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
+CandidateHired pattern). API suite **301/301**. **Five ADR-004 flows now live.** **Priority 5 — Google Calendar
+epic (5.3) STARTED: GCAL-01 done** — `modules/integrations` + the **Google Calendar
+adapter** (ADR-009): the SOLE code path to Google, building a **whitelisted** `GoogleEventPayload`
+(summary/description/start/end/location/attendees — no key for identifiers/compensation)
+from a **typed** `CalendarInvitation` whose type has no free-form or PII field, so
+data-minimization is **structural**. The adapter formats the title itself (`Interview —
+<name> — <role>`) — callers never compose payloads. Pluggable `GOOGLE_CALENDAR_CLIENT`
+seam with a `CaptureGoogleCalendarClient` dev impl (records outbound payloads, mints
+`gcal-dev-<uuid>` ids); real Google client deferred. Attachments deferred (need the
+real-client guard). API suite **305/305**. **Next: GCAL-02 (persist + HTTP —
+`int_gcal_invitations` + create/update/cancel invitation endpoints, audited). AWS/OCI
+decision (ADR-006) open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
 2026-07-24: ECS throttle + RDS InvalidAction persist)
 (ECS throttle, RDS InvalidAction, ECR KMS deny, ALB stuck "provisioning");
 support case escalated; decision point → fresh account or OCI fallback

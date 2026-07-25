@@ -1497,6 +1497,36 @@ from the domain modules below it).
 
 **Calendar epic (5.2) COMPLETE — CAL-01..03 (events table, API+aggregated view, web UI).**
 
+## Priority 5 — Google Calendar epic (ACTION-PLAN 5.3, architecture.md Integrations, ADR-009)
+
+Outbound-only sync of interview/meeting invitations to Google, with the Integrations
+adapter as the ONLY code path and data-minimization made structural (typed inputs →
+whitelisted payload; no field for identifiers/compensation). Real Google client
+deferred behind a pluggable dev-capture seam.
+
+| Task | Objective | Deps | Status |
+|---|---|---|---|
+| GCAL-01 | `modules/integrations` + the Google Calendar adapter (typed `CalendarInvitation` → whitelisted payload builder) + `GOOGLE_CALENDAR_CLIENT` seam (dev-capture) + structural-minimization tests | 5.2, ADR-009 | done ([evidence](evidence/integrations/GCAL-01.md)) |
+| GCAL-02 | Persist + HTTP — `int_gcal_invitations` + `POST/PATCH/DELETE /integrations/google-calendar/invitations` (typed contract, `integration.google-calendar` perm, audited) | GCAL-01 | todo |
+| GCAL-03 | Web UI — schedule + inspect Google invitations (dev-capture view of what would leave) | GCAL-02 | todo |
+
+### GCAL-01 — Integrations module + Google Calendar adapter (structural minimization)
+- **Objective:** the ADR-009 core — the adapter that is the sole path to Google,
+  building a whitelisted payload from a typed invitation over a pluggable dev-capture
+  client. No HTTP/persistence yet (foundation-first).
+- **Files:** `modules/integrations/{module, public-api, domain/calendar-invitation,
+  domain/invitation-payload, application/google-calendar.adapter, infra/capture-google-
+  calendar-client}`; `app.module.ts`; `test/google-calendar-adapter.e2e-spec.ts`.
+- **DoD:** interview → whitelisted payload (summary/description/start/end/location/
+  attendees only — key set is EXACTLY the whitelist); meeting → subject summary;
+  create captures the payload + mints an id; update/cancel reach the client; suite +
+  lint + typecheck + build green.
+- **Evidence:** `evidence/integrations/GCAL-01.md`.
+- **Dependencies:** CAL-*, ADR-009. **Risks:** structural minimization means the typed
+  input has NO identifier/salary field and the builder formats the title itself (no
+  free-form text the caller controls); attachments deferred (need the real-client
+  guard); real Google client bound at the DI token in production.
+
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 
 | Epic | Source | Gate |
