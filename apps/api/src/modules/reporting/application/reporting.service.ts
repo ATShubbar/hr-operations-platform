@@ -167,22 +167,21 @@ export class ReportingService {
       this.documents.find({}), // excludes soft-deleted documents
     ]);
 
-    const kinds: { key: string; label: string; dates: (Date | null)[] }[] = [
-      { key: 'iqama', label: 'Iqama', dates: employees.map((e) => e.iqamaExpiry) },
-      { key: 'passport', label: 'Passport', dates: employees.map((e) => e.passportExpiry) },
-      { key: 'workPermit', label: 'Work permit', dates: employees.map((e) => e.workPermitExpiry) },
-      {
-        key: 'exitReentry',
-        label: 'Exit/re-entry',
-        dates: employees.map((e) => e.exitReentryExpiry),
-      },
-      { key: 'document', label: 'Documents', dates: documents.map((d) => d.expiryDate) },
+    // Cell values are stable KEYS, not prose — the web renders them through i18n
+    // (REP-04) and it keeps this report consistent with gro-workload and
+    // recruitment-pipeline, whose cells are likewise raw enum values.
+    const kinds: { key: string; dates: (Date | null)[] }[] = [
+      { key: 'iqama', dates: employees.map((e) => e.iqamaExpiry) },
+      { key: 'passport', dates: employees.map((e) => e.passportExpiry) },
+      { key: 'workPermit', dates: employees.map((e) => e.workPermitExpiry) },
+      { key: 'exitReentry', dates: employees.map((e) => e.exitReentryExpiry) },
+      { key: 'document', dates: documents.map((d) => d.expiryDate) },
     ];
 
     const rows: ReportRow[] = [];
     const summary = { expired: 0, due30: 0, due60: 0, due90: 0, total: 0 };
     for (const kind of kinds) {
-      const row: ReportRow = { item: kind.label, expired: 0, due30: 0, due60: 0, due90: 0, total: 0 };
+      const row: ReportRow = { item: kind.key, expired: 0, due30: 0, due60: 0, due90: 0, total: 0 };
       for (const date of kind.dates) {
         const bucket = expiryBucket(date, now);
         if (!bucket) continue;

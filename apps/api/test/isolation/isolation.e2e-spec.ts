@@ -116,11 +116,16 @@ describe('Cross-client isolation harness (e2e)', () => {
   }
 
   it('staff-scoped endpoints reject unauthenticated requests (401)', async () => {
+    // Collect every offender rather than stopping at the first: when this fails
+    // the useful output is WHICH routes let an anonymous caller through.
+    const notRejected: string[] = [];
     for (const [route, scope] of Object.entries(ENDPOINT_REGISTRY)) {
       if (scope !== 'staff') continue;
       const [method, path] = route.split(' ') as [string, string];
-      await request(app.getHttpServer())[method.toLowerCase() as 'get'](path).expect(401);
+      const res = await request(app.getHttpServer())[method.toLowerCase() as 'get'](path);
+      if (res.status !== 401) notRejected.push(`${route} -> ${res.status}`);
     }
+    expect(notRejected).toEqual([]);
   });
 
   it('client-read endpoints reject unauthenticated requests (401)', async () => {

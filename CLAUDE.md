@@ -263,7 +263,22 @@ the export), recording the **ACT not the payload** (`{reportId, format, rows, co
 generatedAt}` — copying rows would duplicate gated salary data into a differently-governed
 table). New **`AUDITED_READS`** allow-list in the audit harness (the write registry is
 mutation-scoped; auditing reads by default would be a log, not an audit trail). API suite
-**336/336**. **Remaining: REP-04; the
+**336/336**. **REP-04: the reports web console** — the catalog as report buttons + ONE generic
+table rendering all six reports (the payoff of the shared shape) + summary tiles + a CSV
+download shown only to `report.export` holders. The catalog arrives already filtered, so the
+page never reasons about permissions. Column headers/cell values are stable keys translated
+via `reports.column.*`/`reports.value.*` with **fallback to the API's English label** (a new
+report degrades, never crashes); `compliance-expiry` cells changed to keys for that.
+Verified live: hr_officer 6 reports · read_only 5 + NO export button · finance 3; moving a
+seeded iqama expiry to +10d moved the Iqama row into `Due ≤30d`; CSV downloaded with its BOM
+intact (`EF BB BF`) and wrote its audit row; both locales (ar RTL). **Reporting epic (5.4)
+COMPLETE — REP-01..04. SEVENTEEN product screens. Priorities 2–5 DONE.** Also diagnosed a
+PRE-EXISTING suite flake (~1 run in 3): supertest opens/closes an ephemeral-port listener per
+call, so under 63-worker load a request can be answered by ANOTHER app instance (symptoms:
+unauth `GET /documents`→200, `expected 401 got 404`, `Parse Error: Expected HTTP/`). App
+authz verified deterministic (200 sequential unauth probes → all 401; ALS context is
+correct); ~20 concurrent supertest calls reliably ECONNRESET. Isolation harness now lists
+ALL offending routes; the harness fix itself is filed as a follow-up. **Remaining: the
 real Google client + attachments (infra, deferred per ADR-009); AWS/OCI decision (ADR-006)
 open.** WS-20/21 still blocked: AWS account fully restricted since signup (re-verified
 2026-07-24: ECS throttle + RDS InvalidAction persist)

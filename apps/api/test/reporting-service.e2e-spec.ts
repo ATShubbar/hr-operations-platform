@@ -259,11 +259,11 @@ describe('Reporting — ReportingService (REP-01)', () => {
     const delta = (item: string, bucket: string) =>
       num(row(after, 'item', item), bucket) - num(row(before, 'item', item), bucket);
 
-    expect(delta('Iqama', 'expired')).toBe(1); // 2026-07-01, past
-    expect(delta('Passport', 'due30')).toBe(1); // +14d
-    expect(delta('Work permit', 'due60')).toBe(1); // +50d
-    expect(delta('Exit/re-entry', 'due90')).toBe(1); // +85d
-    expect(delta('Documents', 'due30')).toBe(1); // +9d
+    expect(delta('iqama', 'expired')).toBe(1); // 2026-07-01, past
+    expect(delta('passport', 'due30')).toBe(1); // +14d
+    expect(delta('workPermit', 'due60')).toBe(1); // +50d
+    expect(delta('exitReentry', 'due90')).toBe(1); // +85d
+    expect(delta('document', 'due30')).toBe(1); // +9d
     expect(total(after, 'total') - total(before, 'total')).toBe(5);
   });
 

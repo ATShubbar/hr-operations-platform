@@ -1578,7 +1578,7 @@ data is.
 | REP-01 | `modules/reporting` + the typed report catalog (permissions per report) + `ReportingService` — six read models composed from the owning modules' services | 4.1–4.4, 5.2 | done ([evidence](evidence/reporting/REP-01.md)) |
 | REP-02 | HTTP API — `GET /reports` (catalog filtered to what the caller can run) + `GET /reports/:id` (run), `report.read` granted per the matrix | REP-01 | done ([evidence](evidence/reporting/REP-02.md)) |
 | REP-03 | Export — `GET /reports/:id/export?format=csv` gated by `report.export` and **audited** (the first audited READ: bulk export of HR data is a privacy event) | REP-02 | done ([evidence](evidence/reporting/REP-03.md)) |
-| REP-04 | Reports web UI — catalog, run, view, export | REP-03 | planned |
+| REP-04 | Reports web UI — catalog, run, view, export | REP-03 | done ([evidence](evidence/reporting/REP-04.md)) |
 
 ### REP-01 — Reporting module + report catalog + read models
 - **Objective:** the foundation — a typed catalog of report definitions, each
@@ -1639,6 +1639,29 @@ data is.
   into a differently-governed table); `AUDITED_READS` is an allow-list, not a
   coverage requirement — auditing reads by default would be a log, not an audit
   trail.
+
+### REP-04 — Reports web UI (catalog + generic table + export)
+- **Objective:** the staff console over REP-02/03 — the permission-filtered catalog,
+  ONE table component that renders every report, and a CSV download for
+  `report.export` holders. Closes the epic.
+- **Files:** `(app)/reports/page.tsx` (NEW); `app-shell.tsx` (nav gated on
+  `report.read`); `messages/{en,ar}.json` (`nav.reports` + `reports.*`);
+  `reporting.service.ts` (compliance `item` cells → stable keys, for translation);
+  `reporting-service.e2e-spec.ts`; `isolation.e2e-spec.ts` (offender-listing
+  diagnostic).
+- **DoD:** catalog matches the caller's permissions live (hr_officer 6 · read_only 5 ·
+  finance 3); export button hidden without `report.export`; one component renders all
+  reports; CSV downloads with its BOM intact and writes an audit row; dual-calendar
+  timestamp; both locales (ar RTL); no console errors; web typecheck + lint green.
+- **Evidence:** `evidence/reporting/REP-04.md`.
+- **Dependencies:** REP-03. **Risks:** column/value labels fall back to the API's
+  English when an i18n key is missing (a new report degrades, never crashes); the
+  export is fetched as a blob, not through `apiFetch` (which parses JSON). Found and
+  diagnosed a PRE-EXISTING suite flake — supertest opens/closes an ephemeral-port
+  listener per call, so under parallel load a request can be answered by another
+  app instance (app authz verified deterministic); filed as a follow-up.
+
+**Reporting epic (5.4) COMPLETE — REP-01..04 (catalog + read models, filtered API, audited CSV export, web console). Seventeen product screens. Priorities 2–5 done.**
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

@@ -26,6 +26,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const canGro = useCan('gro.read');
   const canCalendar = useCan('calendar.read');
   const canIntegrations = useCan('integration.google-calendar');
+  const canReports = useCan('report.read');
   const canAudit = useCan('audit.read');
   const canSettings = useCan('config.read-self'); // every authenticated principal
   const canPortal = useCan('portal.read'); // client-only self-service surface (PORTAL-04)
@@ -107,6 +108,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           {canIntegrations && (
             <Link href="/integrations" className={NAV_LINK}>
               {t('nav.integrations')}
+            </Link>
+          )}
+          {canReports && (
+            <Link href="/reports" className={NAV_LINK}>
+              {t('nav.reports')}
             </Link>
           )}
           {canAudit && (
