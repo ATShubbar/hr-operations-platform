@@ -2398,7 +2398,7 @@ Nitaqat reporting; request comments + attachments; saved views; a "viewing as" r
 | SS-04 | My documents: list (`available` only) + presigned download | SS-03 | **done** ([evidence](evidence/self-service/SS-04.md)) |
 | SS-05 | My requests: raise + track; client reps see them | SS-03 | **done** ([evidence](evidence/self-service/SS-05.md)) |
 | SS-06a | Accounts API: staff invitation (`employee-user.*`), set password from the link, password reset, deactivate + revoke on termination (event → self-service → Auth) — **plus session revocation for every account type** | SS-05 | **done** ([evidence](evidence/self-service/SS-06a.md)) |
-| SS-06b | Accounts web: the set-password page the email links to (reads `#token`), "Forgot password" on login, staff "Invite to self-service" on the employee record | SS-06a; **real email transport for production** | planned |
+| SS-06b | Accounts web: the set-password page the email links to (reads `#token`), "Forgot password" on login, staff "Invite to self-service" on the employee record | SS-06a; **real email transport for production** | **done** ([evidence](evidence/self-service/SS-06b.md)) |
 | SS-07 | "Me" web screens — phone-first (375px), ar/en, RTL | SS-04, SS-05 | planned |
 
 ### SS-01 — Identity: employees can exist as users
@@ -2523,6 +2523,26 @@ Nitaqat reporting; request comments + attachments; saved views; a "viewing as" r
   not fixed: the dev API needed a restart to see the new module; e2e jobs are consumed by the
   dev server's worker (shared Redis queue). **Production email still unconfigured.**
   API **475/475** ×3.
+
+### SS-06b — Employee accounts on the web
+- **Objective:** make SS-06a usable in a browser — the emailed link opens a real page, login
+  offers "forgot password", HR manages access from the employee record.
+- **Files:** NEW `components/auth-frame.tsx`, `app/[locale]/account/{layout,set-password/page,forgot-password/page}.tsx`,
+  `employees/[id]/self-service-access-card.tsx`; `login/page.tsx`, `employees/[id]/page.tsx`,
+  `lib/status-tone.ts`, `messages/{en,ar}.json`.
+- **DoD:** full loop in the browser; token gone from URL + history; used link / forgot-password
+  honest; card actions + permission hiding; login measurements unchanged; 3 pages × 2 locales ×
+  2 widths; typecheck/lint/build; no API change.
+- **Evidence:** `evidence/self-service/SS-06b.md`.
+- **Dependencies:** SS-06a. **Risks/decisions:** **login proven unchanged by measurement** — all
+  relative distances identical to a pre-refactor baseline; the only delta is a uniform −8px from
+  the reworded note's second line (a first re-measure caught the forgot link adding 2px →
+  `leading-none`). **Bug caught: the language switcher killed the link** (the token is stripped
+  from the URL, so the switcher pointed at a token-less page) → token also held in
+  sessionStorage for the tab, cleared on use/refusal. Server refusals MAPPED to translations (no
+  screen shows raw API messages). A test token was minted via the hash path for the browser loop
+  (the capture logs subjects only). Found for SS-07: employees land on the staff `/today` with
+  missing `roles.employee` labels.
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

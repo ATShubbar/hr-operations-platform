@@ -49,8 +49,9 @@
     "verify": "Verify",
     "verifying": "Verifying…",
     "invalidCode": "Invalid code. Please try again.",
-    "accountsNote": "Accounts are created by an administrator.",
-    "slogan": "Your Partner in HR Operations & Talent Solutions"
+    "accountsNote": "Staff accounts are created by an administrator; employees are invited by HR.",
+    "slogan": "Your Partner in HR Operations & Talent Solutions",
+    "forgotPassword": "Forgot your password?"
   },
   "nav": {
     "console": "Console",
@@ -1020,5 +1021,68 @@
     "read_only": "Read Only",
     "client_admin": "Client Administrator",
     "client_user": "Client User"
+  },
+  "account": {
+    "setTitle": "Choose a password",
+    "setSubtitle": "Use at least {min} characters. You'll sign in with this and your email.",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "save": "Set password",
+    "saving": "Saving…",
+    "tooShort": "Use at least {min} characters.",
+    "mismatch": "The two passwords don't match.",
+    "doneTitle": "Password set",
+    "doneSubtitle": "You can now sign in with your email and new password.",
+    "signIn": "Sign in",
+    "invalidTitle": "This link can't be used",
+    "invalidSubtitle": "It has expired or was already used. Ask for a new one below, or contact HR.",
+    "requestNewLink": "Request a new link",
+    "forgotTitle": "Reset your password",
+    "forgotSubtitle": "Enter the email your employee account uses and we'll send you a link.",
+    "forgotSent": "If an employee account uses this address, we've sent a link to it. It works for one hour.",
+    "email": "Email",
+    "sendLink": "Send link",
+    "sending": "Sending…",
+    "backToSignIn": "Back to sign in",
+    "staffNote": "This is for employee accounts. Staff: ask your administrator to reset your password."
+  },
+  "selfServiceAccess": {
+    "title": "Self-service access",
+    "loading": "Loading access…",
+    "loadError": "Couldn't load the account. Reload to try again.",
+    "noAccount": "No self-service account. Invite this employee to let them see their own file.",
+    "noAccountTerminated": "No self-service account. Terminated employees can't be invited.",
+    "invite": "Invite",
+    "resend": "Resend invitation",
+    "deactivate": "Deactivate",
+    "reactivate": "Reactivate",
+    "inviteTitle": "Invite to self-service",
+    "resendTitle": "Resend the invitation",
+    "inviteDescription": "We'll email a link to choose a password. It works for 7 days; sending again cancels the earlier link.",
+    "email": "Email",
+    "sendInvite": "Send invitation",
+    "sending": "Sending…",
+    "sent": "Invitation sent to {email}.",
+    "sendFailed": "The invitation was created but the email didn't send. Try resending.",
+    "confirmDeactivate": "Deactivate this account? The employee is signed out everywhere immediately.",
+    "status": "Status",
+    "password": "Password",
+    "passwordSet": "Set",
+    "passwordNotSet": "Not set yet",
+    "statusValue": {
+      "invited": "Invited",
+      "active": "Active",
+      "disabled": "Deactivated"
+    },
+    "genericError": "Something went wrong. Try again.",
+    "refusal": {
+      "notEnabled": "Self-service isn't enabled for this employee's company.",
+      "terminated": "A terminated employee can't be invited.",
+      "alreadyActive": "This employee already has an active account.",
+      "disabled": "This account is deactivated — reactivate it instead.",
+      "emailInUse": "That email is already used by another account.",
+      "terminatedReactivate": "A terminated employee's account can't be reactivated.",
+      "invalidEmail": "Enter a valid email address."
+    }
   }
 }

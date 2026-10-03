@@ -41,6 +41,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useRecordLabel } from '@/components/header-location';
+import { SelfServiceAccessCard } from './self-service-access-card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -74,6 +75,8 @@ export default function EmployeeDetailPage() {
   const canEditSalary = useCan('salary.update');
   const canEditGovdata = useCan('govdata.update');
   const canTerminate = useCan('employee.delete');
+  // SS-06b: the employee's self-service account (Company Admin, HR Officer).
+  const canSeeAccess = useCan('employee-user.read');
 
   const [emp, setEmp] = useState<EmployeeResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -334,6 +337,14 @@ export default function EmployeeDetailPage() {
           </CardContent>
         )}
       </GroupCard>
+
+      {/* ---- Self-service access (SS-06b) ---- */}
+      {canSeeAccess && (
+        <SelfServiceAccessCard
+          employeeId={emp.id}
+          terminated={emp.employmentStatus === 'terminated'}
+        />
+      )}
 
       {dialog === 'core' && (
         <CoreDialog emp={emp} onClose={() => setDialog(null)} onSaved={onSaved} />

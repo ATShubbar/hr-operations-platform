@@ -895,6 +895,17 @@ Company Admin + HR Officer); `POST /me/password-reset` (employee accounts only, 
 `EMAIL_TRANSPORT` instance (Notifications now provides it; the worker reuses it).
 `EmployeeTerminatedEvent` (Employees) → self-service closes the account (Auth never subscribes).
 **SS-06 split: 06b = the web pages.** Production email still unconfigured. API suite **475/475**.
+**SS-06b done — the account pages.** `AuthFrame` (the signed-out two-column frame, extracted
+from login) now backs login + `/[locale]/account/set-password` + `/forgot-password`; login proven
+UNCHANGED by measurement against a pre-refactor baseline (all relative distances identical; one
+uniform −8px from the reworded note's second line). Set-password reads `#token`, strips it with
+`replaceState`, and keeps it in **sessionStorage for the tab** — the language switcher otherwise
+navigated to a token-less page (caught in verification); `no-referrer` on `/account/*`. Forgot
+password answers identically for every input (character-identical, measured). Employee record
+gets a **Self-service access** card (`employee-user.*`): status pill, invite/resend,
+deactivate-with-confirm/reactivate; server refusals MAPPED to translations (no screen shows raw
+API messages). Recruiters see no card and make no account request. For SS-07: an employee lands
+on staff `/today` with missing `roles.employee` labels.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

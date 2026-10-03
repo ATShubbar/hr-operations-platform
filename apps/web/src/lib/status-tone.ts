@@ -97,6 +97,9 @@ const INVITATION: Record<string, StatusTone> = {
 const USER: Record<string, StatusTone> = {
   active: 'ok',
   disabled: 'neutral',
+  // SS-06b: an employee self-service account awaiting its holder's first
+  // password — in progress, not a fault.
+  invited: 'info',
 };
 
 const DOMAINS = {
