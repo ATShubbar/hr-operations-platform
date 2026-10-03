@@ -833,6 +833,19 @@ company is NOT stored — self-service resolves it per request (Auth can't read
 `employee-a@seed.hr.local` → Ahmed Hassan. **ADR-011 rev. 1 flags its own permission list as
 UNSAFE for SS-03**: `employee.read`/`document.read`/… are what the STAFF list endpoints check,
 and those ignore principal type. API suite **385/385**.
+**SS-02 done — the database fences an employee to ONE record.** Separate LOGIN role
+**`app_employee`** (`EMPLOYEE_DATABASE_URL`, in turbo `globalEnv` + CI) — NOT a role switch on
+the client connection, because Postgres applies a policy `TO app_employee` to that role's
+MEMBERS. SELECT-only on `emp_employees` + `doc_documents` (`employee_self` policies, SPIKE-001
+`NULLIF` form); every other table "permission denied", every write refused.
+`EmployeeScopedPrismaService.forEmployee(id)` / `.transaction(id, fn)` (id from the SESSION,
+never input). Proven with an unfiltered query as one employee returning only their row + docs
+(colleague, outsider and company-level docs invisible), unscoped = 0, pooled reuse = 0; and
+proven RED by loosening the policy. **Harness principal fence:** every route outside
+public/session/self/employee must 403 an employee — with `employee.read` temporarily granted it
+reports `GET /employees -> 200`, so ADR-011's unsafe grant is now a CI failure. New harness
+class `employee` (same-company colleague probe) has 0 members until SS-03 and says so; logout
+reclassified `self`. API suite **401/401**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

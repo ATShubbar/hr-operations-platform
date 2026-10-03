@@ -2393,7 +2393,7 @@ Nitaqat reporting; request comments + attachments; saved views; a "viewing as" r
 | ID | Task | Depends on | Status |
 |---|---|---|---|
 | SS-01 | Identity: `employee` principal type + `employee_id` binding (migration); one email = one account across principals; sign-in derives the client from the record | ARCH-SS | **done** ([evidence](evidence/self-service/SS-01.md)) |
-| SS-02 | Isolation: `app.employee_id` GUC (SPIKE-001 `NULLIF` form) + RLS policies on employee-scoped tables + harness scope **`employee`** (NOT `self` — that name is taken by CONF-03's per-user endpoints) probing a same-client other employee and an other-client employee | SS-01 | planned |
+| SS-02 | Isolation: `app.employee_id` GUC (SPIKE-001 `NULLIF` form) + RLS policies on employee-scoped tables + harness scope **`employee`** (NOT `self` — that name is taken by CONF-03's per-user endpoints) probing a same-client other employee and an other-client employee | SS-01 | **done** ([evidence](evidence/self-service/SS-02.md)) |
 | SS-03 | Permissions + "Me" API: `employee` role, whitelisted self view in Employees, `modules/self-service`, `flag.employee-self-service` (per client, default off). **Must NOT grant ADR-011's literal list** (`employee.read`/`salary.read`/`govdata.read`/`document.read` open the staff list endpoints, which ignore principal type — ADR-011 rev. 1); decide a dedicated self-service permission and/or a principal fence. Resolves the company from the record per request | SS-02 | planned |
 | SS-04 | My documents: list (`available` only) + presigned download | SS-03 | planned |
 | SS-05 | My requests: raise + track; client reps see them | SS-03 | planned |
@@ -2421,6 +2421,26 @@ Nitaqat reporting; request comments + attachments; saved views; a "viewing as" r
   logout is permission-gated, and the card's own DoD required sign-out. **ADR-011 rev. 1:**
   company resolved by self-service (Auth can't read `emp_employees`), and the ADR's permission
   list flagged UNSAFE for SS-03. API suite **385/385** (352 + 33).
+
+### SS-02 — Isolation: an employee sees exactly one record
+- **Objective:** the database backstop that fences an employee session to its own record,
+  and a harness that catches employee leaks — before any endpoint serves employees.
+- **Files:** migration `20261003120000_employee_isolation`; NEW
+  `src/prisma/employee-scoped-prisma.service.ts` (+ `PrismaModule`); env (`.env.example`,
+  `turbo.json`, `ci.yml`); NEW `test/rls-employee.e2e-spec.ts`; `test/isolation/*`;
+  `src/modules/README.md`; `docs/PROVISIONING-OCI.md`.
+- **DoD:** unfiltered queries return only the employee's row/documents; colleague + outsider
+  invisible; unscoped = 0; writes + other tables refused; pooled reuse safe; principal fence
+  green and proven to catch `employee.read`; full suite; CI env.
+- **Evidence:** `evidence/self-service/SS-02.md`.
+- **Dependencies:** SS-01. **Risks/decisions:** **separate LOGIN role `app_employee`** (not a
+  role switch on the client connection — Postgres applies `TO app_employee` policies to its
+  members, which would leak them onto client-rep queries). Grants are SELECT on
+  `emp_employees` + `doc_documents` only; requests get theirs in SS-05. RLS proven red
+  (`USING (true)` → 5 failures) and restored. **The principal fence turned ADR-011's unsafe
+  grant into a CI failure**: with `employee.read` added, the harness reports
+  `GET /employees -> 200`. The `employee` class has 0 members until SS-03 and says so. Full
+  suite 401/401 (2 of 5 runs hit the known supertest flake, different test each time).
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

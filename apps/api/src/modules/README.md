@@ -47,4 +47,32 @@ Every table holding client-owned data MUST, in the migration that creates it:
 4. Register the table's endpoints in the isolation test harness (WS-18) — unregistered endpoints fail CI.
 5. Audit every mutation (AUDIT-03): write the row and its `AuditService.record()` in ONE transaction (`ScopedPrismaService.transaction(clientId, …)` for the client-rep path), and declare each write route in `test/audit/audited-writes.ts` (as `AUDITED_WRITES` with its `resource.action`, or `AUDIT_EXEMPT_WRITES` with a reason) — undeclared mutating routes fail CI.
 
-Data access: staff-path code uses `PrismaService`; client-representative-path code uses `ScopedPrismaService.forClient(clientId)` for reads and `ScopedPrismaService.transaction(clientId, …)` for multi-statement writes (mutation + audit), never the raw client. The reference implementation and its tests: `src/prisma/` and `test/rls.e2e-spec.ts`; write+audit exemplar: `modules/scope-check/` and `test/audit/audit-mutation.e2e-spec.ts`; migration exemplar: `prisma/migrations/*rls_roles_and_policies`.
+## Employee-readable table checklist (ADR-011, SS-02)
+
+Employee self-service sessions (role `app_employee`, connection `EMPLOYEE_DATABASE_URL`) are
+fenced to ONE employee record. A table an employee may read MUST, in its own migration:
+
+1. Carry the employee reference the policy keys on — `employee_id uuid` (or, for
+   `emp_employees`, its own `id`). Never derive it through a join.
+2. Grant **SELECT only** to `app_employee`. Employees change nothing directly; a table that
+   genuinely needs employee writes (SS-05 requests) designs them in its own card, with a
+   `WITH CHECK`.
+3. Ship an `employee_self` policy in the SPIKE-001 form (`NULLIF` is load-bearing):
+   ```sql
+   GRANT SELECT ON <table> TO app_employee;
+
+   CREATE POLICY employee_self ON <table>
+     FOR SELECT TO app_employee
+     USING (employee_id = NULLIF(current_setting('app.employee_id', true), '')::uuid);
+   ```
+4. Prove it in a test against the raw `app_employee` connection: own rows only with NO
+   filter, a same-company colleague invisible, zero rows when unscoped (`test/rls-employee.e2e-spec.ts`).
+5. Register employee endpoints as `employee` in the isolation registry — probed with a
+   same-company colleague. Every OTHER non-public route must keep refusing employees (the
+   harness's principal fence enforces it).
+
+Do NOT grant `app_employee` to `app_client` (or any role) to "switch role" inside a
+transaction: Postgres applies a policy `TO app_employee` to its members, so the employee
+policies would start applying to client-rep queries.
+
+Data access: staff-path code uses `PrismaService`; client-representative-path code uses `ScopedPrismaService.forClient(clientId)` for reads and `ScopedPrismaService.transaction(clientId, …)` for multi-statement writes (mutation + audit), never the raw client; employee-self-service code uses `EmployeeScopedPrismaService.forEmployee(employeeId)` / `.transaction(employeeId, …)` with the id taken from the session, never from input. The reference implementation and its tests: `src/prisma/` and `test/rls.e2e-spec.ts`; write+audit exemplar: `modules/scope-check/` and `test/audit/audit-mutation.e2e-spec.ts`; migration exemplar: `prisma/migrations/*rls_roles_and_policies`.

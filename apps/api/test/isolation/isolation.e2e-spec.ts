@@ -7,6 +7,7 @@ import { PrismaService } from '../../src/prisma/prisma.service';
 import {
   cleanupHelperUsers,
   loginAsClientRep,
+  loginAsEmployee,
   type TestPrincipal,
 } from '../helpers/login';
 import { ENDPOINT_REGISTRY } from './endpoint-registry';
@@ -46,6 +47,7 @@ describe('Cross-client isolation harness (e2e)', () => {
   let prisma: PrismaService;
   let repA: TestPrincipal;
   let repB: TestPrincipal;
+  let employee: TestPrincipal;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -56,6 +58,7 @@ describe('Cross-client isolation harness (e2e)', () => {
     prisma = app.get(PrismaService);
     repA = await loginAsClientRep(app, CLIENT_A);
     repB = await loginAsClientRep(app, CLIENT_B);
+    employee = await loginAsEmployee(app);
 
     await prisma.coreScopeCheck.deleteMany();
     await prisma.coreScopeCheck.createMany({
@@ -153,6 +156,84 @@ describe('Cross-client isolation harness (e2e)', () => {
       await request(app.getHttpServer())[method.toLowerCase() as 'get' | 'patch' | 'delete'](
         path,
       ).expect(401);
+    }
+  });
+
+  // ---- Employee self-service (SS-02, ADR-011) ------------------------------
+
+  // THE PRINCIPAL FENCE. An employee principal may reach public, session-flow
+  // and own-identity routes and its own `employee` routes — nothing else, and
+  // not because of any one permission: if a future catalog change hands the
+  // employee role a permission a staff or client-rep endpoint checks (ADR-011
+  // rev. 1 — `employee.read` would open GET /employees), this fails and names
+  // the route.
+  it('every route outside public / session / self / employee REFUSES an employee principal (403)', async () => {
+    const reachable: string[] = [];
+    for (const [route, scope] of Object.entries(ENDPOINT_REGISTRY)) {
+      if (['public', 'session', 'self', 'employee'].includes(scope)) continue;
+      const [method, path] = route.split(' ') as [string, string];
+      const res = await request(app.getHttpServer())[method.toLowerCase() as 'get' | 'post' | 'patch' | 'delete'](path)
+        .set('Cookie', employee.cookie)
+        .send({});
+      if (res.status !== 403) reachable.push(`${route} -> ${res.status}`);
+    }
+    expect(reachable).toEqual([]);
+  });
+
+  const employeeScoped = Object.entries(ENDPOINT_REGISTRY).filter(
+    ([, scope]) => scope === 'employee',
+  );
+
+  if (employeeScoped.length === 0) {
+    // Stated, not hidden: the class exists so SS-03's first self-service route
+    // is probed the moment it is registered. Until then this proves nothing.
+    it('employee-scoped routes: NONE registered yet (SS-03 adds the first)', () => {
+      expect(employeeScoped).toEqual([]);
+    });
+  }
+
+  describe.runIf(employeeScoped.length > 0)('employee-scoped routes', () => {
+    // Two employees AT THE SAME COMPANY — the case the client boundary cannot
+    // catch. Records created here so the probe doesn't depend on the seed.
+    let me: TestPrincipal & { employeeId: string };
+    let colleague: TestPrincipal & { employeeId: string };
+    const created: string[] = [];
+
+    beforeAll(async () => {
+      const mk = async (name: string) => {
+        const row = await prisma.employee.create({
+          data: { clientId: CLIENT_A, nameAr: 'اختبار', nameEn: `ISO-employee ${name}`, nationality: 'EG', contractType: 'unlimited' },
+        });
+        created.push(row.id);
+        return row.id;
+      };
+      me = await loginAsEmployee(app, await mk('me'));
+      colleague = await loginAsEmployee(app, await mk('colleague'));
+    });
+
+    afterAll(async () => {
+      await prisma.employee.deleteMany({ where: { id: { in: created } } });
+    });
+
+    for (const [route] of employeeScoped) {
+      const [method, path] = route.split(' ') as [string, string];
+
+      it(`${route}: caller sees their OWN record`, async () => {
+        const res = await request(app.getHttpServer())[method.toLowerCase() as 'get'](path)
+          .set('Cookie', me.cookie)
+          .expect(200);
+        expect(JSON.stringify(res.body)).toContain(me.employeeId);
+      });
+
+      it(`${route}: a same-company colleague sees NOTHING of it`, async () => {
+        const res = await request(app.getHttpServer())[method.toLowerCase() as 'get'](path)
+          .set('Cookie', colleague.cookie);
+        expect(JSON.stringify(res.body)).not.toContain(me.employeeId);
+      });
+
+      it(`${route}: unauthenticated -> 401`, async () => {
+        await request(app.getHttpServer())[method.toLowerCase() as 'get'](path).expect(401);
+      });
     }
   });
 

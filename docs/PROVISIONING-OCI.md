@@ -92,7 +92,7 @@ The assisted steps run against that profile — same shape as the AWS
 | OCI-05 | Automated backups + restore test, executed as the **ADR-010 exit drill**: restore into Postgres on *different* infrastructure and boot the app against it with only env vars changed. Record measured RPO/RTO → **closes WS-21** |
 | OCI-06 | AWS UAE teardown (stops the ~$22/mo ALB meter); the account may stay dormant at zero cost |
 
-Along the way: migrations run once, then `app_staff`/`app_client` passwords are
+Along the way: migrations run once, then `app_staff`/`app_client`/`app_employee` (SS-02) passwords are
 rotated off dev defaults (closes the WS-13 flag). They may be **stored** in OCI
 Vault, but they reach the app as **environment variables injected at deploy
 time** — no vault SDK in application code (ADR-010 clause 5).

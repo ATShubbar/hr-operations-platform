@@ -15,12 +15,21 @@
 //                   scope-check row shape (e.g. {users:[...]}); must reject
 //                   unauthenticated callers (401). Own-client scoping is proven
 //                   per-endpoint (e.g. CLIENT-03 e2e), not by this harness.
-//   self          — self-service endpoints operating on the caller's OWN
-//                   identity (any authenticated principal — staff or client
-//                   rep), e.g. per-user preferences. Must reject unauthenticated
+//   self          — endpoints operating on the caller's OWN identity (any
+//                   authenticated principal — staff, client rep or employee),
+//                   e.g. per-user preferences, sign-out. Must reject unauthenticated
 //                   callers (401). Own-actor scoping is enforced in-app via the
 //                   request context (actorId is never taken from input) and
 //                   proven per-endpoint (e.g. CONF-03 e2e), not by this harness.
+//
+//   employee      — employee self-service (ADR-011): MUST return only the
+//                   calling employee's OWN record. Probed with a COLLEAGUE AT
+//                   THE SAME COMPANY (the case the client boundary cannot
+//                   catch) and unauthenticated. No members until SS-03.
+//
+// Independently of class, every route that is not public / session / self must
+// REFUSE an employee principal (403) — the principal fence that keeps
+// employees off staff and client-rep endpoints whatever permissions they hold.
 //
 // The coverage spec diffs this registry against the app's live route map in
 // BOTH directions — an unregistered route (or a stale entry) fails CI.
@@ -31,14 +40,17 @@ export type ScopeClass =
   | 'client-scoped'
   | 'client-write'
   | 'client-read'
-  | 'self';
+  | 'self'
+  | 'employee';
 
 export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'GET /health': 'public',
   'GET /ready': 'public',
   'POST /auth/login': 'public',
   'GET /auth/me': 'session',
-  'POST /auth/logout': 'staff',
+  // Every principal signs out (staff, client rep, employee) — the caller's OWN
+  // session. Was 'staff' until SS-02 introduced a principal that is neither.
+  'POST /auth/logout': 'self',
   'POST /auth/mfa/enroll': 'session',
   'POST /auth/mfa/verify': 'session',
   'POST /auth/mfa/challenge': 'session',

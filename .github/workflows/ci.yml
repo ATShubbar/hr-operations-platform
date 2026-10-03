@@ -9,6 +9,7 @@ env:
   DATABASE_URL: postgresql://hr:hr_local_dev@localhost:5432/hr_platform
   STAFF_DATABASE_URL: postgresql://app_staff:app_staff_dev_pw@localhost:5432/hr_platform
   CLIENT_DATABASE_URL: postgresql://app_client:app_client_dev_pw@localhost:5432/hr_platform
+  EMPLOYEE_DATABASE_URL: postgresql://app_employee:app_employee_dev_pw@localhost:5432/hr_platform
   REDIS_URL: redis://localhost:6379
 
 jobs:
