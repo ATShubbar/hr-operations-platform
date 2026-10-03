@@ -23,6 +23,7 @@ import { RequirePermission } from '../../../auth/permissions.decorator';
 import { requestContext } from '../../../context/request-context';
 import { scopeOf } from '../../../auth/scope';
 import type { RequestModel as RequestRecord } from '../../../generated/prisma/models';
+import { UsersService } from '../../auth/public-api';
 import { ClientsService } from '../../clients/public-api';
 import { RequestsService } from '../application/requests.service';
 import type { UpdateRequestInput } from '../domain/request';
@@ -39,7 +40,18 @@ export class RequestsController {
   constructor(
     private readonly requests: RequestsService,
     private readonly clients: ClientsService,
+    private readonly users: UsersService,
   ) {}
+
+  // DS-08: every response names its requester (name + kind, never an email).
+  // One lookup per response — a single row or the whole list.
+  private async respond(rows: RequestRecord[]): Promise<RequestResponse[]> {
+    const who = await this.users.principals(rows.map((r) => r.createdByUserId));
+    return rows.map((r) => toResponse(r, who.get(r.createdByUserId) ?? null));
+  }
+  private async respondOne(row: RequestRecord): Promise<RequestResponse> {
+    return (await this.respond([row]))[0]!;
+  }
 
   @RequirePermission('request.create')
   @Post()
@@ -68,7 +80,7 @@ export class RequestsController {
         ...base,
         clientId: scope.clientId,
       });
-      return toResponse(row);
+      return this.respondOne(row);
     }
 
     // Staff: clientId is required and validated (unknown → 404).
@@ -76,7 +88,7 @@ export class RequestsController {
     const client = await this.clients.getById(req.clientId);
     if (!client) throw new NotFoundException('Client not found');
     const row = await this.requests.create({ ...base, clientId: req.clientId });
-    return toResponse(row);
+    return this.respondOne(row);
   }
 
   @RequirePermission('request.read')
@@ -92,10 +104,10 @@ export class RequestsController {
     if (scope.kind === 'client') {
       // No clientId here: RLS decides whose rows exist, not the caller.
       const rows = await this.requests.listForClient(scope.clientId, { status: f.status });
-      return { requests: rows.map(toResponse) };
+      return { requests: await this.respond(rows) };
     }
     const rows = await this.requests.list({ clientId: f.clientId, status: f.status });
-    return { requests: rows.map(toResponse) };
+    return { requests: await this.respond(rows) };
   }
 
   @RequirePermission('request.read')
@@ -108,7 +120,7 @@ export class RequestsController {
         ? await this.requests.findForClient(scope.clientId, id)
         : await this.requests.findById(id);
     if (!row) throw new NotFoundException('Request not found');
-    return toResponse(row);
+    return this.respondOne(row);
   }
 
   @RequirePermission('request.update')
@@ -125,7 +137,7 @@ export class RequestsController {
         ? await this.requests.updateForClient(scope.clientId, id, data)
         : await this.requests.update(id, data);
     if (!row) throw new NotFoundException('Request not found');
-    return toResponse(row);
+    return this.respondOne(row);
   }
 
   // Advance the workflow (REQ-03) — STAFF only (client reps lack request.process),
@@ -143,11 +155,11 @@ export class RequestsController {
       assigneeUserId: parsed.data.assigneeUserId,
     });
     if (!row) throw new NotFoundException('Request not found');
-    return toResponse(row);
+    return this.respondOne(row);
   }
 }
 
-function toResponse(r: RequestRecord): RequestResponse {
+function toResponse(r: RequestRecord, requester: RequestResponse['requester']): RequestResponse {
   return {
     id: r.id,
     clientId: r.clientId,
@@ -158,6 +170,7 @@ function toResponse(r: RequestRecord): RequestResponse {
     priority: r.priority,
     dueDate: r.dueDate ? r.dueDate.toISOString().slice(0, 10) : null,
     createdByUserId: r.createdByUserId,
+    requester,
     assigneeUserId: r.assigneeUserId,
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),

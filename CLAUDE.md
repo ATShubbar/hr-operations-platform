@@ -1011,6 +1011,18 @@ processes' entries, newest first, 100 + `truncated`, actor NAMES via `UsersServi
 **never before/after** (keys asserted exactly). Gated by new **`employee.history`** in STAFF_BASE —
 owner-approved CATALOG ADDITION (the staff-directory pattern), full log stays audit.read. History tab
 = the DS Timeline. Colleague-exclusion test proven red. API 489/489 ×3. Next: DS-08 (Requests).
+**DS-08 done — Requests, as the prototype has them.** List (340px) beside detail; Approve and
+assign = ONE `process` call (`open → in_progress` + assignee, from a popover of
+administrator/hr_officer/gro_officer — never the auditor), Decline = `→ cancelled`, then an
+assigned block + "Move to…" for the rest of the workflow. No new statuses; Ask for more detail /
+thread / service level shown "coming soon". API: responses carry `requester: {name, kind}` (no
+email; keys asserted exactly) via `UsersService.principals`, request writes carry `resource_id`,
+and `GET /requests/:id/history` (curated, staff-only, in `modules/history`) feeds a **decision
+trail** Timeline rendered for staff only. `?r=<id>` opens a request (read from `window.location`,
+not `useSearchParams` — that needs a Suspense boundary or `next build` fails). **The SS-01 source
+scan caught my display mapping** (`principalType === 'client_rep' ? 'client' : …`) — it forbids
+the shape everywhere, not just on data paths; use an explicit map. API 493/493 (4 runs: one with
+12 skipped = a spec's `beforeAll` flaking). Next: DS-09 (Hiring).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
@@ -1028,7 +1040,8 @@ owner-approved CATALOG ADDITION (the staff-directory pattern), full log stays au
   `npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script`,
   write the migration folder by hand, then `pnpm db:deploy` + `pnpm db:generate` (SS-01).
 - Never choose a data path with `principalType === 'client_rep' ? … : staff` — it fails OPEN
-  for every other principal. Use `scopeOf(ctx)` from `src/auth/scope.ts`; a test enforces it (SS-01).
+  for every other principal. Use `scopeOf(ctx)` from `src/auth/scope.ts`; a test enforces it (SS-01). The scan
+  matches the shape ANYWHERE in API src, display mappings included — map with a table (DS-08).
 - Turbo v2 strict env: env vars must be declared in turbo.json `globalEnv` or tasks won't see them (CI broke on this).
 - NestJS DI needs VALUE imports; `consistent-type-imports` is off for the API only.
 - Prisma 7: URL lives in prisma.config.ts, runtime needs the pg driver adapter, `CHECKPOINT_DISABLE=1` on all db scripts (telemetry hangs). `migrate dev` does NOT reliably regenerate the client here — run `db:generate` explicitly after a migration or the new model's delegate is missing (AUDIT-01).

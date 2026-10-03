@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuditModule } from '../audit/public-api';
+import { AuthModule } from '../auth/public-api';
 import { ClientsModule } from '../clients/public-api';
 import { RequestsController } from './api/requests.controller';
 import { RequestsService } from './application/requests.service';
@@ -9,7 +10,8 @@ import { RequestsService } from './application/requests.service';
 // ScopedPrismaService). ClientsModule validates staff-supplied clientIds;
 // AuditModule provides the transactional audit; Prisma/ScopedPrisma are @Global.
 @Module({
-  imports: [AuditModule, ClientsModule],
+  // AuthModule: UsersService names each request's requester (DS-08).
+  imports: [AuditModule, AuthModule, ClientsModule],
   controllers: [RequestsController],
   providers: [RequestsService],
   exports: [RequestsService],

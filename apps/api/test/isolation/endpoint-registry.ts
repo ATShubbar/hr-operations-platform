@@ -243,6 +243,8 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   // proven in client-portal-users.e2e-spec).
   // AUDIT-06: one person's curated history — staff only (employee.history).
   'GET /employees/:id/history': 'staff',
+  // DS-08: a request's decision trail — staff only (request.read), curated.
+  'GET /requests/:id/history': 'staff',
   'GET /clients/:clientId/users': 'staff',
   'GET /clients/:clientId/users/:id': 'staff',
   'POST /clients/:clientId/users': 'staff',

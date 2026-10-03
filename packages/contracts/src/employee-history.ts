@@ -7,11 +7,14 @@ import { z } from 'zod';
 // That is what makes it readable by everyone who can read the record
 // (`employee.history`), while the full log stays Administrator + Auditor.
 
+// DS-08 adds 'request': a request's own decision trail uses the same curated
+// shape (GET /requests/:id/history).
 export const historyResourceSchema = z.enum([
   'employee',
   'employee-user',
   'document',
   'gro-process',
+  'request',
 ]);
 
 export const employeeHistoryEntrySchema = z.object({

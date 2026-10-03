@@ -28,6 +28,15 @@ export const requestResponseSchema = z.object({
   priority: requestPrioritySchema,
   dueDate: z.string().nullable(), // Gregorian ISO date (YYYY-MM-DD)
   createdByUserId: z.uuid(),
+  // DS-08: WHO raised it, by name and kind — never their email. `name` is null
+  // when the account has no display name; the whole field is null if the
+  // account no longer exists.
+  requester: z
+    .object({
+      name: z.string().nullable(),
+      kind: z.enum(['staff', 'client', 'employee']),
+    })
+    .nullable(),
   assigneeUserId: z.uuid().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),

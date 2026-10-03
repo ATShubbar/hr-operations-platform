@@ -7,7 +7,11 @@ import type { RequestModel as RequestRecord } from '../../../generated/prisma/mo
 import type { Prisma } from '../../../generated/prisma/client';
 import { AuditService } from '../../audit/public-api';
 import { EventBus } from '../../events/public-api';
-import type { CreateRequestInput, ProcessRequestInput, UpdateRequestInput } from '../domain/request';
+import type {
+  CreateRequestInput,
+  ProcessRequestInput,
+  UpdateRequestInput,
+} from '../domain/request';
 import { RequestCreatedEvent } from '../domain/request-created.event';
 import { RequestStatusChangedEvent } from '../domain/request-status-changed.event';
 import { canTransition } from '../domain/status-workflow';
@@ -40,7 +44,12 @@ export class RequestsService {
   async createForEmployee(
     employeeId: string,
     clientId: string,
-    input: { type: Prisma.RequestUncheckedCreateInput['type']; title: string; description?: string | null; createdByUserId: string },
+    input: {
+      type: Prisma.RequestUncheckedCreateInput['type'];
+      title: string;
+      description?: string | null;
+      createdByUserId: string;
+    },
   ): Promise<RequestRecord> {
     const row = await this.employeeDb.transaction(employeeId, async (tx) => {
       const created = await tx.request.create({
@@ -57,7 +66,13 @@ export class RequestsService {
       });
       // clientId passed explicitly: an employee's request context carries no
       // company (it is read from the record, ADR-011 rev. 1).
-      await this.audit.record(tx, { resource: 'request', action: 'create', clientId, after: snapshot(created) });
+      await this.audit.record(tx, {
+        resource: 'request',
+        resourceId: created.id,
+        action: 'create',
+        clientId,
+        after: snapshot(created),
+      });
       return created;
     });
     // Same fact as every other create — Tasks spawns its work item from it.
@@ -79,6 +94,7 @@ export class RequestsService {
       const created = await tx.request.create({ data: toCreateData(input) });
       await this.audit.record(tx, {
         resource: 'request',
+        resourceId: created.id,
         action: 'create',
         clientId: created.clientId,
         after: snapshot(created),
@@ -122,6 +138,7 @@ export class RequestsService {
       const row = await tx.request.update({ where: { id }, data: toUpdateData(data) });
       await this.audit.record(tx, {
         resource: 'request',
+        resourceId: row.id,
         action: 'update',
         clientId: row.clientId,
         before: snapshot(before),
@@ -154,6 +171,7 @@ export class RequestsService {
       });
       await this.audit.record(tx, {
         resource: 'request',
+        resourceId: row.id,
         action: 'process',
         clientId: row.clientId,
         before: snapshot(before),
@@ -183,7 +201,12 @@ export class RequestsService {
     // clientId is the caller's scoped client (from context), never input.
     const row = await this.scoped.transaction(clientId, async (tx) => {
       const created = await tx.request.create({ data: toCreateData({ ...input, clientId }) });
-      await this.audit.record(tx, { resource: 'request', action: 'create', after: snapshot(created) });
+      await this.audit.record(tx, {
+        resource: 'request',
+        resourceId: created.id,
+        action: 'create',
+        after: snapshot(created),
+      });
       return created;
     });
     await this.publishCreated(row);
@@ -235,6 +258,7 @@ export class RequestsService {
       const row = await tx.request.update({ where: { id }, data: toUpdateData(data) });
       await this.audit.record(tx, {
         resource: 'request',
+        resourceId: row.id,
         action: 'update',
         before: snapshot(before),
         after: snapshot(row),

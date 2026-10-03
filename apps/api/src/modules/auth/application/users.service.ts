@@ -173,6 +173,22 @@ export class UsersService {
     return new Map(rows.map((r) => [r.id, r.displayName]));
   }
 
+  // Who a set of accounts are, for display (DS-08: a request's requester): the
+  // display name and the KIND of principal — never the email, status or role.
+  async principals(
+    ids: readonly string[],
+  ): Promise<Map<string, { name: string | null; kind: 'staff' | 'client' | 'employee' }>> {
+    if (ids.length === 0) return new Map();
+    const rows = await this.prisma.authUser.findMany({
+      where: { id: { in: [...new Set(ids)] } },
+      select: { id: true, displayName: true, principalType: true },
+    });
+    // An explicit map, not an inline `=== 'client_rep' ? … :` (the SS-01 source
+    // scan forbids that shape — it is how data paths failed open).
+    const KIND = { staff: 'staff', client_rep: 'client', employee: 'employee' } as const;
+    return new Map(rows.map((r) => [r.id, { name: r.displayName, kind: KIND[r.principalType] }]));
+  }
+
   findById(id: string): Promise<AuthUser | null> {
     return this.prisma.authUser.findUnique({ where: { id } });
   }
