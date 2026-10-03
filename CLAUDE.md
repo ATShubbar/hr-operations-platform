@@ -980,6 +980,17 @@ come from the employee record (iqama, permit, passport, contract end); **insuran
 21 of 39); Arabic name required (API); Umm al-Qura Hijri. New `ui/avatar.tsx` (DS sizes) owns
 `initialsOf`. Landmine: a `<col>` IGNORES `calc()` widths — use percentages. Next: DS-06 Person
 record.
+**DS-06 done — the Person record (header, tabs, Profile).** `/employees/[id]` is the prototype's
+record: back link, header card (avatar xl, EN name + status, AR name, position · company · dept,
+**Start a procedure** — opens a REAL GRO process, not the prototype's flash — and **Terminate** for
+`employee.delete`, owner-kept), seven underline tabs (new `ui/tabs.tsx` on Base UI Tabs), Profile =
+Identity / Employment / Compensation as declarative field lists: each field belongs to ONE API group,
+Save sends one PATCH per changed group with ONLY changed fields (fetch-spy verified). Every old field
+kept (prototype fields first, then ours); Qiwa contract "—" (not stored). Masked in place for roles
+lacking pay/IDs; the prototype's mask/omit/request switcher NOT shipped (owner). Self-service access
+is Profile's last block. Family/Leave/Mobilisation "coming soon"; Documents/Open work/History = DS-07.
+Landmine: importing a zod schema VALUE from `@hr/contracts` into a client page ships zod (+23 kB) —
+import types only in the web app.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
