@@ -282,6 +282,13 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
   system_admin: [
     ...STAFF_BASE,
     ...ADMIN_EXTRA,
+    // ROLE-02 (ADR-013): client portal users are managed by Administrators, the
+    // role System Admin and Company Admin become — over the STAFF path
+    // (`/clients/:clientId/users`); `/client-users` still refuses staff.
+    'client-user.read',
+    'client-user.create',
+    'client-user.update',
+    'client-user.delete',
     'staff-user.create',
     'staff-user.update',
     'staff-user.delete',
@@ -300,6 +307,13 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
   // (matrix — per-client settings are Company Admin's, distinct from the
   // System Admin's system-level config.write).
   company_admin: [
+    // ROLE-02 (ADR-013): client portal users are managed by Administrators, the
+    // role System Admin and Company Admin become — over the STAFF path
+    // (`/clients/:clientId/users`); `/client-users` still refuses staff.
+    'client-user.read',
+    'client-user.create',
+    'client-user.update',
+    'client-user.delete',
     'employee-user.read',
     'employee-user.invite',
     'employee-user.update',

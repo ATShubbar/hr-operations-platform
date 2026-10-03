@@ -37,7 +37,7 @@ export class ClientUsersController {
   @Get()
   async list(): Promise<ClientUserListResponse> {
     const users = await this.clientUsers.list(this.clientId());
-    return { users: users.map(toResponse) };
+    return { users: users.map(toClientUserResponse) };
   }
 
   @RequirePermission('client-user.read')
@@ -46,7 +46,7 @@ export class ClientUsersController {
     this.assertUuid(id);
     const user = await this.clientUsers.get(id, this.clientId());
     if (!user) throw new NotFoundException('Client user not found');
-    return toResponse(user);
+    return toClientUserResponse(user);
   }
 
   @RequirePermission('client-user.create')
@@ -56,7 +56,7 @@ export class ClientUsersController {
     const parsed = createClientUserRequestSchema.safeParse(body);
     if (!parsed.success) throw new BadRequestException('Invalid client user payload');
     const user = await this.clientUsers.invite(this.clientId(), parsed.data);
-    return toResponse(user);
+    return toClientUserResponse(user);
   }
 
   @RequirePermission('client-user.update')
@@ -67,7 +67,7 @@ export class ClientUsersController {
     if (!parsed.success) throw new BadRequestException('Invalid client user payload');
     const user = await this.clientUsers.update(this.clientId(), id, parsed.data);
     if (!user) throw new NotFoundException('Client user not found');
-    return toResponse(user);
+    return toClientUserResponse(user);
   }
 
   @RequirePermission('client-user.delete')
@@ -76,7 +76,7 @@ export class ClientUsersController {
     this.assertUuid(id);
     const user = await this.clientUsers.deactivate(this.clientId(), id);
     if (!user) throw new NotFoundException('Client user not found');
-    return toResponse(user);
+    return toClientUserResponse(user);
   }
 
   private clientId(): string {
@@ -90,7 +90,8 @@ export class ClientUsersController {
   }
 }
 
-function toResponse(user: AuthUser): ClientUserResponse {
+// Shared with the staff path (ROLE-02) — one response shape for both.
+export function toClientUserResponse(user: AuthUser): ClientUserResponse {
   return {
     id: user.id,
     email: user.email,

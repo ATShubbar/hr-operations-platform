@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { PortalUsersDialog } from './portal-users-dialog';
 
 type Status = 'active' | 'inactive';
 interface FormState {
@@ -48,6 +49,10 @@ export default function ClientsPage() {
   const canCreate = useCan('client.create');
   const canUpdate = useCan('client.update');
   const canDelete = useCan('client.delete');
+  // ROLE-02: Administrators manage each client's portal users from here (the
+  // staff path). Client reps hold the same permission but never reach /clients.
+  const canPortalUsers = useCan('client-user.read');
+  const [portalFor, setPortalFor] = useState<ClientResponse | null>(null);
 
   const [clients, setClients] = useState<ClientResponse[]>([]);
   const [loading, setLoading] = useState(false);
@@ -196,9 +201,14 @@ export default function ClientsPage() {
           },
         ]}
         actions={
-          canUpdate || canDelete
+          canUpdate || canDelete || canPortalUsers
             ? (c) => (
                 <div className="flex justify-end gap-2">
+                  {canPortalUsers && (
+                    <Button variant="outline" size="sm" onClick={() => setPortalFor(c)}>
+                      {t('portalUsers')}
+                    </Button>
+                  )}
                   {canUpdate && (
                     <Button variant="outline" size="sm" onClick={() => openEdit(c)}>
                       {t('edit')}
@@ -214,6 +224,8 @@ export default function ClientsPage() {
             : undefined
         }
       />
+
+      <PortalUsersDialog client={portalFor} onClose={() => setPortalFor(null)} />
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>

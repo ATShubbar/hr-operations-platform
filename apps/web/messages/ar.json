@@ -330,7 +330,12 @@
     "cancel": "إلغاء",
     "saveError": "تعذّر الحفظ — قد لا تملك الصلاحية.",
     "archiveError": "تعذّرت الأرشفة — قد لا تملك الصلاحية.",
-    "searchPlaceholder": "ابحث باسم العميل…"
+    "searchPlaceholder": "ابحث باسم العميل…",
+    "portalUsers": "مستخدمو البوابة",
+    "close": "إغلاق",
+    "portalUsersTitle": "مستخدمو البوابة — {name}",
+    "portalUsersHint": "الأشخاص في {name} الذين يمكنهم تسجيل الدخول إلى بوابة العملاء.",
+    "portalUsersDisableHint": "يؤدي التعطيل إلى تسجيل خروجهم من كل الأجهزة فورًا."
   },
   "audit": {
     "title": "سجل التدقيق",

@@ -243,4 +243,12 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'POST /client-users': 'client-write',
   'PATCH /client-users/:id': 'client-write',
   'DELETE /client-users/:id': 'client-write',
+  // ROLE-02: the STAFF path to the same users — company from the PATH, staff
+  // only (client reps refused by scopeOf even though they hold client-user.*;
+  // proven in client-portal-users.e2e-spec).
+  'GET /clients/:clientId/users': 'staff',
+  'GET /clients/:clientId/users/:id': 'staff',
+  'POST /clients/:clientId/users': 'staff',
+  'PATCH /clients/:clientId/users/:id': 'staff',
+  'DELETE /clients/:clientId/users/:id': 'staff',
 };

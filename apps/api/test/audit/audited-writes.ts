@@ -28,6 +28,10 @@ export const AUDITED_WRITES: Record<string, string> = {
   'POST /client-users': 'client-user.create',
   'PATCH /client-users/:id': 'client-user.update',
   'DELETE /client-users/:id': 'client-user.delete',
+  // ROLE-02: the staff path records the same resource/actions as the client path.
+  'POST /clients/:clientId/users': 'client-user.create',
+  'PATCH /clients/:clientId/users/:id': 'client-user.update',
+  'DELETE /clients/:clientId/users/:id': 'client-user.delete',
   'POST /employees': 'employee.create',
   'PATCH /employees/:id': 'employee.update',
   'PATCH /employees/:id/salary': 'salary.update',

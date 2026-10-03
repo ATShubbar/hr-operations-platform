@@ -949,6 +949,13 @@ not export reports. Added: **MFA for Auditor** too, and **NO default role** (tod
 only, which needs a STAFF path that doesn't exist (`client-users` derives the client from the
 caller), so **ROLE-02** builds it (additive) BEFORE **ROLE-03** migrates (enum, bundles, seed,
 63 files mention legacy role names). Until ROLE-03 the ten roles still run the system.
+**ROLE-02 done — Administrators manage any client's portal users.** New STAFF path
+`/clients/:clientId/users` (company from the PATH) over the same `ClientUsersService`, so the
+rules can't drift; `client-user.*` granted to system_admin + company_admin. **`scopeOf` refuses
+non-staff FIRST** — client reps still hold `client-user.*`, so the guard alone would let a Client
+Admin address another company by editing the URL (test proven red without it). No client record
+page exists, so the UI is a **Portal users** dialog from the Clients row. Live: invited at Beta,
+disabled → the user's session 200→401. 484/484 ×3. Next: **ROLE-03** (the migration).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

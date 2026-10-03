@@ -330,7 +330,12 @@
     "cancel": "Cancel",
     "saveError": "Could not save — you may not have permission.",
     "archiveError": "Could not archive — you may not have permission.",
-    "searchPlaceholder": "Search client name…"
+    "searchPlaceholder": "Search client name…",
+    "portalUsers": "Portal users",
+    "close": "Close",
+    "portalUsersTitle": "Portal users — {name}",
+    "portalUsersHint": "People at {name} who can sign in to the client portal.",
+    "portalUsersDisableHint": "Disabling signs them out everywhere straight away."
   },
   "audit": {
     "title": "Audit log",
