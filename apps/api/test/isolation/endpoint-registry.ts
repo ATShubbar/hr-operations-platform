@@ -178,6 +178,9 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   // the caller's own client (proven in the portal-* e2e specs); 401 on unauth.
   // Employees are redacted to core + govdata:status (PORTAL-02); documents are
   // AVAILABLE-only and downloads presign per-client storage keys (PORTAL-03).
+  // Employee self-service (SS-03, ADR-011): the caller's OWN employee record —
+  // the first route in the `employee` class, probed with a same-company colleague.
+  'GET /me': 'employee',
   'GET /portal/company': 'client-read',
   'GET /portal/employees': 'client-read',
   'GET /portal/employees/:id': 'client-read',

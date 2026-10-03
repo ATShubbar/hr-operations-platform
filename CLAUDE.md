@@ -846,6 +846,17 @@ public/session/self/employee must 403 an employee — with `employee.read` tempo
 reports `GET /employees -> 200`, so ADR-011's unsafe grant is now a CI failure. New harness
 class `employee` (same-company colleague probe) has 0 members until SS-03 and says so; logout
 reclassified `self`. API suite **401/401**.
+**SS-03 done — `GET /me`, an employee's own file.** The employee role holds **`session.end` +
+`self-service.read`** ONLY (ADR-011 rev. 2 — never `employee.read`/`document.read`/…, which the
+staff list endpoints check without looking at the principal; the SS-02 fence enforces it).
+New delivery module **`modules/self-service`** (imports Clients/Configuration/Employees, imported
+by nothing): session employeeId → `EmployeesService.getSelf` (UNFILTERED read via app_employee —
+the database picks the row) → per-client **`flag.employee-self-service`** (default off) read from
+the RECORD each request (a transfer shuts access on the same session — tested) → terminated → 403
+→ `toSelfProfileResponse` (whitelist in `employee-view.ts`; excludes Saudization class, Absher
+ref, WPS, GOSI basis, timestamps; **IBAN → last 4**), pinned field-for-field by a test proven red.
+`GET /me` is the harness's first `employee` route (same-company colleague probe now live; its
+fixtures use their own company with the flag on, so no flag races). API suite **412/412**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

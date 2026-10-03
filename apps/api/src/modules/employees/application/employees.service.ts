@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { EmployeeScopedPrismaService } from '../../../prisma/employee-scoped-prisma.service';
 import { PrismaService } from '../../../prisma/prisma.service';
 import type { EmployeeModel as EmployeeRecord } from '../../../generated/prisma/models';
 import type { Prisma } from '../../../generated/prisma/client';
@@ -13,7 +14,18 @@ export class EmployeesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly employeeDb: EmployeeScopedPrismaService,
   ) {}
+
+  // Employee self-service (SS-03, ADR-011): the caller's OWN record, read through
+  // the app_employee connection — so even this unfiltered query can only return
+  // the one row the database scope admits (SS-02). The id MUST come from the
+  // session, never from request input: RLS fences a session to the id it is
+  // given; choosing that id is the caller's job.
+  async getSelf(employeeId: string): Promise<EmployeeRecord | null> {
+    const rows = await this.employeeDb.forEmployee(employeeId).employee.findMany();
+    return rows[0] ?? null;
+  }
 
   create(data: Prisma.EmployeeUncheckedCreateInput): Promise<EmployeeRecord> {
     return this.prisma.$transaction(async (tx) => {

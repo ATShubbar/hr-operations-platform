@@ -2394,7 +2394,7 @@ Nitaqat reporting; request comments + attachments; saved views; a "viewing as" r
 |---|---|---|---|
 | SS-01 | Identity: `employee` principal type + `employee_id` binding (migration); one email = one account across principals; sign-in derives the client from the record | ARCH-SS | **done** ([evidence](evidence/self-service/SS-01.md)) |
 | SS-02 | Isolation: `app.employee_id` GUC (SPIKE-001 `NULLIF` form) + RLS policies on employee-scoped tables + harness scope **`employee`** (NOT `self` — that name is taken by CONF-03's per-user endpoints) probing a same-client other employee and an other-client employee | SS-01 | **done** ([evidence](evidence/self-service/SS-02.md)) |
-| SS-03 | Permissions + "Me" API: `employee` role, whitelisted self view in Employees, `modules/self-service`, `flag.employee-self-service` (per client, default off). **Must NOT grant ADR-011's literal list** (`employee.read`/`salary.read`/`govdata.read`/`document.read` open the staff list endpoints, which ignore principal type — ADR-011 rev. 1); decide a dedicated self-service permission and/or a principal fence. Resolves the company from the record per request | SS-02 | planned |
+| SS-03 | Permissions + "Me" API: `employee` role, whitelisted self view in Employees, `modules/self-service`, `flag.employee-self-service` (per client, default off). **Must NOT grant ADR-011's literal list** (`employee.read`/`salary.read`/`govdata.read`/`document.read` open the staff list endpoints, which ignore principal type — ADR-011 rev. 1); decide a dedicated self-service permission and/or a principal fence. Resolves the company from the record per request | SS-02 | **done** ([evidence](evidence/self-service/SS-03.md)) — `self-service.read` only (ADR-011 rev. 2) |
 | SS-04 | My documents: list (`available` only) + presigned download | SS-03 | planned |
 | SS-05 | My requests: raise + track; client reps see them | SS-03 | planned |
 | SS-06 | Accounts: staff invitation (`employee-user.*`), set password from the link, password reset, deactivate + revoke on termination (event → self-service → Auth) | SS-03; **real email transport for production** | planned |
@@ -2441,6 +2441,24 @@ Nitaqat reporting; request comments + attachments; saved views; a "viewing as" r
   grant into a CI failure**: with `employee.read` added, the harness reports
   `GET /employees -> 200`. The `employee` class has 0 members until SS-03 and says so. Full
   suite 401/401 (2 of 5 runs hit the known supertest flake, different test each time).
+
+### SS-03 — The employee role's permission, and the first "Me" endpoint
+- **Objective:** an opted-in employee reads their own file at `GET /me`; everything else stays
+  shut; settle ADR-011's permission question.
+- **Files:** `auth/domain/permissions.ts`, `configuration/domain/catalog.ts`, NEW
+  `@hr/contracts` `self-service.ts`, `employees/{application/employees.service,domain/employee-view,public-api}.ts`,
+  NEW `modules/self-service/`, `app.module.ts`, `test/isolation/*`, NEW
+  `test/self-service-me.e2e-spec.ts`, ADR-011 rev. 2.
+- **DoD:** own file with exactly the agreed fields (pinned); flag off / terminated 403; staff +
+  reps 403; harness probes `/me` with a same-company colleague; fence green; full suite.
+- **Evidence:** `evidence/self-service/SS-03.md`.
+- **Dependencies:** SS-02. **Risks/decisions:** **`self-service.read` is the employee role's only
+  data permission** — never the staff names (ADR-011 rev. 2; the SS-02 fence enforces it). Self
+  view = a whitelist beside the staff/portal views; owner-approved exclusions (Saudization
+  class, Absher ref, WPS, GOSI basis, timestamps) and **IBAN masked to last 4**. Company + flag
+  resolved from the RECORD per request — tested: moving the record to a non-opted-in company
+  shuts `/me` on the same session. Pinned-fields test proven red by leaking `clientId`. API
+  **412/412** ×3.
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

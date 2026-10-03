@@ -100,6 +100,14 @@ export const FLAG_DEFS: readonly SettingDef[] = [
     levels: ['system', 'client'],
     description: 'Gate client-portal self-service features (ACTION-PLAN 5.1), per client.',
   },
+  {
+    // ADR-011 / SS-03: the employer decides whether its workforce gets access.
+    key: 'flag.employee-self-service',
+    schema: z.boolean(),
+    default: false,
+    levels: ['system', 'client'],
+    description: 'Gate employee self-service ("Me") for a client company\'s employees (ADR-011).',
+  },
 ] as const;
 
 const CATALOG_DEFS: readonly SettingDef[] = [...SETTING_DEFS, ...FLAG_DEFS];

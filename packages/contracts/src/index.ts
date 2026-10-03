@@ -280,3 +280,7 @@ export {
   type TaskListResponse,
   type TaskQuery,
 } from './task.js';
+export {
+  selfProfileResponseSchema,
+  type SelfProfileResponse,
+} from './self-service.js';

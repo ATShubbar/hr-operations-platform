@@ -151,6 +151,13 @@ export const PERMISSIONS = [
   'report.export',
   // Client Portal (PORTAL-01): client-only self-service access. Gates /portal/*.
   'portal.read',
+  // Employee self-service (SS-03, ADR-011 rev. 2): employee-only. Gates /me*.
+  // A DEDICATED permission on purpose — the employee role must never hold the
+  // staff names (employee.read, document.read, …): the staff endpoints that
+  // check those do not look at the principal, so granting them would open
+  // every company's records to every employee. The isolation harness's
+  // principal fence fails the build if that ever happens.
+  'self-service.read',
   // Session lifecycle — every authenticated principal may end their session.
   'session.end',
 ] as const;
@@ -415,12 +422,10 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
   ],
   client_admin: CLIENT_ADMIN,
   client_user: ALL_CLIENT,
-  // ONLY `session.end` (SS-01). The principal exists before anything it may
-  // touch: with deny-by-default, an employee session can sign in, read
-  // /auth/me (public, self-checking) and sign out — every other route is 403.
-  // `session.end` is the one grant, because logout is permission-gated and an
-  // account that cannot end its own session is worse than one that can do
-  // nothing. SS-03 grants the self-scoped set once the isolation layer (SS-02)
-  // exists to scope it; granting first would hand out permissions with no fence.
-  employee: ['session.end'],
+  // `session.end` (SS-01 — logout is permission-gated, and an account that
+  // cannot end its own session is worse than one that can do nothing) and
+  // `self-service.read` (SS-03 — the /me surface, behind the SS-02 database
+  // fence). NOTHING that a staff or client-rep endpoint checks: ADR-011 rev. 2.
+  // Every other route stays 403 by deny-by-default.
+  employee: ['session.end', 'self-service.read'],
 };

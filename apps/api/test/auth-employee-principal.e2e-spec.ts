@@ -118,7 +118,7 @@ describe('Employee principal (SS-01, e2e)', () => {
   // A fresh record id per account: the seed already binds an account to Ahmed
   // Hassan, and one record may have only one account (the unique index — which
   // is exactly what caught the first draft of this spec).
-  it('signs in, and /auth/me reports the employee principal with its record and NO data permissions', async () => {
+  it('signs in, and /auth/me reports the employee principal with its record and only its own surface', async () => {
     const emp = await loginAsEmployee(app);
     const res = await request(app.getHttpServer())
       .get('/auth/me')
@@ -131,7 +131,9 @@ describe('Employee principal (SS-01, e2e)', () => {
       clientId: null,
       employeeId: emp.employeeId,
     });
-    expect(res.body.permissions).toEqual(['session.end']);
+    // SS-03 added `self-service.read` — the /me surface — and NOTHING a staff or
+    // client-rep endpoint checks (the isolation harness's principal fence).
+    expect(res.body.permissions).toEqual(['session.end', 'self-service.read']);
   });
 
   it.each([

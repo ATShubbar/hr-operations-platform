@@ -1,4 +1,4 @@
-import type { EmployeeResponse } from '@hr/contracts';
+import type { EmployeeResponse, SelfProfileResponse } from '@hr/contracts';
 import type { EmployeeModel as EmployeeRecord } from '../../../generated/prisma/models';
 
 // The employee read view + its field-level redaction (EMP-02). Extracted from
@@ -73,5 +73,57 @@ export function toEmployeeResponse(e: EmployeeRecord, vis: EmployeeVisibility): 
             exitReentryExpiry: iso(e.exitReentryExpiry),
             gosiRegistrationStatus: e.gosiRegistrationStatus,
           },
+  };
+}
+
+// The SELF view (SS-03, ADR-011) — what an employee sees of their OWN record.
+// Kept here beside the staff and portal views so every field-sensitivity rule for
+// this table lives in one file. It is a WHITELIST built field by field, not the
+// staff response with fields nulled: a field added to the staff shape does not
+// reach employees unless someone adds it here on purpose.
+//
+// Deliberately absent — the employer's / consultancy's working fields, not facts
+// about the person: countsTowardSaudization, absherServiceRef, wpsStatus,
+// gosiContributionBasis, createdAt/updatedAt. The IBAN is reduced to its last 4.
+export function toSelfProfileResponse(
+  e: EmployeeRecord,
+  company: { ar: string; en: string },
+): SelfProfileResponse {
+  return {
+    id: e.id,
+    name: { ar: e.nameAr, en: e.nameEn },
+    nationality: e.nationality,
+    gender: e.gender,
+    dateOfBirth: iso(e.dateOfBirth),
+    company,
+    jobTitle: { ar: e.jobTitleAr, en: e.jobTitleEn },
+    department: e.department,
+    hireDate: iso(e.hireDate),
+    employmentStatus: e.employmentStatus,
+    contractType: e.contractType,
+    contractEndDate: iso(e.contractEndDate),
+    identifiers: {
+      iqamaNumber: e.iqamaNumber,
+      iqamaExpiry: iso(e.iqamaExpiry),
+      nationalId: e.nationalId,
+      borderNumber: e.borderNumber,
+      passportNumber: e.passportNumber,
+      passportExpiry: iso(e.passportExpiry),
+      workPermitNumber: e.workPermitNumber,
+      workPermitExpiry: iso(e.workPermitExpiry),
+      gosiRegistrationNumber: e.gosiRegistrationNumber,
+      gosiRegistrationStatus: e.gosiRegistrationStatus,
+      exitReentryStatus: e.exitReentryStatus,
+      exitReentryExpiry: iso(e.exitReentryExpiry),
+    },
+    pay: {
+      currency: e.currency,
+      basicSalary: num(e.basicSalary),
+      housingAllowance: num(e.housingAllowance),
+      transportAllowance: num(e.transportAllowance),
+      otherAllowances: num(e.otherAllowances),
+      gosiWage: num(e.gosiWage),
+      bankIbanLast4: e.bankIban ? e.bankIban.replace(/\s+/g, '').slice(-4) : null,
+    },
   };
 }

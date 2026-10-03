@@ -194,15 +194,24 @@ describe('Cross-client isolation harness (e2e)', () => {
 
   describe.runIf(employeeScoped.length > 0)('employee-scoped routes', () => {
     // Two employees AT THE SAME COMPANY — the case the client boundary cannot
-    // catch. Records created here so the probe doesn't depend on the seed.
+    // catch — at a company created here with employee self-service switched ON
+    // (it is off by default). Its own company, not a seed client, so no other
+    // spec's flag state can race this one.
     let me: TestPrincipal & { employeeId: string };
     let colleague: TestPrincipal & { employeeId: string };
+    let companyId = '';
     const created: string[] = [];
 
     beforeAll(async () => {
+      companyId = (
+        await prisma.client.create({ data: { nameAr: 'شركة عزل', nameEn: 'ISO-employee Co.' } })
+      ).id;
+      await prisma.clientSetting.create({
+        data: { clientId: companyId, key: 'flag.employee-self-service', value: true },
+      });
       const mk = async (name: string) => {
         const row = await prisma.employee.create({
-          data: { clientId: CLIENT_A, nameAr: 'اختبار', nameEn: `ISO-employee ${name}`, nationality: 'EG', contractType: 'unlimited' },
+          data: { clientId: companyId, nameAr: 'اختبار', nameEn: `ISO-employee ${name}`, nationality: 'EG', contractType: 'unlimited' },
         });
         created.push(row.id);
         return row.id;
@@ -213,6 +222,8 @@ describe('Cross-client isolation harness (e2e)', () => {
 
     afterAll(async () => {
       await prisma.employee.deleteMany({ where: { id: { in: created } } });
+      await prisma.clientSetting.deleteMany({ where: { clientId: companyId } });
+      await prisma.client.delete({ where: { id: companyId } });
     });
 
     for (const [route] of employeeScoped) {

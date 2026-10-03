@@ -4,7 +4,7 @@
 - Date: 2026-10-03
 - Owner: Ahmed Alshubbar (product decisions); implementation per `BACKLOG.md` → SS epic
 - Amends: `architecture.md` v1.4 → **v1.5** ("Users & Authorization", roles, identity, isolation, permission matrix, business modules)
-- Revised: **rev. 1 (2026-10-03, SS-01)** — see "Revision notes" at the end.
+- Revised: **rev. 1 (2026-10-03, SS-01)**, **rev. 2 (2026-10-03, SS-03)** — see "Revision notes" at the end.
 
 ## Context
 `architecture.md` v1.1–v1.4 placed employee self-service explicitly **out of scope**:
@@ -187,4 +187,19 @@ principal**, and the first whose isolation boundary is narrower than a client co
    principal fence that makes staff-only endpoints refuse non-staff principals regardless of
    permissions. The *data* an employee may see (the "What employees can do" section) is not
    in question — only which permission names carry it.
+
+**rev. 2 (2026-10-03, SS-03)** — the permission question rev. 1 left open, settled:
+
+- The employee role holds **`session.end` + `self-service.read`** and nothing else. The
+  staff resource names (`employee.read`, `salary.read`, `govdata.read`, `document.read`) are
+  **never** granted to it. Data reaches employees only through `/me*` routes in
+  `modules/self-service`, gated by `self-service.read` — the client portal's `portal.read`
+  pattern. "Permissions" above is superseded on this point; "What employees can do" stands.
+- **Enforced mechanically, not by convention:** the isolation harness's principal fence (SS-02)
+  requires every route outside public / session / self / employee to refuse an employee; with
+  `employee.read` granted it reports `GET /employees -> 200`.
+- The self view is `toSelfProfileResponse` in the Employees module (beside the staff and portal
+  views), pinned field-for-field by a test. Owner-approved exclusions: Saudization
+  classification, Absher service reference, WPS status, GOSI contribution basis, timestamps;
+  the IBAN is returned as its last 4 characters only.
 
