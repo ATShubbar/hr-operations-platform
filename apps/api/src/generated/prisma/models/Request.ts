@@ -35,6 +35,7 @@ export type RequestMinAggregateOutputType = {
   dueDate: Date | null
   createdByUserId: string | null
   assigneeUserId: string | null
+  requesterEmployeeId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -50,6 +51,7 @@ export type RequestMaxAggregateOutputType = {
   dueDate: Date | null
   createdByUserId: string | null
   assigneeUserId: string | null
+  requesterEmployeeId: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -65,6 +67,7 @@ export type RequestCountAggregateOutputType = {
   dueDate: number
   createdByUserId: number
   assigneeUserId: number
+  requesterEmployeeId: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -82,6 +85,7 @@ export type RequestMinAggregateInputType = {
   dueDate?: true
   createdByUserId?: true
   assigneeUserId?: true
+  requesterEmployeeId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -97,6 +101,7 @@ export type RequestMaxAggregateInputType = {
   dueDate?: true
   createdByUserId?: true
   assigneeUserId?: true
+  requesterEmployeeId?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -112,6 +117,7 @@ export type RequestCountAggregateInputType = {
   dueDate?: true
   createdByUserId?: true
   assigneeUserId?: true
+  requesterEmployeeId?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -200,6 +206,7 @@ export type RequestGroupByOutputType = {
   dueDate: Date | null
   createdByUserId: string
   assigneeUserId: string | null
+  requesterEmployeeId: string | null
   createdAt: Date
   updatedAt: Date
   _count: RequestCountAggregateOutputType | null
@@ -236,6 +243,7 @@ export type RequestWhereInput = {
   dueDate?: Prisma.DateTimeNullableFilter<"Request"> | Date | string | null
   createdByUserId?: Prisma.UuidFilter<"Request"> | string
   assigneeUserId?: Prisma.UuidNullableFilter<"Request"> | string | null
+  requesterEmployeeId?: Prisma.UuidNullableFilter<"Request"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Request"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Request"> | Date | string
 }
@@ -251,6 +259,7 @@ export type RequestOrderByWithRelationInput = {
   dueDate?: Prisma.SortOrderInput | Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
   assigneeUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  requesterEmployeeId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -269,6 +278,7 @@ export type RequestWhereUniqueInput = Prisma.AtLeast<{
   dueDate?: Prisma.DateTimeNullableFilter<"Request"> | Date | string | null
   createdByUserId?: Prisma.UuidFilter<"Request"> | string
   assigneeUserId?: Prisma.UuidNullableFilter<"Request"> | string | null
+  requesterEmployeeId?: Prisma.UuidNullableFilter<"Request"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Request"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Request"> | Date | string
 }, "id">
@@ -284,6 +294,7 @@ export type RequestOrderByWithAggregationInput = {
   dueDate?: Prisma.SortOrderInput | Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
   assigneeUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  requesterEmployeeId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.RequestCountOrderByAggregateInput
@@ -305,6 +316,7 @@ export type RequestScalarWhereWithAggregatesInput = {
   dueDate?: Prisma.DateTimeNullableWithAggregatesFilter<"Request"> | Date | string | null
   createdByUserId?: Prisma.UuidWithAggregatesFilter<"Request"> | string
   assigneeUserId?: Prisma.UuidNullableWithAggregatesFilter<"Request"> | string | null
+  requesterEmployeeId?: Prisma.UuidNullableWithAggregatesFilter<"Request"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Request"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Request"> | Date | string
 }
@@ -320,6 +332,7 @@ export type RequestCreateInput = {
   dueDate?: Date | string | null
   createdByUserId: string
   assigneeUserId?: string | null
+  requesterEmployeeId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -335,6 +348,7 @@ export type RequestUncheckedCreateInput = {
   dueDate?: Date | string | null
   createdByUserId: string
   assigneeUserId?: string | null
+  requesterEmployeeId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -350,6 +364,7 @@ export type RequestUpdateInput = {
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   assigneeUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requesterEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -365,6 +380,7 @@ export type RequestUncheckedUpdateInput = {
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   assigneeUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requesterEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -380,6 +396,7 @@ export type RequestCreateManyInput = {
   dueDate?: Date | string | null
   createdByUserId: string
   assigneeUserId?: string | null
+  requesterEmployeeId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -395,6 +412,7 @@ export type RequestUpdateManyMutationInput = {
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   assigneeUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requesterEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -410,6 +428,7 @@ export type RequestUncheckedUpdateManyInput = {
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
   assigneeUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requesterEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -425,6 +444,7 @@ export type RequestCountOrderByAggregateInput = {
   dueDate?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
   assigneeUserId?: Prisma.SortOrder
+  requesterEmployeeId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -440,6 +460,7 @@ export type RequestMaxOrderByAggregateInput = {
   dueDate?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
   assigneeUserId?: Prisma.SortOrder
+  requesterEmployeeId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -455,6 +476,7 @@ export type RequestMinOrderByAggregateInput = {
   dueDate?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
   assigneeUserId?: Prisma.SortOrder
+  requesterEmployeeId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -484,6 +506,7 @@ export type RequestSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   dueDate?: boolean
   createdByUserId?: boolean
   assigneeUserId?: boolean
+  requesterEmployeeId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["request"]>
@@ -499,6 +522,7 @@ export type RequestSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   dueDate?: boolean
   createdByUserId?: boolean
   assigneeUserId?: boolean
+  requesterEmployeeId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["request"]>
@@ -514,6 +538,7 @@ export type RequestSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   dueDate?: boolean
   createdByUserId?: boolean
   assigneeUserId?: boolean
+  requesterEmployeeId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["request"]>
@@ -529,11 +554,12 @@ export type RequestSelectScalar = {
   dueDate?: boolean
   createdByUserId?: boolean
   assigneeUserId?: boolean
+  requesterEmployeeId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type RequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clientId" | "type" | "title" | "description" | "status" | "priority" | "dueDate" | "createdByUserId" | "assigneeUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["request"]>
+export type RequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clientId" | "type" | "title" | "description" | "status" | "priority" | "dueDate" | "createdByUserId" | "assigneeUserId" | "requesterEmployeeId" | "createdAt" | "updatedAt", ExtArgs["result"]["request"]>
 
 export type $RequestPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Request"
@@ -549,6 +575,7 @@ export type $RequestPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     dueDate: Date | null
     createdByUserId: string
     assigneeUserId: string | null
+    requesterEmployeeId: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["request"]>
@@ -984,6 +1011,7 @@ export interface RequestFieldRefs {
   readonly dueDate: Prisma.FieldRef<"Request", 'DateTime'>
   readonly createdByUserId: Prisma.FieldRef<"Request", 'String'>
   readonly assigneeUserId: Prisma.FieldRef<"Request", 'String'>
+  readonly requesterEmployeeId: Prisma.FieldRef<"Request", 'String'>
   readonly createdAt: Prisma.FieldRef<"Request", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Request", 'DateTime'>
 }

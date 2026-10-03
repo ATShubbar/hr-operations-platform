@@ -869,10 +869,25 @@ from MinIO returns the uploaded bytes. Harness: new class **`employee-read`** (p
 colleague loop covers list routes. API suite **429/429**. The supertest flake is hitting more
 often as the suite grows (2 of 8 runs; one captured as `Parse Error: Expected HTTP/`) — the
 REP-04 harness fix is worth scheduling.
+**SS-05 done — My requests, the first employee WRITE.** `POST /me/requests` (type/title/
+description only — `.strict()`, extras 400) + `GET /me/requests` (only what I raised).
+`req_requests.requester_employee_id` + `app_employee` SELECT/INSERT under **`employee_raise`**:
+raised-by-me AND `client_id` = my record's company (subquery that itself runs under
+`employee_self`) AND open/normal/no due/no assignee — so a forged insert fails AT THE DATABASE
+(proven: loosening it lets 5 of 6 forgeries through; the 6th still fails because RETURNING is
+checked against `employee_own_read`). Request + audit in ONE app_employee transaction (audit
+`clientId` explicit — an employee context has none), then `RequestCreated` spawns the task as
+before; client reps/staff see it via existing screens. POST requires a new
+**`self-service.create`** (a write behind `.read` would break resource.action). **Landmine
+re-hit:** INSERT on `aud_entries` needs USAGE on `aud_entries_id_seq` — every raise 500'd until
+a grant migration (AUDIT-02 learned this for app_client). API suite **455/455**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
 - RLS policies MUST use `NULLIF(current_setting('app.client_id', true), '')::uuid` — pooled connections leave the GUC as '' not NULL (SPIKE-001).
+- A role that INSERTs into `aud_entries` needs `GRANT USAGE ON SEQUENCE aud_entries_id_seq` too —
+  without it Postgres fails at `nextval` ("permission denied for sequence") BEFORE RLS runs
+  (AUDIT-02 for app_client, SS-05 for app_employee).
 - `prisma migrate dev` refuses to run here ("non-interactive environment"). Generate SQL with
   `npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script`,
   write the migration folder by hand, then `pnpm db:deploy` + `pnpm db:generate` (SS-01).

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { documentCategorySchema } from './document.js';
 import { contractTypeSchema, employmentStatusSchema, genderSchema } from './employee.js';
+import { requestStatusSchema, requestTypeSchema } from './request.js';
 
 // Employee self-service (ADR-011, SS-03): what an employee sees of THEIR OWN
 // record via GET /me. A WHITELIST, deliberately not the staff EmployeeResponse
@@ -78,3 +79,37 @@ export const selfDocumentListResponseSchema = z.object({
 
 export type SelfDocumentResponse = z.infer<typeof selfDocumentResponseSchema>;
 export type SelfDocumentListResponse = z.infer<typeof selfDocumentListResponseSchema>;
+
+// Raising a request (SS-05). The employee chooses ONLY what the request is
+// about; the company (their own record's), status (open), priority (normal),
+// due date and assignee are not theirs to set — and the database refuses an
+// insert that tries (the employee_raise policy). `.strict()` rejects any other
+// key rather than silently dropping it, so a client that sends `status` learns
+// it is not allowed.
+export const createSelfRequestRequestSchema = z
+  .object({
+    type: requestTypeSchema,
+    title: z.string().trim().min(1).max(200),
+    description: z.string().trim().max(4000).optional(),
+  })
+  .strict();
+
+// An employee's own request, as they see it: what they asked and where it
+// stands. Priority, due date, assignee and ids are staff triage — not sent.
+export const selfRequestResponseSchema = z.object({
+  id: z.uuid(),
+  type: requestTypeSchema,
+  title: z.string(),
+  description: z.string().nullable(),
+  status: requestStatusSchema,
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+export const selfRequestListResponseSchema = z.object({
+  requests: z.array(selfRequestResponseSchema),
+});
+
+export type CreateSelfRequestRequest = z.infer<typeof createSelfRequestRequestSchema>;
+export type SelfRequestResponse = z.infer<typeof selfRequestResponseSchema>;
+export type SelfRequestListResponse = z.infer<typeof selfRequestListResponseSchema>;

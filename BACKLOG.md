@@ -2396,7 +2396,7 @@ Nitaqat reporting; request comments + attachments; saved views; a "viewing as" r
 | SS-02 | Isolation: `app.employee_id` GUC (SPIKE-001 `NULLIF` form) + RLS policies on employee-scoped tables + harness scope **`employee`** (NOT `self` — that name is taken by CONF-03's per-user endpoints) probing a same-client other employee and an other-client employee | SS-01 | **done** ([evidence](evidence/self-service/SS-02.md)) |
 | SS-03 | Permissions + "Me" API: `employee` role, whitelisted self view in Employees, `modules/self-service`, `flag.employee-self-service` (per client, default off). **Must NOT grant ADR-011's literal list** (`employee.read`/`salary.read`/`govdata.read`/`document.read` open the staff list endpoints, which ignore principal type — ADR-011 rev. 1); decide a dedicated self-service permission and/or a principal fence. Resolves the company from the record per request | SS-02 | **done** ([evidence](evidence/self-service/SS-03.md)) — `self-service.read` only (ADR-011 rev. 2) |
 | SS-04 | My documents: list (`available` only) + presigned download | SS-03 | **done** ([evidence](evidence/self-service/SS-04.md)) |
-| SS-05 | My requests: raise + track; client reps see them | SS-03 | planned |
+| SS-05 | My requests: raise + track; client reps see them | SS-03 | **done** ([evidence](evidence/self-service/SS-05.md)) |
 | SS-06 | Accounts: staff invitation (`employee-user.*`), set password from the link, password reset, deactivate + revoke on termination (event → self-service → Auth) | SS-03; **real email transport for production** | planned |
 | SS-07 | "Me" web screens — phone-first (375px), ar/en, RTL | SS-04, SS-05 | planned |
 
@@ -2477,6 +2477,27 @@ Nitaqat reporting; request comments + attachments; saved views; a "viewing as" r
   let the colleague loop probe list routes. Downloads not audited (consistent with staff +
   portal) — an open compliance question. API **429/429** (6 of 8 runs clean; the 2 failures were
   the known supertest flake, one captured as `Parse Error: Expected HTTP/`).
+
+### SS-05 — My requests
+- **Objective:** an employee raises and tracks their own requests; client reps and staff see
+  them through their existing screens (ARCH-SS decision).
+- **Files:** schema + migrations `20261003140000_employee_requests`,
+  `20261003140100_employee_audit_seq_grant`; `auth/domain/permissions.ts`; `@hr/contracts`
+  `self-service.ts`; `requests/{application/requests.service,domain/request-view,public-api}.ts`;
+  self-service controller/module; `test/isolation/*`, `test/audit/audited-writes.ts`; NEW
+  `test/self-service-requests.e2e-spec.ts`.
+- **DoD:** raised row correct + one audit + one task; rep + staff see it; my list = mine only;
+  body extras 400; forged inserts refused AT THE DATABASE; gates; pinned fields; full suite.
+- **Evidence:** `evidence/self-service/SS-05.md`.
+- **Dependencies:** SS-03/04. **Risks/decisions:** the rules are IN THE DATABASE —
+  `employee_raise` checks raised-by-me, my record's company (a subquery that itself runs under
+  `employee_self`), and untouched triage fields; proven red (5 of 6 forged inserts pass with
+  `WITH CHECK (true)`; the sixth still fails on `employee_own_read` via RETURNING — two layers),
+  restored byte-identical. **Deviation:** POST is gated by a new **`self-service.create`**, not
+  `.read` (resource.action convention). **First-run finding:** 500 on every raise — INSERT on
+  `aud_entries` needs USAGE on its sequence (AUDIT-02's identical lesson), fixed in its own
+  migration. Carried: staff screens show an unnamed creator; employees can't read the
+  status-change notifications they already receive (SS-07). API **455/455**.
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

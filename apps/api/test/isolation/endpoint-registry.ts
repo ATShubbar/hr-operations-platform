@@ -28,6 +28,10 @@
 //                   catch) and unauthenticated. A route's response must carry
 //                   the caller's employee id somewhere (the record id, or — for
 //                   lists — fixture rows titled with their owner's id).
+//   employee-write — employee self-service MUTATION (e.g. raising one's own
+//                   request). Must reject unauthenticated callers (401); what
+//                   may be written is barred by RLS WITH CHECK and proven
+//                   per-endpoint (SS-05 e2e) — the `client-write` counterpart.
 //   employee-read — employee self-service with a PATH PARAMETER (e.g. one
 //                   document's download), which the generic loop cannot
 //                   address. Must reject unauthenticated callers (401);
@@ -49,7 +53,8 @@ export type ScopeClass =
   | 'client-read'
   | 'self'
   | 'employee'
-  | 'employee-read';
+  | 'employee-read'
+  | 'employee-write';
 
 export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'GET /health': 'public',
@@ -193,6 +198,10 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   // takes an id, so it is `employee-read` (scoping proven in self-service-documents.e2e).
   'GET /me/documents': 'employee',
   'GET /me/documents/:id/download': 'employee-read',
+  // My requests (SS-05): the list is probed by the colleague loop; raising one
+  // is the employee's only write (scoping proven in self-service-requests.e2e).
+  'GET /me/requests': 'employee',
+  'POST /me/requests': 'employee-write',
   'GET /portal/company': 'client-read',
   'GET /portal/employees': 'client-read',
   'GET /portal/employees/:id': 'client-read',

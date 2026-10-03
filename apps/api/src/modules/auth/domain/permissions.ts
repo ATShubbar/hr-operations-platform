@@ -158,6 +158,10 @@ export const PERMISSIONS = [
   // every company's records to every employee. The isolation harness's
   // principal fence fails the build if that ever happens.
   'self-service.read',
+  // SS-05: the one thing an employee writes — raising their own request
+  // (POST /me/requests). A separate verb from `.read` (the resource.action
+  // convention), still employee-only and still never a staff resource name.
+  'self-service.create',
   // Session lifecycle — every authenticated principal may end their session.
   'session.end',
 ] as const;
@@ -427,5 +431,5 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
   // `self-service.read` (SS-03 — the /me surface, behind the SS-02 database
   // fence). NOTHING that a staff or client-rep endpoint checks: ADR-011 rev. 2.
   // Every other route stays 403 by deny-by-default.
-  employee: ['session.end', 'self-service.read'],
+  employee: ['session.end', 'self-service.read', 'self-service.create'],
 };

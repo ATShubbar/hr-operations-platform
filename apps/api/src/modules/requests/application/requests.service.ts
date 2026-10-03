@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
+import { EmployeeScopedPrismaService } from '../../../prisma/employee-scoped-prisma.service';
 import { ScopedPrismaService } from '../../../prisma/scoped-prisma.service';
 import { requestContext } from '../../../context/request-context';
 import type { RequestModel as RequestRecord } from '../../../generated/prisma/models';
@@ -26,7 +27,50 @@ export class RequestsService {
     private readonly scoped: ScopedPrismaService,
     private readonly audit: AuditService,
     private readonly events: EventBus,
+    private readonly employeeDb: EmployeeScopedPrismaService,
   ) {}
+
+  // ---- Employee self-service path (SS-05, ADR-011) --------------------------
+  // A THIRD data path: app_employee, fenced to one employee by RLS. The request
+  // and its audit entry commit in ONE transaction under that scope (AUDIT-03);
+  // the database's employee_raise policy refuses the insert unless it is raised
+  // by THIS employee, for the company on THEIR record, with the staff triage
+  // fields untouched. `employeeId` and `clientId` come from the session and the
+  // employee's own record — never from request input.
+  async createForEmployee(
+    employeeId: string,
+    clientId: string,
+    input: { type: Prisma.RequestUncheckedCreateInput['type']; title: string; description?: string | null; createdByUserId: string },
+  ): Promise<RequestRecord> {
+    const row = await this.employeeDb.transaction(employeeId, async (tx) => {
+      const created = await tx.request.create({
+        data: {
+          clientId,
+          requesterEmployeeId: employeeId,
+          type: input.type,
+          title: input.title,
+          description: input.description ?? null,
+          createdByUserId: input.createdByUserId,
+          // status/priority/dueDate/assignee left to their defaults — the
+          // policy requires exactly those.
+        },
+      });
+      // clientId passed explicitly: an employee's request context carries no
+      // company (it is read from the record, ADR-011 rev. 1).
+      await this.audit.record(tx, { resource: 'request', action: 'create', clientId, after: snapshot(created) });
+      return created;
+    });
+    // Same fact as every other create — Tasks spawns its work item from it.
+    await this.publishCreated(row);
+    return row;
+  }
+
+  // The requests THIS employee raised (RLS: employee_own_read), newest first.
+  listForEmployee(employeeId: string): Promise<RequestRecord[]> {
+    return this.employeeDb.forEmployee(employeeId).request.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+  }
 
   // ---- staff path (cross-client) ----
 

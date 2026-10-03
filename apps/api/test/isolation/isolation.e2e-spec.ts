@@ -170,7 +170,7 @@ describe('Cross-client isolation harness (e2e)', () => {
   it('every route outside public / session / self / employee REFUSES an employee principal (403)', async () => {
     const reachable: string[] = [];
     for (const [route, scope] of Object.entries(ENDPOINT_REGISTRY)) {
-      if (['public', 'session', 'self', 'employee', 'employee-read'].includes(scope)) continue;
+      if (['public', 'session', 'self', 'employee', 'employee-read', 'employee-write'].includes(scope)) continue;
       const [method, path] = route.split(' ') as [string, string];
       const res = await request(app.getHttpServer())[method.toLowerCase() as 'get' | 'post' | 'patch' | 'delete'](path)
         .set('Cookie', employee.cookie)
@@ -234,12 +234,23 @@ describe('Cross-client isolation harness (e2e)', () => {
           status: 'available' as const,
         })),
       });
+      // Likewise one request each, titled with its raiser's id (SS-05).
+      await prisma.request.createMany({
+        data: [meId, colleagueId].map((owner) => ({
+          clientId: companyId,
+          requesterEmployeeId: owner,
+          type: 'general' as const,
+          title: `ISO-request ${owner}`,
+          createdByUserId: owner,
+        })),
+      });
       me = await loginAsEmployee(app, meId);
       colleague = await loginAsEmployee(app, colleagueId);
     });
 
     afterAll(async () => {
       await prisma.document.deleteMany({ where: { clientId: companyId } });
+      await prisma.request.deleteMany({ where: { clientId: companyId } });
       await prisma.employee.deleteMany({ where: { id: { in: created } } });
       await prisma.clientSetting.deleteMany({ where: { clientId: companyId } });
       await prisma.client.delete({ where: { id: companyId } });
@@ -267,10 +278,10 @@ describe('Cross-client isolation harness (e2e)', () => {
     }
   });
 
-  it('employee-read endpoints reject unauthenticated requests (401)', async () => {
+  it('employee-read and employee-write endpoints reject unauthenticated requests (401)', async () => {
     const notRejected: string[] = [];
     for (const [route, scope] of Object.entries(ENDPOINT_REGISTRY)) {
-      if (scope !== 'employee-read') continue;
+      if (scope !== 'employee-read' && scope !== 'employee-write') continue;
       const [method, path] = route.split(' ') as [string, string];
       const res = await request(app.getHttpServer())[method.toLowerCase() as 'get'](path);
       if (res.status !== 401) notRejected.push(`${route} -> ${res.status}`);

@@ -287,4 +287,10 @@ export {
   type SelfProfileResponse,
   type SelfDocumentResponse,
   type SelfDocumentListResponse,
+  createSelfRequestRequestSchema,
+  selfRequestResponseSchema,
+  selfRequestListResponseSchema,
+  type CreateSelfRequestRequest,
+  type SelfRequestResponse,
+  type SelfRequestListResponse,
 } from './self-service.js';

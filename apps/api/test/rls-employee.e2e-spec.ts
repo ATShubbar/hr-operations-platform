@@ -125,6 +125,9 @@ describe('Employee RLS backstop (SS-02, e2e)', () => {
   it('with NO employee scope set, an app_employee session sees zero rows (not an error, not everything)', async () => {
     expect(await empDb.employee.count()).toBe(0);
     expect(await empDb.document.count()).toBe(0);
+    // SS-05 granted SELECT on req_requests (an employee's OWN raised requests),
+    // so it moved from the permission-denied list to here: unscoped → nothing.
+    expect(await empDb.request.count()).toBe(0);
   });
 
   it('pooled reuse: a scoped query, then an unscoped one on the SAME pool, still sees nothing', async () => {
@@ -156,7 +159,6 @@ describe('Employee RLS backstop (SS-02, e2e)', () => {
   });
 
   it.each([
-    ['req_requests', (db: PrismaClient) => db.request.findMany()],
     ['cli_clients', (db: PrismaClient) => db.client.findMany()],
     ['auth_users', (db: PrismaClient) => db.authUser.findMany()],
     ['aud_entries', (db: PrismaClient) => db.auditEntry.findMany()],

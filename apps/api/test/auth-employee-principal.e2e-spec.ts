@@ -131,9 +131,10 @@ describe('Employee principal (SS-01, e2e)', () => {
       clientId: null,
       employeeId: emp.employeeId,
     });
-    // SS-03 added `self-service.read` — the /me surface — and NOTHING a staff or
-    // client-rep endpoint checks (the isolation harness's principal fence).
-    expect(res.body.permissions).toEqual(['session.end', 'self-service.read']);
+    // SS-03 added `self-service.read` (the /me surface), SS-05 `self-service.create`
+    // (raising one's own request) — and NOTHING a staff or client-rep endpoint
+    // checks (the isolation harness's principal fence).
+    expect(res.body.permissions).toEqual(['session.end', 'self-service.read', 'self-service.create']);
   });
 
   it.each([

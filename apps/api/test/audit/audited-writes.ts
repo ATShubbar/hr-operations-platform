@@ -44,6 +44,9 @@ export const AUDITED_WRITES: Record<string, string> = {
   'DELETE /config/me/:key': 'config.user-clear',
   'PATCH /notifications/preferences/:category': 'notification-pref.update',
   'POST /requests': 'request.create',
+  // SS-05: an employee raising their own request — same audit action as every
+  // other create path, written in the same transaction under the employee scope.
+  'POST /me/requests': 'request.create',
   'PATCH /requests/:id': 'request.update',
   'POST /requests/:id/process': 'request.process',
   'POST /tasks': 'task.create',

@@ -1,8 +1,20 @@
-import { Controller, ForbiddenException, Get, NotFoundException, Param } from '@nestjs/common';
-import type {
-  DownloadResponse,
-  SelfDocumentListResponse,
-  SelfProfileResponse,
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  ForbiddenException,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+} from '@nestjs/common';
+import {
+  createSelfRequestRequestSchema,
+  type DownloadResponse,
+  type SelfDocumentListResponse,
+  type SelfProfileResponse,
+  type SelfRequestListResponse,
+  type SelfRequestResponse,
 } from '@hr/contracts';
 import { RequirePermission } from '../../../auth/permissions.decorator';
 import { requestContext } from '../../../context/request-context';
@@ -11,6 +23,7 @@ import { ClientsService } from '../../clients/public-api';
 import { ConfigService } from '../../configuration/public-api';
 import { DocumentsService, toSelfDocumentResponse } from '../../documents/public-api';
 import { EmployeesService, toSelfProfileResponse } from '../../employees/public-api';
+import { RequestsService, toSelfRequestResponse } from '../../requests/public-api';
 import { StorageService } from '../../storage/public-api';
 
 const EMPLOYEE_SELF_SERVICE_FLAG = 'flag.employee-self-service';
@@ -38,6 +51,7 @@ export class SelfServiceController {
     private readonly config: ConfigService,
     private readonly documents: DocumentsService,
     private readonly storage: StorageService,
+    private readonly requests: RequestsService,
   ) {}
 
   @RequirePermission('self-service.read')
@@ -75,6 +89,36 @@ export class SelfServiceController {
     if (!doc) throw new NotFoundException('Document not found');
     const url = await this.storage.presignDownload(doc.storageKey, SELF_DOWNLOAD_TTL_SECONDS);
     return { url, method: 'GET', expiresInSeconds: SELF_DOWNLOAD_TTL_SECONDS };
+  }
+
+  // My requests (SS-05): the ones I raised, newest first. The database returns
+  // only those (employee_own_read) — not my client rep's, not a colleague's.
+  @RequirePermission('self-service.read')
+  @Get('requests')
+  async myRequests(): Promise<SelfRequestListResponse> {
+    const record = await this.ownRecord();
+    const rows = await this.requests.listForEmployee(record.id);
+    return { requests: rows.map(toSelfRequestResponse) };
+  }
+
+  // Raise a request (SS-05) — the first thing an employee WRITES, so it has its
+  // own verb, `self-service.create`. What may be written is fixed by the schema
+  // below AND by the database (employee_raise). The employee picks type/title/description; the company
+  // is their own record's, and status/priority/due date/assignee keep their
+  // defaults. Audited, and it fires RequestCreated (Tasks spawns its item).
+  @RequirePermission('self-service.create')
+  @Post('requests')
+  async raiseRequest(@Body() body: unknown): Promise<SelfRequestResponse> {
+    const record = await this.ownRecord();
+    const parsed = createSelfRequestRequestSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException('Invalid request payload');
+    const actorId = requestContext.get()?.actorId;
+    if (!actorId) throw new ForbiddenException('No session actor');
+    const row = await this.requests.createForEmployee(record.id, record.clientId, {
+      ...parsed.data,
+      createdByUserId: actorId,
+    });
+    return toSelfRequestResponse(row);
   }
 
   // The caller's own record, after every access rule. Shared by every /me route

@@ -287,6 +287,7 @@ export const RequestScalarFieldEnum = {
   dueDate: 'dueDate',
   createdByUserId: 'createdByUserId',
   assigneeUserId: 'assigneeUserId',
+  requesterEmployeeId: 'requesterEmployeeId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
