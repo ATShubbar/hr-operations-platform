@@ -1,10 +1,11 @@
 # HR Operations Platform — Architecture
 
 ## Version
-**v1.5 — FROZEN (v1.4 frozen 2026-07-18; v1.5 amended by ADR-011, 2026-10-03).**
+**v1.6 — FROZEN (v1.4 frozen 2026-07-18; v1.5 amended by ADR-011, v1.6 by ADR-012, both 2026-10-03).**
 This document is the build contract. Changes now require either a new ADR (for decisions) or an explicit unfreeze with a version bump — implementation drift is not a change mechanism. Implementation work is tracked in `BACKLOG.md`.
 
 ### Changelog
+- **v1.6** — **Layout direction revised (ADR-012)**: the console is laid out left-to-right in BOTH locales to match the owner's People & Gro prototype pixel-for-pixel (owner decision, recommended against). Arabic stays a fully supported language — every string translated, Arabic text still runs right-to-left within its lines, Arabic typeface unchanged — only the screen is no longer mirrored. Status colours follow the prototype (below WCAG AA for text; colour is never the sole signal). Logical Tailwind utilities remain mandatory so the RTL layout stays one attribute away.
 - **v1.5** — **Employee self-service brought into scope (ADR-011)**, reversing the v1.1 exclusion: a third principal type (`employee`, bound to one employee record), staff-invited accounts, email + password sign-in, a per-client opt-in flag, read-only access to one's own record (profile, documents, government data including numbers, pay) plus raising requests; isolation narrower than the client company (application scoping + RLS on `app.employee_id`, a same-client "other employee" probe in CI); "Employee (self)" column and an employee-accounts row added to the permission matrix; `Employee Self-Service` added as a delivery module.
 - **v1.4** — Added permission naming convention (`resource.action`); widened Google Calendar whitelist (names, titles, attachments allowed; government identifiers and compensation data remain prohibited); Configuration settings split into explicit system / per-client / per-user levels with precedence; walking-skeleton DoD items in `ACTION-PLAN.md` now require linked evidence. ADR-002, ADR-005, ADR-009 revised accordingly.
 - **v1.3** — Created `adr/` folder with numbered Architecture Decision Records (ADR-001…009) and an index/template in `adr/README.md`. Decisions of record now live there; this document holds the stable principles and links to them.
@@ -146,7 +147,7 @@ Localization is **configuration, not code**. All locale behavior is driven by se
 | Setting | Saudi default | Configurable range | Configured at |
 |---|---|---|---|
 | UI languages | Arabic + English | Any language pair; strings fully externalized | **System** defines the available set; **per-user** language choice |
-| Text direction | RTL (Arabic) / LTR (English) | Follows active language | Derived — not directly configurable |
+| Text direction | LTR layout in both languages since v1.6 (ADR-012); Arabic text runs RTL within its lines | Fixed by ADR-012 (was: follows active language) | Derived — not directly configurable |
 | Calendar display | Hijri (Umm al-Qura) where domain requires, Gregorian elsewhere | Per-context: Hijri, Gregorian, or dual display | **System** default; **per-client** override |
 | Working week | Sunday–Thursday | Any weekday set (affects Calendar, SLAs, due dates, reports) | **System** default; **per-client** override |
 | Timezone | Asia/Riyadh | Any IANA timezone | **System** default; **per-client** override |
@@ -162,7 +163,7 @@ Resolution precedence where an override is permitted: **user → client → syst
 
 Invariants (not configurable):
 - **Storage is always Gregorian (UTC).** Hijri is a rendering/input concern only; dual-calendar conversion lives in one shared utility in Configuration — never per-module improvisation.
-- **RTL-safety is structural:** Tailwind logical utilities (`ps-*`, `pe-*`, `start-*`, `end-*`) are mandatory; physical left/right utilities are lint-blocked. shadcn/ui components verified for RTL before adoption.
+- **RTL-safety is structural** (kept under ADR-012 so the mirrored layout can return by flipping `dir`): Tailwind logical utilities (`ps-*`, `pe-*`, `start-*`, `end-*`) are mandatory; physical left/right utilities are lint-blocked. shadcn/ui components verified for RTL before adoption.
 - **Bilingual data fields:** person names, job titles, and company names are stored as Arabic/English pairs, matching official Saudi documents.
 
 ## Business Modules

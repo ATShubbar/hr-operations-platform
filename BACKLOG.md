@@ -2277,6 +2277,21 @@ our AA tones kept; Geist headings have **no Arabic** → composed with Plex, mea
 tokens → not shipped; the "P" tile → the designer never had the logo (its README says so),
 the real mark stays.
 
+**Owner decisions, round 2 (2026-10-03, after seeing the running app and supplying the FULL
+prototype in `design/`, 540 KB — twice the size the connector could read):** the portal must
+match the prototype **exactly — design, pages and functionality**:
+4. **Pixel-exact copy** — chosen OVER keeping Arabic RTL layout and AA badge contrast (asked
+   directly; recommended against). Conflicts with the non-negotiable localization principle /
+   ADR-005 → recorded as **ADR-012** in DS-04 for approval, not applied silently.
+5. **Screens first, then features.**
+6. **Unbuilt parts of a screen are shown, marked "coming soon"** (not omitted, not faked).
+7. **Move to the prototype's 5 roles** (Administrator, HR officer, GRO officer, Client manager,
+   Employee) — replaces the frozen 9-role matrix → ROLE-01 + ADR-013, before the screens.
+8. **Billing (fees, subscription, invoicing) in scope as a LATER epic** — reverses "future".
+9. **Editable roles / permission matrix / field access: yes, LAST, with safeguards** (audited,
+   protected baselines, isolation tests still enforcing hard limits).
+10. **"Viewing as" role switcher: left out** (a demo device).
+
 **Prototype features NOT yet built (each needs an architecture amendment before a card):**
 employee self-service ("Me": documents, identifiers, pay, requests) — *decided in scope*;
 leave (balances, accrual, carry-over, request/approve); dependants; mobility sequences
@@ -2290,7 +2305,10 @@ Nitaqat reporting; request comments + attachments; saved views; a "viewing as" r
 | DS-01 | Foundation: tokens, controls, overlays, display face — monochrome, Arabic- and AA-safe | — | **done** ([evidence](evidence/ux/DS-01.md)) |
 | DS-02 | Shell: sidebar + header in the prototype's structure | DS-01 | **done** |
 | DS-03 | Primitives: full-grid `DataTable`, badges vs status pills, card/stat blocks | DS-01 | **done** |
-| DS-04+ | Screens, one per card: Overview, People + tabbed person record, Clients + record, Work queue, Requests, Hiring, Calendar (month/week), Reports, Audit | DS-02, DS-03, full prototype download | planned |
+| DS-04 | Shell matches the prototype (nav order/labels/icons, header) + **ADR-012 pixel-exact fidelity** (revises ADR-005's RTL-layout requirement) | DS-03, full prototype (**received 2026-10-03**) | **done** ([evidence](evidence/ux/DS-04.md)) |
+| ROLE-01 | **5-role model** (Administrator · HR officer · GRO officer · Client manager · Employee) — ADR-013 + account migration; replaces the 9-role matrix | DS-04 | planned — next |
+| DS-05+ | Screens, one per card, exactly as the prototype; unbuilt parts shown **"coming soon"**: People → Person record (7 tabs) → Requests → Hiring → Clients + Client record → Work queue → Calendar (month/week/agenda) → Audit → Reports → Overview | ROLE-01 | planned |
+| FEAT-* | Feature epics (each its own ADR), roughly by value: Leave · Request comments/attachments/decision trail/SLA · Dependants · Onboarding/final-exit sequences · Nitaqat & Saudisation · Client profile (contacts, signatories, registrations, service tier) · Government fees + subscription/invoicing (Billing, ZATCA-ready) · Notification centre + reminder rules · Global search · **Editable roles / permission matrix / field access — LAST, with safeguards** | screens | planned |
 | ARCH-SS | Architecture amendment: employee self-service (reverses architecture.md line 44) | owner decision (done) | **done** — ADR-011, architecture.md v1.5 ([evidence](evidence/arch/ARCH-SS.md)) |
 
 ### DS-01 — Foundation: the People & Gro design system, monochrome
@@ -2366,6 +2384,24 @@ Nitaqat reporting; request comments + attachments; saved views; a "viewing as" r
   never mapped to red — only the type allowed it. **DS-02 corrected:** Chrome 152 skips
   letter-spacing on Arabic (147.92px at 0 / 0.025em / 0.2em). Found-not-fixed: audit actor
   names in mono; expiry's filter row still form + Apply.
+
+### DS-04 — The shell matches the prototype, and ADR-012 (pixel-exact fidelity)
+- **Objective:** the sidebar and header are the prototype's (order, labels, icons, search), and
+  the owner's "exactly" is recorded as a decision before any screen is copied.
+- **Files:** NEW `adr/ADR-012-prototype-visual-fidelity.md`; `adr/README.md`, ADR-005,
+  `architecture.md` (v1.6); `i18n/routing.ts`, `globals.css`, `ui/status-pill.tsx`,
+  `scripts/verify-status-contrast.mjs`, `app-nav.tsx`, `app-shell.tsx`, `header-location.tsx`,
+  NEW `coming-soon-page.tsx` + `(app)/leaves` + `(app)/me/leave`; messages; `design/`.
+- **DoD:** sidebar and header measured against the prototype in both languages at 1280 and 375;
+  every nav item opens a real screen or a labelled "coming soon" page; no screen unreachable;
+  typecheck, lint, build; no API change.
+- **Evidence:** `evidence/ux/DS-04.md`.
+- **Dependencies:** DS-03, the full prototype. **Risks/decisions:** **layout is LTR in both
+  locales and status pills drop below AA** — the owner's pixel-exact choice (recommended
+  against), recorded as ADR-012 with a one-line reversal; fonts, the real logo and the language
+  switcher deliberately kept. Screens the prototype has no entry for sit in a temporary
+  **Other tools** group (removed as ROLE-01/DS-05+ place them). Search, Saved views and Leaves
+  are visible and marked "coming soon". Caught: a zsh `path` loop variable emptied two files.
 
 ### ARCH-SS — Employee self-service enters the architecture (ADR-011, v1.5)
 - **Objective:** amend the frozen contract so employees can sign in to their own file;

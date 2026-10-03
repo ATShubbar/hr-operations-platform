@@ -917,6 +917,25 @@ as Ahmed Hassan → `/ar/me`, raised a request staff then saw, flag-off → calm
 **A false fence failure (`GET /config -> 200` for an employee) did not reproduce in 8 runs and
 is impossible by the exact policy check — the supertest flake can fake or MASK a security
 failure, so the REP-04 harness fix is now urgent.** Production still needs SMTP. API **473/473**.
+**DS-04 done — the shell IS the prototype now; ADR-012 records "pixel-exact".** After seeing
+the running app the owner directed the portal match the Claude Design prototype **exactly**
+(design, pages, functionality); the full prototype is versioned in **`design/`** (540 KB
+`People & Gro Console.dc.html` — read it locally, the connector truncates at 256 KB). **ADR-012
+(Accepted, architecture.md v1.6, revises ADR-005):** layout is **LTR in BOTH locales**
+(`directionFor()` returns `'ltr'`; Arabic text still runs RTL within lines, every string still
+translated) and status pills use the prototype's **soft colours, below AA** (2.86–4.13:1,
+accepted; label + dot keep 1.4.1). Owner chose this OVER RTL/AA — recommended against, asked
+directly. Kept on purpose: Plex Arabic, the real logo, the language switcher, and **logical
+utilities stay lint-mandatory** (reversal = one line). Nav: one **Workspace** group in the
+prototype's order/labels/icons (Overview · Calendar · Work queue · Requests · Leaves · People ·
+Hiring · Clients · Roles and permissions · Reports · Audit trail), **Saved views** "coming soon",
+a TEMPORARY **Other tools** group for screens the prototype has no entry for (Documents, Expiry,
+GRO, Candidates, Google Calendar); header gains the prototype's search, **disabled + "Soon"**.
+Owner rule: unbuilt parts are **shown, marked "coming soon"**, never omitted or faked
+(`ComingSoonPage`; `/leaves`, `/me/leave`). "Viewing as" left out. **Next: ROLE-01** — the
+prototype's 5 roles (Administrator · HR officer · GRO officer · Client manager · Employee) via
+ADR-013, then DS-05+ one screen per card, then FEAT-* epics (billing in scope; editable
+roles/permissions/field access LAST, with safeguards).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
@@ -954,6 +973,8 @@ failure, so the REP-04 harness fix is now urgent.** Production still needs SMTP.
   measured through timers is quantised to multiples of 1000ms (UX-05: readings of 999/1000/
   3999/5001/6000 looked like an app bug and were the browser). Foreground the tab, or don't
   claim the number.
+- In zsh, never name a loop variable `path` — it is tied to `PATH`, so every later command in
+  the loop is "not found" and redirections leave EMPTY files behind (DS-04: two pages at 0 bytes).
 - `npx prettier --write` from the repo root does NOT pick up the shared config: each
   package references `packages/config/prettier.config.mjs` and there is no root
   `.prettierrc`, so prettier falls back to defaults and rewrites the file to double

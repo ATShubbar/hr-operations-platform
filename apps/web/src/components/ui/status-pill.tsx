@@ -16,16 +16,15 @@ import { cn } from '@/lib/utils';
 // itself. Colour is never the only channel — that is what WCAG 1.4.1 requires,
 // and it is also what makes these readable for the ~1-in-12 men with a red-green
 // deficiency, for whom red carries no urgency at all.
-// DS-01: the People & Gro "soft" treatment — a fully rounded pill, a tint behind,
-// no outline. The system draws that tint at 10% of a mid-strength hue and sets the
-// label in the SAME hue, and measured that way all four tones fail WCAG AA for
-// 12px text: info 3.62:1, error 4.13:1, success 2.96:1, warning 2.86:1. So the
-// shape is the system's and the colours stay ours — the label is the deep status
-// tone on its pale surface, re-measured by scripts/verify-status-contrast.mjs.
-// The outline goes because it never carried the signal (UX-01: WCAG 1.4.11
-// exempts the boundary of a control whose meaning is in its own text).
+// ADR-012 (pixel-exact fidelity, owner decision): the People & Gro soft badge
+// AS DESIGNED — status hue on its own 10% tint. This replaces DS-01's choice to
+// keep our deeper AA tones in the system's shape; the system's colours measure
+// 2.86–4.13:1 for 12px text (below AA), a trade-off the owner accepted. The tones
+// live in globals.css (--status-*); restoring the UX-01 values is the reversal.
 const statusPillVariants = cva(
-  'inline-flex w-fit shrink-0 items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap',
+  // The system's Badge, size sm (ADR-012): 18px tall, 1px 8px padding, 4px gap,
+  // 12/16 medium, a 6px currentColor dot.
+  'inline-flex h-[18px] w-fit shrink-0 items-center gap-1 rounded-full px-2 py-px text-xs leading-4 font-medium whitespace-nowrap',
   {
     variants: {
       tone: {
@@ -49,8 +48,7 @@ function StatusPill({
   render,
   children,
   ...props
-}: useRender.ComponentProps<'span'> &
-  VariantProps<typeof statusPillVariants> & { dot?: boolean }) {
+}: useRender.ComponentProps<'span'> & VariantProps<typeof statusPillVariants> & { dot?: boolean }) {
   return useRender({
     defaultTagName: 'span',
     props: mergeProps<'span'>(
@@ -59,13 +57,9 @@ function StatusPill({
         children: (
           <>
             {dot && (
-              // currentColor = the tone, which measures 6.0–8.9:1 against card —
-              // comfortably past the 3:1 a graphical object needs. The decorative
-              // hairline is far too light to carry this, by design.
-              <span
-                aria-hidden
-                className="size-1.5 shrink-0 rounded-full bg-current"
-              />
+              // currentColor = the tone (the system's Badge dot). Since ADR-012 the
+              // tones are the prototype's mid-strength hues.
+              <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-current" />
             )}
             {children}
           </>

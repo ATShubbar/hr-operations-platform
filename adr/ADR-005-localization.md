@@ -1,6 +1,6 @@
 # ADR-005 — Localization: configurable, Saudi defaults
 
-- Status: Accepted
+- Status: Accepted — **layout direction revised by [ADR-012](ADR-012-prototype-visual-fidelity.md)** (2026-10-03: LTR layout in both locales; everything else here stands)
 - Date: 2026-07-18 (rev. 1, same day: setting levels made explicit — system / per-client / per-user)
 - Owner: TBD
 

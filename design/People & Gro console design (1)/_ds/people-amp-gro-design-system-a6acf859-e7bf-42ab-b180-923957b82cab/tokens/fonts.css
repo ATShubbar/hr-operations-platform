@@ -1,0 +1,5 @@
+/* Webfonts used by the source kit: Geist (sans + mono), Inter (UI text), JetBrains Mono (code).
+   No binaries ship with the .fig, so these are loaded from Google Fonts — the same families,
+   not substitutes. Drop real .woff2 files into assets/fonts/ and swap the @font-face src if
+   you need offline/self-hosted delivery. */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Inter:wght@100..900&family=JetBrains+Mono:wght@100..800&display=swap');

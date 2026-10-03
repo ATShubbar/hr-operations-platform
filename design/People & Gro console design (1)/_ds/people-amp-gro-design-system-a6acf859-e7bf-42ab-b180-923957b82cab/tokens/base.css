@@ -1,0 +1,11 @@
+/* Minimal base layer. Components are self-contained; this only sets the page defaults
+   and link colours so nothing falls back to browser blue. */
+body{margin:0;background:var(--pg-background);color:var(--pg-foreground);font-family:var(--pg-font-ui);font-size:var(--pg-text-sm);line-height:var(--pg-leading-sm);-webkit-font-smoothing:antialiased;text-wrap:pretty}
+a{color:var(--pg-foreground);text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1px;transition:var(--pg-transition)}
+a:hover{color:var(--pg-muted-foreground)}
+*{box-sizing:border-box}
+::selection{background:var(--pg-neutral-200)}
+@keyframes pg-spin{to{transform:rotate(360deg)}}
+@keyframes pg-pulse{50%{opacity:0.5}}
+@keyframes pg-fade-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes pg-ripple{to{width:280px;height:280px;margin-left:-140px;margin-top:-140px;opacity:0}}

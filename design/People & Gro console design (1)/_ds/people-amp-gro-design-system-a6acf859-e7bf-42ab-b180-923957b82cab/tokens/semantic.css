@@ -1,0 +1,63 @@
+/* Semantic surface / text / border roles. These are what components reference.
+   Light is the default; dark flips only the roles, never the palette. */
+:root{
+  --pg-background:var(--pg-white);
+  --pg-foreground:var(--pg-neutral-950);
+
+  --pg-card:var(--pg-white);
+  --pg-card-foreground:var(--pg-neutral-950);
+  --pg-popover:var(--pg-white);
+  --pg-popover-foreground:var(--pg-neutral-950);
+
+  --pg-primary:var(--pg-neutral-900);
+  --pg-primary-foreground:var(--pg-neutral-50);
+  --pg-secondary:var(--pg-neutral-100);
+  --pg-secondary-foreground:var(--pg-neutral-900);
+  --pg-accent:var(--pg-neutral-100);
+  --pg-accent-foreground:var(--pg-neutral-900);
+  --pg-muted:var(--pg-neutral-100);
+  --pg-muted-foreground:var(--pg-neutral-500);
+  --pg-destructive:var(--pg-error);
+  --pg-destructive-foreground:var(--pg-white);
+
+  --pg-border:var(--pg-neutral-200);
+  --pg-input:var(--pg-neutral-200);
+  --pg-ring-color:var(--pg-neutral-400);
+
+  --pg-sidebar:var(--pg-neutral-50);
+  --pg-sidebar-foreground:var(--pg-neutral-950);
+  --pg-sidebar-border:var(--pg-neutral-200);
+  --pg-sidebar-accent:var(--pg-neutral-100);
+
+  --pg-overlay:rgba(0,0,0,0.5);
+  --pg-skeleton:var(--pg-neutral-100);
+
+  --pg-duration:150ms; /* @kind other */
+  --pg-ease:cubic-bezier(0.4,0,0.2,1); /* @kind other */
+  --pg-transition:all var(--pg-duration) var(--pg-ease);
+}
+:root[data-theme="dark"],.dark{
+  --pg-background:var(--pg-neutral-950);
+  --pg-foreground:var(--pg-neutral-50);
+  --pg-card:var(--pg-neutral-900);
+  --pg-card-foreground:var(--pg-neutral-50);
+  --pg-popover:var(--pg-neutral-900);
+  --pg-popover-foreground:var(--pg-neutral-50);
+  --pg-primary:var(--pg-neutral-200);
+  --pg-primary-foreground:var(--pg-neutral-900);
+  --pg-secondary:var(--pg-neutral-800);
+  --pg-secondary-foreground:var(--pg-neutral-50);
+  --pg-accent:var(--pg-neutral-800);
+  --pg-accent-foreground:var(--pg-neutral-50);
+  --pg-muted:var(--pg-neutral-800);
+  --pg-muted-foreground:var(--pg-neutral-400);
+  --pg-destructive:rgb(248,113,113);
+  --pg-border:rgba(255,255,255,0.1);
+  --pg-input:rgba(255,255,255,0.15);
+  --pg-ring-color:var(--pg-neutral-500);
+  --pg-sidebar:var(--pg-neutral-900);
+  --pg-sidebar-foreground:var(--pg-neutral-50);
+  --pg-sidebar-border:rgba(255,255,255,0.1);
+  --pg-sidebar-accent:var(--pg-neutral-800);
+  --pg-skeleton:var(--pg-neutral-800);
+}

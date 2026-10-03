@@ -1,0 +1,9 @@
+@import './tokens/fonts.css';
+@import './tokens/fig-tokens.css';
+@import './tokens/fig-typography.css';
+@import './tokens/palette.css';
+@import './tokens/typography.css';
+@import './tokens/radius-spacing.css';
+@import './tokens/elevation.css';
+@import './tokens/semantic.css';
+@import './tokens/base.css';

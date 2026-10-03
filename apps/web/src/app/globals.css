@@ -143,25 +143,31 @@
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
 
-    /* Status tones — ratios measured, not asserted (evidence/ux/UX-01.md).
-       Warning is ORANGE, deliberately redder and darker than the gold brand so
-       the two are distinguishable side by side, and so it survives the
-       red-green confusion axis that makes amber the weakest status hue. */
-    --status-critical: oklch(0.43 0.17 25);
-    --status-critical-surface: oklch(0.96 0.022 25);
-    --status-critical-line: oklch(0.84 0.07 25);
-    --status-warning: oklch(0.48 0.13 55);
-    --status-warning-surface: oklch(0.965 0.03 70);
-    --status-warning-line: oklch(0.84 0.09 65);
-    --status-ok: oklch(0.48 0.12 155);
-    --status-ok-surface: oklch(0.965 0.028 158);
-    --status-ok-line: oklch(0.84 0.07 155);
-    --status-info: oklch(0.47 0.16 260);
-    --status-info-surface: oklch(0.965 0.022 253);
-    --status-info-line: oklch(0.84 0.06 256);
-    --status-neutral: oklch(0.5 0.012 285);
-    --status-neutral-surface: oklch(0.968 0.002 285);
-    --status-neutral-line: oklch(0.87 0.004 285);
+    /* Status tones — the People & Gro design system's soft badge, AS DESIGNED
+       (ADR-012, owner decision: pixel-exact fidelity). Each tone is the system's
+       Badge colour; the surface is that colour at 10%; the line at 30%.
+         destructive rgb(220,38,38) · warning rgb(217,119,6) · success
+         rgb(22,163,74) · info rgb(2,132,199) · secondary rgb(115,115,115)
+       KNOWN TRADE-OFF, accepted by the owner: label-on-tint measures 2.86–4.13:1,
+       below WCAG AA's 4.5:1 (scripts/verify-status-contrast.mjs keeps the
+       measurement). Colour is still never the only signal — every pill carries
+       its label and a dot. The UX-01 deep tones this replaces passed at ≥5.4:1;
+       restoring them is the reversal path ADR-012 names. */
+    --status-critical: rgb(220 38 38);
+    --status-critical-surface: rgb(220 38 38 / 0.1);
+    --status-critical-line: rgb(220 38 38 / 0.3);
+    --status-warning: rgb(217 119 6);
+    --status-warning-surface: rgb(217 119 6 / 0.1);
+    --status-warning-line: rgb(217 119 6 / 0.3);
+    --status-ok: rgb(22 163 74);
+    --status-ok-surface: rgb(22 163 74 / 0.1);
+    --status-ok-line: rgb(22 163 74 / 0.3);
+    --status-info: rgb(2 132 199);
+    --status-info-surface: rgb(2 132 199 / 0.1);
+    --status-info-line: rgb(2 132 199 / 0.3);
+    --status-neutral: rgb(115 115 115);
+    --status-neutral-surface: rgb(115 115 115 / 0.1);
+    --status-neutral-line: rgb(115 115 115 / 0.3);
 }
 
 /* ⚠️ DELIBERATELY UNREACHABLE (owner decision, 2026-07-25 — UX-01).

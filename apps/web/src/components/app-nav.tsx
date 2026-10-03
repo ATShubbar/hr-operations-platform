@@ -4,19 +4,24 @@ import { useState, type ElementType } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   Activity,
-  Briefcase,
   Building2,
   CalendarCheck,
   CalendarDays,
-  ClipboardList,
+  ChartColumn,
   FileText,
+  History,
+  IdCard,
+  Inbox,
   Landmark,
-  LayoutDashboard,
-  ListChecks,
+  LayoutGrid,
   LogOut,
-  ScrollText,
+  MessageSquare,
+  Plane,
   Settings,
+  ShieldCheck,
+  UserPlus,
   UserRound,
+  Users,
   UsersRound,
 } from 'lucide-react';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
@@ -83,20 +88,16 @@ function NavRow({ item, variant, pathname }: { item: Item; variant: Variant; pat
       className={cn(
         'flex shrink-0 items-center transition-colors',
         variant === 'sheet' ? SHEET_ROW : SIDEBAR_ROW,
-        // Colour is not the only signal: the weight change carries the state on
-        // its own, so it survives a greyscale render (1.4.1). The design system
-        // marks the active row by fill alone; we keep the weight (owner-approved
-        // deviation, DS-02) because UX-11 made it the non-colour cue.
+        // The prototype's active row, exactly (ADR-012): a neutral-100 fill and
+        // near-black text, NO weight change. DS-02 had kept a weight change as the
+        // non-colour cue; the owner's later pixel-exact decision supersedes it.
+        // `aria-current` still announces the state to assistive tech.
         current
-          ? 'bg-sidebar-accent font-medium text-sidebar-accent-foreground'
-          : 'text-muted-foreground hover:bg-sidebar-accent/60 hover:text-foreground',
+          ? 'bg-neutral-100 text-neutral-900'
+          : 'text-muted-foreground hover:bg-neutral-100/60 hover:text-foreground',
       )}
     >
-      <item.icon
-        aria-hidden
-        strokeWidth={1.5}
-        className={cn('size-4 shrink-0', !current && 'text-muted-foreground/70')}
-      />
+      <item.icon aria-hidden strokeWidth={1.5} className="size-4 shrink-0" />
       <span className="min-w-0 flex-1 truncate">{item.label}</span>
       {showCount && (
         <>
@@ -104,7 +105,8 @@ function NavRow({ item, variant, pathname }: { item: Item; variant: Variant; pat
             aria-hidden
             className={cn(
               'inline-flex h-[18px] min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 font-mono text-[11px] leading-none tabular-nums',
-              current ? 'bg-background text-foreground' : 'bg-sidebar-accent text-muted-foreground',
+              // The prototype's count chip: inverted when its row is current.
+              current ? 'bg-neutral-900 text-neutral-50' : 'bg-neutral-200 text-neutral-700',
             )}
           >
             {item.count}
@@ -153,8 +155,10 @@ export function AppNav({
         // the portal) one ungrouped section: a heading over it would be chrome.
         {
           items: [
-            { href: '/me', label: t('nav.myFile'), icon: UserRound, exact: true },
-            { href: '/me/requests', label: t('nav.myRequests'), icon: ClipboardList },
+            // The prototype's employee nav, in its order and icons (DS-04).
+            { href: '/me', label: t('nav.myFile'), icon: IdCard, exact: true },
+            { href: '/me/requests', label: t('nav.myRequests'), icon: MessageSquare },
+            { href: '/me/leave', label: t('nav.myLeave'), icon: Plane },
           ],
         },
       ]
@@ -173,114 +177,127 @@ export function AppNav({
           },
         ]
       : [
-          // Today is the front door for staff (UX-04) and sits ABOVE the groups
-          // rather than inside one — it is the whole queue, not a category of it.
-          { items: [{ href: '/today', label: t('nav.today'), icon: LayoutDashboard }] },
+          // The prototype's "Workspace" list, in its order, labels and icons
+          // (DS-04, ADR-012). Where a prototype screen is not built yet, its row
+          // opens the closest existing screen until that screen's card lands:
+          // Overview → Today, Work queue → Tasks, People → Employees, Hiring →
+          // Vacancies, Roles and permissions → Staff users. Leaves opens a
+          // "coming soon" page. Gates are still today's permissions — the
+          // prototype's role filters arrive with the 5-role model (ROLE-01).
           {
-            heading: t('nav.groupClients'),
+            heading: t('nav.workspace'),
             items: [
+              { href: '/today', label: t('nav.overview'), icon: LayoutGrid },
+              ...(canCalendar
+                ? [{ href: '/calendar', label: t('nav.calendar'), icon: CalendarDays }]
+                : []),
+              ...(canTasks
+                ? [
+                    {
+                      href: '/tasks',
+                      label: t('nav.workQueue'),
+                      icon: Inbox,
+                      count: counts.tasks,
+                      countLabel: t('nav.countTasks', { count: counts.tasks ?? 0 }),
+                    },
+                  ]
+                : []),
+              ...(canRequests
+                ? [
+                    {
+                      href: '/requests',
+                      label: t('nav.requests'),
+                      icon: MessageSquare,
+                      count: counts.requests,
+                      countLabel: t('nav.countRequests', { count: counts.requests ?? 0 }),
+                    },
+                  ]
+                : []),
+              { href: '/leaves', label: t('nav.leaves'), icon: Plane },
+              ...(canEmployees
+                ? [{ href: '/employees', label: t('nav.people'), icon: Users }]
+                : []),
+              ...(canVacancies
+                ? [{ href: '/vacancies', label: t('nav.hiring'), icon: UserPlus }]
+                : []),
               ...(canClients
                 ? [{ href: '/clients', label: t('nav.clients'), icon: Building2 }]
                 : []),
-              ...(canEmployees
-                ? [{ href: '/employees', label: t('nav.employees'), icon: UsersRound }]
+              ...(canStaffUsers
+                ? [{ href: '/staff-users', label: t('nav.rolesAndPermissions'), icon: ShieldCheck }]
                 : []),
+              ...(canReports
+                ? [{ href: '/reports', label: t('nav.reports'), icon: ChartColumn }]
+                : []),
+              ...(canAudit ? [{ href: '/audit', label: t('nav.auditTrail'), icon: History }] : []),
+            ],
+          },
+          // TEMPORARY (DS-04): today's screens the prototype has no nav entry for,
+          // kept reachable until a redesigned screen absorbs each one — documents
+          // into the person record, expiry into Overview's runway, GRO into the
+          // work queue, candidates into Hiring, Google Calendar into Calendar.
+          // A row leaves this group when its absorbing screen's card lands.
+          {
+            heading: t('nav.otherTools'),
+            items: [
               ...(canDocuments
                 ? [{ href: '/documents', label: t('nav.documents'), icon: FileText }]
                 : []),
               ...(canDocuments
                 ? [{ href: '/expiry', label: t('nav.expiry'), icon: Activity }]
                 : []),
-            ],
-          },
-          {
-            heading: t('nav.groupOperations'),
-            items: [
-              ...(canRequests
-                ? [
-                    {
-                      href: '/requests',
-                      label: t('nav.requests'),
-                      icon: ClipboardList,
-                      count: counts.requests,
-                      countLabel: t('nav.countRequests', { count: counts.requests ?? 0 }),
-                    },
-                  ]
-                : []),
-              ...(canTasks
-                ? [
-                    {
-                      href: '/tasks',
-                      label: t('nav.tasks'),
-                      icon: ListChecks,
-                      count: counts.tasks,
-                      countLabel: t('nav.countTasks', { count: counts.tasks ?? 0 }),
-                    },
-                  ]
-                : []),
               ...(canGro ? [{ href: '/gro', label: t('nav.gro'), icon: Landmark }] : []),
-              ...(canCalendar
-                ? [{ href: '/calendar', label: t('nav.calendar'), icon: CalendarDays }]
+              ...(canCandidates
+                ? [{ href: '/candidates', label: t('nav.candidates'), icon: UserRound }]
                 : []),
               ...(canIntegrations
                 ? [{ href: '/integrations', label: t('nav.integrations'), icon: CalendarCheck }]
                 : []),
             ],
           },
-          {
-            heading: t('nav.groupRecruitment'),
-            items: [
-              ...(canVacancies
-                ? [{ href: '/vacancies', label: t('nav.vacancies'), icon: Briefcase }]
-                : []),
-              ...(canCandidates
-                ? [{ href: '/candidates', label: t('nav.candidates'), icon: UserRound }]
-                : []),
-            ],
-          },
-          // A role can hold none of a group's capabilities — a Recruiter has no
-          // GRO, Finance has no recruitment — so an empty group must not leave a
-          // heading standing over nothing.
         ].filter((g) => g.items.length > 0);
 
-  // Administration sits at the bottom of the scroll area behind a rule: reached
-  // occasionally, and not part of the daily work the groups above describe.
-  // Settings is not here — it moved into the pinned foot with the identity block
-  // (DS-02), where the design puts it.
-  const footer: Item[] = [
-    ...(canReports ? [{ href: '/reports', label: t('nav.reports'), icon: Activity }] : []),
-    ...(canStaffUsers
-      ? [{ href: '/staff-users', label: t('nav.staffUsers'), icon: UsersRound }]
-      : []),
-    ...(canAudit ? [{ href: '/audit', label: t('nav.auditLog'), icon: ScrollText }] : []),
-  ];
+  // The prototype's "Saved views" section — staff only (it hides them for client
+  // managers and employees). Not built: shown, labelled, NOT faked (owner
+  // decision — unbuilt parts appear "coming soon").
+  const showSavedViews = !canSelfService && !canPortal;
 
   return (
-    <nav className={cn('flex flex-1 flex-col gap-4 p-2', className)} aria-label={t('nav.console')}>
+    <nav
+      className={cn('flex flex-1 flex-col gap-0.5 p-2', className)}
+      aria-label={t('nav.console')}
+    >
       {groups.map((group, i) => (
-        <div key={group.heading ?? i} className="flex flex-col gap-0.5">
-          {group.heading && (
-            // Tracking is LTR-only. Chrome 152 skips letter-spacing on Arabic
-            // outright (measured in DS-03 — corrected from DS-02, which claimed it
-            // broke joins); the guard covers engines that apply it to cursive
-            // scripts, and `uppercase` is a no-op there anyway.
-            <span className="px-2 pt-1.5 pb-1 text-[11px] leading-4 font-medium text-muted-foreground uppercase ltr:tracking-[0.05em]">
-              {group.heading}
-            </span>
+        <div key={group.heading ?? i} className="contents">
+          <div className={cn('flex flex-col gap-0.5', i > 0 && 'pt-3')}>
+            {group.heading && (
+              // Tracking is LTR-only. Chrome 152 skips letter-spacing on Arabic
+              // outright (measured in DS-03); the guard covers engines that apply
+              // it to cursive scripts, and `uppercase` is a no-op there anyway.
+              <span className="px-2 pt-1.5 pb-1 text-[11px] leading-4 font-medium text-muted-foreground uppercase ltr:tracking-[0.05em]">
+                {group.heading}
+              </span>
+            )}
+            {group.items.map((item) => (
+              <NavRow key={item.href} item={item} variant={variant} pathname={pathname} />
+            ))}
+          </div>
+          {/* The prototype puts Saved views directly under Workspace; the
+              temporary "Other tools" group stays below both. */}
+          {i === 0 && showSavedViews && (
+            <div className="flex flex-col gap-0.5">
+              {/* The prototype: 16px 8px 4px, 11/16 medium uppercase. */}
+              <span className="px-2 pt-4 pb-1 text-[11px] leading-4 font-medium text-muted-foreground uppercase ltr:tracking-[0.05em]">
+                {t('nav.savedViews')}
+              </span>
+              <span className="flex h-8 items-center gap-2.5 px-2 text-[13px] leading-[18px] text-muted-foreground">
+                <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-neutral-300" />
+                {t('states.comingSoon')}
+              </span>
+            </div>
           )}
-          {group.items.map((item) => (
-            <NavRow key={item.href} item={item} variant={variant} pathname={pathname} />
-          ))}
         </div>
       ))}
-
-      {footer.length > 0 && (
-        <div className="mt-auto flex flex-col gap-0.5 border-t pt-3">
-          {footer.map((item) => (
-            <NavRow key={item.href} item={item} variant={variant} pathname={pathname} />
-          ))}
-        </div>
-      )}
     </nav>
   );
 }

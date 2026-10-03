@@ -1,0 +1,65 @@
+/* Palette — exact rgb() values transcribed from the source file.
+   The base ramp is Tailwind `neutral`; status hues are the kit's own semantic picks. */
+:root{
+  --pg-white:rgb(255,255,255);
+  --pg-black:rgb(0,0,0);
+
+  --pg-neutral-50:rgb(250,250,250);
+  --pg-neutral-100:rgb(245,245,245);
+  --pg-neutral-200:rgb(229,229,229);
+  --pg-neutral-300:rgb(212,212,212);
+  --pg-neutral-400:rgb(163,163,163);
+  --pg-neutral-500:rgb(115,115,115);
+  --pg-neutral-600:rgb(82,82,82);
+  --pg-neutral-700:rgb(64,64,64);
+  --pg-neutral-800:rgb(38,38,38);
+  --pg-neutral-900:rgb(23,23,23);
+  --pg-neutral-950:rgb(10,10,10);
+
+  /* status — solid */
+  --pg-info:rgb(2,132,199);
+  --pg-success:rgb(22,163,74);
+  --pg-warning:rgb(217,119,6);
+  --pg-error:rgb(220,38,38);
+  --pg-error-alt:rgb(224,52,52);
+  --pg-teal:rgb(13,148,136);
+  --pg-orange:rgb(234,88,12);
+
+  /* status — 20% shadow/ring tints used on soft + solid buttons */
+  --pg-info-20:rgba(2,132,199,0.2);
+  --pg-success-20:rgba(22,163,74,0.2);
+  --pg-warning-20:rgba(217,119,6,0.2);
+  --pg-error-20:rgba(224,52,52,0.2);
+
+  /* chart series.
+     The system is value-driven, not hue-driven, so the default ramp is a NEUTRAL value ladder
+     that sits inside the theme. Steps ALTERNATE dark/light rather than descending in order, so
+     adjacent series in a two- or three-series chart stay clearly separable.
+     The source file's own ramp (orange-600, teal-600, cyan-900, amber-400, amber-500 — imported
+     from its Tailwind collection) is preserved below as --pg-chart-source-* : set --pg-chart-N to
+     those to restore exact source fidelity. */
+  --pg-chart-1:var(--pg-neutral-950);
+  --pg-chart-2:var(--pg-neutral-400);
+  --pg-chart-3:var(--pg-neutral-700);
+  --pg-chart-4:var(--pg-neutral-300);
+  --pg-chart-5:var(--pg-neutral-500);
+
+  --pg-chart-source-1:rgb(234,88,12);
+  --pg-chart-source-2:rgb(13,148,136);
+  --pg-chart-source-3:rgb(22,78,99);
+  --pg-chart-source-4:rgb(251,191,36);
+  --pg-chart-source-5:rgb(245,158,11);
+}
+:root[data-theme="dark"],.dark{
+  --pg-chart-1:var(--pg-neutral-200);
+  --pg-chart-2:var(--pg-neutral-600);
+  --pg-chart-3:var(--pg-neutral-400);
+  --pg-chart-4:var(--pg-neutral-700);
+  --pg-chart-5:var(--pg-neutral-500);
+
+  --pg-chart-source-1:rgb(29,78,216);
+  --pg-chart-source-2:rgb(16,185,129);
+  --pg-chart-source-3:rgb(245,158,11);
+  --pg-chart-source-4:rgb(168,85,247);
+  --pg-chart-source-5:rgb(244,63,94);
+}

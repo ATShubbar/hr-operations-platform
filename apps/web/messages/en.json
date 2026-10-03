@@ -86,7 +86,18 @@
     "countRequests": "{count, plural, one {# request waiting} other {# requests waiting}}",
     "countTasks": "{count, plural, one {# task assigned to you} other {# tasks assigned to you}}",
     "myFile": "My file",
-    "myRequests": "My requests"
+    "myRequests": "My requests",
+    "workspace": "Workspace",
+    "overview": "Overview",
+    "workQueue": "Work queue",
+    "leaves": "Leaves",
+    "people": "People",
+    "hiring": "Hiring",
+    "rolesAndPermissions": "Roles and permissions",
+    "auditTrail": "Audit trail",
+    "otherTools": "Other tools",
+    "savedViews": "Saved views",
+    "myLeave": "My leave"
   },
   "documents": {
     "title": "Documents",
@@ -974,7 +985,11 @@
     "forbiddenHint": "Ask an administrator if you need access to this screen.",
     "forbiddenWithCapability": "This screen needs the <cap>{capability}</cap> permission. Ask an administrator to grant it.",
     "loading": "Loading…",
-    "terminal": "No further steps"
+    "terminal": "No further steps",
+    "comingSoon": "Coming soon",
+    "leavesSoon": "Leave requests, approvals and balances will live here: an employee asks, the client endorses, the team approves and files it.",
+    "myLeaveSoon": "You'll be able to request leave here and see your balance and history.",
+    "soon": "Soon"
   },
   "staffUsers": {
     "title": "Staff users",
@@ -1122,5 +1137,8 @@
     "raisedOn": "raised {date}",
     "notEnabledTitle": "Not available yet",
     "notEnabled": "Your employer hasn't turned on self-service for your company. Contact HR if you need something."
+  },
+  "header": {
+    "searchPlaceholder": "Search people, refs, ID numbers"
   }
 }

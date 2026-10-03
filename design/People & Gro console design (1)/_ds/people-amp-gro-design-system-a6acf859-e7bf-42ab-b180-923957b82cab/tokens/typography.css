@@ -1,0 +1,38 @@
+/* Type — Geist is the display/brand face, Inter carries UI text (labels, buttons, inputs,
+   table cells), JetBrains Mono carries code and 12px monospace metadata.
+   Sizes and line-heights are the file's exact pairs. */
+:root{
+  --pg-font-sans:"Geist","Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  --pg-font-ui:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  --pg-font-mono:"JetBrains Mono","Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+
+  --pg-weight-light:300;
+  --pg-weight-regular:400;
+  --pg-weight-medium:500;
+  --pg-weight-semibold:600;
+  --pg-weight-bold:700;
+
+  --pg-text-xs:12px;   --pg-leading-xs:16px;
+  --pg-text-sm:14px;   --pg-leading-sm:20px;
+  --pg-text-base:16px; --pg-leading-base:24px;
+  --pg-text-lg:18px;   --pg-leading-lg:28px;
+  --pg-text-xl:20px;   --pg-leading-xl:28px;
+  --pg-text-2xl:24px;  --pg-leading-2xl:32px;
+  --pg-text-3xl:30px;  --pg-leading-3xl:36px;
+  --pg-text-4xl:36px;  --pg-leading-4xl:40px;
+  --pg-text-5xl:48px;  --pg-leading-5xl:48px;
+  --pg-text-6xl:60px;  --pg-leading-6xl:60px;
+  --pg-text-7xl:72px;  --pg-leading-7xl:72px;
+
+  /* role aliases — the ShadCN Typography page's ladder */
+  --pg-h1:var(--pg-text-4xl);
+  --pg-h2:var(--pg-text-3xl);
+  --pg-h3:var(--pg-text-2xl);
+  --pg-h4:var(--pg-text-xl);
+  --pg-lead:var(--pg-text-xl);
+  --pg-paragraph:var(--pg-text-base);
+  --pg-large:var(--pg-text-lg);
+  --pg-small:var(--pg-text-sm);
+  --pg-muted-size:var(--pg-text-sm);
+  --pg-inline-code:var(--pg-text-sm);
+}

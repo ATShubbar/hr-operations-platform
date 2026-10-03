@@ -1,0 +1,47 @@
+/* Radii and spacing, resolved to px from the file's unitless float variables.
+   Note the odd steps — 10, 14, 18, 22, 26 — they are the kit's values, not a 4px grid. */
+:root{
+  --pg-radius-none:0px;
+  --pg-radius-xs:2px;
+  --pg-radius-sm:6px;
+  --pg-radius-md:8px;
+  --pg-radius-lg:10px;
+  --pg-radius-xl:14px;
+  --pg-radius-2xl:18px;
+  --pg-radius-3xl:22px;
+  --pg-radius-4xl:26px;
+  --pg-radius-full:9999px;
+
+  --pg-space-0:0px;
+  --pg-space-px:1px;
+  --pg-space-0-5:2px;
+  --pg-space-1:4px;
+  --pg-space-1-5:6px;
+  --pg-space-2:8px;
+  --pg-space-2-5:10px;
+  --pg-space-3:12px;
+  --pg-space-3-5:14px;
+  --pg-space-4:16px;
+  --pg-space-5:20px;
+  --pg-space-6:24px;
+  --pg-space-7:28px;
+  --pg-space-8:32px;
+  --pg-space-9:36px;
+  --pg-space-10:40px;
+  --pg-space-11:44px;
+  --pg-space-12:48px;
+  --pg-space-14:56px;
+  --pg-space-16:64px;
+  --pg-space-20:80px;
+  --pg-space-24:96px;
+  --pg-space-28:112px;
+  --pg-space-32:128px;
+
+  /* control heights — one ladder shared by Button, Input, Select, Textarea rows */
+  --pg-control-xs:24px;
+  --pg-control-sm:28px;
+  --pg-control-md:32px;
+  --pg-control-lg:36px;
+
+  --pg-border:1px;
+}
