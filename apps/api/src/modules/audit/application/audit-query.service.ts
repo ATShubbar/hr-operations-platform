@@ -8,6 +8,20 @@ import type { Prisma } from '../../../generated/prisma/client';
 // audit.read is cross-client and admin-only, enforced by the guard). The
 // BigInt id is serialized to a string so it survives JSON without precision
 // loss (JSON has no BigInt).
+// One entry of a record's history (AUDIT-06): WHAT happened to WHICH record, by
+// whom, when — and deliberately no before/after. The snapshots stay in the full
+// audit log (audit.read); a record's history is readable more widely, so it
+// carries only the facts that are safe to read more widely.
+export interface RecordHistoryRow {
+  id: string;
+  resource: string;
+  resourceId: string;
+  action: string;
+  actorId: string | null;
+  actorRole: string | null;
+  at: string;
+}
+
 @Injectable()
 export class AuditQueryService {
   constructor(private readonly prisma: PrismaService) {}
@@ -51,5 +65,44 @@ export class AuditQueryService {
       })),
       nextCursor: hasMore ? (page[page.length - 1]?.id.toString() ?? null) : null,
     };
+  }
+
+  /**
+   * AUDIT-06: the entries about a set of records, newest first. `records` pairs
+   * a resource with the ids that belong to the subject (e.g. one employee's own
+   * id, their documents' ids, their GRO processes' ids). Entries written before
+   * AUDIT-06 have no resource_id and are never returned — none is guessed.
+   */
+  async forRecords(
+    records: ReadonlyArray<{ resource: string; ids: readonly string[] }>,
+    limit: number,
+  ): Promise<RecordHistoryRow[]> {
+    const or = records
+      .filter((r) => r.ids.length > 0)
+      .map((r) => ({ resource: r.resource, resourceId: { in: [...r.ids] } }));
+    if (or.length === 0) return [];
+    const rows = await this.prisma.auditEntry.findMany({
+      where: { OR: or },
+      orderBy: { id: 'desc' },
+      take: limit,
+      select: {
+        id: true,
+        resource: true,
+        resourceId: true,
+        action: true,
+        actorId: true,
+        actorRole: true,
+        createdAt: true,
+      },
+    });
+    return rows.map((r) => ({
+      id: r.id.toString(),
+      resource: r.resource,
+      resourceId: r.resourceId!,
+      action: r.action,
+      actorId: r.actorId,
+      actorRole: r.actorRole,
+      at: r.createdAt.toISOString(),
+    }));
   }
 }

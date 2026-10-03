@@ -25,6 +25,7 @@ import { IntegrationsModule } from './modules/integrations/public-api';
 import { PortalModule } from './modules/portal/public-api';
 import { SelfServiceModule } from './modules/self-service/public-api';
 import { ReportingModule } from './modules/reporting/public-api';
+import { HistoryModule } from './modules/history/public-api';
 import { ExampleModule } from './modules/example/public-api';
 import { ExampleConsumerModule } from './modules/example-consumer/public-api';
 import { ScopeCheckModule } from './modules/scope-check/public-api';
@@ -53,6 +54,7 @@ import { ScopeCheckModule } from './modules/scope-check/public-api';
     PortalModule,
     SelfServiceModule,
     ReportingModule,
+    HistoryModule,
     ExampleModule,
     ExampleConsumerModule,
     ScopeCheckModule,

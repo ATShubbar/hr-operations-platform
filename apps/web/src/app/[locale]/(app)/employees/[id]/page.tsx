@@ -19,6 +19,7 @@ import { StatusPill } from '@/components/ui/status-pill';
 import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs';
 import { useRecordLabel } from '@/components/header-location';
 import { DocumentsTab } from './documents-tab';
+import { HistoryTab } from './history-tab';
 import { OpenWorkTab } from './open-work-tab';
 import { ProfileTab } from './profile-tab';
 import { SelfServiceAccessCard } from './self-service-access-card';
@@ -30,7 +31,7 @@ import { StartProcedureDialog } from './start-procedure-dialog';
 //
 // Built: Profile (DS-06), Documents and Open work (DS-07). Family, Leave and
 // Mobilisation have no backend and are shown "coming soon" (owner rule); History
-// says the same until audit entries record which record they are about (AUDIT-06).
+// is the person's curated audit timeline (AUDIT-06).
 //
 // Two things the prototype does not show are kept (owner decision): the
 // employee's self-service access, as the last block of Profile, and Terminate,
@@ -240,7 +241,11 @@ export default function PersonRecordPage() {
           <OpenWorkTab emp={emp} onEmployeeChanged={() => void refresh()} />
         </TabsPanel>
 
-        {(['family', 'leave', 'mob', 'history'] as const).map((k) => (
+        <TabsPanel value="history">
+          <HistoryTab employeeId={emp.id} />
+        </TabsPanel>
+
+        {(['family', 'leave', 'mob'] as const).map((k) => (
           <TabsPanel key={k} value={k}>
             <div className="rounded-xl bg-card p-6 ring-1 ring-foreground/10">
               <EmptyState

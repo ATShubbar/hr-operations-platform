@@ -120,6 +120,8 @@ model AuditEntry {
   actorRole String?  @map("actor_role")
   clientId  String?  @map("client_id") @db.Uuid
   resource  String
+  // AUDIT-06: the id of the record this entry is about (null before AUDIT-06).
+  resourceId String? @map("resource_id") @db.Uuid
   action    String
   before    Json?    @db.JsonB
   after     Json?    @db.JsonB
@@ -127,6 +129,7 @@ model AuditEntry {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@index([resource, action])
+  @@index([resource, resourceId])
   @@index([clientId])
   @@index([createdAt])
   @@map("aud_entries")

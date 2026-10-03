@@ -1001,6 +1001,16 @@ expiry type asks the resulting expiry (GRO-03); workflow rules extracted to `lib
 since EMP-02** — the write schema reused the response schema (plain strings) so `"2027-10-27"` hit
 Prisma raw; the contract now coerces the 4 expiry fields (test red→green; API 484/484). Next:
 **AUDIT-06** (record id on audit entries) → History tab.
+**AUDIT-06 done — audit entries know their record; the Person record has its History.**
+`aud_entries.resource_id` (nullable uuid + `(resource, resource_id)` index; NO backfill — history
+starts 2026-10-04). Written by employee (own id), employee-user (the EMPLOYEE's id), document (doc
+id) and gro-process (process id) writes. New leaf delivery module **`modules/history`** (imports
+Audit/Auth/Employees/Documents/GRO, owns nothing, nothing imports it) serves
+`GET /employees/:id/history`: the person's own + their documents' (deleted included) + their
+processes' entries, newest first, 100 + `truncated`, actor NAMES via `UsersService.displayNames`,
+**never before/after** (keys asserted exactly). Gated by new **`employee.history`** in STAFF_BASE —
+owner-approved CATALOG ADDITION (the staff-directory pattern), full log stays audit.read. History tab
+= the DS Timeline. Colleague-exclusion test proven red. API 489/489 ×3. Next: DS-08 (Requests).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

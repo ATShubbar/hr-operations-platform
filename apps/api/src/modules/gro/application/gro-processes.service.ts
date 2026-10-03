@@ -35,6 +35,7 @@ export class GroProcessesService {
       const row = await tx.groProcess.create({ data: toCreateData(input) });
       await this.audit.record(tx, {
         resource: 'gro-process',
+        resourceId: row.id,
         action: 'create',
         clientId: row.clientId,
         after: snapshot(row),
@@ -71,6 +72,7 @@ export class GroProcessesService {
       const row = await tx.groProcess.update({ where: { id }, data: toUpdateData(data) });
       await this.audit.record(tx, {
         resource: 'gro-process',
+        resourceId: row.id,
         action: 'update',
         clientId: row.clientId,
         before: snapshot(before),
@@ -97,6 +99,7 @@ export class GroProcessesService {
       const updated = await tx.groProcess.update({ where: { id }, data: { status: to } });
       await this.audit.record(tx, {
         resource: 'gro-process',
+        resourceId: updated.id,
         action: 'status',
         clientId: updated.clientId,
         before: snapshot(before),

@@ -6,6 +6,9 @@ export interface AuditRecordInput {
   // What was touched and how, e.g. resource 'scope-check', action 'create'.
   resource: string;
   action: string;
+  // AUDIT-06: the id of the record this entry is about — what makes one
+  // record's history readable. Pass it whenever the write concerns one record.
+  resourceId?: string | null;
   // Prior/next state snapshots. Omit either side when it does not apply
   // (create has no before; delete has no after).
   before?: Prisma.InputJsonValue;

@@ -306,3 +306,11 @@ export {
   type UpdateEmployeeAccountRequest,
   type PasswordResetRequest,
 } from './self-service.js';
+export {
+  historyResourceSchema,
+  employeeHistoryEntrySchema,
+  employeeHistoryResponseSchema,
+  type HistoryResource,
+  type EmployeeHistoryEntry,
+  type EmployeeHistoryResponse,
+} from './employee-history.js';

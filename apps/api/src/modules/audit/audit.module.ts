@@ -10,6 +10,7 @@ import { AuditQueryService } from './application/audit-query.service';
 @Module({
   controllers: [AuditController],
   providers: [AuditService, AuditQueryService],
-  exports: [AuditService],
+  // AuditQueryService is exported for AUDIT-06's per-record history (read-only).
+  exports: [AuditService, AuditQueryService],
 })
 export class AuditModule {}

@@ -241,6 +241,8 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   // ROLE-02: the STAFF path to the same users — company from the PATH, staff
   // only (client reps refused by scopeOf even though they hold client-user.*;
   // proven in client-portal-users.e2e-spec).
+  // AUDIT-06: one person's curated history — staff only (employee.history).
+  'GET /employees/:id/history': 'staff',
   'GET /clients/:clientId/users': 'staff',
   'GET /clients/:clientId/users/:id': 'staff',
   'POST /clients/:clientId/users': 'staff',

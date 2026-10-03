@@ -40,6 +40,7 @@ export type AuditEntryMinAggregateOutputType = {
   actorRole: string | null
   clientId: string | null
   resource: string | null
+  resourceId: string | null
   action: string | null
   requestId: string | null
   createdAt: Date | null
@@ -51,6 +52,7 @@ export type AuditEntryMaxAggregateOutputType = {
   actorRole: string | null
   clientId: string | null
   resource: string | null
+  resourceId: string | null
   action: string | null
   requestId: string | null
   createdAt: Date | null
@@ -62,6 +64,7 @@ export type AuditEntryCountAggregateOutputType = {
   actorRole: number
   clientId: number
   resource: number
+  resourceId: number
   action: number
   before: number
   after: number
@@ -85,6 +88,7 @@ export type AuditEntryMinAggregateInputType = {
   actorRole?: true
   clientId?: true
   resource?: true
+  resourceId?: true
   action?: true
   requestId?: true
   createdAt?: true
@@ -96,6 +100,7 @@ export type AuditEntryMaxAggregateInputType = {
   actorRole?: true
   clientId?: true
   resource?: true
+  resourceId?: true
   action?: true
   requestId?: true
   createdAt?: true
@@ -107,6 +112,7 @@ export type AuditEntryCountAggregateInputType = {
   actorRole?: true
   clientId?: true
   resource?: true
+  resourceId?: true
   action?: true
   before?: true
   after?: true
@@ -207,6 +213,7 @@ export type AuditEntryGroupByOutputType = {
   actorRole: string | null
   clientId: string | null
   resource: string
+  resourceId: string | null
   action: string
   before: runtime.JsonValue | null
   after: runtime.JsonValue | null
@@ -243,6 +250,7 @@ export type AuditEntryWhereInput = {
   actorRole?: Prisma.StringNullableFilter<"AuditEntry"> | string | null
   clientId?: Prisma.UuidNullableFilter<"AuditEntry"> | string | null
   resource?: Prisma.StringFilter<"AuditEntry"> | string
+  resourceId?: Prisma.UuidNullableFilter<"AuditEntry"> | string | null
   action?: Prisma.StringFilter<"AuditEntry"> | string
   before?: Prisma.JsonNullableFilter<"AuditEntry">
   after?: Prisma.JsonNullableFilter<"AuditEntry">
@@ -256,6 +264,7 @@ export type AuditEntryOrderByWithRelationInput = {
   actorRole?: Prisma.SortOrderInput | Prisma.SortOrder
   clientId?: Prisma.SortOrderInput | Prisma.SortOrder
   resource?: Prisma.SortOrder
+  resourceId?: Prisma.SortOrderInput | Prisma.SortOrder
   action?: Prisma.SortOrder
   before?: Prisma.SortOrderInput | Prisma.SortOrder
   after?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -272,6 +281,7 @@ export type AuditEntryWhereUniqueInput = Prisma.AtLeast<{
   actorRole?: Prisma.StringNullableFilter<"AuditEntry"> | string | null
   clientId?: Prisma.UuidNullableFilter<"AuditEntry"> | string | null
   resource?: Prisma.StringFilter<"AuditEntry"> | string
+  resourceId?: Prisma.UuidNullableFilter<"AuditEntry"> | string | null
   action?: Prisma.StringFilter<"AuditEntry"> | string
   before?: Prisma.JsonNullableFilter<"AuditEntry">
   after?: Prisma.JsonNullableFilter<"AuditEntry">
@@ -285,6 +295,7 @@ export type AuditEntryOrderByWithAggregationInput = {
   actorRole?: Prisma.SortOrderInput | Prisma.SortOrder
   clientId?: Prisma.SortOrderInput | Prisma.SortOrder
   resource?: Prisma.SortOrder
+  resourceId?: Prisma.SortOrderInput | Prisma.SortOrder
   action?: Prisma.SortOrder
   before?: Prisma.SortOrderInput | Prisma.SortOrder
   after?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -306,6 +317,7 @@ export type AuditEntryScalarWhereWithAggregatesInput = {
   actorRole?: Prisma.StringNullableWithAggregatesFilter<"AuditEntry"> | string | null
   clientId?: Prisma.UuidNullableWithAggregatesFilter<"AuditEntry"> | string | null
   resource?: Prisma.StringWithAggregatesFilter<"AuditEntry"> | string
+  resourceId?: Prisma.UuidNullableWithAggregatesFilter<"AuditEntry"> | string | null
   action?: Prisma.StringWithAggregatesFilter<"AuditEntry"> | string
   before?: Prisma.JsonNullableWithAggregatesFilter<"AuditEntry">
   after?: Prisma.JsonNullableWithAggregatesFilter<"AuditEntry">
@@ -319,6 +331,7 @@ export type AuditEntryCreateInput = {
   actorRole?: string | null
   clientId?: string | null
   resource: string
+  resourceId?: string | null
   action: string
   before?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   after?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -332,6 +345,7 @@ export type AuditEntryUncheckedCreateInput = {
   actorRole?: string | null
   clientId?: string | null
   resource: string
+  resourceId?: string | null
   action: string
   before?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   after?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -345,6 +359,7 @@ export type AuditEntryUpdateInput = {
   actorRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   clientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resource?: Prisma.StringFieldUpdateOperationsInput | string
+  resourceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   action?: Prisma.StringFieldUpdateOperationsInput | string
   before?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   after?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -358,6 +373,7 @@ export type AuditEntryUncheckedUpdateInput = {
   actorRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   clientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resource?: Prisma.StringFieldUpdateOperationsInput | string
+  resourceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   action?: Prisma.StringFieldUpdateOperationsInput | string
   before?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   after?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -371,6 +387,7 @@ export type AuditEntryCreateManyInput = {
   actorRole?: string | null
   clientId?: string | null
   resource: string
+  resourceId?: string | null
   action: string
   before?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   after?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -384,6 +401,7 @@ export type AuditEntryUpdateManyMutationInput = {
   actorRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   clientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resource?: Prisma.StringFieldUpdateOperationsInput | string
+  resourceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   action?: Prisma.StringFieldUpdateOperationsInput | string
   before?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   after?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -397,6 +415,7 @@ export type AuditEntryUncheckedUpdateManyInput = {
   actorRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   clientId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   resource?: Prisma.StringFieldUpdateOperationsInput | string
+  resourceId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   action?: Prisma.StringFieldUpdateOperationsInput | string
   before?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   after?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
@@ -410,6 +429,7 @@ export type AuditEntryCountOrderByAggregateInput = {
   actorRole?: Prisma.SortOrder
   clientId?: Prisma.SortOrder
   resource?: Prisma.SortOrder
+  resourceId?: Prisma.SortOrder
   action?: Prisma.SortOrder
   before?: Prisma.SortOrder
   after?: Prisma.SortOrder
@@ -427,6 +447,7 @@ export type AuditEntryMaxOrderByAggregateInput = {
   actorRole?: Prisma.SortOrder
   clientId?: Prisma.SortOrder
   resource?: Prisma.SortOrder
+  resourceId?: Prisma.SortOrder
   action?: Prisma.SortOrder
   requestId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -438,6 +459,7 @@ export type AuditEntryMinOrderByAggregateInput = {
   actorRole?: Prisma.SortOrder
   clientId?: Prisma.SortOrder
   resource?: Prisma.SortOrder
+  resourceId?: Prisma.SortOrder
   action?: Prisma.SortOrder
   requestId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -463,6 +485,7 @@ export type AuditEntrySelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   actorRole?: boolean
   clientId?: boolean
   resource?: boolean
+  resourceId?: boolean
   action?: boolean
   before?: boolean
   after?: boolean
@@ -476,6 +499,7 @@ export type AuditEntrySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   actorRole?: boolean
   clientId?: boolean
   resource?: boolean
+  resourceId?: boolean
   action?: boolean
   before?: boolean
   after?: boolean
@@ -489,6 +513,7 @@ export type AuditEntrySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   actorRole?: boolean
   clientId?: boolean
   resource?: boolean
+  resourceId?: boolean
   action?: boolean
   before?: boolean
   after?: boolean
@@ -502,6 +527,7 @@ export type AuditEntrySelectScalar = {
   actorRole?: boolean
   clientId?: boolean
   resource?: boolean
+  resourceId?: boolean
   action?: boolean
   before?: boolean
   after?: boolean
@@ -509,7 +535,7 @@ export type AuditEntrySelectScalar = {
   createdAt?: boolean
 }
 
-export type AuditEntryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "actorId" | "actorRole" | "clientId" | "resource" | "action" | "before" | "after" | "requestId" | "createdAt", ExtArgs["result"]["auditEntry"]>
+export type AuditEntryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "actorId" | "actorRole" | "clientId" | "resource" | "resourceId" | "action" | "before" | "after" | "requestId" | "createdAt", ExtArgs["result"]["auditEntry"]>
 
 export type $AuditEntryPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "AuditEntry"
@@ -520,6 +546,7 @@ export type $AuditEntryPayload<ExtArgs extends runtime.Types.Extensions.Internal
     actorRole: string | null
     clientId: string | null
     resource: string
+    resourceId: string | null
     action: string
     before: runtime.JsonValue | null
     after: runtime.JsonValue | null
@@ -953,6 +980,7 @@ export interface AuditEntryFieldRefs {
   readonly actorRole: Prisma.FieldRef<"AuditEntry", 'String'>
   readonly clientId: Prisma.FieldRef<"AuditEntry", 'String'>
   readonly resource: Prisma.FieldRef<"AuditEntry", 'String'>
+  readonly resourceId: Prisma.FieldRef<"AuditEntry", 'String'>
   readonly action: Prisma.FieldRef<"AuditEntry", 'String'>
   readonly before: Prisma.FieldRef<"AuditEntry", 'Json'>
   readonly after: Prisma.FieldRef<"AuditEntry", 'Json'>

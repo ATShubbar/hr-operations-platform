@@ -93,6 +93,8 @@ export class EmployeeAccountsService {
       const token = await this.tokens.issue(account.id, 'invite', INVITE_TTL_SECONDS, tx);
       await this.audit.record(tx, {
         resource: 'employee-user',
+        // The EMPLOYEE is the record an account change is about (AUDIT-06).
+        resourceId: employeeId,
         action: 'invite',
         clientId: employee.clientId,
         // The address and the record — never the token.
@@ -179,6 +181,7 @@ export class EmployeeAccountsService {
       if (account.status !== status) {
         await this.audit.record(tx, {
           resource: 'employee-user',
+          resourceId: account.employeeId,
           action,
           clientId,
           before: { status: account.status },

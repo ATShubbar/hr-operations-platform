@@ -36,6 +36,7 @@ export class EmployeesService {
       const row = await tx.employee.create({ data });
       await this.audit.record(tx, {
         resource: 'employee',
+        resourceId: row.id,
         action: 'create',
         clientId: row.clientId,
         after: snapshot(row),
@@ -57,6 +58,7 @@ export class EmployeesService {
       const row = await tx.employee.update({ where: { id }, data });
       await this.audit.record(tx, {
         resource: 'employee',
+        resourceId: id,
         action,
         clientId: row.clientId,
         before: snapshot(before),

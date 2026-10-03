@@ -162,6 +162,17 @@ export class UsersService {
     return this.prisma.authUser.findUnique({ where: { email: email.toLowerCase() } });
   }
 
+  // Names for a set of actor ids (AUDIT-06's history): id → display name, for
+  // any principal. Only the name — never the account's email or status.
+  async displayNames(ids: readonly string[]): Promise<Map<string, string | null>> {
+    if (ids.length === 0) return new Map();
+    const rows = await this.prisma.authUser.findMany({
+      where: { id: { in: [...new Set(ids)] } },
+      select: { id: true, displayName: true },
+    });
+    return new Map(rows.map((r) => [r.id, r.displayName]));
+  }
+
   findById(id: string): Promise<AuthUser | null> {
     return this.prisma.authUser.findUnique({ where: { id } });
   }

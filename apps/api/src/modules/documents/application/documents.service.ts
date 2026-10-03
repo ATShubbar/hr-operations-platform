@@ -59,6 +59,7 @@ export class DocumentsService {
       const row = await tx.document.create({ data: { ...input, storageKey } });
       await this.audit.record(tx, {
         resource: 'document',
+        resourceId: row.id,
         action: 'create',
         clientId: row.clientId,
         after: snapshot(row),
@@ -79,6 +80,7 @@ export class DocumentsService {
       });
       await this.audit.record(tx, {
         resource: 'document',
+        resourceId: row.id,
         action: 'confirm',
         clientId: row.clientId,
         before: snapshot(before),
@@ -97,6 +99,7 @@ export class DocumentsService {
       const row = await tx.document.update({ where: { id }, data: { status: 'quarantined' } });
       await this.audit.record(tx, {
         resource: 'document',
+        resourceId: row.id,
         action: 'quarantine',
         clientId: row.clientId,
         before: snapshot(before),
@@ -115,6 +118,7 @@ export class DocumentsService {
       const row = await tx.document.update({ where: { id }, data: { legalHold: held } });
       await this.audit.record(tx, {
         resource: 'document',
+        resourceId: row.id,
         action: held ? 'legal-hold' : 'legal-release',
         clientId: row.clientId,
         before: snapshot(before),
@@ -158,6 +162,16 @@ export class DocumentsService {
     });
   }
 
+  // Every document ever attached to an employee, DELETED ONES INCLUDED — their
+  // history is still this person's history (AUDIT-06). Only what a timeline
+  // needs to name an entry: id, title, category.
+  allForEmployee(employeeId: string): Promise<Pick<DocumentRecord, 'id' | 'title' | 'category'>[]> {
+    return this.prisma.document.findMany({
+      where: { employeeId },
+      select: { id: true, title: true, category: true },
+    });
+  }
+
   // Soft-delete (DOC-03): mark the record deleted, keeping it for audit/
   // retention. The caller removes the blob from storage first — the metadata row
   // survives (it holds no PII blob, only category/expiry). Audited.
@@ -168,6 +182,7 @@ export class DocumentsService {
       const row = await tx.document.update({ where: { id }, data: { status: 'deleted' } });
       await this.audit.record(tx, {
         resource: 'document',
+        resourceId: row.id,
         action: 'delete',
         clientId: row.clientId,
         before: snapshot(before),

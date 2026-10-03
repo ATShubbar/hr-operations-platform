@@ -27,10 +27,10 @@ export class AuditService {
     // of which role owns the caller's transaction.
     await tx.$executeRaw`
       INSERT INTO aud_entries
-        (actor_id, actor_role, client_id, resource, action, "before", "after", request_id)
+        (actor_id, actor_role, client_id, resource, resource_id, action, "before", "after", request_id)
       VALUES
         (${actorId}::uuid, ${actorRole}, ${clientId}::uuid, ${input.resource},
-         ${input.action}, ${before}::jsonb, ${after}::jsonb, ${requestId})
+         ${input.resourceId ?? null}::uuid, ${input.action}, ${before}::jsonb, ${after}::jsonb, ${requestId})
     `;
   }
 }

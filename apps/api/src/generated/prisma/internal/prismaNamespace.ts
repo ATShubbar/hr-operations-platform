@@ -1989,6 +1989,7 @@ export const AuditEntryScalarFieldEnum = {
   actorRole: 'actorRole',
   clientId: 'clientId',
   resource: 'resource',
+  resourceId: 'resourceId',
   action: 'action',
   before: 'before',
   after: 'after',

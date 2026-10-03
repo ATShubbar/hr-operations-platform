@@ -53,6 +53,12 @@ export const PERMISSIONS = [
   'employee.create',
   'employee.update',
   'employee.delete',
+  // A person's HISTORY (AUDIT-06): what happened on their record, documents and
+  // GRO processes — who, what, when, never the before/after values. Narrower
+  // than audit.read (the full log, Administrator + Auditor) and held by every
+  // staff role that reads employee records. Owner-approved as a CATALOG
+  // ADDITION, the staff-user.directory pattern (UX-10b), not a matrix change.
+  'employee.history',
   'salary.read',
   'salary.update',
   'govdata.read',
@@ -197,6 +203,7 @@ const STAFF_BASE: readonly Permission[] = [
   'staff-user.directory',
   'client.read',
   'employee.read',
+  'employee.history',
   'config.read',
   'config.read-self',
   'config.write-self',

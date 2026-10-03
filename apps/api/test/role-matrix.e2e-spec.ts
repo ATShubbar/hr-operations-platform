@@ -67,6 +67,14 @@ const MATRIX: Record<string, Row> = {
     hr_officer: ['employee-user.read', 'employee-user.invite', 'employee-user.update'],
     auditor: ['employee-user.read'],
   },
+  // AUDIT-06 catalog addition (not a matrix change): every staff role that
+  // reads employee records reads their curated history.
+  'Employee history (curated, no values)': {
+    administrator: ['employee.history'],
+    hr_officer: ['employee.history'],
+    gro_officer: ['employee.history'],
+    auditor: ['employee.history'],
+  },
   'Employees — core profile': {
     administrator: ['employee.read', 'employee.create', 'employee.update', 'employee.delete'],
     hr_officer: ['employee.read', 'employee.create', 'employee.update'],

@@ -1170,8 +1170,7 @@
     "soon": {
       "family": "Dependants on this employee's sponsorship and their own iqama dates.",
       "leave": "Balances, requests and leave taken.",
-      "mob": "Onboarding and final-exit steps, in order, with what is blocking each.",
-      "history": "Everything recorded about this person, newest first. Arrives once audit entries record which record they are about."
+      "mob": "Onboarding and final-exit steps, in order, with what is blocking each."
     },
     "redaction": {
       "all": "{role} sees every field on this record.",
@@ -1317,6 +1316,44 @@
       "completing": "Completing…",
       "cancel": "Cancel",
       "error": "Could not change the status. Try again."
+    },
+    "history": {
+      "action": {
+        "employee": {
+          "create": "Record created",
+          "update": "Profile updated",
+          "salary-update": "Pay updated",
+          "govdata-update": "Government data updated",
+          "terminate": "Employment terminated",
+          "gro-completion": "Expiry updated by a completed procedure"
+        },
+        "employee-user": {
+          "invite": "Invited to self-service",
+          "update": "Self-service access changed",
+          "deactivate-on-termination": "Self-service access closed"
+        },
+        "document": {
+          "create": "Document added",
+          "confirm": "Document scanned and stored",
+          "quarantine": "Document quarantined",
+          "legal-hold": "Legal hold changed",
+          "delete": "Document deleted"
+        },
+        "gro-process": {
+          "create": "Procedure opened",
+          "update": "Procedure updated",
+          "status": "Procedure status changed"
+        }
+      },
+      "fallback": "{resource} · {action}",
+      "by": "{name} · {role}",
+      "byRole": "{role}",
+      "system": "System",
+      "unknownActor": "Unknown user",
+      "empty": "Nothing recorded on this person yet.",
+      "since": "History is kept from 4 Oct 2026; earlier changes were logged without the record they concerned.",
+      "truncated": "Showing the 100 most recent entries.",
+      "error": "Could not load this person's history."
     }
   }
 }
