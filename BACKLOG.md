@@ -2399,7 +2399,7 @@ Nitaqat reporting; request comments + attachments; saved views; a "viewing as" r
 | SS-05 | My requests: raise + track; client reps see them | SS-03 | **done** ([evidence](evidence/self-service/SS-05.md)) |
 | SS-06a | Accounts API: staff invitation (`employee-user.*`), set password from the link, password reset, deactivate + revoke on termination (event → self-service → Auth) — **plus session revocation for every account type** | SS-05 | **done** ([evidence](evidence/self-service/SS-06a.md)) |
 | SS-06b | Accounts web: the set-password page the email links to (reads `#token`), "Forgot password" on login, staff "Invite to self-service" on the employee record | SS-06a; **real email transport for production** | **done** ([evidence](evidence/self-service/SS-06b.md)) |
-| SS-07 | "Me" web screens — phone-first (375px), ar/en, RTL | SS-04, SS-05 | planned |
+| SS-07 | "Me" web screens — phone-first (375px), ar/en, RTL | SS-04, SS-05 | **done** ([evidence](evidence/self-service/SS-07.md)) — **SS epic COMPLETE** |
 
 ### SS-01 — Identity: employees can exist as users
 - **Objective:** the `employee` principal exists, bound to one employee record, and can do
@@ -2543,6 +2543,26 @@ Nitaqat reporting; request comments + attachments; saved views; a "viewing as" r
   screen shows raw API messages). A test token was minted via the hash path for the browser loop
   (the capture logs subjects only). Found for SS-07: employees land on the staff `/today` with
   missing `roles.employee` labels.
+
+### SS-07 — The "Me" screens (phone-first)
+- **Objective:** an employee lands on their own file — documents (downloadable), identifiers,
+  pay, requests — and can raise a request, comfortably on a phone.
+- **Files:** NEW `(app)/me/{page,requests/page,raise-request-dialog}.tsx`; `app-nav.tsx`,
+  `app-shell.tsx`, `header-location.tsx`, `login/page.tsx`, messages; API `permissions.ts` + the
+  SS-01 spec; ADR-011 rev. 3.
+- **DoD:** live as an employee (landing, every section, download, raise → staff see it, bell);
+  flag-off state; `/` and `/today` → `/me`; 2 screens × 2 locales × 375/1280; staff + portal nav
+  unchanged; API + web gates.
+- **Evidence:** `evidence/self-service/SS-07.md`.
+- **Dependencies:** SS-06b. **Risks/decisions:** stated API change — employee role +
+  `notification.read`, `config.read-self/write-self` (own-identity `self` routes; the principal
+  fence stays green). Employees are confined to `/me*` by the shell, which renders NOTHING while
+  redirecting (0 staff requests fired, measured). Caught: the raise form cleared itself during
+  its exit animation → reset on open. **False alarm recorded:** one run showed the fence failing
+  (`GET /config -> 200`) — unreproducible (3 × 21/21, 5 × 64/64) and impossible by the exact
+  policy check: the supertest flake, which can therefore fake OR hide a security failure. Found
+  not fixed: the shared dialog close button says "Close" in English in Arabic. **SS epic
+  COMPLETE (ARCH-SS + SS-01..07).** API **473/473** ×3.
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

@@ -51,6 +51,11 @@ type Item = {
   count?: number;
   /** What the number means, for assistive tech (the digit alone is ambiguous). */
   countLabel?: string;
+  /**
+   * Current only on this exact path, not its children (SS-07): "My file" lives at
+   * `/me` and "My requests" at `/me/requests`, so prefix matching would mark both.
+   */
+  exact?: boolean;
 };
 type Group = { heading?: string; items: Item[] };
 type Variant = 'sidebar' | 'sheet';
@@ -64,12 +69,12 @@ const SHEET_ROW = 'min-h-11 gap-3 rounded-md px-2.5 py-2 text-sm';
 
 // A nav entry is current when you are on its screen OR inside it — the
 // separator stops `/portal/company` matching a future `/portal/companies`.
-function isCurrentPath(pathname: string, href: string) {
-  return pathname === href || pathname.startsWith(`${href}/`);
+function isCurrentPath(pathname: string, href: string, exact = false) {
+  return pathname === href || (!exact && pathname.startsWith(`${href}/`));
 }
 
 function NavRow({ item, variant, pathname }: { item: Item; variant: Variant; pathname: string }) {
-  const current = isCurrentPath(pathname, item.href);
+  const current = isCurrentPath(pathname, item.href, item.exact);
   const showCount = item.count !== undefined && item.count > 0;
   return (
     <Link
@@ -138,88 +143,105 @@ export function AppNav({
   const canAudit = useCan('audit.read');
   const canStaffUsers = useCan('staff-user.read');
   const canPortal = useCan('portal.read');
+  // Employee self-service (SS-07): only the employee role holds this.
+  const canSelfService = useCan('self-service.read');
   const canPortalUsers = useCan('client-user.read');
 
-  const groups: Group[] = canPortal
+  const groups: Group[] = canSelfService
     ? [
+        // An employee's whole surface is their own file — two screens, so (like
+        // the portal) one ungrouped section: a heading over it would be chrome.
         {
           items: [
-            { href: '/portal/company', label: t('nav.portalCompany'), icon: Building2 },
-            { href: '/portal/employees', label: t('nav.portalEmployees'), icon: UsersRound },
-            { href: '/portal/documents', label: t('nav.portalDocuments'), icon: FileText },
-            // Client ADMIN only — the matrix gives client-user.* to that role alone.
-            ...(canPortalUsers
-              ? [{ href: '/portal/users', label: t('nav.portalUsers'), icon: UserRound }]
-              : []),
+            { href: '/me', label: t('nav.myFile'), icon: UserRound, exact: true },
+            { href: '/me/requests', label: t('nav.myRequests'), icon: ClipboardList },
           ],
         },
       ]
-    : [
-        // Today is the front door for staff (UX-04) and sits ABOVE the groups
-        // rather than inside one — it is the whole queue, not a category of it.
-        { items: [{ href: '/today', label: t('nav.today'), icon: LayoutDashboard }] },
-        {
-          heading: t('nav.groupClients'),
-          items: [
-            ...(canClients ? [{ href: '/clients', label: t('nav.clients'), icon: Building2 }] : []),
-            ...(canEmployees
-              ? [{ href: '/employees', label: t('nav.employees'), icon: UsersRound }]
-              : []),
-            ...(canDocuments
-              ? [{ href: '/documents', label: t('nav.documents'), icon: FileText }]
-              : []),
-            ...(canDocuments ? [{ href: '/expiry', label: t('nav.expiry'), icon: Activity }] : []),
-          ],
-        },
-        {
-          heading: t('nav.groupOperations'),
-          items: [
-            ...(canRequests
-              ? [
-                  {
-                    href: '/requests',
-                    label: t('nav.requests'),
-                    icon: ClipboardList,
-                    count: counts.requests,
-                    countLabel: t('nav.countRequests', { count: counts.requests ?? 0 }),
-                  },
-                ]
-              : []),
-            ...(canTasks
-              ? [
-                  {
-                    href: '/tasks',
-                    label: t('nav.tasks'),
-                    icon: ListChecks,
-                    count: counts.tasks,
-                    countLabel: t('nav.countTasks', { count: counts.tasks ?? 0 }),
-                  },
-                ]
-              : []),
-            ...(canGro ? [{ href: '/gro', label: t('nav.gro'), icon: Landmark }] : []),
-            ...(canCalendar
-              ? [{ href: '/calendar', label: t('nav.calendar'), icon: CalendarDays }]
-              : []),
-            ...(canIntegrations
-              ? [{ href: '/integrations', label: t('nav.integrations'), icon: CalendarCheck }]
-              : []),
-          ],
-        },
-        {
-          heading: t('nav.groupRecruitment'),
-          items: [
-            ...(canVacancies
-              ? [{ href: '/vacancies', label: t('nav.vacancies'), icon: Briefcase }]
-              : []),
-            ...(canCandidates
-              ? [{ href: '/candidates', label: t('nav.candidates'), icon: UserRound }]
-              : []),
-          ],
-        },
-        // A role can hold none of a group's capabilities — a Recruiter has no
-        // GRO, Finance has no recruitment — so an empty group must not leave a
-        // heading standing over nothing.
-      ].filter((g) => g.items.length > 0);
+    : canPortal
+      ? [
+          {
+            items: [
+              { href: '/portal/company', label: t('nav.portalCompany'), icon: Building2 },
+              { href: '/portal/employees', label: t('nav.portalEmployees'), icon: UsersRound },
+              { href: '/portal/documents', label: t('nav.portalDocuments'), icon: FileText },
+              // Client ADMIN only — the matrix gives client-user.* to that role alone.
+              ...(canPortalUsers
+                ? [{ href: '/portal/users', label: t('nav.portalUsers'), icon: UserRound }]
+                : []),
+            ],
+          },
+        ]
+      : [
+          // Today is the front door for staff (UX-04) and sits ABOVE the groups
+          // rather than inside one — it is the whole queue, not a category of it.
+          { items: [{ href: '/today', label: t('nav.today'), icon: LayoutDashboard }] },
+          {
+            heading: t('nav.groupClients'),
+            items: [
+              ...(canClients
+                ? [{ href: '/clients', label: t('nav.clients'), icon: Building2 }]
+                : []),
+              ...(canEmployees
+                ? [{ href: '/employees', label: t('nav.employees'), icon: UsersRound }]
+                : []),
+              ...(canDocuments
+                ? [{ href: '/documents', label: t('nav.documents'), icon: FileText }]
+                : []),
+              ...(canDocuments
+                ? [{ href: '/expiry', label: t('nav.expiry'), icon: Activity }]
+                : []),
+            ],
+          },
+          {
+            heading: t('nav.groupOperations'),
+            items: [
+              ...(canRequests
+                ? [
+                    {
+                      href: '/requests',
+                      label: t('nav.requests'),
+                      icon: ClipboardList,
+                      count: counts.requests,
+                      countLabel: t('nav.countRequests', { count: counts.requests ?? 0 }),
+                    },
+                  ]
+                : []),
+              ...(canTasks
+                ? [
+                    {
+                      href: '/tasks',
+                      label: t('nav.tasks'),
+                      icon: ListChecks,
+                      count: counts.tasks,
+                      countLabel: t('nav.countTasks', { count: counts.tasks ?? 0 }),
+                    },
+                  ]
+                : []),
+              ...(canGro ? [{ href: '/gro', label: t('nav.gro'), icon: Landmark }] : []),
+              ...(canCalendar
+                ? [{ href: '/calendar', label: t('nav.calendar'), icon: CalendarDays }]
+                : []),
+              ...(canIntegrations
+                ? [{ href: '/integrations', label: t('nav.integrations'), icon: CalendarCheck }]
+                : []),
+            ],
+          },
+          {
+            heading: t('nav.groupRecruitment'),
+            items: [
+              ...(canVacancies
+                ? [{ href: '/vacancies', label: t('nav.vacancies'), icon: Briefcase }]
+                : []),
+              ...(canCandidates
+                ? [{ href: '/candidates', label: t('nav.candidates'), icon: UserRound }]
+                : []),
+            ],
+          },
+          // A role can hold none of a group's capabilities — a Recruiter has no
+          // GRO, Finance has no recruitment — so an empty group must not leave a
+          // heading standing over nothing.
+        ].filter((g) => g.items.length > 0);
 
   // Administration sits at the bottom of the scroll area behind a rule: reached
   // occasionally, and not part of the daily work the groups above describe.
@@ -283,7 +305,10 @@ export function NavFoot({ variant = 'sidebar' }: { variant?: Variant }) {
   const pathname = usePathname();
   const router = useRouter();
   const me = useSession();
-  const canSettings = useCan('config.read-self');
+  // Employees hold config.read-self (SS-07 — the header's language switcher
+  // remembers their choice), but the Settings SCREEN is staff/portal furniture;
+  // their surface is /me, and the shell sends them back there.
+  const canSettings = useCan('config.read-self') && me.principalType !== 'employee';
   const [busy, setBusy] = useState(false);
 
   // Real revocation (AUTH-05): POST /auth/logout destroys the server session,

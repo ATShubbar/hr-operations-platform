@@ -24,7 +24,11 @@ import { Link, usePathname } from '@/i18n/navigation';
 // Ungated on purpose: a recruiter who deep-links to /gro sees the 403 state, and
 // the header should still say where they are. The labels are the nav's own keys,
 // so the line and the highlighted nav row always agree.
+// Order matters where one route is a prefix of another: `/me/requests` must be
+// found before `/me` (SS-07), or it would read as a record under "My file".
 const SCREENS: { href: string; key: string }[] = [
+  { href: '/me/requests', key: 'myRequests' },
+  { href: '/me', key: 'myFile' },
   { href: '/today', key: 'today' },
   { href: '/clients', key: 'clients' },
   { href: '/employees', key: 'employees' },
@@ -112,9 +116,7 @@ export function HeaderLocation() {
                 {SEP}
               </>
             ) : (
-              <span className="truncate font-medium">
-                {screenLabel}
-              </span>
+              <span className="truncate font-medium">{screenLabel}</span>
             )}
           </li>
         )}
@@ -122,9 +124,7 @@ export function HeaderLocation() {
           <li className="min-w-0">
             {/* Until the record has loaded there is no name to show; an empty
                 current crumb is better than a UUID from the URL. */}
-            <span className="block truncate font-medium">
-              {record ?? ''}
-            </span>
+            <span className="block truncate font-medium">{record ?? ''}</span>
           </li>
         )}
         {!screenLabel && <li className="truncate font-medium md:hidden">{t('nav.console')}</li>}

@@ -134,7 +134,15 @@ describe('Employee principal (SS-01, e2e)', () => {
     // SS-03 added `self-service.read` (the /me surface), SS-05 `self-service.create`
     // (raising one's own request) — and NOTHING a staff or client-rep endpoint
     // checks (the isolation harness's principal fence).
-    expect(res.body.permissions).toEqual(['session.end', 'self-service.read', 'self-service.create']);
+    // SS-07 added the shell's own-identity controls (bell, language).
+    expect(res.body.permissions).toEqual([
+      'session.end',
+      'self-service.read',
+      'self-service.create',
+      'notification.read',
+      'config.read-self',
+      'config.write-self',
+    ]);
   });
 
   it.each([
@@ -151,8 +159,6 @@ describe('Employee principal (SS-01, e2e)', () => {
     ['GET', '/reports'],
     ['GET', '/portal/company'],
     ['GET', '/portal/employees'],
-    ['GET', '/notifications'],
-    ['GET', '/config/me'],
   ])('is refused %s %s (403 — deny by default)', async (method, path) => {
     const emp = await sweepPrincipal();
     const http = request(app.getHttpServer());

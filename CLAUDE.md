@@ -906,6 +906,17 @@ gets a **Self-service access** card (`employee-user.*`): status pill, invite/res
 deactivate-with-confirm/reactivate; server refusals MAPPED to translations (no screen shows raw
 API messages). Recruiters see no card and make no account request. For SS-07: an employee lands
 on staff `/today` with missing `roles.employee` labels.
+**SS-07 done — the "Me" screens; employee self-service (SS epic) COMPLETE.** `(app)/me` (My file:
+who · documents with days-left pills + download · identifiers · pay with IBAN `•••• last4` ·
+requests summary) and `(app)/me/requests` (own list + raise dialog), phone-first. AppNav has a
+third branch (employees: *My file* / *My requests*, `exact` matching, no Settings); **AppShell
+confines employees to `/me*`** and renders nothing while redirecting (0 staff calls); login lands
+them on `/me`. Employee role + `notification.read` / `config.read-self` / `config.write-self`
+(own-identity `self` routes — bell + language; ADR-011 rev. 3). Live: signed in through the form
+as Ahmed Hassan → `/ar/me`, raised a request staff then saw, flag-off → calm "not available".
+**A false fence failure (`GET /config -> 200` for an employee) did not reproduce in 8 runs and
+is impossible by the exact policy check — the supertest flake can fake or MASK a security
+failure, so the REP-04 harness fix is now urgent.** Production still needs SMTP. API **473/473**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

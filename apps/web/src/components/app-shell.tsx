@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { AppNav, NavFoot } from '@/components/app-nav';
 import { BrandMark } from '@/components/brand-mark';
@@ -9,6 +9,8 @@ import { LanguageSwitcher } from '@/components/language-switcher';
 import { MobileNav } from '@/components/mobile-nav';
 import { NavCountsProvider } from '@/components/nav-counts';
 import { NotificationBell } from '@/components/notification-bell';
+import { usePathname, useRouter } from '@/i18n/navigation';
+import { useSession } from '@/lib/session';
 
 // Authenticated app shell (AUDIT-05, made role-aware in AUTH-08). The link list
 // itself moved to AppNav in UX-05 so the sidebar and the mobile sheet render the
@@ -17,10 +19,25 @@ import { NotificationBell } from '@/components/notification-bell';
 // and a 56px header that carries LOCATION (HeaderLocation) rather than account
 // controls — sign-out moved down to the identity it ends.
 export function AppShell({ children }: { children: ReactNode }) {
+  const me = useSession();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  // An employee's whole surface is their own file (SS-07). Anywhere else — the
+  // root URL redirects to /today, a stale bookmark, a typed staff URL — goes to
+  // /me. The page is NOT rendered meanwhile: a child's effects run before this
+  // one, so rendering /today first would fire its staff requests (403s) before
+  // the redirect landed.
+  const misplacedEmployee =
+    me.principalType === 'employee' && pathname !== '/me' && !pathname.startsWith('/me/');
+  useEffect(() => {
+    if (misplacedEmployee) router.replace('/me');
+  }, [misplacedEmployee, router]);
+
   return (
     <NavCountsProvider>
       <HeaderLocationProvider>
-        <ShellFrame>{children}</ShellFrame>
+        <ShellFrame>{misplacedEmployee ? null : children}</ShellFrame>
       </HeaderLocationProvider>
     </NavCountsProvider>
   );

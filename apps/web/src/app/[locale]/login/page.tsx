@@ -45,7 +45,12 @@ export default function LoginPage() {
       // UX-04: staff land on Today — their work queue — rather than on a list of
       // clients or the audit log. Client reps still land on the portal, which is
       // their only surface.
-      const target = me.permissions.includes('portal.read') ? '/portal/company' : '/today';
+      // SS-07: employees land on their own file — their only surface.
+      const target = me.permissions.includes('self-service.read')
+        ? '/me'
+        : me.permissions.includes('portal.read')
+          ? '/portal/company'
+          : '/today';
       let preferred: 'ar' | 'en' | undefined;
       try {
         const cfg = await apiFetch<ConfigEffectiveResponse>('/config/me');

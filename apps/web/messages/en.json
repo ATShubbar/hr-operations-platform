@@ -84,7 +84,9 @@
     "consoleSubtitle": "Operations console",
     "location": "Location",
     "countRequests": "{count, plural, one {# request waiting} other {# requests waiting}}",
-    "countTasks": "{count, plural, one {# task assigned to you} other {# tasks assigned to you}}"
+    "countTasks": "{count, plural, one {# task assigned to you} other {# tasks assigned to you}}",
+    "myFile": "My file",
+    "myRequests": "My requests"
   },
   "documents": {
     "title": "Documents",
@@ -959,7 +961,8 @@
       "finance": "Finance",
       "read_only": "Read Only",
       "client_admin": "Client Admin",
-      "client_user": "Client User"
+      "client_user": "Client User",
+      "employee": "Employee"
     },
     "greeting": "Hello, {name}"
   },
@@ -1020,7 +1023,8 @@
     "finance": "Finance",
     "read_only": "Read Only",
     "client_admin": "Client Administrator",
-    "client_user": "Client User"
+    "client_user": "Client User",
+    "employee": "Employee"
   },
   "account": {
     "setTitle": "Choose a password",
@@ -1084,5 +1088,39 @@
       "terminatedReactivate": "A terminated employee's account can't be reactivated.",
       "invalidEmail": "Enter a valid email address."
     }
+  },
+  "me": {
+    "myFile": "My file",
+    "myDocuments": "My documents",
+    "documentsNote": "The PEOPLE&GRO team renews each of these before it lapses. Nothing here needs doing by you.",
+    "noDocuments": "No documents on file yet.",
+    "download": "Download",
+    "downloadFailed": "Couldn't prepare the download. Try again.",
+    "expired": "Expired",
+    "daysLeft": "{days, plural, =0 {Expires today} one {# day left} other {# days left}}",
+    "myIdentifiers": "My identifiers",
+    "myPay": "My pay",
+    "noneOnFile": "None on file.",
+    "joined": "joined {date}",
+    "myRequests": "My requests",
+    "openWithTeam": "{count, plural, =0 {Nothing with the team right now.} one {# with the team right now.} other {# with the team right now.}}",
+    "openRequests": "Open requests",
+    "requestsSubtitle": "What you've asked for, and where each one stands.",
+    "noRequestsTitle": "No requests yet",
+    "noRequests": "Need a letter, a certificate or a document? Raise a request and the team will pick it up.",
+    "raise": "Raise a request",
+    "raising": "Sending…",
+    "raiseTitle": "Raise a request",
+    "raiseDescription": "Tell the team what you need. You'll see its status here as it moves.",
+    "fieldType": "Type",
+    "fieldTitle": "What do you need?",
+    "titlePlaceholder": "e.g. Salary certificate for my bank",
+    "fieldDescription": "Details (optional)",
+    "titleRequired": "Say briefly what you need.",
+    "raiseFailed": "Couldn't send the request. Try again.",
+    "raised": "Request sent: {title}",
+    "raisedOn": "raised {date}",
+    "notEnabledTitle": "Not available yet",
+    "notEnabled": "Your employer hasn't turned on self-service for your company. Contact HR if you need something."
   }
 }

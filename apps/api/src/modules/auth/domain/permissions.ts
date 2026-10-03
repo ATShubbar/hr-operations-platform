@@ -445,5 +445,16 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
   // `self-service.read` (SS-03 — the /me surface, behind the SS-02 database
   // fence). NOTHING that a staff or client-rep endpoint checks: ADR-011 rev. 2.
   // Every other route stays 403 by deny-by-default.
-  employee: ['session.end', 'self-service.read', 'self-service.create'],
+  employee: [
+    'session.end',
+    'self-service.read',
+    'self-service.create',
+    // SS-07: the shell's own-identity controls — the notification bell (their
+    // request status updates already arrive as notifications, SS-05) and the
+    // remembered UI language. All three gate ONLY the caller's own routes
+    // (`self` in the isolation registry), which the principal fence exempts.
+    'notification.read',
+    'config.read-self',
+    'config.write-self',
+  ],
 };

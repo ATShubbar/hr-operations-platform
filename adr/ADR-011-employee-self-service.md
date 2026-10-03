@@ -4,7 +4,7 @@
 - Date: 2026-10-03
 - Owner: Ahmed Alshubbar (product decisions); implementation per `BACKLOG.md` → SS epic
 - Amends: `architecture.md` v1.4 → **v1.5** ("Users & Authorization", roles, identity, isolation, permission matrix, business modules)
-- Revised: **rev. 1 (2026-10-03, SS-01)**, **rev. 2 (2026-10-03, SS-03)** — see "Revision notes" at the end.
+- Revised: **rev. 1 (2026-10-03, SS-01)**, **rev. 2 (2026-10-03, SS-03)**, **rev. 3 (2026-10-03, SS-07)** — see "Revision notes" at the end.
 
 ## Context
 `architecture.md` v1.1–v1.4 placed employee self-service explicitly **out of scope**:
@@ -202,4 +202,12 @@ principal**, and the first whose isolation boundary is narrower than a client co
   views), pinned field-for-field by a test. Owner-approved exclusions: Saudization
   classification, Absher service reference, WPS status, GOSI contribution basis, timestamps;
   the IBAN is returned as its last 4 characters only.
+
+**rev. 3 (2026-10-03, SS-07)** — the employee role's final permission set, for the record:
+`session.end`, `self-service.read`, `self-service.create` (SS-05: raising one's own request),
+and the shell's own-identity controls `notification.read` (status updates on their requests
+already arrive as notifications), `config.read-self` and `config.write-self` (the remembered UI
+language). The last three gate only the caller's OWN routes (`self` in the isolation registry),
+which the principal fence exempts — it stayed green with them granted. Still none of the staff
+resource names.
 
