@@ -23,6 +23,11 @@ export * from './enums';
  */
 export type AuthUser = Prisma.AuthUserModel
 /**
+ * Model AuthAccountToken
+ * 
+ */
+export type AuthAccountToken = Prisma.AuthAccountTokenModel
+/**
  * Model CoreScopeCheck
  * 
  */

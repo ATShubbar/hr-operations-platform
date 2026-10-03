@@ -4,6 +4,7 @@ import type { AuthUserModel as AuthUser } from '../../../generated/prisma/models
 import { Prisma } from '../../../generated/prisma/client';
 import { AuditService } from '../../audit/public-api';
 import { PasswordService } from './password.service';
+import { SessionsService } from './sessions.service';
 import { UsersService } from './users.service';
 import type { StaffRole } from '../domain/permissions';
 
@@ -40,6 +41,7 @@ export class StaffUsersService {
     private readonly users: UsersService,
     private readonly passwords: PasswordService,
     private readonly audit: AuditService,
+    private readonly sessions: SessionsService,
   ) {}
 
   list(): Promise<AuthUser[]> {
@@ -98,7 +100,7 @@ export class StaffUsersService {
     if (id === actorId && (data.status === 'disabled' || data.role !== undefined)) {
       throw new BadRequestException('You cannot change your own role or disable your own account');
     }
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const before = await tx.authUser.findFirst({ where: { id, principalType: 'staff' } });
       if (!before) return null;
       const row = await tx.authUser.update({
@@ -115,8 +117,15 @@ export class StaffUsersService {
         before: { role: before.role, status: before.status, displayName: before.displayName },
         after: { role: row.role, status: row.status, displayName: row.displayName },
       });
-      return row;
+      return { before, row };
     });
+    if (!result) return null;
+    // The session caches the role and the account's standing (SS-06a): a
+    // disable or a role change must end live sessions, not wait 12 hours.
+    if (result.row.status === 'disabled' || result.row.role !== result.before.role) {
+      await this.sessions.destroyAllForUser(id);
+    }
+    return result.row;
   }
 
   /**
@@ -128,7 +137,7 @@ export class StaffUsersService {
     if (id === actorId) {
       throw new BadRequestException('You cannot disable your own account');
     }
-    return this.prisma.$transaction(async (tx) => {
+    const row = await this.prisma.$transaction(async (tx) => {
       const before = await tx.authUser.findFirst({ where: { id, principalType: 'staff' } });
       if (!before) return null;
       if (before.status === 'disabled') return before; // no-op, no audit entry
@@ -141,5 +150,9 @@ export class StaffUsersService {
       });
       return row;
     });
+    // Ends sessions even on the no-op path: an account already disabled must
+    // not have live sessions either (and pre-SS-06a ones may still exist).
+    if (row) await this.sessions.destroyAllForUser(id);
+    return row;
   }
 }

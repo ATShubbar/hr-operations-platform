@@ -3,6 +3,12 @@ export { AuthModule } from './auth.module';
 export { UsersService, type ClientRepStatus } from './application/users.service';
 export { PasswordService } from './application/password.service';
 export {
+  AccountTokensService,
+  INVITE_TTL_SECONDS,
+  RESET_TTL_SECONDS,
+  type AccountTokenPurpose,
+} from './application/account-tokens.service';
+export {
   SESSION_COOKIE,
   SessionsService,
   type SessionData,

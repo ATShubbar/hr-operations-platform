@@ -5,6 +5,7 @@ export { NotificationsModule } from './notifications.module';
 export { NotificationsService } from './application/notifications.service';
 export { NotificationsWorkerModule } from './notifications-worker.module';
 export { NotificationDispatchService } from './application/notification-dispatch.service';
+export { AccountEmailService } from './application/account-email.service';
 export type { NotifyInput } from './domain/notification';
 // The email seam (NOTIF-03): the token + interface (so production binds a real
 // SMTP transport) and the dev capture transport (for inspecting sent mail).

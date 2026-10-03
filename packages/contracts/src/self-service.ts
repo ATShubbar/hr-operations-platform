@@ -113,3 +113,39 @@ export const selfRequestListResponseSchema = z.object({
 export type CreateSelfRequestRequest = z.infer<typeof createSelfRequestRequestSchema>;
 export type SelfRequestResponse = z.infer<typeof selfRequestResponseSchema>;
 export type SelfRequestListResponse = z.infer<typeof selfRequestListResponseSchema>;
+
+// ---- Employee accounts (SS-06a) — staff-managed ----------------------------
+
+// Invite (or re-invite) an employee to self-service: the address the link goes
+// to. Everything else — the employee, their company, the account's role — is
+// fixed by the server.
+export const inviteEmployeeAccountRequestSchema = z.object({ email: z.email().max(254) }).strict();
+
+export const employeeAccountStatusSchema = z.enum(['invited', 'active', 'disabled']);
+
+export const employeeAccountResponseSchema = z.object({
+  employeeId: z.uuid(),
+  email: z.string(),
+  status: employeeAccountStatusSchema,
+  // Whether the holder has ever set a password (an `invited` account has not).
+  passwordSet: z.boolean(),
+  // Invite only: whether the email left the server. A failed send leaves the
+  // invitation valid — staff can resend.
+  emailSent: z.boolean().optional(),
+});
+
+// Deactivate or reactivate. Reactivating returns the account to `active` if a
+// password was ever set, otherwise to `invited`.
+export const updateEmployeeAccountRequestSchema = z
+  .object({ status: z.enum(['active', 'disabled']) })
+  .strict();
+
+// "Forgot password" — always answered the same way, whether or not the address
+// belongs to an account.
+export const passwordResetRequestSchema = z.object({ email: z.string().max(254) }).strict();
+
+export type InviteEmployeeAccountRequest = z.infer<typeof inviteEmployeeAccountRequestSchema>;
+export type EmployeeAccountStatus = z.infer<typeof employeeAccountStatusSchema>;
+export type EmployeeAccountResponse = z.infer<typeof employeeAccountResponseSchema>;
+export type UpdateEmployeeAccountRequest = z.infer<typeof updateEmployeeAccountRequestSchema>;
+export type PasswordResetRequest = z.infer<typeof passwordResetRequestSchema>;

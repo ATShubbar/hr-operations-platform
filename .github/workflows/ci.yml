@@ -11,6 +11,7 @@ env:
   CLIENT_DATABASE_URL: postgresql://app_client:app_client_dev_pw@localhost:5432/hr_platform
   EMPLOYEE_DATABASE_URL: postgresql://app_employee:app_employee_dev_pw@localhost:5432/hr_platform
   REDIS_URL: redis://localhost:6379
+  APP_WEB_ORIGIN: http://localhost:3000
 
 jobs:
   ci:

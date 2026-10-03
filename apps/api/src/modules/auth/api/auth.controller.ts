@@ -13,6 +13,7 @@ import type { Request, Response } from 'express';
 import {
   loginRequestSchema,
   mfaCodeRequestSchema,
+  setPasswordRequestSchema,
   type LoginResponse,
   type MeResponse,
   type MfaEnrollResponse,
@@ -30,6 +31,13 @@ import {
   type SessionData,
 } from '../application/sessions.service';
 import { UsersService } from '../application/users.service';
+import { AccountTokensService } from '../application/account-tokens.service';
+import { PrismaService } from '../../../prisma/prisma.service';
+import { AuditService } from '../../audit/public-api';
+
+// One answer for every unusable link — unknown, used, expired, replaced, or for a
+// disabled account — so the endpoint reveals nothing about which.
+const INVALID_LINK = 'This link is invalid or has expired';
 
 // Pre-computed argon2id hash of a random string: verified against when the
 // email is unknown so response timing doesn't reveal account existence.
@@ -49,7 +57,50 @@ export class AuthController {
     private readonly sessions: SessionsService,
     private readonly mfa: MfaService,
     private readonly policy: PolicyService,
+    private readonly tokens: AccountTokensService,
+    private readonly prisma: PrismaService,
+    private readonly audit: AuditService,
   ) {}
+
+  // Set a password from a one-time emailed link (SS-06a): an invitation's first
+  // password, or a reset. @Public — the holder has no session yet; the TOKEN is
+  // the credential. In one transaction: claim the token (single use), set the
+  // password, turn an invited account active, and audit it. Then every existing
+  // session of the account ends — after a reset, a stolen session must not
+  // outlive the password it was opened with. The caller signs in afterwards;
+  // this endpoint deliberately does not create a session.
+  @Public()
+  @Post('account/set-password')
+  @HttpCode(200)
+  async setPassword(@Body() body: unknown): Promise<{ ok: true }> {
+    const parsed = setPasswordRequestSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException('Invalid payload');
+    const passwordHash = await this.passwords.hash(parsed.data.password);
+
+    const userId = await this.prisma.$transaction(async (tx) => {
+      const claim = await this.tokens.consume(parsed.data.token, tx);
+      if (!claim) return null;
+      const user = await tx.authUser.findUnique({ where: { id: claim.userId } });
+      // A link cannot reopen an account staff closed.
+      if (!user || user.status === 'disabled') return null;
+      if (claim.purpose === 'invite' && user.status !== 'invited') return null;
+      if (claim.purpose === 'reset' && user.status !== 'active') return null;
+      await this.users.setPassword(user.id, passwordHash, tx);
+      if (user.status === 'invited') await this.users.setStatus(user.id, 'active', tx);
+      await this.audit.record(tx, {
+        resource: 'auth-account',
+        action: claim.purpose === 'invite' ? 'activate' : 'reset-password',
+        actorId: user.id,
+        actorRole: user.role,
+        clientId: user.clientId,
+        after: { status: 'active' },
+      });
+      return user.id;
+    });
+    if (!userId) throw new BadRequestException(INVALID_LINK);
+    await this.sessions.destroyAllForUser(userId);
+    return { ok: true };
+  }
 
   // Current authenticated actor (AUTH-08). @Public to the guard, but returns
   // 401 unless the session middleware resolved a FULL session into the context

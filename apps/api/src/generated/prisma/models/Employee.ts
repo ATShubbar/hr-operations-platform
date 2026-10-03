@@ -1125,10 +1125,6 @@ export type NullableEnumGenderFieldUpdateOperationsInput = {
   set?: $Enums.Gender | null
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type EnumEmploymentStatusFieldUpdateOperationsInput = {
   set?: $Enums.EmploymentStatus
 }

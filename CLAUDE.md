@@ -881,6 +881,20 @@ before; client reps/staff see it via existing screens. POST requires a new
 **`self-service.create`** (a write behind `.read` would break resource.action). **Landmine
 re-hit:** INSERT on `aud_entries` needs USAGE on `aud_entries_id_seq` — every raise 500'd until
 a grant migration (AUDIT-02 learned this for app_client). API suite **455/455**.
+**SS-06a done — employee accounts, and deactivation that ENDS sessions.** Measured first: a
+disabled account kept working on its open session for up to 12 h — staff, client users, and
+role changes too (the session caches the role). Sessions now keep a per-user Redis index
+(`user-sess:{id}`) and **`SessionsService.destroyAllForUser`** runs on every disable / role
+change (staff-users, client-users, employee accounts) and after any password set. New
+`auth_account_tokens` (SHA-256 hash only, single-use, 7 d invite / 1 h reset; superseded links
+are EXPIRED, not deleted — deleting them silently broke the reset throttle) + `UserStatus`
+`invited` + `password_set_at`. `POST /auth/account/set-password` (@Public, token = credential);
+staff `/employee-accounts/:employeeId` GET / `POST …/invite` / PATCH (`employee-user.*`,
+Company Admin + HR Officer); `POST /me/password-reset` (employee accounts only, ALWAYS 202,
+3/hour). Links carry the token in the URL **fragment**. Account mail goes through the ONE
+`EMAIL_TRANSPORT` instance (Notifications now provides it; the worker reuses it).
+`EmployeeTerminatedEvent` (Employees) → self-service closes the account (Auth never subscribes).
+**SS-06 split: 06b = the web pages.** Production email still unconfigured. API suite **475/475**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
@@ -888,6 +902,12 @@ a grant migration (AUDIT-02 learned this for app_client). API suite **455/455**.
 - A role that INSERTs into `aud_entries` needs `GRANT USAGE ON SEQUENCE aud_entries_id_seq` too —
   without it Postgres fails at `nextval` ("permission denied for sequence") BEFORE RLS runs
   (AUDIT-02 for app_client, SS-05 for app_employee).
+- A NEW Nest module's routes may not appear on the running dev API (`nest start --watch`) —
+  it answered `Cannot PATCH /employee-accounts/…` (404) until restarted, though it had reloaded
+  for edits to existing modules. Restart the api preview after adding a module (SS-06a).
+- The e2e suite and a running dev server share one Redis/BullMQ queue: the DEV worker consumes
+  jobs the tests enqueue (its log fills with `email → e2e-helper-…`). Harmless locally; don't
+  read those lines as app behaviour (SS-06a).
 - `prisma migrate dev` refuses to run here ("non-interactive environment"). Generate SQL with
   `npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script`,
   write the migration folder by hand, then `pnpm db:deploy` + `pnpm db:generate` (SS-01).

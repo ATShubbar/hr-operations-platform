@@ -9,6 +9,14 @@
 * 🟢 You can import this file directly.
 */
 
+export const AccountTokenPurpose = {
+  invite: 'invite',
+  reset: 'reset'
+} as const
+
+export type AccountTokenPurpose = (typeof AccountTokenPurpose)[keyof typeof AccountTokenPurpose]
+
+
 export const PrincipalType = {
   staff: 'staff',
   client_rep: 'client_rep',
@@ -36,7 +44,8 @@ export type Role = (typeof Role)[keyof typeof Role]
 
 export const UserStatus = {
   active: 'active',
-  disabled: 'disabled'
+  disabled: 'disabled',
+  invited: 'invited'
 } as const
 
 export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus]

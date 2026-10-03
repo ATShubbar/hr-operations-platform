@@ -47,6 +47,10 @@ export const AUDITED_WRITES: Record<string, string> = {
   // SS-05: an employee raising their own request — same audit action as every
   // other create path, written in the same transaction under the employee scope.
   'POST /me/requests': 'request.create',
+  // SS-06a: employee accounts.
+  'POST /employee-accounts/:employeeId/invite': 'employee-user.invite',
+  'PATCH /employee-accounts/:employeeId': 'employee-user.update',
+  'POST /auth/account/set-password': 'auth-account.activate',
   'PATCH /requests/:id': 'request.update',
   'POST /requests/:id/process': 'request.process',
   'POST /tasks': 'task.create',
@@ -82,6 +86,10 @@ export const AUDITED_READS: Record<string, string> = {
 };
 
 export const AUDIT_EXEMPT_WRITES: Record<string, string> = {
+  // SS-06a: issues a one-time token and (maybe) an email — no business data
+  // changes, and it must answer identically whether or not anything happened.
+  // The act it enables (set-password) IS audited.
+  'POST /me/password-reset': 'issues a reset token only; completion is audited at set-password',
   'POST /auth/login': 'creates a Redis session only; no business-table mutation (auth-event audit is a separate concern)',
   'POST /auth/logout': 'revokes a Redis session only; no business-table mutation',
   'POST /auth/mfa/enroll': 'stages a pending secret in the Redis session; no business-table mutation',

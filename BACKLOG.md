@@ -2397,7 +2397,8 @@ Nitaqat reporting; request comments + attachments; saved views; a "viewing as" r
 | SS-03 | Permissions + "Me" API: `employee` role, whitelisted self view in Employees, `modules/self-service`, `flag.employee-self-service` (per client, default off). **Must NOT grant ADR-011's literal list** (`employee.read`/`salary.read`/`govdata.read`/`document.read` open the staff list endpoints, which ignore principal type — ADR-011 rev. 1); decide a dedicated self-service permission and/or a principal fence. Resolves the company from the record per request | SS-02 | **done** ([evidence](evidence/self-service/SS-03.md)) — `self-service.read` only (ADR-011 rev. 2) |
 | SS-04 | My documents: list (`available` only) + presigned download | SS-03 | **done** ([evidence](evidence/self-service/SS-04.md)) |
 | SS-05 | My requests: raise + track; client reps see them | SS-03 | **done** ([evidence](evidence/self-service/SS-05.md)) |
-| SS-06 | Accounts: staff invitation (`employee-user.*`), set password from the link, password reset, deactivate + revoke on termination (event → self-service → Auth) | SS-03; **real email transport for production** | planned |
+| SS-06a | Accounts API: staff invitation (`employee-user.*`), set password from the link, password reset, deactivate + revoke on termination (event → self-service → Auth) — **plus session revocation for every account type** | SS-05 | **done** ([evidence](evidence/self-service/SS-06a.md)) |
+| SS-06b | Accounts web: the set-password page the email links to (reads `#token`), "Forgot password" on login, staff "Invite to self-service" on the employee record | SS-06a; **real email transport for production** | planned |
 | SS-07 | "Me" web screens — phone-first (375px), ar/en, RTL | SS-04, SS-05 | planned |
 
 ### SS-01 — Identity: employees can exist as users
@@ -2498,6 +2499,30 @@ Nitaqat reporting; request comments + attachments; saved views; a "viewing as" r
   `aud_entries` needs USAGE on its sequence (AUDIT-02's identical lesson), fixed in its own
   migration. Carried: staff screens show an unnamed creator; employees can't read the
   status-change notifications they already receive (SS-07). API **455/455**.
+
+### SS-06a — Employee accounts: invitation, first password, reset, deactivation
+- **Objective:** real employees can get an account, set and reset their own password, and lose
+  access the moment they are terminated or deactivated.
+- **Files:** sessions / staff-users / users / account-tokens (Auth); client-users (Clients);
+  migration `20261003160000_account_tokens`; account-email (Notifications);
+  EmployeeTerminated (Employees); employee-accounts service + 2 controllers + handler
+  (self-service); contracts; env `APP_WEB_ORIGIN`; registries; NEW
+  `test/self-service-accounts.e2e-spec.ts`.
+- **DoD:** invite → mail → set password → sign in; used/expired/replaced links refused; reset
+  reveals nothing and is throttled; deactivation ends sessions for ALL account types (live
+  re-run); termination ends the session; unauthorized staff refused; audits; full suite.
+- **Evidence:** `evidence/self-service/SS-06a.md`.
+- **Dependencies:** SS-05. **Risks/decisions:** **a pre-existing gap, measured before the card:
+  a disabled account kept working on its open session for up to 12 h** (staff, client users;
+  role changes too) — sessions now carry a per-user index and every disable/role change ends
+  them (proven red: removing the call reproduces `expected 401, got 200`). Tokens are SHA-256
+  hashed, single-use under a race, 7 d invite / 1 h reset, and travel in the URL FRAGMENT.
+  Reset is employee-only and always 202. **Bug the tests caught:** the throttle never throttled
+  — `issue()` deleted superseded tokens so the hourly count stayed at 1; they are now expired,
+  not deleted. One email transport per process (Notifications), shared with the worker. Found
+  not fixed: the dev API needed a restart to see the new module; e2e jobs are consumed by the
+  dev server's worker (shared Redis queue). **Production email still unconfigured.**
+  API **475/475** ×3.
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

@@ -60,6 +60,10 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'GET /health': 'public',
   'GET /ready': 'public',
   'POST /auth/login': 'public',
+  // SS-06a: set a password from a one-time emailed link (the TOKEN is the
+  // credential), and "forgot password" (always 202, reveals nothing).
+  'POST /auth/account/set-password': 'public',
+  'POST /me/password-reset': 'public',
   'GET /auth/me': 'session',
   // Every principal signs out (staff, client rep, employee) — the caller's OWN
   // session. Was 'staff' until SS-02 introduced a principal that is neither.
@@ -193,6 +197,11 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   // AVAILABLE-only and downloads presign per-client storage keys (PORTAL-03).
   // Employee self-service (SS-03, ADR-011): the caller's OWN employee record —
   // the first route in the `employee` class, probed with a same-company colleague.
+  // SS-06a: staff management of employee accounts (employee-user.*; Company
+  // Admin + HR Officer) — cross-client by permission.
+  'GET /employee-accounts/:employeeId': 'staff',
+  'POST /employee-accounts/:employeeId/invite': 'staff',
+  'PATCH /employee-accounts/:employeeId': 'staff',
   'GET /me': 'employee',
   // My documents (SS-04): the list is probed by the colleague loop; the download
   // takes an id, so it is `employee-read` (scoping proven in self-service-documents.e2e).

@@ -43,3 +43,17 @@ export type LoginRequest = z.infer<typeof loginRequestSchema>;
 export type LoginResponse = z.infer<typeof loginResponseSchema>;
 export type MfaEnrollResponse = z.infer<typeof mfaEnrollResponseSchema>;
 export type MfaCodeRequest = z.infer<typeof mfaCodeRequestSchema>;
+
+// SS-06a: set a password from a one-time emailed link — an invitation (first
+// password) or a reset. The token is the raw value from the link; the server
+// keeps only its hash. 10+ characters: a self-chosen password for a large,
+// non-technical population, with no admin to set it for them.
+export const setPasswordRequestSchema = z
+  .object({
+    token: z.string().min(20).max(200),
+    password: z.string().min(10).max(200),
+  })
+  .strict();
+
+export type SetPasswordRequest = z.infer<typeof setPasswordRequestSchema>;
+

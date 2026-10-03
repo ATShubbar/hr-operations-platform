@@ -28,11 +28,41 @@ model AuthUser {
   // the record when needed, so a transferred employee follows their record.
   employeeId    String?       @unique @map("employee_id") @db.Uuid
   status        UserStatus    @default(active)
+  // When the account's holder last set its password (SS-06a). NULL for an
+  // invited account that has never set one — which is how reactivating a
+  // disabled account knows whether to return it to `active` or `invited`.
+  passwordSetAt DateTime?     @map("password_set_at")
   mfaSecret     String?       @map("mfa_secret")
   createdAt     DateTime      @default(now()) @map("created_at")
   updatedAt     DateTime      @updatedAt @map("updated_at")
 
+  tokens        AuthAccountToken[]
+
   @@map("auth_users")
+}
+
+// One-time account tokens (SS-06a): an invitation to set a first password, or a
+// password reset. Only a SHA-256 HASH of the token is stored — the raw value
+// exists only in the email — so a database leak hands out no working links.
+// Single use (`usedAt`); issuing a new token of a purpose cancels the older
+// unused ones. Same module as auth_users, so a real foreign key is allowed.
+model AuthAccountToken {
+  id        String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String              @map("user_id") @db.Uuid
+  user      AuthUser            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose   AccountTokenPurpose
+  tokenHash String              @unique @map("token_hash")
+  expiresAt DateTime            @map("expires_at")
+  usedAt    DateTime?           @map("used_at")
+  createdAt DateTime            @default(now()) @map("created_at")
+
+  @@index([userId, purpose])
+  @@map("auth_account_tokens")
+}
+
+enum AccountTokenPurpose {
+  invite
+  reset
 }
 
 enum PrincipalType {
@@ -59,6 +89,9 @@ enum Role {
 enum UserStatus {
   active
   disabled
+  // SS-06a: created by a staff invitation, no password yet — cannot sign in
+  // (login requires `active`) until the holder sets one from the email link.
+  invited
 }
 
 // Pattern exemplar for client-scoped tables (ADR-001). Every client-owned

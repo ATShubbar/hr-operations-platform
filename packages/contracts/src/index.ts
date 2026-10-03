@@ -85,6 +85,8 @@ export {
   type MfaCodeRequest,
   type MfaEnrollResponse,
   type MeResponse,
+  setPasswordRequestSchema,
+  type SetPasswordRequest,
 } from './auth.js';
 export {
   auditQuerySchema,
@@ -293,4 +295,14 @@ export {
   type CreateSelfRequestRequest,
   type SelfRequestResponse,
   type SelfRequestListResponse,
+  inviteEmployeeAccountRequestSchema,
+  employeeAccountStatusSchema,
+  employeeAccountResponseSchema,
+  updateEmployeeAccountRequestSchema,
+  passwordResetRequestSchema,
+  type InviteEmployeeAccountRequest,
+  type EmployeeAccountStatus,
+  type EmployeeAccountResponse,
+  type UpdateEmployeeAccountRequest,
+  type PasswordResetRequest,
 } from './self-service.js';

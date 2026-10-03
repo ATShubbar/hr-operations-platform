@@ -162,6 +162,14 @@ export const PERMISSIONS = [
   // (POST /me/requests). A separate verb from `.read` (the resource.action
   // convention), still employee-only and still never a staff resource name.
   'self-service.create',
+  // SS-06a: staff management of employee self-service ACCOUNTS (ADR-011): invite
+  // (or re-invite) an employee, read the account's state, deactivate/reactivate.
+  // Company Admin + HR Officer only. `invite` is a verb outside the base set —
+  // named in ADR-011 and approved with it, because "create" would misdescribe an
+  // account that cannot be used until its holder accepts.
+  'employee-user.read',
+  'employee-user.invite',
+  'employee-user.update',
   // Session lifecycle — every authenticated principal may end their session.
   'session.end',
 ] as const;
@@ -292,6 +300,9 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
   // (matrix — per-client settings are Company Admin's, distinct from the
   // System Admin's system-level config.write).
   company_admin: [
+    'employee-user.read',
+    'employee-user.invite',
+    'employee-user.update',
     ...STAFF_BASE,
     ...ADMIN_EXTRA,
     'employee.create',
@@ -358,6 +369,9 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
   ],
   // core CRUD · salary RU · govdata R · documents: all
   hr_officer: [
+    'employee-user.read',
+    'employee-user.invite',
+    'employee-user.update',
     ...STAFF_BASE,
     'employee.create',
     'employee.update',

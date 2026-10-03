@@ -4,7 +4,6 @@ import { ConfigurationModule } from '../configuration/public-api';
 import { NotificationsModule } from './notifications.module';
 import { NotificationDispatchProcessor } from './api/notification-dispatch.processor';
 import { NotificationDispatchService } from './application/notification-dispatch.service';
-import { captureEmailTransportProvider } from './infra/capture-email-transport';
 
 // The notification delivery WORKER (NOTIF-03) — the dispatch-queue consumer +
 // email transport + templates. Kept OUT of AppModule (like the NOTIF-01 worker
@@ -14,11 +13,9 @@ import { captureEmailTransportProvider } from './infra/capture-email-transport';
 // (production swaps in a real SMTP transport).
 @Module({
   imports: [AuthModule, ConfigurationModule, NotificationsModule],
-  providers: [
-    NotificationDispatchService,
-    NotificationDispatchProcessor,
-    captureEmailTransportProvider,
-  ],
-  exports: [captureEmailTransportProvider],
+  // The email transport now comes from NotificationsModule (one instance per
+  // process, shared with account mail — SS-06a); re-exported for the queue e2e.
+  providers: [NotificationDispatchService, NotificationDispatchProcessor],
+  exports: [NotificationsModule],
 })
 export class NotificationsWorkerModule {}

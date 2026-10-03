@@ -9,6 +9,7 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/AuthUser'
+export type * from './models/AuthAccountToken'
 export type * from './models/CoreScopeCheck'
 export type * from './models/AuditEntry'
 export type * from './models/SystemSetting'

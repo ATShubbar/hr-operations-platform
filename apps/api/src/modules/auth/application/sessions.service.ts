@@ -34,7 +34,16 @@ export class SessionsService implements OnModuleDestroy {
   async create(data: SessionData): Promise<string> {
     const id = randomUUID();
     const ttl = data.mfa === 'full' ? SESSION_TTL_SECONDS : PENDING_TTL_SECONDS;
-    await this.redis.set(this.key(id), JSON.stringify(data), 'EX', ttl);
+    // The session and its entry in the user's index are written together. The
+    // index is what lets an account change END sessions (SS-06a): before it, a
+    // disabled account kept working on any session it already held — measured,
+    // 200 on /auth/me and on data routes for the rest of the 12-hour TTL.
+    await this.redis
+      .multi()
+      .set(this.key(id), JSON.stringify(data), 'EX', ttl)
+      .sadd(this.userKey(data.userId), id)
+      .expire(this.userKey(data.userId), SESSION_TTL_SECONDS)
+      .exec();
     return id;
   }
 
@@ -49,11 +58,34 @@ export class SessionsService implements OnModuleDestroy {
   }
 
   async destroy(id: string): Promise<void> {
-    await this.redis.del(this.key(id));
+    const session = await this.get(id);
+    const tx = this.redis.multi().del(this.key(id));
+    if (session) tx.srem(this.userKey(session.userId), id);
+    await tx.exec();
+  }
+
+  /**
+   * End EVERY session of one account (SS-06a). Called when an account is
+   * disabled or its role changes — the session caches the role, so a demotion
+   * or deactivation must not wait for the session to expire. Index entries
+   * whose session already expired are harmless: deleting a missing key is a
+   * no-op. Returns how many index entries were cleared.
+   */
+  async destroyAllForUser(userId: string): Promise<number> {
+    const ids = await this.redis.smembers(this.userKey(userId));
+    const tx = this.redis.multi();
+    for (const id of ids) tx.del(this.key(id));
+    tx.del(this.userKey(userId));
+    await tx.exec();
+    return ids.length;
   }
 
   private key(id: string): string {
     return `sess:${id}`;
+  }
+
+  private userKey(userId: string): string {
+    return `user-sess:${userId}`;
   }
 
   async onModuleDestroy(): Promise<void> {

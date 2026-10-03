@@ -22,6 +22,7 @@ export class UsersService {
       data: {
         email: input.email.toLowerCase(),
         passwordHash: input.passwordHash,
+        passwordSetAt: new Date(),
         principalType: 'staff',
         role: input.role,
       },
@@ -39,6 +40,7 @@ export class UsersService {
       data: {
         email: input.email.toLowerCase(),
         passwordHash: input.passwordHash,
+        passwordSetAt: new Date(),
         principalType: 'client_rep',
         clientId: input.clientId,
         role: input.role,
@@ -58,11 +60,65 @@ export class UsersService {
       data: {
         email: input.email.toLowerCase(),
         passwordHash: input.passwordHash,
+        passwordSetAt: new Date(),
         principalType: 'employee',
         role: 'employee',
         employeeId: input.employeeId,
       },
     });
+  }
+
+  // ---- Employee accounts (SS-06a) -----------------------------------------
+
+  findByEmployeeId(employeeId: string, tx?: Prisma.TransactionClient): Promise<AuthUser | null> {
+    return (tx ?? this.prisma).authUser.findUnique({ where: { employeeId } });
+  }
+
+  /**
+   * An invited employee account: no password the holder knows yet. The stored
+   * hash is of 32 random bytes nobody keeps, and status `invited` refuses
+   * sign-in on its own — two independent reasons the account cannot be used
+   * until its holder sets a password from the email link.
+   */
+  createInvitedEmployeeUser(
+    input: { email: string; employeeId: string; unusablePasswordHash: string },
+    tx?: Prisma.TransactionClient,
+  ): Promise<AuthUser> {
+    return (tx ?? this.prisma).authUser.create({
+      data: {
+        email: input.email.toLowerCase(),
+        passwordHash: input.unusablePasswordHash,
+        principalType: 'employee',
+        role: 'employee',
+        employeeId: input.employeeId,
+        status: 'invited',
+        passwordSetAt: null,
+      },
+    });
+  }
+
+  updateEmail(id: string, email: string, tx?: Prisma.TransactionClient): Promise<AuthUser> {
+    return (tx ?? this.prisma).authUser.update({ where: { id }, data: { email: email.toLowerCase() } });
+  }
+
+  /**
+   * Set a password chosen by the account's holder (invite or reset), and make an
+   * invited account active. A DISABLED account stays disabled — a link cannot
+   * reopen what staff closed.
+   */
+  setPassword(id: string, passwordHash: string, tx?: Prisma.TransactionClient): Promise<AuthUser> {
+    return (tx ?? this.prisma).authUser.update({
+      where: { id },
+      data: { passwordHash, passwordSetAt: new Date() },
+    });
+  }
+
+  setStatus(
+    id: string,
+    status: 'active' | 'disabled' | 'invited',
+    tx?: Prisma.TransactionClient,
+  ): Promise<AuthUser> {
+    return (tx ?? this.prisma).authUser.update({ where: { id }, data: { status } });
   }
 
   // Client-rep management, ALWAYS scoped to a client (CLIENT-03). auth_users

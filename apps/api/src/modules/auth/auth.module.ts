@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { UsersService } from './application/users.service';
 import { PasswordService } from './application/password.service';
+import { AccountTokensService } from './application/account-tokens.service';
 import { SessionsService } from './application/sessions.service';
 import { AuthController } from './api/auth.controller';
 import { SessionMiddleware } from './api/session.middleware';
@@ -19,6 +20,7 @@ import { AuditModule } from '../audit/public-api';
     UsersService,
     PasswordService,
     SessionsService,
+    AccountTokensService,
     SessionMiddleware,
     PolicyService,
     MfaService,
@@ -28,6 +30,7 @@ import { AuditModule } from '../audit/public-api';
     UsersService,
     PasswordService,
     SessionsService,
+    AccountTokensService,
     SessionMiddleware,
     PolicyService,
     StaffUsersService,

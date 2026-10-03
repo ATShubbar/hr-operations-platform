@@ -4,6 +4,7 @@ import type { AuthUserModel as AuthUser } from '../../../generated/prisma/models
 import { Prisma } from '../../../generated/prisma/client';
 import {
   PasswordService,
+  SessionsService,
   UsersService,
   type ClientRepStatus,
   type ClientRole,
@@ -33,6 +34,7 @@ export class ClientUsersService {
     private readonly users: UsersService,
     private readonly passwords: PasswordService,
     private readonly audit: AuditService,
+    private readonly sessions: SessionsService,
   ) {}
 
   async invite(clientId: string, input: InviteInput): Promise<AuthUser> {
@@ -71,8 +73,8 @@ export class ClientUsersService {
     return this.users.findClientRep(id, clientId);
   }
 
-  update(clientId: string, id: string, data: UpdateInput): Promise<AuthUser | null> {
-    return this.prisma.$transaction(async (tx) => {
+  async update(clientId: string, id: string, data: UpdateInput): Promise<AuthUser | null> {
+    const result = await this.prisma.$transaction(async (tx) => {
       const before = await this.users.findClientRep(id, clientId, tx);
       if (!before) return null;
       const row = await this.users.updateClientRep(id, clientId, data, tx);
@@ -83,13 +85,20 @@ export class ClientUsersService {
         before: { role: before.role, status: before.status },
         after: { role: row?.role, status: row?.status },
       });
-      return row;
+      return { before, row };
     });
+    if (!result) return null;
+    // A disable or a role change ends live sessions (SS-06a) — the session
+    // caches the role, and a disabled account must not keep working on one.
+    if (result.row?.status === 'disabled' || result.row?.role !== result.before.role) {
+      await this.sessions.destroyAllForUser(id);
+    }
+    return result.row;
   }
 
   // Soft: identity is never hard-deleted (sessions, audit history reference it).
-  deactivate(clientId: string, id: string): Promise<AuthUser | null> {
-    return this.prisma.$transaction(async (tx) => {
+  async deactivate(clientId: string, id: string): Promise<AuthUser | null> {
+    const row = await this.prisma.$transaction(async (tx) => {
       const before = await this.users.findClientRep(id, clientId, tx);
       if (!before) return null;
       if (before.status === 'disabled') return before; // no-op, no audit
@@ -103,5 +112,7 @@ export class ClientUsersService {
       });
       return row;
     });
+    if (row) await this.sessions.destroyAllForUser(id);
+    return row;
   }
 }

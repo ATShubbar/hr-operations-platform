@@ -52,6 +52,7 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   AuthUser: 'AuthUser',
+  AuthAccountToken: 'AuthAccountToken',
   CoreScopeCheck: 'CoreScopeCheck',
   AuditEntry: 'AuditEntry',
   SystemSetting: 'SystemSetting',
@@ -98,12 +99,26 @@ export const AuthUserScalarFieldEnum = {
   clientId: 'clientId',
   employeeId: 'employeeId',
   status: 'status',
+  passwordSetAt: 'passwordSetAt',
   mfaSecret: 'mfaSecret',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type AuthUserScalarFieldEnum = (typeof AuthUserScalarFieldEnum)[keyof typeof AuthUserScalarFieldEnum]
+
+
+export const AuthAccountTokenScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  purpose: 'purpose',
+  tokenHash: 'tokenHash',
+  expiresAt: 'expiresAt',
+  usedAt: 'usedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type AuthAccountTokenScalarFieldEnum = (typeof AuthAccountTokenScalarFieldEnum)[keyof typeof AuthAccountTokenScalarFieldEnum]
 
 
 export const CoreScopeCheckScalarFieldEnum = {
