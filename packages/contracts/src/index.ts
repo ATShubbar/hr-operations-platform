@@ -282,5 +282,9 @@ export {
 } from './task.js';
 export {
   selfProfileResponseSchema,
+  selfDocumentResponseSchema,
+  selfDocumentListResponseSchema,
   type SelfProfileResponse,
+  type SelfDocumentResponse,
+  type SelfDocumentListResponse,
 } from './self-service.js';

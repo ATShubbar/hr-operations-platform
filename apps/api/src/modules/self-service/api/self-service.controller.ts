@@ -1,13 +1,24 @@
-import { Controller, ForbiddenException, Get, NotFoundException } from '@nestjs/common';
-import type { SelfProfileResponse } from '@hr/contracts';
+import { Controller, ForbiddenException, Get, NotFoundException, Param } from '@nestjs/common';
+import type {
+  DownloadResponse,
+  SelfDocumentListResponse,
+  SelfProfileResponse,
+} from '@hr/contracts';
 import { RequirePermission } from '../../../auth/permissions.decorator';
 import { requestContext } from '../../../context/request-context';
 import type { EmployeeModel as EmployeeRecord } from '../../../generated/prisma/models';
 import { ClientsService } from '../../clients/public-api';
 import { ConfigService } from '../../configuration/public-api';
+import { DocumentsService, toSelfDocumentResponse } from '../../documents/public-api';
 import { EmployeesService, toSelfProfileResponse } from '../../employees/public-api';
+import { StorageService } from '../../storage/public-api';
 
 const EMPLOYEE_SELF_SERVICE_FLAG = 'flag.employee-self-service';
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Matches the client portal and the staff download (DOC-03 / PORTAL-03).
+const SELF_DOWNLOAD_TTL_SECONDS = 300;
 
 // "Me" — an employee's own file (SS-03, ADR-011).
 //
@@ -25,6 +36,8 @@ export class SelfServiceController {
     private readonly employees: EmployeesService,
     private readonly clients: ClientsService,
     private readonly config: ConfigService,
+    private readonly documents: DocumentsService,
+    private readonly storage: StorageService,
   ) {}
 
   @RequirePermission('self-service.read')
@@ -36,6 +49,32 @@ export class SelfServiceController {
       ar: company?.nameAr ?? '',
       en: company?.nameEn ?? '',
     });
+  }
+
+  // My documents (SS-04): AVAILABLE ones only, soonest expiry first. The
+  // database returns only this employee's documents (SS-02); the service adds
+  // the available-only rule (never pending, quarantined or deleted).
+  @RequirePermission('self-service.read')
+  @Get('documents')
+  async myDocuments(): Promise<SelfDocumentListResponse> {
+    const record = await this.ownRecord();
+    const rows = await this.documents.listForEmployee(record.id);
+    return { documents: rows.map(toSelfDocumentResponse) };
+  }
+
+  // A short-lived link to one of my available documents. Anything else — a
+  // colleague's, the company's, a pending/quarantined one, unknown or malformed
+  // — is the SAME 404, so the response never confirms that a document exists.
+  // The storage key comes from the fenced row, so the link cannot point at
+  // anyone else's blob.
+  @RequirePermission('self-service.read')
+  @Get('documents/:id/download')
+  async downloadMyDocument(@Param('id') id: string): Promise<DownloadResponse> {
+    const record = await this.ownRecord();
+    const doc = UUID_RE.test(id) ? await this.documents.getForEmployee(record.id, id) : null;
+    if (!doc) throw new NotFoundException('Document not found');
+    const url = await this.storage.presignDownload(doc.storageKey, SELF_DOWNLOAD_TTL_SECONDS);
+    return { url, method: 'GET', expiresInSeconds: SELF_DOWNLOAD_TTL_SECONDS };
   }
 
   // The caller's own record, after every access rule. Shared by every /me route

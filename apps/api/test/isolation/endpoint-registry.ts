@@ -25,7 +25,14 @@
 //   employee      — employee self-service (ADR-011): MUST return only the
 //                   calling employee's OWN record. Probed with a COLLEAGUE AT
 //                   THE SAME COMPANY (the case the client boundary cannot
-//                   catch) and unauthenticated. No members until SS-03.
+//                   catch) and unauthenticated. A route's response must carry
+//                   the caller's employee id somewhere (the record id, or — for
+//                   lists — fixture rows titled with their owner's id).
+//   employee-read — employee self-service with a PATH PARAMETER (e.g. one
+//                   document's download), which the generic loop cannot
+//                   address. Must reject unauthenticated callers (401);
+//                   own-record scoping is proven per-endpoint (SS-04 e2e) —
+//                   the employee counterpart of `client-read`.
 //
 // Independently of class, every route that is not public / session / self must
 // REFUSE an employee principal (403) — the principal fence that keeps
@@ -41,7 +48,8 @@ export type ScopeClass =
   | 'client-write'
   | 'client-read'
   | 'self'
-  | 'employee';
+  | 'employee'
+  | 'employee-read';
 
 export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'GET /health': 'public',
@@ -181,6 +189,10 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   // Employee self-service (SS-03, ADR-011): the caller's OWN employee record —
   // the first route in the `employee` class, probed with a same-company colleague.
   'GET /me': 'employee',
+  // My documents (SS-04): the list is probed by the colleague loop; the download
+  // takes an id, so it is `employee-read` (scoping proven in self-service-documents.e2e).
+  'GET /me/documents': 'employee',
+  'GET /me/documents/:id/download': 'employee-read',
   'GET /portal/company': 'client-read',
   'GET /portal/employees': 'client-read',
   'GET /portal/employees/:id': 'client-read',

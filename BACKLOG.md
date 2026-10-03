@@ -2395,7 +2395,7 @@ Nitaqat reporting; request comments + attachments; saved views; a "viewing as" r
 | SS-01 | Identity: `employee` principal type + `employee_id` binding (migration); one email = one account across principals; sign-in derives the client from the record | ARCH-SS | **done** ([evidence](evidence/self-service/SS-01.md)) |
 | SS-02 | Isolation: `app.employee_id` GUC (SPIKE-001 `NULLIF` form) + RLS policies on employee-scoped tables + harness scope **`employee`** (NOT `self` — that name is taken by CONF-03's per-user endpoints) probing a same-client other employee and an other-client employee | SS-01 | **done** ([evidence](evidence/self-service/SS-02.md)) |
 | SS-03 | Permissions + "Me" API: `employee` role, whitelisted self view in Employees, `modules/self-service`, `flag.employee-self-service` (per client, default off). **Must NOT grant ADR-011's literal list** (`employee.read`/`salary.read`/`govdata.read`/`document.read` open the staff list endpoints, which ignore principal type — ADR-011 rev. 1); decide a dedicated self-service permission and/or a principal fence. Resolves the company from the record per request | SS-02 | **done** ([evidence](evidence/self-service/SS-03.md)) — `self-service.read` only (ADR-011 rev. 2) |
-| SS-04 | My documents: list (`available` only) + presigned download | SS-03 | planned |
+| SS-04 | My documents: list (`available` only) + presigned download | SS-03 | **done** ([evidence](evidence/self-service/SS-04.md)) |
 | SS-05 | My requests: raise + track; client reps see them | SS-03 | planned |
 | SS-06 | Accounts: staff invitation (`employee-user.*`), set password from the link, password reset, deactivate + revoke on termination (event → self-service → Auth) | SS-03; **real email transport for production** | planned |
 | SS-07 | "Me" web screens — phone-first (375px), ar/en, RTL | SS-04, SS-05 | planned |
@@ -2459,6 +2459,24 @@ Nitaqat reporting; request comments + attachments; saved views; a "viewing as" r
   resolved from the RECORD per request — tested: moving the record to a non-opted-in company
   shuts `/me` on the same session. Pinned-fields test proven red by leaking `clientId`. API
   **412/412** ×3.
+
+### SS-04 — My documents
+- **Objective:** an employee lists their own available documents and downloads one, behind the
+  same gates as `/me`.
+- **Files:** `@hr/contracts` `self-service.ts`; `documents/{application/documents.service,domain/document-view,public-api}.ts`;
+  `self-service/{api/self-service.controller,self-service.module}.ts`; `test/isolation/*`; NEW
+  `test/self-service-documents.e2e-spec.ts`.
+- **DoD:** available-only list, soonest expiry first; working 300s link (file fetched); uniform
+  404 for anything not mine+available; flag/terminated/staff/rep gates; pinned fields; full suite.
+- **Evidence:** `evidence/self-service/SS-04.md`.
+- **Dependencies:** SS-03. **Risks/decisions:** reads go through `EmployeeScopedPrismaService`, so
+  the DATABASE decides whose documents exist and the service adds available-only — proven as two
+  layers: dropping the status filter exposed only MY pending/quarantined/deleted files, while
+  colleague/company/outsider documents stayed 404 on RLS alone. New harness class
+  **`employee-read`** for path-parameter routes; fixture documents titled with their owner's id
+  let the colleague loop probe list routes. Downloads not audited (consistent with staff +
+  portal) — an open compliance question. API **429/429** (6 of 8 runs clean; the 2 failures were
+  the known supertest flake, one captured as `Parse Error: Expected HTTP/`).
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

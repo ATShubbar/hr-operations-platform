@@ -857,6 +857,18 @@ the RECORD each request (a transfer shuts access on the same session — tested)
 ref, WPS, GOSI basis, timestamps; **IBAN → last 4**), pinned field-for-field by a test proven red.
 `GET /me` is the harness's first `employee` route (same-company colleague probe now live; its
 fixtures use their own company with the flag on, so no flag races). API suite **412/412**.
+**SS-04 done — My documents.** `GET /me/documents` (available only, soonest expiry first, nulls
+last) + `GET /me/documents/:id/download` (300s presigned link; ANY non-mine-or-unavailable id →
+the same 404). `DocumentsService.listForEmployee/getForEmployee` read via app_employee, so the
+DATABASE picks whose documents exist and the service adds available-only — proven as two layers
+(dropping the status filter exposed only my own pending/quarantined/deleted; colleague/company/
+outsider stayed 404 on RLS alone). Self document view is a whitelist (no storage key, legal hold,
+uploader, size, status, ids, timestamps). Download proven END TO END: the presigned URL fetched
+from MinIO returns the uploaded bytes. Harness: new class **`employee-read`** (path-param routes,
+401-probed; the `client-read` counterpart); fixture docs TITLED with their owner's id so the
+colleague loop covers list routes. API suite **429/429**. The supertest flake is hitting more
+often as the suite grows (2 of 8 runs; one captured as `Parse Error: Expected HTTP/`) — the
+REP-04 harness fix is worth scheduling.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

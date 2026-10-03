@@ -1,4 +1,4 @@
-import type { DocumentResponse } from '@hr/contracts';
+import type { DocumentResponse, SelfDocumentResponse } from '@hr/contracts';
 import type { DocumentModel as DocumentRecord } from '../../../generated/prisma/models';
 
 // The document read view (DOC-03). Extracted from the staff controller so the
@@ -27,3 +27,19 @@ export function toDocumentResponse(d: DocumentRecord): DocumentResponse {
     updatedAt: d.updatedAt.toISOString(),
   };
 }
+
+// An employee's OWN document (SS-04) — a whitelist, built field by field, not the
+// staff response trimmed: storage key, legal hold, uploader, size, status, client
+// and employee ids and timestamps stay with the registry.
+export function toSelfDocumentResponse(d: DocumentRecord): SelfDocumentResponse {
+  return {
+    id: d.id,
+    category: d.category,
+    title: d.title,
+    fileName: d.fileName,
+    contentType: d.contentType,
+    issueDate: iso(d.issueDate),
+    expiryDate: iso(d.expiryDate),
+  };
+}
+

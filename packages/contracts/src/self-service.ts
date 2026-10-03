@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { documentCategorySchema } from './document.js';
 import { contractTypeSchema, employmentStatusSchema, genderSchema } from './employee.js';
 
 // Employee self-service (ADR-011, SS-03): what an employee sees of THEIR OWN
@@ -56,3 +57,24 @@ export const selfProfileResponseSchema = z.object({
 });
 
 export type SelfProfileResponse = z.infer<typeof selfProfileResponseSchema>;
+
+// An employee's own document (SS-04). A whitelist like the profile: what a
+// person needs to recognise a document and download it — not the registry's
+// working fields (storage key, legal hold, uploader, size, status, ids,
+// timestamps). Status is always `available` on this surface, so it is not sent.
+export const selfDocumentResponseSchema = z.object({
+  id: z.uuid(),
+  category: documentCategorySchema,
+  title: z.string(),
+  fileName: z.string(),
+  contentType: z.string(),
+  issueDate: z.string().nullable(),
+  expiryDate: z.string().nullable(),
+});
+
+export const selfDocumentListResponseSchema = z.object({
+  documents: z.array(selfDocumentResponseSchema),
+});
+
+export type SelfDocumentResponse = z.infer<typeof selfDocumentResponseSchema>;
+export type SelfDocumentListResponse = z.infer<typeof selfDocumentListResponseSchema>;

@@ -170,7 +170,7 @@ describe('Cross-client isolation harness (e2e)', () => {
   it('every route outside public / session / self / employee REFUSES an employee principal (403)', async () => {
     const reachable: string[] = [];
     for (const [route, scope] of Object.entries(ENDPOINT_REGISTRY)) {
-      if (['public', 'session', 'self', 'employee'].includes(scope)) continue;
+      if (['public', 'session', 'self', 'employee', 'employee-read'].includes(scope)) continue;
       const [method, path] = route.split(' ') as [string, string];
       const res = await request(app.getHttpServer())[method.toLowerCase() as 'get' | 'post' | 'patch' | 'delete'](path)
         .set('Cookie', employee.cookie)
@@ -216,11 +216,30 @@ describe('Cross-client isolation harness (e2e)', () => {
         created.push(row.id);
         return row.id;
       };
-      me = await loginAsEmployee(app, await mk('me'));
-      colleague = await loginAsEmployee(app, await mk('colleague'));
+      const meId = await mk('me');
+      const colleagueId = await mk('colleague');
+      // List-shaped employee routes (GET /me/documents) carry no employee id in
+      // their rows, so each fixture document is TITLED with its owner's id: the
+      // same "my id is in my response, not in my colleague's" assertion then
+      // works for every route in the class.
+      await prisma.document.createMany({
+        data: [meId, colleagueId].map((owner) => ({
+          clientId: companyId,
+          employeeId: owner,
+          category: 'iqama' as const,
+          title: `ISO-doc ${owner}`,
+          fileName: 'x.pdf',
+          contentType: 'application/pdf',
+          storageKey: `iso/${owner}`,
+          status: 'available' as const,
+        })),
+      });
+      me = await loginAsEmployee(app, meId);
+      colleague = await loginAsEmployee(app, colleagueId);
     });
 
     afterAll(async () => {
+      await prisma.document.deleteMany({ where: { clientId: companyId } });
       await prisma.employee.deleteMany({ where: { id: { in: created } } });
       await prisma.clientSetting.deleteMany({ where: { clientId: companyId } });
       await prisma.client.delete({ where: { id: companyId } });
@@ -246,6 +265,17 @@ describe('Cross-client isolation harness (e2e)', () => {
         await request(app.getHttpServer())[method.toLowerCase() as 'get'](path).expect(401);
       });
     }
+  });
+
+  it('employee-read endpoints reject unauthenticated requests (401)', async () => {
+    const notRejected: string[] = [];
+    for (const [route, scope] of Object.entries(ENDPOINT_REGISTRY)) {
+      if (scope !== 'employee-read') continue;
+      const [method, path] = route.split(' ') as [string, string];
+      const res = await request(app.getHttpServer())[method.toLowerCase() as 'get'](path);
+      if (res.status !== 401) notRejected.push(`${route} -> ${res.status}`);
+    }
+    expect(notRejected).toEqual([]);
   });
 
   it('session-flow endpoints self-reject unauthenticated requests (401)', async () => {

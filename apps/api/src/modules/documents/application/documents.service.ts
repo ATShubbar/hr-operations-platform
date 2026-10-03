@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
+import { EmployeeScopedPrismaService } from '../../../prisma/employee-scoped-prisma.service';
 import { PrismaService } from '../../../prisma/prisma.service';
 import type { DocumentModel as DocumentRecord } from '../../../generated/prisma/models';
 import type { Prisma } from '../../../generated/prisma/client';
@@ -18,7 +19,32 @@ export class DocumentsService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly storage: StorageService,
+    private readonly employeeDb: EmployeeScopedPrismaService,
   ) {}
+
+  // ---- Employee self-service (SS-04, ADR-011) -------------------------------
+  // Both reads go through the app_employee connection, so the DATABASE decides
+  // whose documents exist (SS-02: employee_id = the session's employee). The
+  // `available` filter is the application's rule on top — RLS answers "whose",
+  // this answers "which of theirs" (never pending uploads, quarantined blobs or
+  // deleted records — the PORTAL-03 rule). The employee id MUST come from the
+  // session, never from input.
+
+  listForEmployee(employeeId: string): Promise<DocumentRecord[]> {
+    return this.employeeDb.forEmployee(employeeId).document.findMany({
+      where: { status: 'available' },
+      // Soonest expiry first — the reason an employee opens this list. Documents
+      // without an expiry sort last.
+      orderBy: [{ expiryDate: { sort: 'asc', nulls: 'last' } }, { title: 'asc' }],
+    });
+  }
+
+  async getForEmployee(employeeId: string, id: string): Promise<DocumentRecord | null> {
+    const rows = await this.employeeDb.forEmployee(employeeId).document.findMany({
+      where: { id, status: 'available' },
+    });
+    return rows[0] ?? null;
+  }
 
   create(input: CreateDocumentInput): Promise<DocumentRecord> {
     // The service owns the object key: per-client prefix + a random object id,
