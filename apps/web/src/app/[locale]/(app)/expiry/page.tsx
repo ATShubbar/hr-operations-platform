@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { LoadError, NoAccess } from '@/components/ui/load-state';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton, SkeletonRegion, SkeletonRows } from '@/components/ui/skeleton';
+import { StatTile } from '@/components/ui/stat-tile';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -242,13 +243,17 @@ export default function ExpiryPage() {
         )}
       </div>
 
-      {/* summary counts per bucket */}
+      {/* Summary counts per bucket (StatTile, DS-03). A non-empty bucket's tile
+          jumps to its section below; an empty bucket has no section to jump to,
+          so its tile is plain content rather than a link to nowhere. */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {BUCKETS.map((b) => (
-          <div key={b} className="rounded-lg border p-4">
-            <div className="text-2xl font-semibold">{grouped[b].length}</div>
-            <div className="mt-1 text-sm text-muted-foreground">{t(`bucket.${b}`)}</div>
-          </div>
+          <StatTile
+            key={b}
+            label={t(`bucket.${b}`)}
+            value={grouped[b].length}
+            href={grouped[b].length > 0 ? `#bucket-${b}` : undefined}
+          />
         ))}
       </div>
 
@@ -257,7 +262,9 @@ export default function ExpiryPage() {
           <Label>{t('filterClient')}</Label>
           <Select value={fClient} onValueChange={(v) => setFClient(v ?? ALL)}>
             <SelectTrigger className="w-44">
-              <SelectValue>{(v) => (v === ALL ? t('filterAll') : clientName(String(v)))}</SelectValue>
+              <SelectValue>
+                {(v) => (v === ALL ? t('filterAll') : clientName(String(v)))}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={ALL}>{t('filterAll')}</SelectItem>
@@ -273,7 +280,9 @@ export default function ExpiryPage() {
           <Label>{t('filterCategory')}</Label>
           <Select value={fCategory} onValueChange={(v) => setFCategory(v ?? ALL)}>
             <SelectTrigger className="w-40">
-              <SelectValue>{(v) => (v === ALL ? t('filterAll') : t(`category.${String(v)}`))}</SelectValue>
+              <SelectValue>
+                {(v) => (v === ALL ? t('filterAll') : t(`category.${String(v)}`))}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={ALL}>{t('filterAll')}</SelectItem>
@@ -318,40 +327,35 @@ export default function ExpiryPage() {
               <StatusPill tone={BUCKET_TONE[b]}>{t(`bucket.${b}`)}</StatusPill>
               <span className="text-sm text-muted-foreground">{grouped[b].length}</span>
             </h2>
-            <div className="rounded-lg border">
-              {/* The scroll container lives inside <Table>, so the keyboard fix
-                  and the accessible name go THERE, not on this border wrapper —
-                  putting tabIndex here would produce a focus stop that scrolls
-                  nothing. */}
-              <Table labelledBy={`bucket-${b}`}>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t('colTitle')}</TableHead>
-                    <TableHead>{t('colCategory')}</TableHead>
-                    <TableHead>{t('colClient')}</TableHead>
-                    <TableHead>{t('colExpiry')}</TableHead>
-                    <TableHead className="text-end">{t('colDays')}</TableHead>
+            {/* The scroll container lives inside <Table>, so the keyboard fix
+                and the accessible name go THERE; since DS-03 it draws its own
+                frame too, so there is no wrapper to put them on by mistake. */}
+            <Table labelledBy={`bucket-${b}`}>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t('colTitle')}</TableHead>
+                  <TableHead>{t('colCategory')}</TableHead>
+                  <TableHead>{t('colClient')}</TableHead>
+                  <TableHead>{t('colExpiry')}</TableHead>
+                  <TableHead className="text-end">{t('colDays')}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {grouped[b].map(({ doc, days }) => (
+                  <TableRow key={doc.id}>
+                    <TableCell className="font-medium">{doc.title}</TableCell>
+                    <TableCell>{t(`category.${doc.category}`)}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {clientName(doc.clientId)}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {dualDate(doc.expiryDate, locale)}
+                    </TableCell>
+                    <TableCell className="text-end">{daysLabel(days)}</TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {grouped[b].map(({ doc, days }) => (
-                    <TableRow key={doc.id}>
-                      <TableCell className="font-medium">{doc.title}</TableCell>
-                      <TableCell>{t(`category.${doc.category}`)}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {clientName(doc.clientId)}
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                        {dualDate(doc.expiryDate, locale)}
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap text-end text-sm">
-                        {daysLabel(days)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                ))}
+              </TableBody>
+            </Table>
           </section>
         ))
       )}

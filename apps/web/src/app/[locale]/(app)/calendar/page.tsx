@@ -27,7 +27,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-const KIND_VARIANT: Record<string, 'default' | 'secondary' | 'outline' | 'destructive'> = {
+const KIND_VARIANT: Record<string, 'default' | 'secondary' | 'outline'> = {
   event: 'default',
   task: 'secondary',
   request: 'outline',

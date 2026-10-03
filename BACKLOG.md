@@ -2289,7 +2289,7 @@ Nitaqat reporting; request comments + attachments; saved views; a "viewing as" r
 |---|---|---|---|
 | DS-01 | Foundation: tokens, controls, overlays, display face — monochrome, Arabic- and AA-safe | — | **done** ([evidence](evidence/ux/DS-01.md)) |
 | DS-02 | Shell: sidebar + header in the prototype's structure | DS-01 | **done** |
-| DS-03 | Primitives: full-grid `DataTable`, badges vs status pills, card/stat blocks | DS-01 | planned |
+| DS-03 | Primitives: full-grid `DataTable`, badges vs status pills, card/stat blocks | DS-01 | **done** |
 | DS-04+ | Screens, one per card: Overview, People + tabbed person record, Clients + record, Work queue, Requests, Hiring, Calendar (month/week), Reports, Audit | DS-02, DS-03, full prototype download | planned |
 | ARCH-SS | Architecture amendment: employee self-service (reverses architecture.md line 44) | owner decision (done) | planned |
 
@@ -2342,8 +2342,30 @@ Nitaqat reporting; request comments + attachments; saved views; a "viewing as" r
   the screen crumb links. Sign-out moved from the header to the identity foot. Two defects
   caught by measuring: **two `aria-current` per screen** (nav row + crumb — the crumb's was
   dropped, it is text not a link), and the sheet's sign-out at **y=937 in an 812px sheet**
-  (foot now pinned, nav scrolls). Group-label tracking is LTR-only — letter-spacing breaks
-  Arabic joins. Found-not-fixed: Today re-fetches `/auth/me`.
+  (foot now pinned, nav scrolls). Group-label tracking is LTR-only (*corrected in DS-03:*
+  Chrome 152 skips letter-spacing on Arabic entirely, so this guards other engines). Found-not-fixed: Today re-fetches `/auth/me`.
+
+### DS-03 — Shared building blocks: tables, badges vs status pills, stat tiles
+- **Objective:** the components every screen is built from take the system's shape, so the
+  screen cards are layout work, not component work.
+- **Files:** `components/ui/{table,data-table,badge}.tsx`, NEW `components/ui/stat-tile.tsx`,
+  `{expiry,reports,audit,calendar}/page.tsx`, `employees/[id]/page.tsx`; DS-02 correction in
+  `app-nav.tsx` + `evidence/ux/DS-02.md`.
+- **DoD:** table/badge/tile geometry measured; every screen both locales at 1280 + 375 with
+  0px overflow (incl. record + portal); header-band contrast ≥4.5:1; sort + `aria-sort` + the
+  keyboard scroll region intact; no badge carries status (search); lint/typecheck/build; no
+  API change.
+- **Evidence:** `evidence/ux/DS-03.md`.
+- **Dependencies:** DS-01. **Risks/decisions:** **owner-approved 13px English / 14px Arabic**
+  cell text (the prototype's 13px literally would make the default locale the harder read).
+  The table now IS the card (radius 14, 10% ring) via four exported classes shared by
+  `DataTable` and raw `<Table>`, so pages lost their bordered wrappers and the two cannot
+  drift; header is a grey band, sentence case — measured 4.64:1. Badge lost `destructive`, so
+  status-by-badge no longer type-checks; the employee record's status became a StatusPill.
+  `StatTile` has deliberately no trend slot (UX-04). **The card overstated calendar:** kinds
+  never mapped to red — only the type allowed it. **DS-02 corrected:** Chrome 152 skips
+  letter-spacing on Arabic (147.92px at 0 / 0.025em / 0.2em). Found-not-fixed: audit actor
+  names in mono; expiry's filter row still form + Apply.
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

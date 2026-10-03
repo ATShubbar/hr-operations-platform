@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
 import { SkeletonRegion, SkeletonRows } from '@/components/ui/skeleton';
+import { TABLE_CELL, TABLE_FRAME, TABLE_HEAD, TABLE_ROW } from '@/components/ui/table';
 
 // DataTable (UX-03). Every list in the app previously had no search, no sort and
 // no paging, so with a real dataset the only way to find a record was Ctrl-F over
@@ -19,8 +20,9 @@ import { SkeletonRegion, SkeletonRows } from '@/components/ui/skeleton';
 // move to server-side pagination, that is the moment to revisit — not now.
 //
 // Choices that came out of the research:
-//   • 40px rows at 14px text (the density every published design system lands on),
-//     with a compact option later if anyone asks.
+//   • 40px rows at 14px text (UX-03) → 48px rows at 13px English / 14px Arabic
+//     in DS-03, the People & Gro system's density; the frame, header band and
+//     cell classes are shared with ui/table.tsx so the two cannot drift.
 //   • Numeric columns end-aligned with tabular figures, so digits line up.
 //   • Row actions ALWAYS VISIBLE. Hover-only controls measured a >20% drop in
 //     discoverability, and hover does not exist on the tablets used in a back office.
@@ -102,7 +104,10 @@ export function DataTable<T>({
     // Arabic-aware: a plain includes() would silently miss the most common way
     // Arabic is typed (see @hr/text). Never replace this with String.includes.
     return rows.filter((row) =>
-      matchesAnyField(searchable.flatMap((c) => c.searchValues!(row)), query),
+      matchesAnyField(
+        searchable.flatMap((c) => c.searchValues!(row)),
+        query,
+      ),
     );
   }, [rows, query, searchable]);
 
@@ -202,11 +207,11 @@ export function DataTable<T>({
         role="region"
         aria-label={label ?? t('regionLabel')}
         tabIndex={0}
-        className="overflow-x-auto rounded-lg border bg-card focus-visible:outline-2 focus-visible:outline-ring"
+        className={TABLE_FRAME}
       >
-        <table className="w-full border-collapse text-sm">
+        <table className="w-full border-collapse">
           <thead>
-            <tr className="border-b bg-muted/40">
+            <tr>
               {columns.map((c) => {
                 const active = sort?.key === c.key;
                 return (
@@ -215,12 +220,10 @@ export function DataTable<T>({
                     scope="col"
                     // Only one column may carry aria-sort at a time — which is
                     // also why multi-column sort is not offered.
-                    aria-sort={active ? (sort!.dir === 'asc' ? 'ascending' : 'descending') : undefined}
-                    className={cn(
-                      'whitespace-nowrap px-3 py-2 text-start text-xs font-semibold uppercase tracking-wide text-muted-foreground',
-                      c.numeric && 'text-end',
-                      c.className,
-                    )}
+                    aria-sort={
+                      active ? (sort!.dir === 'asc' ? 'ascending' : 'descending') : undefined
+                    }
+                    className={cn(TABLE_HEAD, c.numeric && 'text-end', c.className)}
                   >
                     {c.sortValue ? (
                       <button
@@ -242,7 +245,7 @@ export function DataTable<T>({
                   </th>
                 );
               })}
-              {actions && <th scope="col" className="px-3 py-2" />}
+              {actions && <th scope="col" className={TABLE_HEAD} />}
             </tr>
           </thead>
           <tbody>
@@ -292,24 +295,16 @@ export function DataTable<T>({
               </tr>
             ) : (
               visible.map((row) => (
-                <tr key={rowKey(row)} className="border-b last:border-b-0 hover:bg-muted/40">
+                <tr key={rowKey(row)} className={TABLE_ROW}>
                   {columns.map((c) => (
                     <td
                       key={c.key}
-                      className={cn(
-                        'h-10 whitespace-nowrap px-3 align-middle',
-                        c.numeric && 'text-end tabular-nums',
-                        c.className,
-                      )}
+                      className={cn(TABLE_CELL, c.numeric && 'text-end tabular-nums', c.className)}
                     >
                       {c.cell(row)}
                     </td>
                   ))}
-                  {actions && (
-                    <td className="h-10 whitespace-nowrap px-3 text-end align-middle">
-                      {actions(row)}
-                    </td>
-                  )}
+                  {actions && <td className={cn(TABLE_CELL, 'text-end')}>{actions(row)}</td>}
                 </tr>
               ))
             )}
@@ -350,7 +345,9 @@ export function DataTable<T>({
             >
               {t('prev')}
             </Button>
-            <span className="tabular-nums">{t('pageOf', { page: current + 1, pages: pageCount })}</span>
+            <span className="tabular-nums">
+              {t('pageOf', { page: current + 1, pages: pageCount })}
+            </span>
             <Button
               variant="outline"
               size="sm"

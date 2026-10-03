@@ -238,8 +238,10 @@ export function AppNav({
       {groups.map((group, i) => (
         <div key={group.heading ?? i} className="flex flex-col gap-0.5">
           {group.heading && (
-            // Tracking is LTR-only: letter-spacing pulls Arabic letters apart and
-            // breaks their joins, and `uppercase` is a no-op there anyway.
+            // Tracking is LTR-only. Chrome 152 skips letter-spacing on Arabic
+            // outright (measured in DS-03 — corrected from DS-02, which claimed it
+            // broke joins); the guard covers engines that apply it to cursive
+            // scripts, and `uppercase` is a no-op there anyway.
             <span className="px-2 pt-1.5 pb-1 text-[11px] leading-4 font-medium text-muted-foreground uppercase ltr:tracking-[0.05em]">
               {group.heading}
             </span>

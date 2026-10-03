@@ -140,58 +140,62 @@ export default function AuditPage() {
       </form>
 
       {error && (
-        <LoadError message={error} onRetry={() => void fetchPage({ resource, action, append: false })} hasContent={entries.length > 0} />
+        <LoadError
+          message={error}
+          onRetry={() => void fetchPage({ resource, action, append: false })}
+          hasContent={entries.length > 0}
+        />
       )}
 
-      <div className="rounded-lg border">
-        {/* The tab stop belongs on <Table>'s own scroll container, not here
-            (UX-11) — this wrapper only draws the border. */}
-        <Table label={t('title')}>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('colTime')}</TableHead>
-              <TableHead>{t('colActor')}</TableHead>
-              <TableHead>{t('colRole')}</TableHead>
-              <TableHead>{t('colClient')}</TableHead>
-              <TableHead>{t('colResource')}</TableHead>
-              <TableHead>{t('colAction')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {entries.map((entry) => (
-              <TableRow key={entry.id}>
-                <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
-                  {format.dateTime(new Date(entry.createdAt), {
-                    dateStyle: 'short',
-                    timeStyle: 'short',
-                  })}
-                </TableCell>
-                <TableCell className="font-mono text-xs">
-                  {/* Was a truncated UUID: an audit trail whose actor is
+      {/* <Table> draws its own frame since DS-03, and its scroll container
+          carries the tab stop (UX-11) — no bordered wrapper here. */}
+      <Table label={t('title')}>
+        <TableHeader>
+          <TableRow>
+            <TableHead>{t('colTime')}</TableHead>
+            <TableHead>{t('colActor')}</TableHead>
+            <TableHead>{t('colRole')}</TableHead>
+            <TableHead>{t('colClient')}</TableHead>
+            <TableHead>{t('colResource')}</TableHead>
+            <TableHead>{t('colAction')}</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {entries.map((entry) => (
+            <TableRow key={entry.id}>
+              <TableCell className="text-muted-foreground">
+                {format.dateTime(new Date(entry.createdAt), {
+                  dateStyle: 'short',
+                  timeStyle: 'short',
+                })}
+              </TableCell>
+              <TableCell className="font-mono text-xs">
+                {/* Was a truncated UUID: an audit trail whose actor is
                       `a1b2c3d4` answers "what happened" but not "who" (UX-10b).
                       Falls back to the short id when the person has no name. */}
-                  {nameFor(entry.actorId) ?? t('none')}
-                </TableCell>
-                <TableCell className="text-sm">{entry.actorRole ?? t('none')}</TableCell>
-                <TableCell className="font-mono text-xs">
-                  {short(entry.clientId) ?? t('none')}
-                </TableCell>
-                <TableCell className="text-sm">{entry.resource}</TableCell>
-                <TableCell>
-                  <Badge>{entry.action}</Badge>
-                </TableCell>
-              </TableRow>
-            ))}
-            {entries.length === 0 && !loading && (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center text-sm text-muted-foreground">
-                  {t('empty')}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+                {nameFor(entry.actorId) ?? t('none')}
+              </TableCell>
+              <TableCell>{entry.actorRole ?? t('none')}</TableCell>
+              <TableCell className="font-mono text-xs">
+                {short(entry.clientId) ?? t('none')}
+              </TableCell>
+              <TableCell>{entry.resource}</TableCell>
+              <TableCell>
+                {/* Soft, not solid (DS-03): an action is a label on every row, and a
+                      solid near-black pill on each one outweighs the data. */}
+                <Badge variant="secondary">{entry.action}</Badge>
+              </TableCell>
+            </TableRow>
+          ))}
+          {entries.length === 0 && !loading && (
+            <TableRow>
+              <TableCell colSpan={6} className="text-center text-muted-foreground">
+                {t('empty')}
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
 
       {cursor && (
         <div className="flex justify-center">

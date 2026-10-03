@@ -782,8 +782,8 @@ Plex (Arial 630.28); only `h1` takes it. StatusPill takes the soft SHAPE, keeps 
 system's pair AND ours before) → `.54`, now 4.64–5.06:1 on every ground. Verified 14 screens ×
 2 locales × 2 widths + portal + login (CLS 0).
 **DS-02 done — the shell:** sidebar 248px, 56px brand row + header, 36px rows / radius 8 /
-16px icons, uppercase group labels (tracking **LTR-only** — letter-spacing breaks Arabic
-joins), a pinned **`NavFoot`** (Settings → initials avatar + name + role → sign-out icon;
+16px icons, uppercase group labels (tracking **LTR-only**; DS-03 measured that Chrome 152 skips
+letter-spacing on Arabic outright, so the guard is for other engines), a pinned **`NavFoot`** (Settings → initials avatar + name + role → sign-out icon;
 sign-out LEFT the header) rendered by sidebar and sheet alike. **The header carries a location
 line** (`header-location.tsx`: `PEOPLE&GRO / screen / record`; record screens publish their
 name via `useRecordLabel`) — this **reverses the UI/UX epic's no-breadcrumbs decision** on the
@@ -792,8 +792,18 @@ row owns it — UX-11's one-per-screen). **Nav counts** (open requests, my unfin
 `NavCountsProvider`: existing endpoints, **exactly 2 extra requests per app load on a prod
 build** (dev shows 4 = StrictMode), **staff-only** because client reps also hold
 `request.read`. Active row keeps its weight (owner-approved deviation). Verified 14 screens ×
-2 locales × 2 widths + record crumb + 4 portal screens × 4. Next: DS-03 primitives (full-grid
-tables), then screens; GCP-01 still awaiting approval.
+2 locales × 2 widths + record crumb + 4 portal screens × 4.
+**DS-03 done — the building blocks:** the table IS the card (radius 14 + 10% ring) and the
+frame/header-band/cell/row classes are EXPORTED from `ui/table.tsx` (`TABLE_FRAME/HEAD/CELL/
+ROW`) and used by `DataTable` too, so the two can't drift and pages no longer wrap tables in a
+border; header = grey band, 12/16 medium, sentence case (4.64:1); rows 48px; cell text
+**13px English / 14px Arabic** (`text-[13px] rtl:text-sm`, owner-approved — a page-level
+`text-sm` on a cell would silently undo it). **Badge lost `destructive`** — status-by-badge no
+longer type-checks; status is StatusPill (employee record converted). New **`StatTile`**
+(caption / display-face figure / sub; `href` makes the whole tile the link; NO trend slot —
+UX-04) on Expiry + Reports. Verified 15 routes × 2 locales × 2 widths + 16 portal. Next: the
+screen cards (DS-04+, need the owner's full prototype download) or ARCH-SS; GCP-01 still
+awaiting approval.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

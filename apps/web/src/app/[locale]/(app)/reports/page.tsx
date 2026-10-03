@@ -2,11 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import type {
-  ReportCatalogResponse,
-  ReportDescriptor,
-  ReportResultResponse,
-} from '@hr/contracts';
+import type { ReportCatalogResponse, ReportDescriptor, ReportResultResponse } from '@hr/contracts';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useCan } from '@/lib/session';
@@ -15,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LoadError, NoAccess } from '@/components/ui/load-state';
 import { SkeletonRegion, SkeletonRows } from '@/components/ui/skeleton';
+import { StatTile } from '@/components/ui/stat-tile';
 import {
   Table,
   TableBody,
@@ -53,7 +50,8 @@ export default function ReportsPage() {
   // Column headers and cell values arrive as stable keys; translate when we have
   // a message for them and fall back to what the API sent, so a new report shows
   // its English label rather than a missing-key crash.
-  const label = (key: string, fallback: string) => (t.has(`column.${key}`) ? t(`column.${key}`) : fallback);
+  const label = (key: string, fallback: string) =>
+    t.has(`column.${key}`) ? t(`column.${key}`) : fallback;
   const value = (raw: string) => (t.has(`value.${raw}`) ? t(`value.${raw}`) : raw);
 
   const onUnauthorized = useCallback(
@@ -194,9 +192,7 @@ export default function ReportsPage() {
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-medium">{t(`report.${result.id}`)}</h2>
-                <Badge variant="secondary">
-                  {t(`category.${categoryOf(reports, result.id)}`)}
-                </Badge>
+                <Badge variant="secondary">{t(`category.${categoryOf(reports, result.id)}`)}</Badge>
               </div>
               <p className="text-xs text-muted-foreground">
                 {t('generatedAt', {
@@ -214,10 +210,7 @@ export default function ReportsPage() {
           {/* whole-report totals */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
             {Object.entries(result.summary).map(([key, total]) => (
-              <div key={key} className="rounded-lg border p-4">
-                <div className="text-2xl font-semibold">{total.toLocaleString(locale)}</div>
-                <div className="mt-1 text-sm text-muted-foreground">{label(key, key)}</div>
-              </div>
+              <StatTile key={key} label={label(key, key)} value={total.toLocaleString(locale)} />
             ))}
           </div>
 
@@ -226,37 +219,31 @@ export default function ReportsPage() {
               {t('noRows')}
             </div>
           ) : (
-            <div className="rounded-lg border">
-              <Table label={t(`report.${result.id}`)}>
-                <TableHeader>
-                  <TableRow>
+            <Table label={t(`report.${result.id}`)}>
+              <TableHeader>
+                <TableRow>
+                  {result.columns.map((c) => (
+                    <TableHead key={c.key} className={c.numeric ? 'text-end' : undefined}>
+                      {label(c.key, c.label)}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {result.rows.map((row, i) => (
+                  <TableRow key={i}>
                     {result.columns.map((c) => (
-                      <TableHead key={c.key} className={c.numeric ? 'text-end' : undefined}>
-                        {label(c.key, c.label)}
-                      </TableHead>
+                      <TableCell
+                        key={c.key}
+                        className={c.numeric ? 'text-end tabular-nums' : undefined}
+                      >
+                        {cell(row[c.key] ?? null, c.numeric)}
+                      </TableCell>
                     ))}
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {result.rows.map((row, i) => (
-                    <TableRow key={i}>
-                      {result.columns.map((c) => (
-                        <TableCell
-                          key={c.key}
-                          className={
-                            c.numeric
-                              ? 'whitespace-nowrap text-end tabular-nums'
-                              : 'whitespace-nowrap'
-                          }
-                        >
-                          {cell(row[c.key] ?? null, c.numeric)}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </section>
       )}

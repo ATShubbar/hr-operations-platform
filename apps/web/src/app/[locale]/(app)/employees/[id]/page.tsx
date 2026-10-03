@@ -7,6 +7,7 @@ import type { EmployeeResponse } from '@hr/contracts';
 import { Link, useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useCan } from '@/lib/session';
+import { toneFor } from '@/lib/status-tone';
 import {
   CONTRACT_TYPE_KEY,
   CONTRACT_TYPE_VALUES,
@@ -26,7 +27,7 @@ import {
   WPS_VALUES,
   type Locale,
 } from '@/lib/employee-format';
-import { Badge } from '@/components/ui/badge';
+import { StatusPill } from '@/components/ui/status-pill';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { LoadError, NoAccess } from '@/components/ui/load-state';
@@ -179,9 +180,12 @@ export default function EmployeeDetailPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant={emp.employmentStatus === 'active' ? 'default' : 'secondary'}>
+          {/* A status, so a StatusPill (DS-03): the colour means something here,
+              and on_leave / suspended / terminated each get their own tone instead
+              of sharing one grey Badge. */}
+          <StatusPill tone={toneFor('employee', emp.employmentStatus)}>
             {t(EMPLOYMENT_STATUS_KEY[emp.employmentStatus])}
-          </Badge>
+          </StatusPill>
           {canTerminate && emp.employmentStatus !== 'terminated' && (
             <Button
               variant="outline"
