@@ -7,7 +7,7 @@ export const loginRequestSchema = z.object({
 
 export const loginResponseSchema = z.object({
   userId: z.uuid(),
-  principalType: z.enum(['staff', 'client_rep']),
+  principalType: z.enum(['staff', 'client_rep', 'employee']),
   // Set when the login produced a LIMITED session instead of a full one:
   mfaRequired: z.boolean().optional(), // enrolled user must pass /auth/mfa/challenge
   mfaEnrollRequired: z.boolean().optional(), // admin roles must enroll first
@@ -29,9 +29,12 @@ export const meResponseSchema = z.object({
   // has always been the email — "Today" greets only when this is present rather
   // than inventing a name from an email local-part.
   displayName: z.string().nullable(),
-  principalType: z.enum(['staff', 'client_rep']),
+  principalType: z.enum(['staff', 'client_rep', 'employee']),
   role: z.string(),
   clientId: z.uuid().nullable(),
+  // The employee record an `employee` principal is (ADR-011, SS-01); null for
+  // staff and client reps.
+  employeeId: z.uuid().nullable(),
   permissions: z.array(z.string()),
 });
 

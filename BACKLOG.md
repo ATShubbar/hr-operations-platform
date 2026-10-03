@@ -2392,13 +2392,35 @@ Nitaqat reporting; request comments + attachments; saved views; a "viewing as" r
 
 | ID | Task | Depends on | Status |
 |---|---|---|---|
-| SS-01 | Identity: `employee` principal type + `employee_id` binding (migration); one email = one account across principals; sign-in derives the client from the record | ARCH-SS | planned |
+| SS-01 | Identity: `employee` principal type + `employee_id` binding (migration); one email = one account across principals; sign-in derives the client from the record | ARCH-SS | **done** ([evidence](evidence/self-service/SS-01.md)) |
 | SS-02 | Isolation: `app.employee_id` GUC (SPIKE-001 `NULLIF` form) + RLS policies on employee-scoped tables + harness scope **`employee`** (NOT `self` — that name is taken by CONF-03's per-user endpoints) probing a same-client other employee and an other-client employee | SS-01 | planned |
-| SS-03 | Permissions + "Me" API: `employee` role, whitelisted self view in Employees, `modules/self-service`, `flag.employee-self-service` (per client, default off) | SS-02 | planned |
+| SS-03 | Permissions + "Me" API: `employee` role, whitelisted self view in Employees, `modules/self-service`, `flag.employee-self-service` (per client, default off). **Must NOT grant ADR-011's literal list** (`employee.read`/`salary.read`/`govdata.read`/`document.read` open the staff list endpoints, which ignore principal type — ADR-011 rev. 1); decide a dedicated self-service permission and/or a principal fence. Resolves the company from the record per request | SS-02 | planned |
 | SS-04 | My documents: list (`available` only) + presigned download | SS-03 | planned |
 | SS-05 | My requests: raise + track; client reps see them | SS-03 | planned |
 | SS-06 | Accounts: staff invitation (`employee-user.*`), set password from the link, password reset, deactivate + revoke on termination (event → self-service → Auth) | SS-03; **real email transport for production** | planned |
 | SS-07 | "Me" web screens — phone-first (375px), ar/en, RTL | SS-04, SS-05 | planned |
+
+### SS-01 — Identity: employees can exist as users
+- **Objective:** the `employee` principal exists, bound to one employee record, and can do
+  nothing yet — sign in, `/auth/me`, sign out; every other route 403.
+- **Files:** `prisma/schema.prisma` + migrations `20261003090000_employee_principal`,
+  `20261003090100_auth_users_principal_checks`; NEW `src/auth/scope.ts`; requests / vacancies /
+  GRO controllers; request context, session, middleware, auth controller, permissions, users
+  service, public API; `@hr/contracts` `auth.ts`; seed; `test/helpers/login.ts`; NEW
+  `test/auth-employee-principal.e2e-spec.ts`; ADR-011 rev. 1.
+- **DoD:** migration applied + generated; each CHECK rejects a bad row; employee logs in and
+  `/auth/me` shows it with no data permissions; 403 on a representative route set; `scopeOf`
+  refuses employees and company-less reps; a source scan forbids the old inline test; full
+  suite green; web typecheck + lint.
+- **Evidence:** `evidence/self-service/SS-01.md`.
+- **Dependencies:** ARCH-SS. **Risks/decisions:** **the dual-path controllers failed OPEN** —
+  `client_rep && clientId ? client : staff` sent any other principal (and a company-less rep) to
+  the cross-client path; now `scopeOf` is exhaustive and 403s the rest, guarded by a source
+  scan proven red/green. Enum values ship in their own migration (Postgres won't use a new
+  value in the adding transaction). **Deviation:** the role holds `session.end` (not nothing) —
+  logout is permission-gated, and the card's own DoD required sign-out. **ADR-011 rev. 1:**
+  company resolved by self-service (Auth can't read `emp_employees`), and the ADR's permission
+  list flagged UNSAFE for SS-03. API suite **385/385** (352 + 33).
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

@@ -21,6 +21,12 @@ model AuthUser {
   principalType PrincipalType @map("principal_type")
   role          Role          @default(read_only)
   clientId      String?       @map("client_id") @db.Uuid
+  // Employee self-service (ADR-011, SS-01): the ONE employee record an
+  // `employee` principal is. A bare id, no foreign key — emp_employees belongs
+  // to the Employees module (cross-module rule). Unique: one record, at most
+  // one account. The company is deliberately NOT stored here: it is read from
+  // the record when needed, so a transferred employee follows their record.
+  employeeId    String?       @unique @map("employee_id") @db.Uuid
   status        UserStatus    @default(active)
   mfaSecret     String?       @map("mfa_secret")
   createdAt     DateTime      @default(now()) @map("created_at")
@@ -32,6 +38,7 @@ model AuthUser {
 enum PrincipalType {
   staff
   client_rep
+  employee
 }
 
 // The nine roles from the frozen architecture's permission matrix.
@@ -46,6 +53,7 @@ enum Role {
   read_only
   client_admin
   client_user
+  employee
 }
 
 enum UserStatus {

@@ -21,6 +21,7 @@ import {
 } from '@hr/contracts';
 import { RequirePermission } from '../../../auth/permissions.decorator';
 import { requestContext } from '../../../context/request-context';
+import { scopeOf } from '../../../auth/scope';
 import type { RequestModel as RequestRecord } from '../../../generated/prisma/models';
 import { ClientsService } from '../../clients/public-api';
 import { RequestsService } from '../application/requests.service';
@@ -61,10 +62,11 @@ export class RequestsController {
     };
 
     // Client rep: own client from the session; any body clientId is ignored.
-    if (ctx.principalType === 'client_rep' && ctx.clientId) {
-      const row = await this.requests.createForClient(ctx.clientId, {
+    const scope = scopeOf(ctx);
+    if (scope.kind === 'client') {
+      const row = await this.requests.createForClient(scope.clientId, {
         ...base,
-        clientId: ctx.clientId,
+        clientId: scope.clientId,
       });
       return toResponse(row);
     }
@@ -86,10 +88,10 @@ export class RequestsController {
     const q = requestQuerySchema.safeParse(query);
     const f = q.success ? q.data : {};
 
-    const ctx = requestContext.get();
-    if (ctx?.principalType === 'client_rep' && ctx.clientId) {
+    const scope = scopeOf(requestContext.get());
+    if (scope.kind === 'client') {
       // No clientId here: RLS decides whose rows exist, not the caller.
-      const rows = await this.requests.listForClient(ctx.clientId, { status: f.status });
+      const rows = await this.requests.listForClient(scope.clientId, { status: f.status });
       return { requests: rows.map(toResponse) };
     }
     const rows = await this.requests.list({ clientId: f.clientId, status: f.status });
@@ -100,10 +102,10 @@ export class RequestsController {
   @Get(':id')
   async get(@Param('id') id: string): Promise<RequestResponse> {
     if (!UUID_RE.test(id)) throw new NotFoundException('Request not found');
-    const ctx = requestContext.get();
+    const scope = scopeOf(requestContext.get());
     const row =
-      ctx?.principalType === 'client_rep' && ctx.clientId
-        ? await this.requests.findForClient(ctx.clientId, id)
+      scope.kind === 'client'
+        ? await this.requests.findForClient(scope.clientId, id)
         : await this.requests.findById(id);
     if (!row) throw new NotFoundException('Request not found');
     return toResponse(row);
@@ -116,11 +118,11 @@ export class RequestsController {
     const parsed = updateRequestRequestSchema.safeParse(body);
     if (!parsed.success) throw new BadRequestException('Invalid request payload');
     const data: UpdateRequestInput = parsed.data;
-    const ctx = requestContext.get();
+    const scope = scopeOf(requestContext.get());
 
     const row =
-      ctx?.principalType === 'client_rep' && ctx.clientId
-        ? await this.requests.updateForClient(ctx.clientId, id, data)
+      scope.kind === 'client'
+        ? await this.requests.updateForClient(scope.clientId, id, data)
         : await this.requests.update(id, data);
     if (!row) throw new NotFoundException('Request not found');
     return toResponse(row);

@@ -15,9 +15,12 @@ export type SessionMfaState = 'full' | 'enroll_required' | 'challenge';
 
 export interface SessionData {
   userId: string;
-  principalType: 'staff' | 'client_rep';
+  principalType: 'staff' | 'client_rep' | 'employee';
   role: string;
   clientId: string | null;
+  // Set only for `employee` principals (SS-01). Optional so sessions created
+  // before this field existed still parse — they are staff or client reps.
+  employeeId?: string | null;
   mfa: SessionMfaState;
   // Secret generated at enroll time; promoted to auth_users.mfa_secret only
   // after a successful verify — never persisted unverified.

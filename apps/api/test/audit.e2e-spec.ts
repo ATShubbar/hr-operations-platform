@@ -22,6 +22,7 @@ function staffCtx(requestId: string): RequestContext {
     requestId,
     actorId: ACTOR,
     clientId: CLIENT_A,
+    employeeId: null,
     principalType: 'staff',
     role: 'company_admin',
   };

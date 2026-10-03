@@ -93,6 +93,9 @@ const STAFF_NAMES: Record<string, string> = {
   read_only: 'Sami Al-Zahrani',
 };
 
+// The employee record the seed's employee account is bound to (SS-01).
+const SEED_EMPLOYEE_USER_RECORD = 'e0000001-0000-4000-8000-000000000002';
+
 const CLIENT_REP_NAMES: Record<string, string> = {
   client_admin: 'Abdulaziz Al-Ghamdi',
   client_user: 'Reem Al-Mutairi',
@@ -126,7 +129,24 @@ async function seedUsers(prisma: PrismaClient): Promise<number> {
     })),
   );
 
-  const data = [...staffUsers, ...clientRepUsers];
+  // SS-01 (ADR-011): one employee account, bound to Ahmed Hassan (client A) —
+  // a seed employee who already has documents and a request, so the self-
+  // service cards (SS-02..) have real own-data to fence and real colleagues'
+  // data to fence OUT. No client_id: an employee's company is read from the
+  // record (auth_users_principal_binding_chk forbids storing one). It holds no
+  // permissions until SS-03, so it can sign in and do nothing else.
+  const employeeUsers: Prisma.AuthUserCreateManyInput[] = [
+    {
+      email: `employee-a@${SEED_USER_DOMAIN}`,
+      passwordHash: await passwords.hash(SEED_PASSWORD),
+      principalType: 'employee' as const,
+      role: 'employee' as const,
+      employeeId: SEED_EMPLOYEE_USER_RECORD,
+      displayName: 'Ahmed Hassan',
+    },
+  ];
+
+  const data = [...staffUsers, ...clientRepUsers, ...employeeUsers];
 
   // Idempotency: replace exactly the seed-owned users (by email domain),
   // leaving any test- or manually-created users untouched.
@@ -606,8 +626,8 @@ async function main(): Promise<void> {
       `Seed complete: ${clientCount} client companies; ${employeeCount} employees; ${documentCount} documents; ${requestCount} requests; ${taskCount} tasks; ${vacancyCount} vacancies; ${candidateCount} candidates; ${groCount} GRO processes; ${calendarCount} calendar events; ${rowCount} scope-check rows ` +
         `${notificationCount} notifications (purged ${purgedNotifications} orphans); ` +
         `across clients A (${SEED_CLIENT_A}) and B (${SEED_CLIENT_B}); ${userCount} auth users ` +
-        `(${STAFF_ROLES.length} staff roles + ${CLIENT_REP_ASSIGNMENTS.length} client reps, ` +
-        `${roleCount}/${STAFF_ROLES.length + CLIENT_ROLES.length} distinct roles covered).\n`,
+        `(${STAFF_ROLES.length} staff roles + ${CLIENT_REP_ASSIGNMENTS.length} client reps + 1 employee, ` +
+        `${roleCount + 1}/${STAFF_ROLES.length + CLIENT_ROLES.length + 1} distinct roles covered).\n`,
     );
   } finally {
     await prisma.$disconnect();

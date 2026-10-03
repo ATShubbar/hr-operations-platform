@@ -41,6 +41,30 @@ export async function loginAsClientRep(
   return createAndLogin(app, clientId, role);
 }
 
+// SS-01: an `employee` principal bound to the given employee record (a bare id —
+// there is no foreign key, so any UUID works for tests that only need the
+// principal; pass a real seed employee when the record itself matters).
+export async function loginAsEmployee(
+  app: INestApplication,
+  employeeId: string = randomUUID(),
+): Promise<TestPrincipal & { employeeId: string }> {
+  const users = app.get(UsersService);
+  const passwords = app.get(PasswordService);
+  const email = `${HELPER_EMAIL_PREFIX}${randomUUID()}@example.com`;
+  const user = await users.createEmployeeUser({
+    email,
+    passwordHash: await passwords.hash(HELPER_PASSWORD),
+    employeeId,
+  });
+  const res = await request(app.getHttpServer())
+    .post('/auth/login')
+    .send({ email, password: HELPER_PASSWORD })
+    .expect(200);
+  const setCookie = res.headers['set-cookie'] as unknown as string[];
+  const cookie = setCookie.find((c) => c.startsWith('hr_session=')) ?? '';
+  return { cookie: cookie.split(';')[0] ?? '', userId: user.id, email, employeeId };
+}
+
 async function createAndLogin(
   app: INestApplication,
   clientId: string | null,

@@ -818,11 +818,30 @@ default off. Lives in a delivery module `modules/self-service`, which also orche
 invites and reacts to termination by calling Auth (Auth, a foundation module, must not
 subscribe to domain events). Matrix has an "Employee (self)" column + an employee-accounts
 row. **Known gaps:** password reset + real email are prerequisites (SS-06); no-email
-employees excluded; ar/en only for an expatriate workforce. Build = SS-01..07, all planned.
+employees excluded; ar/en only for an expatriate workforce. Build = SS-01..07.
+**SS-01 done — the `employee` principal exists and is fenced.** `auth_users.employee_id`
+(unique, bare uuid) + `PrincipalType`/`Role` `employee` (own migration — Postgres won't use a
+new enum value in the adding transaction) + two CHECKs making a wrong account IMPOSSIBLE
+(staff: no company/no record · rep: company/no record · employee: record/no company; `employee`
+role ⇔ `employee` principal). **Found + fixed: the dual-path controllers (requests, vacancies,
+GRO — 8 sites) failed OPEN** — `client_rep && clientId ? client : staff` sent every other
+principal, and a company-less rep, down the CROSS-CLIENT path. Now **`src/auth/scope.ts`
+`scopeOf(ctx)`** is exhaustive (staff · client(id) · else 403) and a source-scan test forbids
+the inline form (proven red with a probe). Session/context/`/auth/me` carry `employeeId`; the
+company is NOT stored — self-service resolves it per request (Auth can't read
+`emp_employees`). Role holds only `session.end` (logout is permission-gated). Seed:
+`employee-a@seed.hr.local` → Ahmed Hassan. **ADR-011 rev. 1 flags its own permission list as
+UNSAFE for SS-03**: `employee.read`/`document.read`/… are what the STAFF list endpoints check,
+and those ignore principal type. API suite **385/385**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
 - RLS policies MUST use `NULLIF(current_setting('app.client_id', true), '')::uuid` — pooled connections leave the GUC as '' not NULL (SPIKE-001).
+- `prisma migrate dev` refuses to run here ("non-interactive environment"). Generate SQL with
+  `npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script`,
+  write the migration folder by hand, then `pnpm db:deploy` + `pnpm db:generate` (SS-01).
+- Never choose a data path with `principalType === 'client_rep' ? … : staff` — it fails OPEN
+  for every other principal. Use `scopeOf(ctx)` from `src/auth/scope.ts`; a test enforces it (SS-01).
 - Turbo v2 strict env: env vars must be declared in turbo.json `globalEnv` or tasks won't see them (CI broke on this).
 - NestJS DI needs VALUE imports; `consistent-type-imports` is off for the API only.
 - Prisma 7: URL lives in prisma.config.ts, runtime needs the pg driver adapter, `CHECKPOINT_DISABLE=1` on all db scripts (telemetry hangs). `migrate dev` does NOT reliably regenerate the client here — run `db:generate` explicitly after a migration or the new model's delegate is missing (AUDIT-01).

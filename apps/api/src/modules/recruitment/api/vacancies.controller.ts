@@ -21,6 +21,7 @@ import {
 } from '@hr/contracts';
 import { RequirePermission } from '../../../auth/permissions.decorator';
 import { requestContext } from '../../../context/request-context';
+import { scopeOf } from '../../../auth/scope';
 import type { VacancyModel as VacancyRecord } from '../../../generated/prisma/models';
 import { ClientsService } from '../../clients/public-api';
 import { VacanciesService } from '../application/vacancies.service';
@@ -68,9 +69,9 @@ export class VacanciesController {
   @RequirePermission('vacancy.read')
   @Get()
   async list(@Query() query: unknown): Promise<VacancyListResponse> {
-    const ctx = requestContext.get();
-    if (ctx?.principalType === 'client_rep' && ctx.clientId) {
-      const rows = await this.vacancies.listForClient(ctx.clientId);
+    const scope = scopeOf(requestContext.get());
+    if (scope.kind === 'client') {
+      const rows = await this.vacancies.listForClient(scope.clientId);
       return { vacancies: rows.map(toResponse) };
     }
     const q = vacancyQuerySchema.safeParse(query);
@@ -83,10 +84,10 @@ export class VacanciesController {
   @Get(':id')
   async get(@Param('id') id: string): Promise<VacancyResponse> {
     if (!UUID_RE.test(id)) throw new NotFoundException('Vacancy not found');
-    const ctx = requestContext.get();
+    const scope = scopeOf(requestContext.get());
     const row =
-      ctx?.principalType === 'client_rep' && ctx.clientId
-        ? await this.vacancies.findForClient(ctx.clientId, id)
+      scope.kind === 'client'
+        ? await this.vacancies.findForClient(scope.clientId, id)
         : await this.vacancies.getById(id);
     if (!row) throw new NotFoundException('Vacancy not found');
     return toResponse(row);

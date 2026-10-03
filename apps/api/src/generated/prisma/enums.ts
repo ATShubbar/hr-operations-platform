@@ -11,7 +11,8 @@
 
 export const PrincipalType = {
   staff: 'staff',
-  client_rep: 'client_rep'
+  client_rep: 'client_rep',
+  employee: 'employee'
 } as const
 
 export type PrincipalType = (typeof PrincipalType)[keyof typeof PrincipalType]
@@ -26,7 +27,8 @@ export const Role = {
   finance: 'finance',
   read_only: 'read_only',
   client_admin: 'client_admin',
-  client_user: 'client_user'
+  client_user: 'client_user',
+  employee: 'employee'
 } as const
 
 export type Role = (typeof Role)[keyof typeof Role]

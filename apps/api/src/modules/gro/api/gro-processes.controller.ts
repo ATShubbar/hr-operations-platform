@@ -20,6 +20,7 @@ import {
 } from '@hr/contracts';
 import { RequirePermission } from '../../../auth/permissions.decorator';
 import { requestContext } from '../../../context/request-context';
+import { scopeOf } from '../../../auth/scope';
 import type { GroProcessModel as GroProcessRecord } from '../../../generated/prisma/models';
 import { EmployeesService } from '../../employees/public-api';
 import { GroProcessesService } from '../application/gro-processes.service';
@@ -67,9 +68,9 @@ export class GroProcessesController {
   @RequirePermission('gro.read')
   @Get()
   async list(@Query() query: unknown): Promise<GroProcessListResponse> {
-    const ctx = requestContext.get();
-    if (ctx?.principalType === 'client_rep' && ctx.clientId) {
-      const rows = await this.gro.listForClient(ctx.clientId);
+    const scope = scopeOf(requestContext.get());
+    if (scope.kind === 'client') {
+      const rows = await this.gro.listForClient(scope.clientId);
       return { processes: rows.map((r) => toResponse(r, true)) };
     }
     const q = groProcessQuerySchema.safeParse(query);
@@ -82,11 +83,12 @@ export class GroProcessesController {
   @Get(':id')
   async get(@Param('id') id: string): Promise<GroProcessResponse> {
     if (!UUID_RE.test(id)) throw new NotFoundException('GRO process not found');
-    const ctx = requestContext.get();
-    const isRep = ctx?.principalType === 'client_rep' && !!ctx.clientId;
-    const row = isRep
-      ? await this.gro.findForClient(ctx!.clientId!, id)
-      : await this.gro.getById(id);
+    const scope = scopeOf(requestContext.get());
+    const isRep = scope.kind === 'client';
+    const row =
+      scope.kind === 'client'
+        ? await this.gro.findForClient(scope.clientId, id)
+        : await this.gro.getById(id);
     if (!row) throw new NotFoundException('GRO process not found');
     return toResponse(row, isRep);
   }

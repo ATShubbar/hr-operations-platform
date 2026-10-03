@@ -20,4 +20,8 @@ export {
   type RoleName,
   type StaffRole,
 } from './domain/permissions';
-export type { CreateClientRepUserInput, CreateStaffUserInput } from './domain/user';
+export type {
+  CreateClientRepUserInput,
+  CreateEmployeeUserInput,
+  CreateStaffUserInput,
+} from './domain/user';

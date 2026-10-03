@@ -72,6 +72,7 @@ export class AuthController {
       principalType: ctx.principalType,
       role: ctx.role,
       clientId: ctx.clientId,
+      employeeId: ctx.employeeId,
       permissions: this.policy.permissionsFor(ctx.role),
     };
   }
@@ -98,6 +99,7 @@ export class AuthController {
       principalType: user.principalType,
       role: user.role,
       clientId: user.clientId,
+      employeeId: user.employeeId,
       mfa: 'full',
     };
 

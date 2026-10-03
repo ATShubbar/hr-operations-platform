@@ -3,7 +3,11 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import type { AuthUserModel as AuthUser } from '../../../generated/prisma/models';
 import type { Prisma } from '../../../generated/prisma/client';
 import type { ClientRole, StaffRole } from '../domain/permissions';
-import type { CreateClientRepUserInput, CreateStaffUserInput } from '../domain/user';
+import type {
+  CreateClientRepUserInput,
+  CreateEmployeeUserInput,
+  CreateStaffUserInput,
+} from '../domain/user';
 
 export type ClientRepStatus = 'active' | 'disabled';
 
@@ -38,6 +42,25 @@ export class UsersService {
         principalType: 'client_rep',
         clientId: input.clientId,
         role: input.role,
+      },
+    });
+  }
+
+  // SS-01: the account an employee signs in with, bound to one employee record.
+  // Invitation (who may call this, and from where) is SS-06; this only creates
+  // the row, and the database refuses any inconsistent combination
+  // (auth_users_principal_binding_chk / auth_users_employee_role_chk).
+  createEmployeeUser(
+    input: CreateEmployeeUserInput,
+    tx?: Prisma.TransactionClient,
+  ): Promise<AuthUser> {
+    return (tx ?? this.prisma).authUser.create({
+      data: {
+        email: input.email.toLowerCase(),
+        passwordHash: input.passwordHash,
+        principalType: 'employee',
+        role: 'employee',
+        employeeId: input.employeeId,
       },
     });
   }

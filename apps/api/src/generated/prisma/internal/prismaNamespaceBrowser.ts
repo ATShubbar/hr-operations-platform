@@ -96,6 +96,7 @@ export const AuthUserScalarFieldEnum = {
   principalType: 'principalType',
   role: 'role',
   clientId: 'clientId',
+  employeeId: 'employeeId',
   status: 'status',
   mfaSecret: 'mfaSecret',
   createdAt: 'createdAt',

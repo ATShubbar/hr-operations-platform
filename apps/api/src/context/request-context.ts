@@ -7,7 +7,10 @@ export interface RequestContext {
   // requests; null means unauthenticated.
   actorId: string | null;
   clientId: string | null;
-  principalType: 'staff' | 'client_rep' | null;
+  // The employee record an `employee` principal IS (ADR-011, SS-01); null for
+  // staff and client reps. Never a company — see auth_users.employee_id.
+  employeeId: string | null;
+  principalType: 'staff' | 'client_rep' | 'employee' | null;
   role: string | null;
 }
 
@@ -25,6 +28,7 @@ export const requestContext = {
       requestId: requestId ?? randomUUID(),
       actorId: null,
       clientId: null,
+      employeeId: null,
       principalType: null,
       role: null,
     };

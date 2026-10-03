@@ -169,9 +169,15 @@ export const STAFF_ROLES = [
 
 export const CLIENT_ROLES = ['client_admin', 'client_user'] as const;
 
+// Employee self-service (ADR-011). One role for the third principal type; the
+// database ties it to that principal in both directions
+// (auth_users_employee_role_chk).
+export const EMPLOYEE_ROLES = ['employee'] as const;
+
 export type StaffRole = (typeof STAFF_ROLES)[number];
 export type ClientRole = (typeof CLIENT_ROLES)[number];
-export type RoleName = StaffRole | ClientRole;
+export type EmployeeRole = (typeof EMPLOYEE_ROLES)[number];
+export type RoleName = StaffRole | ClientRole | EmployeeRole;
 
 // Every staff role: example capability, session end, reading client companies,
 // reading the employee core profile, and reading configuration (all staff read
@@ -409,4 +415,12 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
   ],
   client_admin: CLIENT_ADMIN,
   client_user: ALL_CLIENT,
+  // ONLY `session.end` (SS-01). The principal exists before anything it may
+  // touch: with deny-by-default, an employee session can sign in, read
+  // /auth/me (public, self-checking) and sign out — every other route is 403.
+  // `session.end` is the one grant, because logout is permission-gated and an
+  // account that cannot end its own session is worse than one that can do
+  // nothing. SS-03 grants the self-scoped set once the isolation layer (SS-02)
+  // exists to scope it; granting first would hand out permissions with no fence.
+  employee: ['session.end'],
 };

@@ -31,6 +31,7 @@ export class SessionMiddleware implements NestMiddleware {
       if (session && ctx && session.mfa === 'full') {
         ctx.actorId = session.userId;
         ctx.clientId = session.clientId;
+        ctx.employeeId = session.employeeId ?? null;
         ctx.principalType = session.principalType;
         ctx.role = session.role;
       }

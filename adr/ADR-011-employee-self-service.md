@@ -4,6 +4,7 @@
 - Date: 2026-10-03
 - Owner: Ahmed Alshubbar (product decisions); implementation per `BACKLOG.md` → SS epic
 - Amends: `architecture.md` v1.4 → **v1.5** ("Users & Authorization", roles, identity, isolation, permission matrix, business modules)
+- Revised: **rev. 1 (2026-10-03, SS-01)** — see "Revision notes" at the end.
 
 ## Context
 `architecture.md` v1.1–v1.4 placed employee self-service explicitly **out of scope**:
@@ -160,3 +161,30 @@ principal**, and the first whose isolation boundary is narrower than a client co
   ADR-005 (localization), SPIKE-001 (GUC form)
 - `BACKLOG.md` → ARCH-SS (this decision) and the SS epic (implementation)
 - `evidence/arch/ARCH-SS.md`
+
+## Revision notes
+
+**rev. 1 (2026-10-03, during SS-01)** — two corrections found while building identity:
+
+1. **"The client is derived from the employee record at sign-in" → "derived when needed,
+   by the self-service module."** Auth cannot read `emp_employees`: that table belongs to
+   Employees, and Auth is a foundation module that must not depend on a domain module. So
+   the session carries the **`employeeId` only** (`client_id` stays NULL on the account —
+   now a CHECK constraint), and `modules/self-service` resolves the company from the record
+   per request (SS-03). The guarantee is unchanged and arguably stronger: a transferred
+   employee follows their record on the very next request, not at their next sign-in.
+
+2. **The permission list in "Permissions" is UNSAFE as written, and SS-03 must not
+   implement it literally.** It grants the employee role `employee.read`, `salary.read`,
+   `govdata.read` and `document.read`. Those are the permissions the **staff** endpoints
+   check (`GET /employees`, `GET /documents`, …), and those endpoints do not look at the
+   principal type at all — they are staff-only today only because no other role holds those
+   permissions. Granting them to employees would open the cross-client staff lists to every
+   employee account. (Client reps avoid this the same way: they hold resource permissions
+   only for the three dual-path resources, and use a dedicated `portal.read` for everything
+   else — PORTAL-01.) **Resolution belongs to SS-03's card**, between: a dedicated
+   self-service permission gating only `/me/*` endpoints (the portal pattern), and/or a
+   principal fence that makes staff-only endpoints refuse non-staff principals regardless of
+   permissions. The *data* an employee may see (the "What employees can do" section) is not
+   in question — only which permission names carry it.
+
