@@ -18,6 +18,8 @@ import { Skeleton, SkeletonRegion } from '@/components/ui/skeleton';
 import { StatusPill } from '@/components/ui/status-pill';
 import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs';
 import { useRecordLabel } from '@/components/header-location';
+import { DocumentsTab } from './documents-tab';
+import { OpenWorkTab } from './open-work-tab';
 import { ProfileTab } from './profile-tab';
 import { SelfServiceAccessCard } from './self-service-access-card';
 import { StartProcedureDialog } from './start-procedure-dialog';
@@ -26,9 +28,9 @@ import { StartProcedureDialog } from './start-procedure-dialog';
 // link, a header card (avatar, both names, status, a position · company ·
 // department line, Start a procedure), and seven tabs.
 //
-// Built here: Profile. Family, Leave and Mobilisation have no backend and are
-// shown "coming soon" (owner rule). Documents, Open work and History are the
-// next card (DS-07); until then they say the same, so no tab is a dead click.
+// Built: Profile (DS-06), Documents and Open work (DS-07). Family, Leave and
+// Mobilisation have no backend and are shown "coming soon" (owner rule); History
+// says the same until audit entries record which record they are about (AUDIT-06).
 //
 // Two things the prototype does not show are kept (owner decision): the
 // employee's self-service access, as the last block of Profile, and Terminate,
@@ -85,6 +87,17 @@ export default function PersonRecordPage() {
   useEffect(() => {
     void load();
   }, [id]);
+
+  // A background change to this employee (a GRO completion writing an expiry
+  // back) — refetch WITHOUT the loading state, which would swap the page for a
+  // skeleton and remount the tab the user is working in.
+  async function refresh() {
+    try {
+      setEmp(await apiFetch<EmployeeResponse>(`/employees/${id}`));
+    } catch {
+      // The next full load will surface it; the record on screen stays usable.
+    }
+  }
 
   async function terminate() {
     if (!emp || !window.confirm(t('confirmTerminate'))) return;
@@ -219,13 +232,21 @@ export default function PersonRecordPage() {
           />
         </TabsPanel>
 
-        {TABS.filter((k) => k !== 'profile').map((k) => (
+        <TabsPanel value="docs">
+          <DocumentsTab emp={emp} clientName={clientName} onSaved={setEmp} />
+        </TabsPanel>
+
+        <TabsPanel value="work">
+          <OpenWorkTab emp={emp} onEmployeeChanged={() => void refresh()} />
+        </TabsPanel>
+
+        {(['family', 'leave', 'mob', 'history'] as const).map((k) => (
           <TabsPanel key={k} value={k}>
             <div className="rounded-xl bg-card p-6 ring-1 ring-foreground/10">
               <EmptyState
                 variant="first-run"
                 title={ts('comingSoon')}
-                description={t(`soon.${k as Exclude<Tab, 'profile'>}`)}
+                description={t(`soon.${k}`)}
               />
             </div>
           </TabsPanel>

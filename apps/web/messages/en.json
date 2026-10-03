@@ -1168,12 +1168,10 @@
       "history": "History"
     },
     "soon": {
-      "docs": "Each document with its expiry, the file, and a renewal you can record. Arrives in the next screen update.",
       "family": "Dependants on this employee's sponsorship and their own iqama dates.",
       "leave": "Balances, requests and leave taken.",
-      "work": "This person's open requests, internal tasks and government procedures in one list. Arrives in the next screen update.",
       "mob": "Onboarding and final-exit steps, in order, with what is blocking each.",
-      "history": "Everything recorded about this person, newest first. Arrives in the next screen update."
+      "history": "Everything recorded about this person, newest first. Arrives once audit entries record which record they are about."
     },
     "redaction": {
       "all": "{role} sees every field on this record.",
@@ -1248,6 +1246,77 @@
       "cancel": "Cancel",
       "error": "Could not start the procedure. Try again.",
       "started": "{type} opened for {name}."
+    },
+    "docs": {
+      "title": "Documents on file",
+      "subtitle": "{dated} with an expiry on file · {files, plural, =0 {no scanned files yet} one {# scanned file} other {# scanned files}}. Expiry drives what enters the work queue.",
+      "add": "Add document",
+      "colDocument": "Document",
+      "colFile": "Scanned file",
+      "colExpires": "Expires",
+      "colStatus": "Status",
+      "colActions": "Actions",
+      "issuer": {
+        "iqama": "Muqeem · Jawazat",
+        "nationalId": "Absher · civil record",
+        "permit": "Qiwa · MHRSD",
+        "contract": "Qiwa · authenticated",
+        "passport": "Consulate copy",
+        "insurance": "CCHI",
+        "licence": "Absher · Traffic"
+      },
+      "label": {
+        "nationalId": "National ID"
+      },
+      "noFile": "No file",
+      "noFileTitle": "No scanned file on record",
+      "notApplicable": "Not applicable",
+      "noExpiry": "No expiry",
+      "notOnFile": "Not on file",
+      "view": "View",
+      "download": "Download",
+      "renew": "Renew",
+      "renewAgain": "Renew again",
+      "renewed": "Renewed {date}",
+      "soon": "Not stored yet",
+      "fileError": "Could not open the file. Try again.",
+      "renewTitle": "Record a renewal",
+      "renewDescription": "The new expiry replaces the old one everywhere — runway, queue and notifications.",
+      "expires": "Expires {date}",
+      "newExpiry": "New expiry date",
+      "cycle": "{years, plural, one {One year} other {# years}} from the current expiry",
+      "cover": "{days} days of cover · {hijri}",
+      "record": "Record renewal",
+      "recording": "Recording…",
+      "cancel": "Cancel",
+      "renewError": "Could not record the renewal. Try again.",
+      "renewDone": "{label} renewed · now expires {date}.",
+      "addTitle": "Add a document",
+      "addDescription": "Uploaded straight to storage, scanned, then attached to {name}'s record.",
+      "category": "Category",
+      "docTitle": "Title",
+      "expiry": "Expiry date (optional)",
+      "file": "File",
+      "upload": "Upload",
+      "uploading": "Uploading…",
+      "addError": "Could not upload the document. Check the file and try again.",
+      "added": "{title} added to the record."
+    },
+    "work": {
+      "empty": "No open procedures on this record.",
+      "soonNote": "Requests and internal tasks will join this list once they can be linked to an employee.",
+      "resolve": "Resolve",
+      "dueOver": "{n, plural, one {# day over} other {# days over}}",
+      "dueToday": "Due today",
+      "noDue": "No due date",
+      "noRef": "No reference",
+      "completeTitle": "Complete {type}",
+      "completeDescription": "Completing it writes the new expiry back to the employee's record.",
+      "resultingExpiry": "Resulting expiry",
+      "complete": "Complete",
+      "completing": "Completing…",
+      "cancel": "Cancel",
+      "error": "Could not change the status. Try again."
     }
   }
 }

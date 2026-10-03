@@ -80,7 +80,19 @@ export const employeeListResponseSchema = z.object({
 // Request-side salary/govdata: all-optional groups; presence gates on
 // salary.update / govdata.update at the endpoint (POST) or is its own endpoint.
 const salaryWriteSchema = salaryGroupSchema.partial();
-const govdataWriteSchema = govdataGroupSchema.partial();
+// The expiry fields are COERCED to dates on the way in. They were inherited from
+// the response schema as plain strings, so a date-only value ("2027-10-27")
+// reached Prisma unconverted and every expiry edit returned 500 — from EMP-02
+// until DS-07 found it (the GRO-03 write-back passed Date objects and never hit
+// it). An invalid date is now a 400.
+const govdataWriteSchema = govdataGroupSchema
+  .extend({
+    iqamaExpiry: z.coerce.date().nullable(),
+    passportExpiry: z.coerce.date().nullable(),
+    workPermitExpiry: z.coerce.date().nullable(),
+    exitReentryExpiry: z.coerce.date().nullable(),
+  })
+  .partial();
 
 export const createEmployeeRequestSchema = z.object({
   clientId: z.uuid(),

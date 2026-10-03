@@ -198,6 +198,34 @@ describe('Employees API — field-level authorization (EMP-02, e2e)', () => {
       .expect(403);
   });
 
+  // DS-07 found this: the govdata write schema reused the RESPONSE schema, whose
+  // expiry fields are plain strings, so a date-only value ("2027-10-27") reached
+  // Prisma unconverted and every expiry edit returned 500. Nothing tested it.
+  it('govdata expiry dates can be written as plain dates (was a 500)', async () => {
+    const emp = await createVia(hr.cookie, baseCreate());
+    const res = await request(http())
+      .patch(`/employees/${emp.id}/govdata`)
+      .set('Cookie', hr.cookie)
+      .send({
+        iqamaExpiry: '2027-10-27',
+        passportExpiry: '2030-01-15',
+        workPermitExpiry: '2027-10-27',
+        exitReentryExpiry: '2026-12-31',
+      })
+      .expect(200);
+    const g = (res.body as EmployeeBody).govdata as unknown as Record<string, string>;
+    expect(g.iqamaExpiry?.slice(0, 10)).toBe('2027-10-27');
+    expect(g.passportExpiry?.slice(0, 10)).toBe('2030-01-15');
+    expect(g.workPermitExpiry?.slice(0, 10)).toBe('2027-10-27');
+    expect(g.exitReentryExpiry?.slice(0, 10)).toBe('2026-12-31');
+    // Garbage is still a 400, not a 500.
+    await request(http())
+      .patch(`/employees/${emp.id}/govdata`)
+      .set('Cookie', hr.cookie)
+      .send({ iqamaExpiry: 'not-a-date' })
+      .expect(400);
+  });
+
   // ADR-013 narrowing: the prototype's HR is RWC on employee records — no delete.
   it('the Administrator terminates (soft delete → terminated); HR and GRO cannot', async () => {
     const emp = await createVia(hr.cookie, baseCreate());

@@ -991,6 +991,16 @@ lacking pay/IDs; the prototype's mask/omit/request switcher NOT shipped (owner).
 is Profile's last block. Family/Leave/Mobilisation "coming soon"; Documents/Open work/History = DS-07.
 Landmine: importing a zod schema VALUE from `@hr/contracts` into a client page ships zod (+23 kB) —
 import types only in the web app.
+**DS-07 done — the record's Documents and Open work tabs.** Documents: one row per type (date from
+the RECORD, file from the documents registry by category, file-expiry fallback), View/Download
+(300s presigned), **Renew** inside 90 days writes the date WHERE IT LIVES (govdata vs core),
+**Add document** = the DOC-02 presigned flow for this employee; insurance/licence "Not stored yet".
+Open work: this person's open GRO processes, Resolve = the shared status control, completion of an
+expiry type asks the resulting expiry (GRO-03); workflow rules extracted to `lib/gro-workflow.ts`
+(shared with /gro). **Found + fixed a pre-existing API bug: every govdata EXPIRY edit returned 500
+since EMP-02** — the write schema reused the response schema (plain strings) so `"2027-10-27"` hit
+Prisma raw; the contract now coerces the 4 expiry fields (test red→green; API 484/484). Next:
+**AUDIT-06** (record id on audit entries) → History tab.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
@@ -1015,6 +1025,9 @@ import types only in the web app.
 - pnpm v10: `pnpm deploy` needs `--legacy`; corepack shims live in ~/.local/bin (no sudo on this machine).
 - shadcn here is Base UI (`render` prop), NOT Radix (`asChild`); init was run with `--rtl`.
 - Physical Tailwind utilities (pl-/pr-/left-…) are lint errors — logical only.
+- Prisma rejects a date-only string for a DateTime column (`PrismaClientValidationError` → 500).
+  Request schemas must `z.coerce.date()` date fields — never reuse a RESPONSE schema (strings)
+  as a write schema (DS-07: govdata expiries).
 - Sessions CACHE the role: after any role migration in an environment with real users, end
   all sessions (ROLE-03 — stale sessions fail closed, but users would be locked out mid-work).
 - Every new client-scoped table follows the checklist in apps/api/src/modules/README.md and registers in the isolation harness (unregistered endpoints fail CI).

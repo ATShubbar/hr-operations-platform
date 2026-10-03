@@ -36,6 +36,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { StatusAction } from '@/components/ui/status-action';
+import { GRO_EXPIRY_TYPES, GRO_NEXT } from '@/lib/gro-workflow';
 import { StatusPill } from '@/components/ui/status-pill';
 import { toneFor } from '@/lib/status-tone';
 
@@ -60,26 +61,10 @@ const STATUSES: readonly GroProcessStatus[] = [
 ];
 const ALL = 'all';
 
-// Legal next statuses, mirrored client-side so the dialog only offers valid moves
-// (the API validates authoritatively — GRO-02). Terminal states have none.
-const NEXT: Record<GroProcessStatus, readonly GroProcessStatus[]> = {
-  not_started: ['in_progress', 'cancelled'],
-  in_progress: ['submitted', 'cancelled'],
-  submitted: ['approved', 'rejected', 'cancelled'],
-  approved: ['completed', 'cancelled'],
-  rejected: ['in_progress', 'cancelled'],
-  completed: [],
-  cancelled: [],
-};
-
-// Types whose completion writes a resulting expiry back to the employee (GRO-03) —
-// so the status dialog prompts for it.
-const EXPIRY_TYPES: ReadonlySet<GroProcessType> = new Set([
-  'iqama_issue',
-  'iqama_renewal',
-  'exit_reentry',
-  'work_permit_renewal',
-]);
+// Legal next statuses and the expiry-writing types live in lib/gro-workflow.ts,
+// shared with the Person record's Open work tab (DS-07).
+const NEXT = GRO_NEXT;
+const EXPIRY_TYPES = GRO_EXPIRY_TYPES;
 
 interface CreateForm {
   employeeId: string;
@@ -87,7 +72,12 @@ interface CreateForm {
   dueDate: string;
   referenceNumber: string;
 }
-const EMPTY_CREATE: CreateForm = { employeeId: '', type: 'iqama_renewal', dueDate: '', referenceNumber: '' };
+const EMPTY_CREATE: CreateForm = {
+  employeeId: '',
+  type: 'iqama_renewal',
+  dueDate: '',
+  referenceNumber: '',
+};
 
 // GRO console (GRO-04) over the gro.* API (GRO-02/03). Staff, cross-client. Create
 // + status transitions need gro.process; completing an expiry-type process captures
@@ -392,7 +382,9 @@ export default function GroPage() {
             header: t('colReference'),
             sortValue: (p) => p.referenceNumber ?? '',
             cell: (p) => (
-              <span className="text-sm text-muted-foreground">{p.referenceNumber ?? t('none')}</span>
+              <span className="text-sm text-muted-foreground">
+                {p.referenceNumber ?? t('none')}
+              </span>
             ),
           },
           {
@@ -435,7 +427,10 @@ export default function GroPage() {
           <form onSubmit={create} className="space-y-4">
             <div className="space-y-1.5">
               <Label>{t('fieldEmployee')}</Label>
-              <Select value={form.employeeId} onValueChange={(v) => setForm({ ...form, employeeId: v ?? '' })}>
+              <Select
+                value={form.employeeId}
+                onValueChange={(v) => setForm({ ...form, employeeId: v ?? '' })}
+              >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder={t('selectEmployee')}>
                     {(v) => (v ? empName(String(v)) : t('selectEmployee'))}
@@ -453,7 +448,12 @@ export default function GroPage() {
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
                 <Label>{t('fieldType')}</Label>
-                <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: (v as GroProcessType) ?? 'other' })}>
+                <Select
+                  value={form.type}
+                  onValueChange={(v) =>
+                    setForm({ ...form, type: (v as GroProcessType) ?? 'other' })
+                  }
+                >
                   <SelectTrigger className="w-full">
                     <SelectValue>{(v) => t(`type.${String(v)}`)}</SelectValue>
                   </SelectTrigger>
@@ -468,12 +468,22 @@ export default function GroPage() {
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="g-due">{t('fieldDue')}</Label>
-                <Input id="g-due" type="date" value={form.dueDate} onChange={(e) => setForm({ ...form, dueDate: e.target.value })} />
+                <Input
+                  id="g-due"
+                  type="date"
+                  value={form.dueDate}
+                  onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
+                />
               </div>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="g-ref">{t('fieldReference')}</Label>
-              <Input id="g-ref" value={form.referenceNumber} onChange={(e) => setForm({ ...form, referenceNumber: e.target.value })} dir="ltr" />
+              <Input
+                id="g-ref"
+                value={form.referenceNumber}
+                onChange={(e) => setForm({ ...form, referenceNumber: e.target.value })}
+                dir="ltr"
+              />
             </div>
             {formError && <p className="text-sm text-destructive">{formError}</p>}
             <DialogFooter>
@@ -509,7 +519,12 @@ export default function GroPage() {
             {promptExpiry && (
               <div className="space-y-1.5">
                 <Label htmlFor="g-exp">{t('fieldResultingExpiry')}</Label>
-                <Input id="g-exp" type="date" value={stExpiry} onChange={(e) => setStExpiry(e.target.value)} />
+                <Input
+                  id="g-exp"
+                  type="date"
+                  value={stExpiry}
+                  onChange={(e) => setStExpiry(e.target.value)}
+                />
                 <p className="text-xs text-muted-foreground">{t('resultingExpiryHint')}</p>
               </div>
             )}
