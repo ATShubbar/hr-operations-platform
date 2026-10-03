@@ -26,8 +26,8 @@ build contract. Changes go through ADRs (adr/), never through drift.
 
 | File | What |
 |---|---|
-| architecture.md | Frozen build contract — **v1.5** (ADR-011 employee self-service) |
-| adr/README.md | Decision index (ADR-001..011, statuses) |
+| architecture.md | Frozen build contract — **v1.7** (ADR-011 self-service · ADR-012 LTR/prototype fidelity · ADR-013 six roles) |
+| adr/README.md | Decision index (ADR-001..013, statuses) |
 | BACKLOG.md | Task board + cards + working rules |
 | ACTION-PLAN.md | Phased plan, DoD checklists with evidence rule |
 | evidence/skeleton/ | Per-task proof (WS-01..) |
@@ -936,6 +936,19 @@ Owner rule: unbuilt parts are **shown, marked "coming soon"**, never omitted or 
 prototype's 5 roles (Administrator · HR officer · GRO officer · Client manager · Employee) via
 ADR-013, then DS-05+ one screen per card, then FEAT-* epics (billing in scope; editable
 roles/permissions/field access LAST, with safeguards).
+**ROLE-01 done — six built-in roles, decided (ADR-013, architecture.md v1.7; no code yet).**
+Administrator (← System Admin + Company Admin) · HR officer (← HR Officer + **Recruiter** +
+**Finance**) · GRO officer · **Auditor** (← Read Only; the prototype's "reads everything,
+changes nothing") · Client manager (← Client Admin + Client User) · Employee. Matrix taken from
+the prototype's `PERM_DEFAULT`, **narrowed where its `navDefs` is narrower** — the prototype
+contradicts itself (HR/GRO audit R vs `adminOnly` Reports/Audit), so Reports + Audit logs are
+Administrator + Auditor only (HR/GRO LOSE Reports). Kept narrower than the prototype: GRO docs
+stay gov-category-scoped, client managers see vacancies not candidates, Auditor reads but does
+not export reports. Added: **MFA for Auditor** too, and **NO default role** (today's
+`@default(read_only)` would become pay visibility by accident). Portal users → Administrators
+only, which needs a STAFF path that doesn't exist (`client-users` derives the client from the
+caller), so **ROLE-02** builds it (additive) BEFORE **ROLE-03** migrates (enum, bundles, seed,
+63 files mention legacy role names). Until ROLE-03 the ten roles still run the system.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

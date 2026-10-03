@@ -1,10 +1,11 @@
 # HR Operations Platform — Architecture
 
 ## Version
-**v1.6 — FROZEN (v1.4 frozen 2026-07-18; v1.5 amended by ADR-011, v1.6 by ADR-012, both 2026-10-03).**
+**v1.7 — FROZEN (v1.4 frozen 2026-07-18; v1.5 amended by ADR-011, v1.6 by ADR-012, v1.7 by ADR-013 — all 2026-10-03).**
 This document is the build contract. Changes now require either a new ADR (for decisions) or an explicit unfreeze with a version bump — implementation drift is not a change mechanism. Implementation work is tracked in `BACKLOG.md`.
 
 ### Changelog
+- **v1.7** — **Six built-in roles (ADR-013)**, taken from the owner's People & Gro prototype: Administrator · HR officer · GRO officer · Auditor · Client manager · Employee, replacing the ten-role set (System Admin + Company Admin → Administrator; HR Officer + Recruiter + Finance → HR officer; Read Only → Auditor; Client Admin + Client User → Client manager). Permission matrix rewritten from the prototype's `PERM_DEFAULT`, narrowed where its navigation is narrower (Reports and Audit logs: Administrator + Auditor). MFA required for Administrator and Auditor; no role is a default; client portal users are managed by Administrators only. The authorization model itself is unchanged. The v1.6 ten-role matrix is in git history (commit `8d13db0`).
 - **v1.6** — **Layout direction revised (ADR-012)**: the console is laid out left-to-right in BOTH locales to match the owner's People & Gro prototype pixel-for-pixel (owner decision, recommended against). Arabic stays a fully supported language — every string translated, Arabic text still runs right-to-left within its lines, Arabic typeface unchanged — only the screen is no longer mirrored. Status colours follow the prototype (below WCAG AA for text; colour is never the sole signal). Logical Tailwind utilities remain mandatory so the RTL layout stays one attribute away.
 - **v1.5** — **Employee self-service brought into scope (ADR-011)**, reversing the v1.1 exclusion: a third principal type (`employee`, bound to one employee record), staff-invited accounts, email + password sign-in, a per-client opt-in flag, read-only access to one's own record (profile, documents, government data including numbers, pay) plus raising requests; isolation narrower than the client company (application scoping + RLS on `app.employee_id`, a same-client "other employee" probe in CI); "Employee (self)" column and an employee-accounts row added to the permission matrix; `Employee Self-Service` added as a delivery module.
 - **v1.4** — Added permission naming convention (`resource.action`); widened Google Calendar whitelist (names, titles, attachments allowed; government identifiers and compensation data remain prohibited); Configuration settings split into explicit system / per-client / per-user levels with precedence; walking-skeleton DoD items in `ACTION-PLAN.md` now require linked evidence. ADR-002, ADR-005, ADR-009 revised accordingly.
@@ -34,7 +35,7 @@ There is no multi-consultancy tenancy in scope. The enforced isolation boundary 
 
 - Every client-owned record carries a mandatory `client_id` (including child tables — denormalized, never derived through joins).
 - **Consultancy staff** access records across clients according to their role and permissions.
-- **Client company representatives** (Client Admin / Client User) are hard-isolated to their own client company's records. No cross-client visibility, ever.
+- **Client company representatives** (Client manager) are hard-isolated to their own client company's records. No cross-client visibility, ever.
 - **Employees** using self-service (ADR-011) are hard-isolated to **their own employee record** — a boundary narrower than the client company. No visibility of colleagues, including colleagues at the same client.
 - Enforcement is layered: application-level scoping in every query **plus PostgreSQL Row-Level Security as a fail-closed backstop** for client-representative and employee sessions (employee sessions on `app.employee_id`, never on the company-wide client policies). A missed `where` clause must fail closed, not leak.
 - Automated cross-client isolation tests run in CI: every client-facing endpoint is probed with a wrong-client principal, and every employee-facing endpoint with **another employee of the same client** and an employee of another client; any leak is a build failure.
@@ -48,26 +49,24 @@ There is no multi-consultancy tenancy in scope. The enforced isolation boundary 
 *History:* v1.1–v1.4 excluded employee self-service ("employees are managed records, not users"); ADR-011 reversed that on 2026-10-03.
 
 ### Roles
+Six built-in roles since v1.7 (ADR-013). Editable roles and permissions are a later, safeguarded feature epic — until then these bundles are fixed in code.
+
 | Role | Population | Scope |
 |---|---|---|
-| System Admin | Consultancy | Full system, user & config management |
-| Company Admin | Consultancy | All operational modules, all clients |
-| Recruiter | Consultancy | Recruitment, candidates, assigned clients |
-| HR Officer | Consultancy | Employees, documents, requests |
-| GRO Officer | Consultancy | GRO workflows, government-document data |
-| Finance | Consultancy | Financial data, future billing |
-| Read Only | Consultancy | Read-only across permitted modules |
-| Client Admin | Client company | Own client's records; manages own client users |
-| Client User | Client company | Own client's records, reduced permissions |
+| Administrator | Consultancy | Everything, including pay, staff and client portal users, and system configuration |
+| HR officer | Consultancy | All clients · people files end to end, pay and contracts, hiring |
+| GRO officer | Consultancy | All clients · government procedures and government documents; no pay |
+| Auditor | Consultancy | Reads everything (including pay and the audit log), changes nothing |
+| Client manager | Client company | Own client only · mostly read · raises requests · no government identifier numbers |
 | Employee | Client company's workforce | **Own employee record only**, read-only + raise requests; staff-invited; per-client opt-in (ADR-011) |
 
 ### Authorization model
 - **Permission-based RBAC**: roles map to named permissions (`employee.read`, `document.upload`, …); code checks permissions, never role names.
 - **Deny by default**: an endpoint or query without an explicit permission check is inaccessible. Guards enforce this centrally (NestJS global guard + per-route permission metadata).
 - One central policy service (`can(actor, action, resource)`); no inline role conditionals scattered in handlers.
-- Field-level sensitivity is part of the model: e.g., client users may see iqama expiry but not salary; salary visibility is a distinct permission.
+- Field-level sensitivity is part of the model: e.g., client managers may see iqama expiry but not salary; salary visibility is a distinct permission.
 - One identity system for staff, client representatives and employees (single user store; principal type `staff` / `client_rep` / `employee`; client reps carry a client binding, employees an **employee binding** from which the client is derived at sign-in — ADR-011); separate login surfaces if UX requires.
-- MFA available from day one; required for System Admin and Company Admin.
+- MFA available from day one; required for **Administrator and Auditor** (v1.7 — both read every salary). No role is assigned by default: every account is created with an explicit role.
 
 ### Permission naming convention
 
@@ -100,26 +99,26 @@ Every permission follows one pattern: **`resource.action`** — lowercase, dot-s
 ### Permission matrix (seed)
 
 Legend: **C**reate · **R**ead · **U**pdate · **D**elete/archive · **–** no access.
-Client Admin and Client User are always scoped to **their own client company only**; Employee is scoped to **their own employee record only**, and only where their client company has opted in (ADR-011). This matrix is the seed for the permission catalog; the catalog in code is authoritative, and anything not granted here is denied by default.
+Client manager is always scoped to **their own client company only**; Employee is scoped to **their own employee record only**, and only where their client company has opted in (ADR-011). This matrix is the seed for the permission catalog; the catalog in code is authoritative, and anything not granted here is denied by default.
 
-| Capability / data | System Admin | Company Admin | Recruiter | HR Officer | GRO Officer | Finance | Read Only | Client Admin | Client User | Employee (self) |
-|---|---|---|---|---|---|---|---|---|---|---|
-| System config & staff users | CRUD | R | – | – | – | – | – | – | – | – |
-| Client companies | CRUD | CRUD | R | R | R | R | R | R (own) | R (own) | – |
-| Client portal users | R | R | – | – | – | – | – | CRUD (own) | – | – |
-| Employee self-service accounts (ADR-011) | R | CRU | – | CRU | – | – | – | – | – | – |
-| Employees — core profile | R | CRUD | R | CRUD | RU | R | R | R (own) | R (own) | R (self) |
-| Employees — salary & financial | R | R | – | RU | – | RU | – | – | – | R (self) |
-| Employees — government data (iqama, visas, GOSI) | R | R | – | R | CRUD | – | R | R (own, expiry/status only) | R (own, expiry/status only) | R (self, incl. numbers) |
-| Documents | R | CRUD | CRUD (recruitment docs) | CRUD | CRUD (gov docs) | R | R | CR (own) | R (own) | R (self, available only) |
-| Recruitment (vacancies, candidates, pipeline) | R | RU | CRUD | R | – | – | R | R (own vacancies) | R (own vacancies) | – |
-| GRO workflows | R | RU | – | R | CRUD | – | R | R (own, status only) | R (own, status only) | – |
-| Requests | R | CRUD | R | RU (process) | RU (process) | R | R | CRU (own) | CR (own) | CR (self-raised) |
-| Tasks (internal) | R | CRUD | CRU (own/assigned) | CRU (own/assigned) | CRU (own/assigned) | CRU (own/assigned) | R | – | – | – |
-| Calendar | R | CRUD | CRU (own) | CRU (own) | CRU (own) | CRU (own) | R | – | – | – |
-| Reports | R | R | R (recruitment) | R (HR ops) | R (GRO) | R (financial) | R | R (own summary) | – | – |
-| Audit logs | R | R | – | – | – | – | – | – | – | – |
-| Notification preferences | CRUD (all) | CRUD (all) | U (own) | U (own) | U (own) | U (own) | U (own) | U (own) | U (own) | U (own) |
+| Capability / data | Administrator | HR officer | GRO officer | Auditor | Client manager | Employee (self) |
+|---|---|---|---|---|---|---|
+| System config & staff users | CRUD | – (directory) | – (directory) | R | – | – |
+| Client companies | CRUD | R | R | R | R (own) | – |
+| Client portal users | CRUD | – | – | R | – | – |
+| Employee self-service accounts (ADR-011) | CRU | CRU | – | R | – | – |
+| Employees — core profile | CRUD | CRU | R | R | R (own) | R (self) |
+| Employees — salary & financial | RU | RU | – | R | – | R (self) |
+| Employees — government data (iqama, visas, GOSI) | CRUD | CRU | CRUD | R | R (own, expiry/status only) | R (self, incl. numbers) |
+| Documents | CRUD | CRUD | CRU (gov docs) | R | R (own) | R (self, available only) |
+| Recruitment (vacancies, candidates, pipeline) | CRUD | CRU | RU | R | R (own vacancies) | – |
+| GRO workflows | CRUD | CRU | CRUD | R | R (own, status only) | – |
+| Requests | CRUD | CRUD | RU (process) | R | CR (own) | CR (self-raised) |
+| Tasks (internal) | CRUD | CRU (own/assigned) | CRU (own/assigned) | R | – | – |
+| Calendar | CRUD | CRUD (own) + R (all) | CRUD (own) + R (all) | R | – | – |
+| Reports | R + export | – | – | R | – | – |
+| Audit logs | R | – | – | R | – | – |
+| Notification preferences | CRUD (all) | U (own) | U (own) | U (own) | U (own) | U (own) |
 
 ## Tech Stack
 ### Frontend
@@ -155,8 +154,8 @@ Localization is **configuration, not code**. All locale behavior is driven by se
 
 **Setting levels are explicit — every setting declares its level; there are exactly three:**
 
-1. **System** — deployment-wide defaults, managed by System Admin. The only level that exists for every setting.
-2. **Per-client** — overrides on the client company record for the settings marked above, set by consultancy staff (Company Admin), never by the client themselves.
+1. **System** — deployment-wide defaults, managed by an Administrator. The only level that exists for every setting.
+2. **Per-client** — overrides on the client company record for the settings marked above, set by consultancy staff (an Administrator), never by the client themselves.
 3. **Per-user** — personal preferences only (UI language, notification preferences).
 
 Resolution precedence where an override is permitted: **user → client → system** (most specific wins). A setting with no declared per-client or per-user level cannot be overridden — attempting to is a Configuration API error, not a silent fallback. Modules read all settings through the Configuration service; hardcoding a convention is a review-blocking defect.

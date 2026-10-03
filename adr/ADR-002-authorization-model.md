@@ -4,6 +4,7 @@
 - Date: 2026-07-18 (rev. 1, same day: permission naming convention formalized as `resource.action`)
 - Owner: TBD
 - Amended by: **ADR-011 (2026-10-03)** — a third population, **employees** using self-service for their own record, joins staff and client representatives. The model below is unchanged (permissions, deny by default, central policy service, no scoping in names); ADR-011 adds the `employee` principal, its role and the `employee-user.*` capabilities. The Context's "employee self-service is out of scope" sentence is historical.
+- Amended by: **ADR-013 (2026-10-03)** — the role SET becomes six built-in roles from the People & Gro prototype (Administrator · HR officer · GRO officer · Auditor · Client manager · Employee); the model is unchanged. The Context's "nine roles" is historical.
 
 ## Context
 Two user populations — consultancy staff (nine roles) and client-company representatives — with very different scopes, plus field-level sensitivity (salary vs. iqama expiry). Employee self-service is out of scope; employees are records, not users, but the identity model should not make a future employee actor impossible. Authorization mistakes in an HR system are compliance incidents, so the model must be enforceable centrally and testable.

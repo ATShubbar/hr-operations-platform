@@ -2306,10 +2306,61 @@ Nitaqat reporting; request comments + attachments; saved views; a "viewing as" r
 | DS-02 | Shell: sidebar + header in the prototype's structure | DS-01 | **done** |
 | DS-03 | Primitives: full-grid `DataTable`, badges vs status pills, card/stat blocks | DS-01 | **done** |
 | DS-04 | Shell matches the prototype (nav order/labels/icons, header) + **ADR-012 pixel-exact fidelity** (revises ADR-005's RTL-layout requirement) | DS-03, full prototype (**received 2026-10-03**) | **done** ([evidence](evidence/ux/DS-04.md)) |
-| ROLE-01 | **5-role model** (Administrator · HR officer · GRO officer · Client manager · Employee) — ADR-013 + account migration; replaces the 9-role matrix | DS-04 | planned — next |
-| DS-05+ | Screens, one per card, exactly as the prototype; unbuilt parts shown **"coming soon"**: People → Person record (7 tabs) → Requests → Hiring → Clients + Client record → Work queue → Calendar (month/week/agenda) → Audit → Reports → Overview | ROLE-01 | planned |
+| ROLE-01 | **Six built-in roles** (Administrator · HR officer · GRO officer · Auditor · Client manager · Employee) — ADR-013 + architecture.md v1.7 matrix + account mapping (decision only) | DS-04 | **done** ([evidence](evidence/arch/ROLE-01.md)) |
+| ROLE-02 | Staff path for client portal users — an Administrator manages any client's portal accounts (additive; the client path still works) | ROLE-01 | planned — next |
+| ROLE-03 | The role migration: enum + accounts, permission bundles, MFA set, no default role, seed, tests + isolation harness, web labels, client *Portal users* screen retired | ROLE-02 | planned |
+| DS-05+ | Screens, one per card, exactly as the prototype; unbuilt parts shown **"coming soon"**: People → Person record (7 tabs) → Requests → Hiring → Clients + Client record → Work queue → Calendar (month/week/agenda) → Audit → Reports → Overview | ROLE-03 | planned |
 | FEAT-* | Feature epics (each its own ADR), roughly by value: Leave · Request comments/attachments/decision trail/SLA · Dependants · Onboarding/final-exit sequences · Nitaqat & Saudisation · Client profile (contacts, signatories, registrations, service tier) · Government fees + subscription/invoicing (Billing, ZATCA-ready) · Notification centre + reminder rules · Global search · **Editable roles / permission matrix / field access — LAST, with safeguards** | screens | planned |
 | ARCH-SS | Architecture amendment: employee self-service (reverses architecture.md line 44) | owner decision (done) | **done** — ADR-011, architecture.md v1.5 ([evidence](evidence/arch/ARCH-SS.md)) |
+
+### ROLE-01 — Six built-in roles from the prototype (ADR-013, v1.7)
+- **Objective:** record the move from ten roles to the prototype's roles as a decision —
+  which bundles exist, what each may do, and where every existing account goes — before any
+  code changes.
+- **Files:** NEW `adr/ADR-013-six-role-model.md`; `adr/ADR-002-authorization-model.md` (amended
+  by), `adr/README.md`, `architecture.md` (v1.7: Roles, MFA rule, permission matrix, three
+  role-name references); BACKLOG (ROLE-02/03 cards). **No code.**
+- **DoD:** ADR Accepted; matrix rewritten with six columns; every widening and narrowing per
+  account listed; the follow-up sequencing leaves no gap in who can manage portal users.
+- **Evidence:** `evidence/arch/ROLE-01.md`.
+- **Dependencies:** DS-04. **Risks/decisions:** owner chose Auditor as a 6th built-in role,
+  Recruiter and Finance → HR officer, portal users → Administrators only. **The prototype
+  contradicts itself** (`PERM_DEFAULT` gives HR/GRO audit Read; its nav makes Reports + Audit
+  trail admin-only) — the narrower reading was taken. Kept narrower than the prototype on
+  purpose: GRO documents stay government-category-scoped, client managers see vacancies but not
+  candidates. Added: MFA for Auditor (it reads every salary) and NO default role (today's
+  default `read_only` would become Auditor = pay visibility by accident).
+
+### ROLE-02 — Administrators manage client portal users (staff path)
+- **Objective:** an Administrator can list, invite, update and deactivate the portal accounts of
+  ANY client, so ROLE-03 can take `client-user.*` away from client managers without leaving
+  nobody able to do it.
+- **Files (expected):** `modules/clients/api` (a staff route, e.g. `/clients/:id/users`, over
+  the existing `ClientUsersService` with the client id from the PATH, staff-scoped),
+  `auth/domain/permissions.ts` (`client-user.*` to System Admin + Company Admin — the roles
+  that become Administrator), isolation harness + audit registry, e2e spec, web: a portal-users
+  section on the client record.
+- **DoD:** staff route covered by the isolation harness and write-audit; e2e proves an admin
+  manages client A's and client B's users, a non-admin staff role gets 403, a client rep cannot
+  use the staff route; existing client-path tests unchanged; verified live in both locales.
+- **Dependencies:** ROLE-01. **Risks:** sessions of a deactivated portal user must end
+  (`destroyAllForUser`, SS-06a) on this path too.
+
+### ROLE-03 — The six-role migration
+- **Objective:** the code matches ADR-013.
+- **Files (expected):** Prisma `Role` enum migration (rename `system_admin→administrator`,
+  `read_only→auditor`, `client_admin→client_manager`; move `company_admin`,
+  `recruiter`, `finance`, `client_user` rows; recreate the type without the old values; **drop
+  the column default**); `permissions.ts` bundles per the v1.7 matrix; `MFA_REQUIRED_ROLES`;
+  seed accounts; tests/harness/web referencing role names; `@hr/contracts` role
+  types; web role labels; retire `(app)/portal/users`. **63 files** under apps/ + packages/
+  mention a legacy role name today (measured at ROLE-01).
+- **DoD:** API suite green ×3; every matrix cell asserted by at least one test per role column
+  (widenings AND narrowings); the principal fence and `scopeOf` untouched; web typecheck/lint/
+  build; verified live per role in both locales.
+- **Dependencies:** ROLE-02. **Risks:** the largest diff in the project since the skeleton —
+  split further at card time if needed; Postgres can't drop enum values (type recreation);
+  e2e helpers keyed on role-named seed emails.
 
 ### DS-01 — Foundation: the People & Gro design system, monochrome
 - **Objective:** move the token layer to the redesign's system so later screen cards inherit

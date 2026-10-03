@@ -24,6 +24,7 @@ One decision per file, numbered in creation order. A record is never edited to c
 | [ADR-010](ADR-010-cloud-portability.md) | Cloud portability — the provider-neutral interface contract | Accepted |
 | [ADR-011](ADR-011-employee-self-service.md) | Employee self-service — a third principal, isolated to one employee record | Accepted (amends ADR-002; architecture.md v1.5) |
 | [ADR-012](ADR-012-prototype-visual-fidelity.md) | Pixel-exact fidelity to the People & Gro prototype — LTR layout in both locales, prototype status colours | Accepted (revises ADR-005 on layout direction; architecture.md v1.6) |
+| [ADR-013](ADR-013-six-role-model.md) | Six built-in roles from the People & Gro prototype — Administrator, HR officer, GRO officer, Auditor, Client manager, Employee | Accepted (amends ADR-002; architecture.md v1.7) |
 
 ## Template
 
