@@ -29,6 +29,7 @@ import { apiFetch } from '@/lib/api';
 import { useCan, useSession } from '@/lib/session';
 import { cn } from '@/lib/utils';
 import { useNavCounts } from '@/components/nav-counts';
+import { initialsOf } from '@/components/ui/avatar';
 
 // The navigation, rendered by BOTH the desktop sidebar and the mobile sheet
 // (UX-05) — a second copy drifts the first time a gate changes, and drifts
@@ -297,18 +298,6 @@ export function AppNav({
       ))}
     </nav>
   );
-}
-
-// Initials for the avatar. An Arabic name gets ONE letter: two Arabic letters
-// side by side are joined by the shaper into something that reads as a
-// (meaningless) word, not as two initials.
-function initialsOf(name: string | null): string {
-  if (!name) return '·';
-  const words = name.trim().split(/\s+/);
-  if (/[\u0600-\u06FF]/.test(name)) return words[0]!.charAt(0);
-  const first = words[0]!.charAt(0);
-  const last = words.length > 1 ? words[words.length - 1]!.charAt(0) : '';
-  return (first + last).toUpperCase();
 }
 
 // The pinned foot of the sidebar and the sheet (DS-02): Settings, then who is

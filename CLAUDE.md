@@ -970,6 +970,16 @@ logins changed:** `staff-administrator`, `staff-administrator-2`, `staff-hr_offi
 corrected: HR/GRO Calendar is CRUD (read-all lifts writes — ADR-013 rev. 1). The per-report
 gate is now proven with a NARROWED PolicyService (no v1.7 role exercises it). API 483/483.
 Next: DS-05+ screen cards.
+**DS-05 done — the People screen is the prototype's.** `/employees` rewritten: header + summary
+("39 employees · sorted by the document that expires first"), Export register (disabled, "Soon"),
+Add person; search + Client / Document / Time-left filters + Clear; the 2.2/1.5/1.4/1.3/1.5fr+40
+table (avatar · EN name link + AR beneath · client · position/nationality · iqama Greg+Hijri ·
+first-document chip red ≤7 / amber ≤14 / grey ≤30 / faded) sorted soonest-first, 50/page. Dates
+come from the employee record (iqama, permit, passport, contract end); **insurance + licence are
+"soon"** (not stored). Deviations: no-document people KEPT (last, "—" — the prototype would hide
+21 of 39); Arabic name required (API); Umm al-Qura Hijri. New `ui/avatar.tsx` (DS sizes) owns
+`initialsOf`. Landmine: a `<col>` IGNORES `calc()` widths — use percentages. Next: DS-06 Person
+record.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
