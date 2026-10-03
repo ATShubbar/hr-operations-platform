@@ -210,7 +210,7 @@ describe('GET /me — employee self-service (SS-03, e2e)', () => {
 
   it('staff and client reps are refused (403) — /me is the employee surface only', async () => {
     const staff = await loginAsStaff(app, 'hr_officer');
-    const rep = await loginAsClientRep(app, co.on, 'client_admin');
+    const rep = await loginAsClientRep(app, co.on, 'client_manager');
     await get(staff.cookie).expect(403);
     await get(rep.cookie).expect(403);
   });

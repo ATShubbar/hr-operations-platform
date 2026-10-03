@@ -75,7 +75,6 @@
     "today": "اليوم",
     "openMenu": "فتح القائمة",
     "closeMenu": "إغلاق",
-    "portalUsers": "مستخدمو البوابة",
     "staffUsers": "مستخدمو النظام",
     "skipToContent": "تخطَّ إلى المحتوى",
     "groupClients": "العملاء",
@@ -792,15 +791,11 @@
       "searchPlaceholder": "ابحث بالعنوان أو الفئة…"
     },
     "users": {
-      "title": "مستخدمو البوابة",
-      "subtitle": "موظفو شركتك الذين يمكنهم الدخول إلى هذه البوابة.",
       "invite": "دعوة مستخدم",
       "inviteTitle": "دعوة مستخدم للبوابة",
       "editTitle": "تعديل مستخدم البوابة",
       "colEmail": "البريد الإلكتروني",
-      "colRole": "الدور",
       "colStatus": "الحالة",
-      "colCreated": "أُضيف",
       "initialPassword": "كلمة المرور الأولية",
       "initialPasswordHint": "يسجّل الشخص الدخول بها ويُستحسن تغييرها بعد ذلك. 8 أحرف على الأقل.",
       "empty": "لا يوجد مستخدمون للبوابة بعد.",
@@ -811,10 +806,6 @@
       "cancel": "إلغاء",
       "error": "تعذّر تحميل مستخدمي البوابة.",
       "saveError": "تعذّر الحفظ. تحقّق من البيانات ثم أعد المحاولة.",
-      "role": {
-        "client_admin": "مسؤول",
-        "client_user": "مستخدم عادي"
-      },
       "status": {
         "active": "نشط",
         "disabled": "معطّل"
@@ -969,15 +960,11 @@
       "document": "انتهاء مستند"
     },
     "role": {
-      "system_admin": "مدير النظام",
-      "company_admin": "مدير الشركة",
-      "recruiter": "أخصائي توظيف",
+      "administrator": "مسؤول النظام",
       "hr_officer": "أخصائي موارد بشرية",
       "gro_officer": "مسؤول علاقات حكومية",
-      "finance": "المالية",
-      "read_only": "قراءة فقط",
-      "client_admin": "مدير العميل",
-      "client_user": "مستخدم العميل",
+      "auditor": "مدقّق",
+      "client_manager": "مدير العميل",
       "employee": "موظف"
     },
     "greeting": "مرحباً، {name}"
@@ -1021,13 +1008,10 @@
     "error": "تعذّر تحميل مستخدمي النظام.",
     "saveError": "تعذّر الحفظ. لا يمكنك تغيير دورك أو تعطيل حسابك.",
     "role": {
-      "system_admin": "مدير النظام",
-      "company_admin": "مدير الشركة",
-      "recruiter": "أخصائي توظيف",
+      "administrator": "مسؤول النظام",
       "hr_officer": "أخصائي موارد بشرية",
       "gro_officer": "مسؤول علاقات حكومية",
-      "finance": "مالية",
-      "read_only": "اطّلاع فقط"
+      "auditor": "مدقّق"
     },
     "status": {
       "active": "نشط",
@@ -1035,15 +1019,11 @@
     }
   },
   "roles": {
-    "system_admin": "مسؤول النظام",
-    "company_admin": "مسؤول الشركة",
+    "administrator": "مسؤول النظام",
     "hr_officer": "أخصائي موارد بشرية",
     "gro_officer": "مسؤول علاقات حكومية",
-    "recruiter": "أخصائي توظيف",
-    "finance": "المالية",
-    "read_only": "اطّلاع فقط",
-    "client_admin": "مسؤول العميل",
-    "client_user": "مستخدم العميل",
+    "auditor": "مدقّق",
+    "client_manager": "مدير العميل",
     "employee": "موظف"
   },
   "account": {

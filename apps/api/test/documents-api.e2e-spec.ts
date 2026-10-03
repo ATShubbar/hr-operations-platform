@@ -5,12 +5,14 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AppModule } from '../src/app.module';
 import { PrismaClient } from '../src/generated/prisma/client';
-import { cleanupHelperUsers, loginAsStaff, type TestPrincipal } from './helpers/login';
+import { cleanupHelperUsers, loginAsStaff, type TestPrincipal,
+  loginAsEnrolledStaff,
+} from './helpers/login';
 
 // DOC-02: the presigned upload flow — issue (pending metadata + PUT URL) →
 // client transfers bytes directly to MinIO → confirm (blob verified → available).
-// document.upload gates both; category scope (recruiter → recruitment, GRO →
-// gov, admin/HR → all) is enforced in-handler. Requires MinIO (docker compose).
+// document.upload gates both; category scope (GRO → gov, Administrator/HR
+// officer → all — v1.7) is enforced in-handler. Requires MinIO (docker compose).
 
 const CLIENT_A = '11111111-1111-4111-8111-111111111111';
 const MARK = 'DOC-02-test';
@@ -24,9 +26,8 @@ describe('Documents upload flow (DOC-02, e2e)', () => {
   let app: INestApplication;
   let owner: PrismaClient;
   let hr: TestPrincipal; // document.upload — all categories
-  let recruiter: TestPrincipal; // document.upload — recruitment only
   let gro: TestPrincipal; // document.upload — government only
-  let finance: TestPrincipal; // NO document.upload
+  let auditor: TestPrincipal; // NO document.upload (v1.7: reads only)
 
   const http = () => app.getHttpServer();
 
@@ -52,9 +53,8 @@ describe('Documents upload flow (DOC-02, e2e)', () => {
     await owner.document.deleteMany({ where: { title: { startsWith: MARK } } });
     await owner.auditEntry.deleteMany({ where: { resource: 'document' } });
     hr = await loginAsStaff(app, 'hr_officer');
-    recruiter = await loginAsStaff(app, 'recruiter');
     gro = await loginAsStaff(app, 'gro_officer');
-    finance = await loginAsStaff(app, 'finance');
+    auditor = await loginAsEnrolledStaff(app, 'auditor');
   });
 
   afterAll(async () => {
@@ -97,9 +97,11 @@ describe('Documents upload flow (DOC-02, e2e)', () => {
       .expect(400); // object not in storage
   });
 
-  it('category scope — recruiter: recruitment yes, government no', async () => {
-    await issue(recruiter.cookie, { category: 'cv' }).expect(201);
-    await issue(recruiter.cookie, { category: 'iqama' }).expect(403);
+  // ADR-013: the Recruiter seat became an HR officer, who writes EVERY category —
+  // CVs included.
+  it('category scope — HR officer: every category, CVs and government alike', async () => {
+    await issue(hr.cookie, { category: 'cv' }).expect(201);
+    await issue(hr.cookie, { category: 'iqama' }).expect(201);
   });
 
   it('category scope — GRO: government yes, recruitment no', async () => {
@@ -108,7 +110,7 @@ describe('Documents upload flow (DOC-02, e2e)', () => {
   });
 
   it('a role without document.upload → 403', async () => {
-    await issue(finance.cookie).expect(403);
+    await issue(auditor.cookie).expect(403);
   });
 
   it('unknown client → 400; invalid payload → 400; unauthenticated → 401', async () => {

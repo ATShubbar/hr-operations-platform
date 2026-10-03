@@ -48,7 +48,7 @@ describe('Login + sessions (AUTH-02, e2e)', () => {
       email: 'auth02-rep@example.com',
       passwordHash: hash,
       clientId: CLIENT_A,
-      role: 'client_admin',
+      role: 'client_manager',
     });
     const disabled = await users.createStaffUser({
       email: 'auth02-disabled@example.com',

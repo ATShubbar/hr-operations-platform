@@ -30,7 +30,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 // TWO PERMISSIONS, TWO SHAPES — the reason this controller exists rather than a
 // single list endpoint:
 //
-//   staff-user.read       → the management view (System Admin, Company Admin).
+//   staff-user.read       → the management view (Administrator, Auditor).
 //                           Email, status, MFA enrollment, timestamps.
 //   staff-user.directory  → id + display name + role, and nothing else. Held by
 //                           EVERY staff role, because turning an assignee id

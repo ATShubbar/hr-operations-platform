@@ -37,7 +37,7 @@ const REFUSALS: Record<string, string> = {
 
 // "Self-service access" on the employee record (SS-06b) — staff management of the
 // employee's own account (SS-06a API). Shown to `employee-user.read` holders
-// (Company Admin, HR Officer); each action is gated by its own capability.
+// (Administrator, HR officer; the Auditor reads); each action is gated by its own capability.
 //
 // The server decides every refusal — company not opted in, already active,
 // address in use, terminated — and the card shows ITS message rather than

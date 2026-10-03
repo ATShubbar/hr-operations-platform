@@ -33,7 +33,7 @@ describe('Audit mutation logging — write path (AUDIT-03, e2e)', () => {
     owner = new PrismaClient({
       adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL ?? '' }),
     });
-    repA = await loginAsClientRep(app, CLIENT_A, 'client_admin');
+    repA = await loginAsClientRep(app, CLIENT_A, 'client_manager');
     await owner.auditEntry.deleteMany({ where: { resource: 'scope-check' } });
     await owner.coreScopeCheck.deleteMany({ where: { note: { startsWith: 'audit03' } } });
   });
@@ -63,7 +63,7 @@ describe('Audit mutation logging — write path (AUDIT-03, e2e)', () => {
       action: 'create',
       clientId: CLIENT_A,
       actorId: repA.userId,
-      actorRole: 'client_admin',
+      actorRole: 'client_manager',
     });
     expect(entries[0]?.after).toMatchObject({ note });
 

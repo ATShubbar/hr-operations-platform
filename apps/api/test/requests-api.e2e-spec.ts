@@ -25,11 +25,10 @@ describe('Requests API (REQ-02, e2e)', () => {
   let http: ReturnType<INestApplication['getHttpServer']>;
   let clientA: string;
   let clientB: string;
-  let admin: TestPrincipal; // enrolled company_admin (staff, CRUD)
-  let reader: TestPrincipal; // hr_officer (staff, request.read only)
-  let repA: TestPrincipal; // client_admin of A
-  let repAUser: TestPrincipal; // client_user of A (create+read, no update)
-  let repB: TestPrincipal; // client_admin of B
+  let admin: TestPrincipal; // enrolled administrator (staff, CRUD)
+  let reader: TestPrincipal; // hr_officer (staff — reads every client's requests)
+  let repA: TestPrincipal; // client manager of A (read + raise own, no edit — v1.7)
+  let repB: TestPrincipal; // client manager of B
   let reqA = ''; // a request owned by client A
   let reqB = ''; // a request owned by client B
 
@@ -49,11 +48,10 @@ describe('Requests API (REQ-02, e2e)', () => {
     });
     clientA = cA.id;
     clientB = cB.id;
-    admin = await loginAsEnrolledStaff(app, 'company_admin');
+    admin = await loginAsEnrolledStaff(app, 'administrator');
     reader = await loginAsStaff(app, 'hr_officer');
-    repA = await loginAsClientRep(app, clientA, 'client_admin');
-    repAUser = await loginAsClientRep(app, clientA, 'client_user');
-    repB = await loginAsClientRep(app, clientB, 'client_admin');
+    repA = await loginAsClientRep(app, clientA, 'client_manager');
+    repB = await loginAsClientRep(app, clientB, 'client_manager');
   });
 
   afterAll(async () => {
@@ -184,26 +182,24 @@ describe('Requests API (REQ-02, e2e)', () => {
     ).toBe(true);
   });
 
-  it('client_admin updates own request; client_user cannot (403); cross-client → 404', async () => {
-    const upd = await request(http)
+  // ADR-013 narrowing: the prototype's client is `RC` on requests — a client
+  // manager raises and reads, but edits nothing, even its own company's.
+  it("a client manager cannot edit a request — its own or another company's (403)", async () => {
+    await request(http)
       .patch(`/requests/${reqA}`)
       .set('Cookie', repA.cookie)
-      .send({ title: 'Salary certificate (updated)', priority: 'high' })
-      .expect(200);
-    expect(upd.body.title).toBe('Salary certificate (updated)');
-    expect(upd.body.priority).toBe('high');
-
-    await request(http)
-      .patch(`/requests/${reqA}`)
-      .set('Cookie', repAUser.cookie) // client_user has no request.update
       .send({ title: 'nope' })
       .expect(403);
-
     await request(http)
       .patch(`/requests/${reqB}`)
-      .set('Cookie', repA.cookie) // A editing B's request
+      .set('Cookie', repA.cookie)
       .send({ title: 'cross' })
-      .expect(404);
+      .expect(403);
+    const untouched = await request(http)
+      .get(`/requests/${reqA}`)
+      .set('Cookie', admin.cookie)
+      .expect(200);
+    expect(untouched.body.title).not.toBe('nope');
   });
 
   it('staff update any request', async () => {

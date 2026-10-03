@@ -2308,8 +2308,8 @@ Nitaqat reporting; request comments + attachments; saved views; a "viewing as" r
 | DS-04 | Shell matches the prototype (nav order/labels/icons, header) + **ADR-012 pixel-exact fidelity** (revises ADR-005's RTL-layout requirement) | DS-03, full prototype (**received 2026-10-03**) | **done** ([evidence](evidence/ux/DS-04.md)) |
 | ROLE-01 | **Six built-in roles** (Administrator · HR officer · GRO officer · Auditor · Client manager · Employee) — ADR-013 + architecture.md v1.7 matrix + account mapping (decision only) | DS-04 | **done** ([evidence](evidence/arch/ROLE-01.md)) |
 | ROLE-02 | Staff path for client portal users — an Administrator manages any client's portal accounts (additive; the client path still works) | ROLE-01 | **done** ([evidence](evidence/clients/ROLE-02.md)) |
-| ROLE-03 | The role migration: enum + accounts, permission bundles, MFA set, no default role, seed, tests + isolation harness, web labels, client *Portal users* screen retired | ROLE-02 | planned — next |
-| DS-05+ | Screens, one per card, exactly as the prototype; unbuilt parts shown **"coming soon"**: People → Person record (7 tabs) → Requests → Hiring → Clients + Client record → Work queue → Calendar (month/week/agenda) → Audit → Reports → Overview | ROLE-03 | planned |
+| ROLE-03 | The role migration: enum + accounts, permission bundles, MFA set, no default role, seed, tests + isolation harness, web labels, client *Portal users* screen retired | ROLE-02 | **done** ([evidence](evidence/auth/ROLE-03.md)) |
+| DS-05+ | Screens, one per card, exactly as the prototype; unbuilt parts shown **"coming soon"**: People → Person record (7 tabs) → Requests → Hiring → Clients + Client record → Work queue → Calendar (month/week/agenda) → Audit → Reports → Overview | ROLE-03 | planned — next |
 | FEAT-* | Feature epics (each its own ADR), roughly by value: Leave · Request comments/attachments/decision trail/SLA · Dependants · Onboarding/final-exit sequences · Nitaqat & Saudisation · Client profile (contacts, signatories, registrations, service tier) · Government fees + subscription/invoicing (Billing, ZATCA-ready) · Notification centre + reminder rules · Global search · **Editable roles / permission matrix / field access — LAST, with safeguards** | screens | planned |
 | ARCH-SS | Architecture amendment: employee self-service (reverses architecture.md line 44) | owner decision (done) | **done** — ADR-011, architecture.md v1.5 ([evidence](evidence/arch/ARCH-SS.md)) |
 
@@ -2364,6 +2364,11 @@ Nitaqat reporting; request comments + attachments; saved views; a "viewing as" r
 - **Dependencies:** ROLE-02. **Risks:** the largest diff in the project since the skeleton —
   split further at card time if needed; Postgres can't drop enum values (type recreation);
   e2e helpers keyed on role-named seed emails.
+- **Outcome:** done. Enum rebuilt + a stricter role↔principal CHECK, no default; bundles =
+  v1.7 matrix, pinned by `role-matrix.e2e-spec` (proven red); `/client-users` + the client
+  Portal users screen retired; seed keeps every person under their new role. **Calendar cell
+  corrected** (ADR-013 rev. 1 — `calendar.read-all` lifts writes, so HR/GRO are CRUD). 483/483
+  ×3 (+1 run lost to the 405 supertest flake). Verified live for all six roles.
 
 ### DS-01 — Foundation: the People & Gro design system, monochrome
 - **Objective:** move the token layer to the redesign's system so later screen cards inherit

@@ -6,7 +6,12 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AppModule } from '../src/app.module';
 import { PrismaClient } from '../src/generated/prisma/client';
 import { ExpiryScanService } from '../src/modules/document-expiry/public-api';
-import { cleanupHelperUsers, loginAsStaff, type TestPrincipal } from './helpers/login';
+import {
+  cleanupHelperUsers,
+  loginAsEnrolledStaff,
+  loginAsStaff,
+  type TestPrincipal,
+} from './helpers/login';
 
 // EXP-01: the document-expiry scan engine. We drive ExpiryScanService.scan()
 // directly (deterministic) — the daily schedule + trigger endpoint are EXP-02.
@@ -27,12 +32,12 @@ describe('Document-expiry scan (EXP-01, e2e)', () => {
 
   let hr: TestPrincipal; // hr_officer — manages all categories
   let gro: TestPrincipal; // gro_officer — government docs only
-  let recruiter: TestPrincipal; // recruiter — CVs only
+  let auditor: TestPrincipal; // reads everything, manages nothing → never alerted
   let staffIds: string[];
 
   // documents under test (all share the synthetic client)
   const docIqama = randomUUID(); // day+25 → tier 30; gov → hr+gro
-  const docCv = randomUUID(); // day+3 → tier 7; cv → hr+recruiter
+  const docCv = randomUUID(); // day+3 → tier 7; cv → hr (ADR-013: CVs are HR's)
   const docContract = randomUUID(); // day-2 → tier 0 (expired); → hr
   const docFar = randomUUID(); // day+90 → outside window → no alert
   const docDeleted = randomUUID(); // day+5 but deleted → excluded
@@ -71,8 +76,8 @@ describe('Document-expiry scan (EXP-01, e2e)', () => {
 
     hr = await loginAsStaff(app, 'hr_officer');
     gro = await loginAsStaff(app, 'gro_officer');
-    recruiter = await loginAsStaff(app, 'recruiter');
-    staffIds = [hr.userId, gro.userId, recruiter.userId];
+    auditor = await loginAsEnrolledStaff(app, 'auditor');
+    staffIds = [hr.userId, gro.userId, auditor.userId];
 
     await makeDoc(docIqama, 'iqama', day(25));
     await makeDoc(docCv, 'cv', day(3));
@@ -103,14 +108,16 @@ describe('Document-expiry scan (EXP-01, e2e)', () => {
     expect(byDoc[docFar]).toBeUndefined(); // beyond the widest window
     expect(byDoc[docDeleted]).toBeUndefined(); // deleted → excluded
 
-    // Recipients follow category→role: iqama → hr + gro (not recruiter).
+    // Recipients follow category→role: iqama → hr + gro. The Auditor reads
+    // everything but manages nothing, so is never alerted.
     expect((await notifsFor(hr.userId, docIqama)).length).toBe(1);
     expect((await notifsFor(gro.userId, docIqama)).length).toBe(1);
-    expect((await notifsFor(recruiter.userId, docIqama)).length).toBe(0);
+    expect((await notifsFor(auditor.userId, docIqama)).length).toBe(0);
 
-    // cv → hr + recruiter (not gro).
+    // cv → hr (not gro, not the auditor). The Recruiter seat that used to share
+    // CV alerts is an HR officer now (ADR-013).
     expect((await notifsFor(hr.userId, docCv)).length).toBe(1);
-    expect((await notifsFor(recruiter.userId, docCv)).length).toBe(1);
+    expect((await notifsFor(auditor.userId, docCv)).length).toBe(0);
     expect((await notifsFor(gro.userId, docCv)).length).toBe(0);
 
     // contract (expired) → hr only; the message is the "expired" variant.

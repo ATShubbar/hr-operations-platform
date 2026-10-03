@@ -10,6 +10,7 @@ import {
   loginAsClientRep,
   loginAsStaff,
   type TestPrincipal,
+  loginAsEnrolledStaff,
 } from './helpers/login';
 
 // CONF-03: per-user preferences + full user → client → system resolution. Any
@@ -29,7 +30,7 @@ describe('Configuration per-user preferences (CONF-03, e2e)', () => {
   let owner: PrismaClient;
   let staffA: TestPrincipal;
   let staffB: TestPrincipal;
-  let rep: TestPrincipal; // client_admin of CLIENT_A — has a client tier
+  let rep: TestPrincipal; // client manager of CLIENT_A — has a client tier
 
   const http = () => app.getHttpServer();
   const me = (cookie: string) => request(http()).get('/config/me').set('Cookie', cookie);
@@ -52,9 +53,9 @@ describe('Configuration per-user preferences (CONF-03, e2e)', () => {
     await owner.clientSetting.create({
       data: { clientId: CLIENT_A, key: 'calendar.display', value: 'gregorian' },
     });
-    staffA = await loginAsStaff(app, 'recruiter');
-    staffB = await loginAsStaff(app, 'read_only');
-    rep = await loginAsClientRep(app, CLIENT_A, 'client_admin');
+    staffA = await loginAsStaff(app, 'hr_officer');
+    staffB = await loginAsEnrolledStaff(app, 'auditor');
+    rep = await loginAsClientRep(app, CLIENT_A, 'client_manager');
   });
 
   afterAll(async () => {

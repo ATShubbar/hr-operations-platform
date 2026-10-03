@@ -5,7 +5,9 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AppModule } from '../src/app.module';
 import { PrismaClient } from '../src/generated/prisma/client';
-import { cleanupHelperUsers, loginAsStaff, type TestPrincipal } from './helpers/login';
+import { cleanupHelperUsers, loginAsStaff, type TestPrincipal,
+  loginAsEnrolledStaff,
+} from './helpers/login';
 
 // DOC-03: read side — list/filter (incl. by expiry), get, presigned download,
 // delete (blob removal + soft-delete). Requires MinIO (docker compose).
@@ -24,8 +26,8 @@ describe('Documents read/download/delete (DOC-03, e2e)', () => {
   let app: INestApplication;
   let owner: PrismaClient;
   let hr: TestPrincipal; // read + upload/delete all
-  let recruiter: TestPrincipal; // read + upload/delete recruitment only
-  let finance: TestPrincipal; // read only
+  let gro: TestPrincipal; // read + upload government; NO delete (v1.7: CRU)
+  let auditor: TestPrincipal; // read only
 
   const http = () => app.getHttpServer();
 
@@ -68,8 +70,8 @@ describe('Documents read/download/delete (DOC-03, e2e)', () => {
     await owner.document.deleteMany({ where: { title: { startsWith: MARK } } });
     await owner.auditEntry.deleteMany({ where: { resource: 'document' } });
     hr = await loginAsStaff(app, 'hr_officer');
-    recruiter = await loginAsStaff(app, 'recruiter');
-    finance = await loginAsStaff(app, 'finance');
+    gro = await loginAsStaff(app, 'gro_officer');
+    auditor = await loginAsEnrolledStaff(app, 'auditor');
   });
 
   afterAll(async () => {
@@ -99,9 +101,9 @@ describe('Documents read/download/delete (DOC-03, e2e)', () => {
     expect(due.every((d) => d.expiryDate !== null && d.expiryDate <= '2026-06-30T23:59:59.999Z')).toBe(true);
   });
 
-  it('get by id (finance has document.read); unknown → 404', async () => {
+  it('get by id (the Auditor has document.read); unknown → 404', async () => {
     const id = await createAvailable();
-    const got = (await request(http()).get(`/documents/${id}`).set('Cookie', finance.cookie).expect(200))
+    const got = (await request(http()).get(`/documents/${id}`).set('Cookie', auditor.cookie).expect(200))
       .body as Doc;
     expect(got.id).toBe(id);
     await request(http())
@@ -127,10 +129,10 @@ describe('Documents read/download/delete (DOC-03, e2e)', () => {
   it('delete removes the blob + soft-deletes; category-scoped; audited', async () => {
     const id = await createAvailable({ category: 'iqama' });
 
-    // recruiter may not delete a government doc (category scope)
-    await request(http()).delete(`/documents/${id}`).set('Cookie', recruiter.cookie).expect(403);
-    // finance has no document.delete at all
-    await request(http()).delete(`/documents/${id}`).set('Cookie', finance.cookie).expect(403);
+    // a GRO officer may not delete even a government doc (v1.7: CRU, no delete)
+    await request(http()).delete(`/documents/${id}`).set('Cookie', gro.cookie).expect(403);
+    // the Auditor has no document.delete at all
+    await request(http()).delete(`/documents/${id}`).set('Cookie', auditor.cookie).expect(403);
 
     const del = (await request(http()).delete(`/documents/${id}`).set('Cookie', hr.cookie).expect(200))
       .body as Doc;

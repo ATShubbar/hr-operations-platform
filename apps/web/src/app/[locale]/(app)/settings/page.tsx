@@ -35,7 +35,7 @@ const CAL_VALUES = ['hijri', 'gregorian', 'dual'] as const;
 
 // Configuration settings UI (CONF-05) — the first place the three-level
 // resolution is user-visible. Everyone manages their own preferences (the
-// ui.language control persists to /config/me); System Admins additionally edit
+// ui.language control persists to /config/me); Administrators additionally edit
 // system-level settings + toggle feature flags. Reads /config/me (self),
 // /config + /config/flags + /config/catalog (admin only — config.read).
 export default function SettingsPage() {
@@ -48,8 +48,8 @@ export default function SettingsPage() {
   const router = useRouter();
   const pathname = usePathname();
   const canWriteSystem = useCan('config.write');
-  // Per-client overrides are Company Admin's (matrix), distinct from the System
-  // Admin's system-level config.write.
+  // Per-client overrides (config.write-client) are distinct from the
+  // system-level config.write; both are the Administrator's (v1.7).
   const canWriteClient = useCan('config.write-client');
 
   const [me, setMe] = useState<Record<string, unknown> | null>(null);
@@ -280,7 +280,7 @@ export default function SettingsPage() {
       {/* ---- Notification preferences (everyone) ---- */}
       <NotificationPreferences />
 
-      {/* ---- System settings (System Admin only) ---- */}
+      {/* ---- System settings (Administrator only) ---- */}
       {canWriteSystem && system && (
         <>
           <Card>
@@ -357,7 +357,7 @@ export default function SettingsPage() {
         </>
       )}
 
-      {/* ---- Per-client overrides (UX-10a, Company Admin) ---- */}
+      {/* ---- Per-client overrides (UX-10a, Administrator) ---- */}
       {canWriteClient && (
         <Card>
           <CardHeader className="border-b">

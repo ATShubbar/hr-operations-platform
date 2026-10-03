@@ -24,7 +24,7 @@ function staffCtx(requestId: string): RequestContext {
     clientId: CLIENT_A,
     employeeId: null,
     principalType: 'staff',
-    role: 'company_admin',
+    role: 'administrator',
   };
 }
 
@@ -77,7 +77,7 @@ describe('Audit log — append-only + transactional write (AUDIT-01, e2e)', () =
       resource: AUDIT_RESOURCE,
       action: 'create',
       actorId: ACTOR,
-      actorRole: 'company_admin',
+      actorRole: 'administrator',
       clientId: CLIENT_A,
     });
     expect(entries[0]?.after).toMatchObject({ note: 'audit-e2e:commit' });

@@ -39,8 +39,8 @@ const DOWNLOAD_TTL_SECONDS = 300;
 // Documents upload flow (DOC-02). Presigned, two-step, direct-to-store: the API
 // issues a pending metadata row + a short-lived PUT URL; the client transfers
 // bytes straight to object storage; confirm marks it available once the blob is
-// verified present. `document.upload` gates both; category-scope (recruiter →
-// recruitment, GRO → gov, admin/HR → all) is checked in-handler per the matrix.
+// verified present. `document.upload` gates both; category-scope (GRO → gov,
+// Administrator/HR officer → all) is checked in-handler per the matrix.
 @Controller('documents')
 export class DocumentsController {
   constructor(

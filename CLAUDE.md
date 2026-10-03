@@ -956,6 +956,20 @@ non-staff FIRST** — client reps still hold `client-user.*`, so the guard alone
 Admin address another company by editing the URL (test proven red without it). No client record
 page exists, so the UI is a **Portal users** dialog from the Clients row. Live: invited at Beta,
 disabled → the user's session 200→401. 484/484 ×3. Next: **ROLE-03** (the migration).
+**ROLE-03 done — six roles, end to end.** Migration rebuilt the `Role` enum (system_admin/
+company_admin→administrator, recruiter/finance→hr_officer, read_only→auditor, client_admin/
+client_user→client_manager), dropped the column default, and replaced the employee CHECK with
+**`auth_users_role_principal_chk`** (staff ↔ 4 staff roles, client_rep ↔ client_manager,
+employee ↔ employee). Bundles = the v1.7 matrix, pinned EXACTLY (missing AND extra) by
+**`test/role-matrix.e2e-spec.ts`** — change a bundle and that spec, together with
+architecture.md, or CI fails. MFA: **administrator + auditor**. `/client-users` and the
+client *Portal users* screen are retired (Administrators use Clients → Portal users). **Seed
+logins changed:** `staff-administrator`, `staff-administrator-2`, `staff-hr_officer`,
+`-hr_officer-2` (ex-recruiter), `-hr_officer-3` (ex-finance), `staff-gro_officer`,
+`staff-auditor`, `client_manager-a/-b`, `employee-a` (all `@seed.hr.local`). Matrix cell
+corrected: HR/GRO Calendar is CRUD (read-all lifts writes — ADR-013 rev. 1). The per-report
+gate is now proven with a NARROWED PolicyService (no v1.7 role exercises it). API 483/483.
+Next: DS-05+ screen cards.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
@@ -980,6 +994,8 @@ disabled → the user's session 200→401. 484/484 ×3. Next: **ROLE-03** (the m
 - pnpm v10: `pnpm deploy` needs `--legacy`; corepack shims live in ~/.local/bin (no sudo on this machine).
 - shadcn here is Base UI (`render` prop), NOT Radix (`asChild`); init was run with `--rtl`.
 - Physical Tailwind utilities (pl-/pr-/left-…) are lint errors — logical only.
+- Sessions CACHE the role: after any role migration in an environment with real users, end
+  all sessions (ROLE-03 — stale sessions fail closed, but users would be locked out mid-work).
 - Every new client-scoped table follows the checklist in apps/api/src/modules/README.md and registers in the isolation harness (unregistered endpoints fail CI).
 - Local ports: Postgres 5433, Redis 6380, MinIO 9002 (API) / 9003 (console) — non-default because 5432/6379/9000 belong to other local tooling. `docker compose up -d` now includes MinIO; storage e2e (STOR-01) requires it up. StorageService is endpoint-configurable + `forcePathStyle` (MinIO); prod object-store provider is still ADR-006-open. Presigned uploads go browser→object-store DIRECTLY (never through the API); this works on MinIO's default CORS locally — a stricter production object store must have CORS configured for the web origin (DOC-05).
 - Tailwind v4 `@theme` only EMITS a utility when the class appears in scanned source — a new token is not a usable class until something references it. Verify with a real consumer, not by injecting a class at runtime.

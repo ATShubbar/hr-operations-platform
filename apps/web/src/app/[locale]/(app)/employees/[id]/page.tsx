@@ -75,7 +75,7 @@ export default function EmployeeDetailPage() {
   const canEditSalary = useCan('salary.update');
   const canEditGovdata = useCan('govdata.update');
   const canTerminate = useCan('employee.delete');
-  // SS-06b: the employee's self-service account (Company Admin, HR Officer).
+  // SS-06b: the employee's self-service account (Administrator, HR officer).
   const canSeeAccess = useCan('employee-user.read');
 
   const [emp, setEmp] = useState<EmployeeResponse | null>(null);

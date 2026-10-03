@@ -22,10 +22,10 @@ describe('Tasks API (TASK-02, e2e)', () => {
   let owner: PrismaClient;
   let http: ReturnType<INestApplication['getHttpServer']>;
   const clientId = randomUUID(); // synthetic tag for cleanup
-  let admin: TestPrincipal; // company_admin — read-all + create/update/delete
+  let admin: TestPrincipal; // administrator — read-all + create/update/delete
   let gro: TestPrincipal; // gro_officer — create/update, own/assigned only
   let hr: TestPrincipal; // hr_officer — create/update, own/assigned only
-  let reader: TestPrincipal; // read_only — read-all, no writes
+  let reader: TestPrincipal; // auditor — read-all, no writes
   let t1 = ''; // created by gro
   let t2 = ''; // created by admin, assigned to hr
 
@@ -39,10 +39,10 @@ describe('Tasks API (TASK-02, e2e)', () => {
     owner = new PrismaClient({
       adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL ?? '' }),
     });
-    admin = await loginAsEnrolledStaff(app, 'company_admin');
+    admin = await loginAsEnrolledStaff(app, 'administrator');
     gro = await loginAsStaff(app, 'gro_officer');
     hr = await loginAsStaff(app, 'hr_officer');
-    reader = await loginAsStaff(app, 'read_only');
+    reader = await loginAsEnrolledStaff(app, 'auditor');
   });
 
   afterAll(async () => {
@@ -95,7 +95,7 @@ describe('Tasks API (TASK-02, e2e)', () => {
     expect(upd.body.status).toBe('in_progress');
   });
 
-  it('read_only sees all tasks but cannot create or update (403)', async () => {
+  it('the Auditor sees all tasks but cannot create or update (403)', async () => {
     await request(http).get(`/tasks/${t1}`).set('Cookie', reader.cookie).expect(200);
     await request(http).post('/tasks').set('Cookie', reader.cookie).send({ title: 'x' }).expect(403);
     await request(http)
@@ -105,7 +105,7 @@ describe('Tasks API (TASK-02, e2e)', () => {
       .expect(403);
   });
 
-  it('delete is company_admin only', async () => {
+  it('delete is the Administrator\'s only', async () => {
     await request(http).delete(`/tasks/${t1}`).set('Cookie', gro.cookie).expect(403); // no task.delete
     await request(http).delete(`/tasks/${t2}`).set('Cookie', admin.cookie).expect(200);
     await request(http).get(`/tasks/${t2}`).set('Cookie', admin.cookie).expect(404); // gone

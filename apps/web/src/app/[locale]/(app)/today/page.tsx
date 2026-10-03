@@ -25,9 +25,9 @@ import { useViewItemLabels } from '@/lib/view-item-labels';
 // It re-projects data we already had rather than adding any: /calendar/view
 // already merges own events with ACTIVE Task, Request and GRO deadlines, each
 // source gated by its own read permission. That gating is what makes this page
-// role-aware for free — a recruiter has no gro.read, so GRO items never arrive,
-// and Finance (excluded from recruitment and GRO by the permission matrix) sees a
-// genuinely shorter page rather than four empty sections.
+// role-aware for free — a role without gro.read gets no GRO items, so its page
+// is genuinely shorter rather than carrying empty sections. (Since v1.7 every
+// staff role holds gro.read; the gating stays for any narrower role.)
 //
 // DELIBERATELY NO KPI TILE STRIP. The rule from the research is that a metric
 // earns its place only with a baseline, a direction, a threshold and a
@@ -91,7 +91,6 @@ export default function TodayPage() {
   const [me, setMe] = useState<MeResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -300,9 +299,7 @@ export default function TodayPage() {
         ))}
 
       {!loading && !error && items.length > 0 && (
-        <p className="text-xs text-muted-foreground">
-          {t('scopeNote', { count: items.length })}
-        </p>
+        <p className="text-xs text-muted-foreground">{t('scopeNote', { count: items.length })}</p>
       )}
     </div>
   );

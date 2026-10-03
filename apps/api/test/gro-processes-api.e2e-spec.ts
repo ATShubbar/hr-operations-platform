@@ -5,7 +5,9 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AppModule } from '../src/app.module';
 import { PrismaClient } from '../src/generated/prisma/client';
-import { cleanupHelperUsers, loginAsClientRep, loginAsStaff, type TestPrincipal } from './helpers/login';
+import { cleanupHelperUsers, loginAsClientRep, loginAsStaff, type TestPrincipal,
+  loginAsEnrolledStaff,
+} from './helpers/login';
 
 // GRO-02: the GRO processes API. Asymmetric dual-path — GRO officers manage
 // processes across clients; client reps READ their OWN client's processes STATUS-
@@ -20,9 +22,9 @@ describe('GRO processes API (GRO-02, e2e)', () => {
   let empA: string;
   let empB: string;
   let gro: TestPrincipal; // GRO officer — full process management
-  let finance: TestPrincipal; // staff WITHOUT gro.read
-  let repA: TestPrincipal; // client_admin of A (read own, status-only)
-  let repB: TestPrincipal; // client_user of B
+  let auditor: TestPrincipal; // reads every process, changes none (v1.7)
+  let repA: TestPrincipal; // client manager of A (read own, status-only)
+  let repB: TestPrincipal; // client manager of B
   let procA = '';
   let procB = '';
 
@@ -54,9 +56,9 @@ describe('GRO processes API (GRO-02, e2e)', () => {
     empA = eA.id;
     empB = eB.id;
     gro = await loginAsStaff(app, 'gro_officer');
-    finance = await loginAsStaff(app, 'finance');
-    repA = await loginAsClientRep(app, clientA, 'client_admin');
-    repB = await loginAsClientRep(app, clientB, 'client_user');
+    auditor = await loginAsEnrolledStaff(app, 'auditor');
+    repA = await loginAsClientRep(app, clientA, 'client_manager');
+    repB = await loginAsClientRep(app, clientB, 'client_manager');
   });
 
   afterAll(async () => {
@@ -127,8 +129,17 @@ describe('GRO processes API (GRO-02, e2e)', () => {
     await request(http).post(`/gro-processes/${procA}/status`).set('Cookie', repA.cookie).send({ status: 'cancelled' }).expect(403);
   });
 
-  it('Finance staff cannot read GRO (403 — gro.read not granted)', async () => {
-    await request(http).get('/gro-processes').set('Cookie', finance.cookie).expect(403);
+  // Every staff role reads GRO since v1.7 (the Finance seat that lacked gro.read
+  // became an HR officer). The refusal now worth asserting is the Auditor's
+  // read-without-write.
+  it('the Auditor reads processes but cannot create or advance them (403)', async () => {
+    await request(http).get('/gro-processes').set('Cookie', auditor.cookie).expect(200);
+    await post(auditor.cookie, { employeeId: empA, type: 'other' }).expect(403);
+    await request(http)
+      .post(`/gro-processes/${procA}/status`)
+      .set('Cookie', auditor.cookie)
+      .send({ status: 'cancelled' })
+      .expect(403);
   });
 
   it('rejects unauthenticated callers (401)', async () => {

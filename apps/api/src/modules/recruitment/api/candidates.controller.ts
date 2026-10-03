@@ -28,8 +28,8 @@ import type { UpdateCandidateInput } from '../domain/candidate';
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // Candidates API (REC-04) — STAFF-INTERNAL only (candidates carry applicant PII/CVs
-// that clients never see; there is no client-rep path). Recruiter has full CRUD +
-// pipeline control; other staff read per the matrix (GRO/Finance excluded). The
+// that clients never see; there is no client-rep path). Who creates, advances or
+// deletes is the v1.7 matrix (ADR-013), enforced by the guard. The
 // clientId is DERIVED from the vacancy by the service, never taken from input.
 @Controller('candidates')
 export class CandidatesController {

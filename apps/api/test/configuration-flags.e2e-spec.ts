@@ -53,8 +53,8 @@ describe('Configuration feature flags (CONF-04, e2e)', () => {
     });
     config = app.get(ConfigService);
     await resetStore();
-    systemAdmin = await loginAsEnrolledStaff(app, 'system_admin');
-    companyAdmin = await loginAsEnrolledStaff(app, 'company_admin');
+    systemAdmin = await loginAsEnrolledStaff(app, 'administrator');
+    companyAdmin = await loginAsEnrolledStaff(app, 'administrator');
     staff = await loginAsStaff(app, 'hr_officer');
   });
 

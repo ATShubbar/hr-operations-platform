@@ -24,7 +24,7 @@ interface UpdateInput {
 }
 
 // Staff user management (UX-10b). Consultancy staff accounts, per the matrix row
-// "System config & staff users" — System Admin CRUD, Company Admin R.
+// "System config & staff users" — Administrator CRUD, Auditor R (v1.7).
 //
 // Lives in the auth module because auth OWNS auth_users (ADR-003 rule 3). The
 // mirror image is ClientUsersService, which lives in `clients` and drives this
@@ -33,7 +33,7 @@ interface UpdateInput {
 //
 // NOT client-scoped: staff have no client_id, so unlike client-rep management
 // there is no scope key to filter on. The gate is the permission alone, which is
-// why the write permissions sit on system_admin only.
+// why the write permissions sit on the Administrator only (v1.7).
 @Injectable()
 export class StaffUsersService {
   constructor(
@@ -92,9 +92,9 @@ export class StaffUsersService {
    * Update role, status or display name.
    *
    * `actorId` is the CALLER, and it is load-bearing: an administrator must not be
-   * able to disable or demote their own account. There is exactly one
-   * system_admin seat in a small consultancy, and locking it out of its own
-   * console is unrecoverable without database access.
+   * able to disable or demote their own account. A small
+   * consultancy may have a single Administrator seat, and locking it out of its
+   * own console is unrecoverable without database access.
    */
   async update(actorId: string, id: string, data: UpdateInput): Promise<AuthUser | null> {
     if (id === actorId && (data.status === 'disabled' || data.role !== undefined)) {

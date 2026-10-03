@@ -5,7 +5,7 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AppModule } from '../src/app.module';
 import { PrismaClient } from '../src/generated/prisma/client';
-import { cleanupHelperUsers, loginAsStaff } from './helpers/login';
+import { cleanupHelperUsers, loginAsStaff, loginAsEnrolledStaff } from './helpers/login';
 
 // REP-03: the CSV export — the FIRST audited READ in the system. What matters
 // here is (a) the export capability is distinct from reading, (b) the data gate
@@ -47,7 +47,7 @@ describe('Reports export (REP-03, e2e)', () => {
   });
 
   it('exports CSV with download headers, a BOM, and RFC-4180 quoting', async () => {
-    const finance = await loginAsStaff(app, 'finance');
+    const finance = await loginAsEnrolledStaff(app, 'administrator'); // v1.7: the only exporter
     const res = await request(app.getHttpServer())
       .get('/reports/workforce/export')
       .set('Cookie', finance.cookie)
@@ -72,7 +72,7 @@ describe('Reports export (REP-03, e2e)', () => {
   });
 
   it('the CSV matches the JSON run row-for-row', async () => {
-    const staff = await loginAsStaff(app, 'hr_officer');
+    const staff = await loginAsEnrolledStaff(app, 'administrator'); // v1.7: the only exporter
     const json = await request(app.getHttpServer())
       .get('/reports/service-operations')
       .set('Cookie', staff.cookie)
@@ -91,7 +91,7 @@ describe('Reports export (REP-03, e2e)', () => {
 
   it('every export writes ONE audit row recording the ACT, not the data', async () => {
     const before = await auditRows();
-    const finance = await loginAsStaff(app, 'finance');
+    const finance = await loginAsEnrolledStaff(app, 'administrator'); // v1.7: the only exporter
     await request(app.getHttpServer())
       .get('/reports/payroll-cost/export')
       .set('Cookie', finance.cookie)
@@ -104,7 +104,7 @@ describe('Reports export (REP-03, e2e)', () => {
     const mine = after.filter((e) => e.actorId === finance.userId);
     expect(mine).toHaveLength(1);
     const entry = mine[0]!;
-    expect(entry.actorRole).toBe('finance');
+    expect(entry.actorRole).toBe('administrator');
     const recorded = entry.after as Record<string, unknown>;
     expect(recorded.reportId).toBe('payroll-cost');
     expect(recorded.format).toBe('csv');
@@ -120,8 +120,8 @@ describe('Reports export (REP-03, e2e)', () => {
     ]);
   });
 
-  it('Read Only may read a report but NOT export it (403)', async () => {
-    const readOnly = await loginAsStaff(app, 'read_only');
+  it('the Auditor may read a report but NOT export it (403)', async () => {
+    const readOnly = await loginAsEnrolledStaff(app, 'auditor');
     await request(app.getHttpServer())
       .get('/reports/workforce')
       .set('Cookie', readOnly.cookie)
@@ -136,24 +136,27 @@ describe('Reports export (REP-03, e2e)', () => {
   });
 
   it('the data gate still applies to exports, and format is validated', async () => {
-    const recruiter = await loginAsStaff(app, 'recruiter');
-    // holds report.export, but not salary.read
+    // An HR officer holds neither report.read nor report.export since v1.7.
+    const hr = await loginAsStaff(app, 'hr_officer');
     await request(app.getHttpServer())
       .get('/reports/payroll-cost/export')
-      .set('Cookie', recruiter.cookie)
+      .set('Cookie', hr.cookie)
       .expect(403);
+    // The per-report data gate is shared with `run` (entitledReport) and proven
+    // against a narrowed reader in reports-api.e2e-spec.
+    const exporter = await loginAsEnrolledStaff(app, 'administrator');
     await request(app.getHttpServer())
       .get('/reports/not-a-report/export')
-      .set('Cookie', recruiter.cookie)
+      .set('Cookie', exporter.cookie)
       .expect(404);
     await request(app.getHttpServer())
       .get('/reports/workforce/export?format=pdf')
-      .set('Cookie', recruiter.cookie)
+      .set('Cookie', exporter.cookie)
       .expect(400);
     // csv is accepted explicitly as well as by default
     await request(app.getHttpServer())
       .get('/reports/workforce/export?format=csv')
-      .set('Cookie', recruiter.cookie)
+      .set('Cookie', exporter.cookie)
       .expect(200);
   });
 

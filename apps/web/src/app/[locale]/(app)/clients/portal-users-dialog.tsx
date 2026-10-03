@@ -6,7 +6,6 @@ import type {
   ClientResponse,
   ClientUserListResponse,
   ClientUserResponse,
-  ClientUserRole,
   ClientUserStatus,
 } from '@hr/contracts';
 import { useRouter } from '@/i18n/navigation';
@@ -41,24 +40,23 @@ import {
 // cannot be pointed at a company by a client representative.
 //
 // Deliberately small: the client record screen is rebuilt in DS-05+, and this
-// block moves there rather than being redesigned twice. The wording reuses the
-// portal's own `portal.users.*` strings so a role is called the same thing on
-// both sides.
+// block moves there rather than being redesigned twice. Its wording lives in
+// `portal.users.*` — the client-side screen that used it was retired in ROLE-03.
 
-const ROLES: readonly ClientUserRole[] = ['client_admin', 'client_user'];
 const STATUSES: readonly ClientUserStatus[] = ['active', 'disabled'];
 
 type View =
   | { kind: 'list' }
   | { kind: 'invite' }
-  | { kind: 'edit'; user: ClientUserResponse; role: ClientUserRole; status: ClientUserStatus };
+  | { kind: 'edit'; user: ClientUserResponse; status: ClientUserStatus };
 
+// One client role since ADR-013 (Client manager), so an invitation carries no
+// role and an edit changes status only.
 interface InviteForm {
   email: string;
   password: string;
-  role: ClientUserRole;
 }
-const EMPTY_INVITE: InviteForm = { email: '', password: '', role: 'client_user' };
+const EMPTY_INVITE: InviteForm = { email: '', password: '' };
 
 export function PortalUsersDialog({
   client,
@@ -137,7 +135,7 @@ export function PortalUsersDialog({
     try {
       await apiFetch(`/clients/${clientId}/users/${view.user.id}`, {
         method: 'PATCH',
-        body: JSON.stringify({ role: view.role, status: view.status }),
+        body: JSON.stringify({ status: view.status }),
       });
       setView({ kind: 'list' });
       await load();
@@ -200,12 +198,6 @@ export function PortalUsersDialog({
                   ),
                 },
                 {
-                  key: 'role',
-                  header: tu('colRole'),
-                  sortValue: (u) => u.role,
-                  cell: (u) => tu(`role.${u.role}`),
-                },
-                {
                   key: 'status',
                   header: tu('colStatus'),
                   sortValue: (u) => u.status,
@@ -225,7 +217,7 @@ export function PortalUsersDialog({
                           size="sm"
                           onClick={() => {
                             setFormError('');
-                            setView({ kind: 'edit', user: u, role: u.role, status: u.status });
+                            setView({ kind: 'edit', user: u, status: u.status });
                           }}
                         >
                           {tu('edit')}
@@ -283,26 +275,6 @@ export function PortalUsersDialog({
               />
               <p className="text-xs text-muted-foreground">{tu('initialPasswordHint')}</p>
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="spu-invite-role">{tu('colRole')}</Label>
-              <Select
-                value={invite.role}
-                onValueChange={(v) =>
-                  setInvite({ ...invite, role: (v as ClientUserRole) ?? 'client_user' })
-                }
-              >
-                <SelectTrigger id="spu-invite-role" className="w-full">
-                  <SelectValue>{(v) => (v ? tu(`role.${String(v)}`) : '')}</SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {ROLES.map((r) => (
-                    <SelectItem key={r} value={r}>
-                      {tu(`role.${r}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
             {formError && <p className="text-sm text-destructive">{formError}</p>}
             <DialogFooter>
               <Button type="button" variant="outline" onClick={back}>
@@ -321,26 +293,6 @@ export function PortalUsersDialog({
               <bdi dir="ltr" className="inline-block text-start">
                 {view.user.email}
               </bdi>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="spu-edit-role">{tu('colRole')}</Label>
-              <Select
-                value={view.role}
-                onValueChange={(v) =>
-                  setView({ ...view, role: (v as ClientUserRole) ?? 'client_user' })
-                }
-              >
-                <SelectTrigger id="spu-edit-role" className="w-full">
-                  <SelectValue>{(v) => (v ? tu(`role.${String(v)}`) : '')}</SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {ROLES.map((r) => (
-                    <SelectItem key={r} value={r}>
-                      {tu(`role.${r}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="spu-edit-status">{tu('colStatus')}</Label>

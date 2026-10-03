@@ -37,6 +37,9 @@ describe('Employee accounts (SS-06a, e2e)', () => {
   // Every staff call below is made by ONE hr_officer session.
   let hr: Awaited<ReturnType<typeof loginAsStaff>> | undefined;
   const staff = async () => (hr ??= await loginAsStaff(app, 'hr_officer'));
+  // Terminating an employee is the Administrator's alone since v1.7 (ADR-013).
+  let adm: Awaited<ReturnType<typeof loginAsEnrolledStaff>> | undefined;
+  const administrator = async () => (adm ??= await loginAsEnrolledStaff(app, 'administrator'));
 
   const person = async (clientId: string, extra = {}) =>
     (
@@ -113,30 +116,34 @@ describe('Employee accounts (SS-06a, e2e)', () => {
   // ---- 1. The pre-existing gap: deactivation must END live sessions ---------
 
   describe('deactivation and role changes end live sessions — every account type', () => {
-    it('client user: deactivated by their Client Admin → the open session is 401 at once', async () => {
-      const admin = await loginAsClientRep(app, co.on, 'client_admin');
-      const victim = await loginAsClientRep(app, co.on, 'client_user');
+    // Portal users are managed by Administrators over the staff path since
+    // ROLE-02/03; with one client role there is no role change to test.
+    it('client manager: deactivated by an Administrator → the open session is 401 at once', async () => {
+      const victim = await loginAsClientRep(app, co.on, 'client_manager');
       await me(victim.cookie).expect(200);
-      await http().delete(`/client-users/${victim.userId}`).set('Cookie', admin.cookie).expect(200);
-      await me(victim.cookie).expect(401);
-    });
-
-    it('client user: a ROLE change also ends the session (the session caches the role)', async () => {
-      const admin = await loginAsClientRep(app, co.on, 'client_admin');
-      const victim = await loginAsClientRep(app, co.on, 'client_user');
       await http()
-        .patch(`/client-users/${victim.userId}`)
-        .set('Cookie', admin.cookie)
-        .send({ role: 'client_admin' })
+        .delete(`/clients/${co.on}/users/${victim.userId}`)
+        .set('Cookie', (await administrator()).cookie)
         .expect(200);
       await me(victim.cookie).expect(401);
     });
 
-    it('staff: disabled, demoted, or deactivated by the System Admin → 401 at once', async () => {
-      const sysadmin = await loginAsEnrolledStaff(app, 'system_admin');
-      const disabled = await loginAsStaff(app, 'recruiter');
-      const demoted = await loginAsStaff(app, 'recruiter');
-      const deactivated = await loginAsStaff(app, 'recruiter');
+    it('client manager: disabled via a status change → 401 at once', async () => {
+      const victim = await loginAsClientRep(app, co.on, 'client_manager');
+      await me(victim.cookie).expect(200);
+      await http()
+        .patch(`/clients/${co.on}/users/${victim.userId}`)
+        .set('Cookie', (await administrator()).cookie)
+        .send({ status: 'disabled' })
+        .expect(200);
+      await me(victim.cookie).expect(401);
+    });
+
+    it('staff: disabled, demoted, or deactivated by an Administrator → 401 at once', async () => {
+      const sysadmin = await loginAsEnrolledStaff(app, 'administrator');
+      const disabled = await loginAsStaff(app, 'hr_officer');
+      const demoted = await loginAsStaff(app, 'hr_officer');
+      const deactivated = await loginAsStaff(app, 'hr_officer');
       await http()
         .patch(`/staff-users/${disabled.userId}`)
         .set('Cookie', sysadmin.cookie)
@@ -145,7 +152,7 @@ describe('Employee accounts (SS-06a, e2e)', () => {
       await http()
         .patch(`/staff-users/${demoted.userId}`)
         .set('Cookie', sysadmin.cookie)
-        .send({ role: 'read_only' })
+        .send({ role: 'auditor' })
         .expect(200);
       await http()
         .delete(`/staff-users/${deactivated.userId}`)
@@ -157,8 +164,8 @@ describe('Employee accounts (SS-06a, e2e)', () => {
     });
 
     it('staff: a change that is neither (display name) leaves the session alone', async () => {
-      const sysadmin = await loginAsEnrolledStaff(app, 'system_admin');
-      const renamed = await loginAsStaff(app, 'recruiter');
+      const sysadmin = await loginAsEnrolledStaff(app, 'administrator');
+      const renamed = await loginAsStaff(app, 'hr_officer');
       await http()
         .patch(`/staff-users/${renamed.userId}`)
         .set('Cookie', sysadmin.cookie)
@@ -287,12 +294,12 @@ describe('Employee accounts (SS-06a, e2e)', () => {
       .expect(404);
   });
 
-  it('only Company Admin / HR Officer manage accounts: recruiter, client rep and employee → 403', async () => {
+  it('only Administrator / HR officer manage accounts: GRO officer, client rep and employee → 403; the Auditor reads only', async () => {
     const employeeId = await person(co.on);
-    const recruiter = await loginAsStaff(app, 'recruiter');
-    const rep = await loginAsClientRep(app, co.on, 'client_admin');
+    const gro = await loginAsStaff(app, 'gro_officer');
+    const rep = await loginAsClientRep(app, co.on, 'client_manager');
     const emp = await loginAsEmployee(app);
-    for (const who of [recruiter, rep, emp]) {
+    for (const who of [gro, rep, emp]) {
       await http()
         .post(`/employee-accounts/${employeeId}/invite`)
         .set('Cookie', who.cookie)
@@ -300,6 +307,20 @@ describe('Employee accounts (SS-06a, e2e)', () => {
         .expect(403);
       await http().get(`/employee-accounts/${employeeId}`).set('Cookie', who.cookie).expect(403);
     }
+    // The Auditor reads an account's state (an existing one — no account is a 404
+    // for everybody) but cannot invite.
+    await http()
+      .post(`/employee-accounts/${employeeId}/invite`)
+      .set('Cookie', (await staff()).cookie)
+      .send({ email: addr() })
+      .expect(200);
+    const auditor = await loginAsEnrolledStaff(app, 'auditor');
+    await http().get(`/employee-accounts/${employeeId}`).set('Cookie', auditor.cookie).expect(200);
+    await http()
+      .post(`/employee-accounts/${employeeId}/invite`)
+      .set('Cookie', auditor.cookie)
+      .send({ email: addr() })
+      .expect(403);
   });
 
   // ---- 4. Forgot password ---------------------------------------------------
@@ -338,7 +359,7 @@ describe('Employee accounts (SS-06a, e2e)', () => {
     await me(e.cookie).expect(200);
     await http()
       .delete(`/employees/${e.employeeId}`)
-      .set('Cookie', (await staff()).cookie)
+      .set('Cookie', (await administrator()).cookie)
       .expect(200);
     await me(e.cookie).expect(401);
     const acct = (

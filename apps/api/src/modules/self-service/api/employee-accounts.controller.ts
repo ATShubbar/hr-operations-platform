@@ -20,7 +20,7 @@ import { EmployeeAccountsService } from '../application/employee-accounts.servic
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // STAFF management of employee self-service accounts (SS-06a). `employee-user.*`
-// is held by Company Admin and HR Officer only. Staff act across clients by
+// is held by the Administrator and HR officer (the Auditor reads). Staff act across clients by
 // permission, so these are `staff` routes in the isolation registry — and the
 // principal fence keeps employees and client reps off them.
 @Controller('employee-accounts')

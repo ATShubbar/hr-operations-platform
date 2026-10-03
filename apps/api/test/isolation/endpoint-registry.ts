@@ -74,12 +74,12 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'GET /audit': 'staff',
   // Configuration (CONF-01): system settings are deployment-wide (not client-
   // owned), so these are staff endpoints — cross-client by permission, not
-  // client-scoped. config.read for the reads; config.write (System Admin) writes.
+  // client-scoped. config.read for the reads; config.write (Administrator) writes.
   'GET /config': 'staff',
   'GET /config/catalog': 'staff',
   'GET /config/flags': 'staff',
   'PATCH /config/system/:key': 'staff',
-  // Per-client config (CONF-02): staff-managed (Company Admin) for an EXPLICIT
+  // Per-client config (CONF-02): staff-managed (Administrator) for an EXPLICIT
   // client id in the path — staff cross-client by permission, so 'staff' (not
   // client-scoped). The cfg_client_settings table still ships RLS for the
   // future client-rep read path (portal).
@@ -157,7 +157,7 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'DELETE /vacancies/:id': 'staff',
   // Recruitment candidates (REC-04): STAFF-INTERNAL only — clients never see
   // applicants, so every route is 'staff' (cross-client by permission, like Tasks).
-  // The matrix excludes GRO/Finance from recruitment (proven in the REC-04 e2e).
+  // Who may read/write recruitment is the v1.7 matrix (role-matrix.e2e-spec).
   'POST /candidates': 'staff',
   'GET /candidates': 'staff',
   'GET /candidates/:id': 'staff',
@@ -220,7 +220,7 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   // Reporting (REP-02): STAFF-ONLY, read-only, cross-client by permission — so
   // 'staff'. `report.read` admits the caller; each report's own
   // requiredPermissions decide which reports are listed and runnable (proven in
-  // the REP-02 e2e: a Recruiter cannot list or run payroll-cost).
+  // the REP-02 e2e: a reader without salary.read cannot list or run payroll-cost).
   'GET /reports': 'staff',
   'GET /reports/:id': 'staff',
   // REP-03: the CSV export — same data gate plus the distinct `report.export`
@@ -238,11 +238,6 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'POST /staff-users': 'staff',
   'PATCH /staff-users/:id': 'staff',
   'DELETE /staff-users/:id': 'staff',
-  'GET /client-users': 'client-read',
-  'GET /client-users/:id': 'client-read',
-  'POST /client-users': 'client-write',
-  'PATCH /client-users/:id': 'client-write',
-  'DELETE /client-users/:id': 'client-write',
   // ROLE-02: the STAFF path to the same users — company from the PATH, staff
   // only (client reps refused by scopeOf even though they hold client-user.*;
   // proven in client-portal-users.e2e-spec).

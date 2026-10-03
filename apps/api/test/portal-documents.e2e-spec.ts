@@ -71,8 +71,8 @@ describe('Client portal — /portal/documents (PORTAL-03, e2e)', () => {
     pendingA = (await seedDoc(clientA, 'A-pending', 'pending')).id;
     quarantinedA = (await seedDoc(clientA, 'A-quarantined', 'quarantined')).id;
     availB = (await seedDoc(clientB, 'B-available', 'available')).id;
-    repA = await loginAsClientRep(app, clientA, 'client_admin');
-    repB = await loginAsClientRep(app, clientB, 'client_user');
+    repA = await loginAsClientRep(app, clientA, 'client_manager');
+    repB = await loginAsClientRep(app, clientB, 'client_manager');
     staff = await loginAsStaff(app, 'hr_officer');
   });
 

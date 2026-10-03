@@ -22,11 +22,15 @@ describe('Calendar API (CAL-02, e2e)', () => {
   let app: INestApplication;
   let owner: PrismaClient;
   let http: ReturnType<INestApplication['getHttpServer']>;
-  let admin: TestPrincipal; // company_admin — read-all + delete
-  let hr: TestPrincipal; // hr_officer — CRU own, no delete/read-all
-  let finance: TestPrincipal; // another staff — own-scope probe
-  let recruiter: TestPrincipal; // no gro.read (view omits GRO)
-  let rep: TestPrincipal; // client rep — no calendar access
+  // v1.7 (ADR-013): every staff role reads ALL events. Administrator, HR and GRO
+  // officers are CRUD (the prototype's RWCD — calendar.read-all also lifts
+  // update/delete, so "write own, read all" is not expressible); the Auditor
+  // reads and changes nothing.
+  let admin: TestPrincipal; // administrator
+  let hr: TestPrincipal; // hr_officer
+  let gro: TestPrincipal; // gro_officer — CRUD on any event
+  let auditor: TestPrincipal; // read-all, no writes
+  let rep: TestPrincipal; // client manager — no calendar access
   let clientId: string;
   let empId: string;
   let hrEventId = '';
@@ -50,11 +54,11 @@ describe('Calendar API (CAL-02, e2e)', () => {
     });
     empId = e.id;
 
-    admin = await loginAsEnrolledStaff(app, 'company_admin');
+    admin = await loginAsEnrolledStaff(app, 'administrator');
     hr = await loginAsStaff(app, 'hr_officer');
-    finance = await loginAsStaff(app, 'finance');
-    recruiter = await loginAsStaff(app, 'recruiter');
-    rep = await loginAsClientRep(app, clientId, 'client_admin');
+    gro = await loginAsStaff(app, 'gro_officer');
+    auditor = await loginAsEnrolledStaff(app, 'auditor');
+    rep = await loginAsClientRep(app, clientId, 'client_manager');
 
     // Deadlines in range: a task, a request, a GRO process (active) + a DONE task
     // that must be excluded. Inserted directly (owner) to avoid side effects.
@@ -102,14 +106,34 @@ describe('Calendar API (CAL-02, e2e)', () => {
     hrEventId = res.body.id;
   });
 
-  it('own-scope: another staff cannot fetch hr_officer event (404); read-all can', async () => {
-    await request(http).get(`/calendar/events/${hrEventId}`).set('Cookie', finance.cookie).expect(404);
-    const seen = await request(http).get(`/calendar/events/${hrEventId}`).set('Cookie', admin.cookie).expect(200);
-    expect(seen.body.id).toBe(hrEventId);
+  it('every staff role reads another staff member\'s event (read-all)', async () => {
+    for (const p of [admin, gro, auditor]) {
+      const seen = await request(http).get(`/calendar/events/${hrEventId}`).set('Cookie', p.cookie).expect(200);
+      expect(seen.body.id).toBe(hrEventId);
+    }
   });
 
-  it('delete is Company-Admin-only (hr_officer → 403)', async () => {
-    await request(http).delete(`/calendar/events/${hrEventId}`).set('Cookie', hr.cookie).expect(403);
+  it('the Auditor reads but cannot create, update or delete (403)', async () => {
+    await request(http)
+      .post('/calendar/events')
+      .set('Cookie', auditor.cookie)
+      .send({ title: 'Nope', startAt: '2026-08-10T09:00:00Z', endAt: '2026-08-10T10:00:00Z' })
+      .expect(403);
+    await request(http)
+      .patch(`/calendar/events/${hrEventId}`)
+      .set('Cookie', auditor.cookie)
+      .send({ title: 'Nope' })
+      .expect(403);
+    await request(http).delete(`/calendar/events/${hrEventId}`).set('Cookie', auditor.cookie).expect(403);
+  });
+
+  it('a GRO officer may edit and delete ANOTHER staff member\'s event (prototype RWCD)', async () => {
+    await request(http)
+      .patch(`/calendar/events/${hrEventId}`)
+      .set('Cookie', gro.cookie)
+      .send({ title: 'Team sync (moved)' })
+      .expect(200);
+    await request(http).delete(`/calendar/events/${hrEventId}`).set('Cookie', gro.cookie).expect(200);
   });
 
   it('a client rep has no calendar access (403)', async () => {
@@ -132,10 +156,13 @@ describe('Calendar API (CAL-02, e2e)', () => {
     expect(titles).not.toContain('CAL done task'); // terminal excluded
   });
 
-  it("a recruiter's view omits GRO (no gro.read) but includes requests", async () => {
-    const res = await request(http).get(`/calendar/view${RANGE}`).set('Cookie', recruiter.cookie).expect(200);
+  // Every staff role now holds gro.read (ADR-013 — the recruiter/finance seats
+  // that lacked it became HR officers), so the per-source gate is exercised by
+  // the Auditor's read-only view instead: all sources, through reads alone.
+  it("the Auditor's view carries every source, including GRO", async () => {
+    const res = await request(http).get(`/calendar/view${RANGE}`).set('Cookie', auditor.cookie).expect(200);
     const kinds = new Set(res.body.items.map((i: { kind: string }) => i.kind));
-    expect(kinds.has('gro')).toBe(false);
+    expect(kinds.has('gro')).toBe(true);
     expect(kinds.has('request')).toBe(true);
   });
 

@@ -226,7 +226,7 @@ describe('My documents — employee self-service (SS-04, e2e)', () => {
 
   it('staff and client reps → 403; unauthenticated → 401', async () => {
     const staff = await loginAsStaff(app, 'hr_officer');
-    const rep = await loginAsClientRep(app, co.on, 'client_admin');
+    const rep = await loginAsClientRep(app, co.on, 'client_manager');
     await list(staff.cookie).expect(403);
     await list(rep.cookie).expect(403);
     await download(doc.soon, staff.cookie).expect(403);

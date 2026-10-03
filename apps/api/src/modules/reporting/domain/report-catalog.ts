@@ -3,13 +3,12 @@ import type { Permission } from '../../auth/public-api';
 // The report catalog (REP-01; ACTION-PLAN 5.4, architecture module 11).
 //
 // A report is DATA, not code branching: each definition declares the permissions
-// the caller must hold to run it. That is what makes the architecture's Reports
-// matrix row — "Recruiter R (recruitment) · HR Officer R (HR ops) · GRO Officer R
-// (GRO) · Finance R (financial)" — fall out of the existing catalog instead of
-// needing a second, parallel authorization model: a report is readable exactly
-// when its UNDERLYING data is readable. A recruiter holds vacancy/candidate.read
-// but not gro.read, so `gro-workload` is not in their catalog at all; only
-// salary.read holders (Finance/HR Officer/Admins) can reach `payroll-cost`.
+// the caller must hold to run it, so a report is readable exactly when its
+// UNDERLYING data is readable — no second, parallel authorization model. Since
+// v1.7 (ADR-013) only the Administrator and the Auditor hold `report.read`, and
+// both read all underlying data, so today every report reaches both; the
+// per-report gate stays because it is what keeps a future, narrower reader
+// (e.g. a role without salary.read) out of `payroll-cost`.
 //
 // REP-02 does the gating (filtering the catalog + enforcing per-report
 // permissions on the run route). This file is the single source of truth for
@@ -52,22 +51,20 @@ export const REPORT_CATALOG: Readonly<Record<ReportId, ReportDefinition>> = {
     requiredPermissions: ['employee.read', 'client.read'],
   },
   // What expires when, across employee government data AND documents. Requires
-  // govdata.read — which Recruiter and Finance do NOT hold (matrix), so the
-  // compliance view is restricted to Admins/HR/GRO/Read-Only exactly as intended.
+  // govdata.read, so it is restricted to readers of government data.
   'compliance-expiry': {
     id: 'compliance-expiry',
     category: 'compliance',
     requiredPermissions: ['employee.read', 'govdata.read', 'document.read'],
   },
   // The recruitment funnel — vacancies with their candidate stage counts.
-  // GRO Officer and Finance are excluded from recruitment (REC-02 grants).
+  // Requires both recruitment reads (candidates are staff-internal, REC-03).
   'recruitment-pipeline': {
     id: 'recruitment-pipeline',
     category: 'recruitment',
     requiredPermissions: ['vacancy.read', 'candidate.read'],
   },
-  // Government-process workload by type, with overdue counts. gro.read excludes
-  // Recruiter and Finance (GRO-02 grants).
+  // Government-process workload by type, with overdue counts.
   'gro-workload': {
     id: 'gro-workload',
     category: 'gro',
@@ -81,7 +78,7 @@ export const REPORT_CATALOG: Readonly<Record<ReportId, ReportDefinition>> = {
     requiredPermissions: ['request.read', 'task.read'],
   },
   // The financial report: payroll cost by client. salary.read is the narrowest
-  // grant in the catalog (matrix: HR Officer RU, Finance RU, Admins R).
+  // grant in the catalog (v1.7 matrix: Administrator/HR officer RU, Auditor R).
   'payroll-cost': {
     id: 'payroll-cost',
     category: 'financial',

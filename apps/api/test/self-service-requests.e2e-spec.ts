@@ -179,7 +179,7 @@ describe('My requests — employee self-service (SS-05, e2e)', () => {
     const t = title();
     const id = (await raise((await mine()).cookie, { type: 'document', title: t }).expect(201)).body
       .id;
-    const rep = await loginAsClientRep(app, co.on, 'client_admin');
+    const rep = await loginAsClientRep(app, co.on, 'client_manager');
     const staff = await loginAsStaff(app, 'hr_officer');
     const repIds = (
       await http().get('/requests').set('Cookie', rep.cookie).expect(200)
@@ -299,7 +299,7 @@ describe('My requests — employee self-service (SS-05, e2e)', () => {
 
   it('staff and client reps → 403 on /me/requests; unauthenticated → 401', async () => {
     const staff = await loginAsStaff(app, 'hr_officer');
-    const rep = await loginAsClientRep(app, co.on, 'client_admin');
+    const rep = await loginAsClientRep(app, co.on, 'client_manager');
     await listMine(staff.cookie).expect(403);
     await raise(staff.cookie, { type: 'general', title: title() }).expect(403);
     await listMine(rep.cookie).expect(403);

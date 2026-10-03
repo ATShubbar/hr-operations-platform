@@ -47,7 +47,7 @@ describe('Configuration per-client overrides (CONF-02, e2e)', () => {
       adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL ?? '' }),
     });
     await resetStore();
-    companyAdmin = await loginAsEnrolledStaff(app, 'company_admin');
+    companyAdmin = await loginAsEnrolledStaff(app, 'administrator');
     hr = await loginAsStaff(app, 'hr_officer');
   });
 
@@ -64,7 +64,7 @@ describe('Configuration per-client overrides (CONF-02, e2e)', () => {
     expect(body.settings['timezone']).toBe('Asia/Riyadh');
   });
 
-  it('Company Admin sets a per-client override; client effective reflects it, system unchanged', async () => {
+  it('an Administrator sets a per-client override; client effective reflects it, system unchanged', async () => {
     const res = await request(http())
       .patch(`/config/client/${CLIENT_A}/calendar.display`)
       .set('Cookie', companyAdmin.cookie)

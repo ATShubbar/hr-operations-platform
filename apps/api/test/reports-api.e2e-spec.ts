@@ -11,12 +11,24 @@ import {
 import { AppModule } from '../src/app.module';
 import { PrismaClient } from '../src/generated/prisma/client';
 import { REPORT_IDS } from '../src/modules/reporting/public-api';
-import { cleanupHelperUsers, loginAsClientRep, loginAsStaff } from './helpers/login';
+import { PolicyService } from '../src/modules/auth/public-api';
+import {
+  cleanupHelperUsers,
+  loginAsClientRep,
+  loginAsEnrolledStaff,
+  loginAsStaff,
+} from './helpers/login';
 
-// REP-02: the reports API. The point of this spec is the SECOND gate — every
-// staff role holds `report.read`, but which reports they may list and run is
-// decided by each report's declared requiredPermissions. A Recruiter must not be
-// able to reach a salary figure through /reports.
+// REP-02: the reports API, re-pinned to the v1.7 matrix (ROLE-03, ADR-013).
+// Reports are an Administrator + Auditor surface: the prototype's navigation
+// makes them admin-only, and the Auditor reads them as part of reading
+// everything. HR and GRO officers no longer hold `report.read`.
+//
+// The SECOND gate — each report's declared requiredPermissions — is still the
+// load-bearing check (it is what would keep a future, narrower reader out of
+// `payroll-cost`), but no v1.7 role exercises it: both report readers read all
+// underlying data. So the last describe below proves it with a deliberately
+// NARROWED policy (an Auditor without salary.read), not by trusting the code.
 
 describe('Reports API (REP-02, e2e)', () => {
   let app: INestApplication;
@@ -25,14 +37,10 @@ describe('Reports API (REP-02, e2e)', () => {
 
   const ids = (body: ReportCatalogResponse) => body.reports.map((r) => r.id).sort();
 
-  const catalogFor = async (role: 'recruiter' | 'finance' | 'gro_officer' | 'hr_officer') => {
-    const principal = await loginAsStaff(app, role);
-    const res = await request(app.getHttpServer())
-      .get('/reports')
-      .set('Cookie', principal.cookie)
-      .expect(200);
-    return { principal, body: reportCatalogResponseSchema.parse(res.body) };
-  };
+  const catalogAs = async (cookie: string) =>
+    reportCatalogResponseSchema.parse(
+      (await request(app.getHttpServer()).get('/reports').set('Cookie', cookie).expect(200)).body,
+    );
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
@@ -59,40 +67,35 @@ describe('Reports API (REP-02, e2e)', () => {
     expect([...contractIds].sort()).toEqual([...REPORT_IDS].sort());
   });
 
-  it('HR Officer holds every underlying permission and sees all six reports', async () => {
-    const { body } = await catalogFor('hr_officer');
-    expect(ids(body)).toEqual([...REPORT_IDS].sort());
-    // The descriptor explains WHY a report is gated, so the UI can say so.
-    const payroll = body.reports.find((r) => r.id === 'payroll-cost');
-    expect(payroll?.requiredPermissions).toContain('salary.read');
-    expect(payroll?.category).toBe('financial');
+  it('the Administrator and the Auditor see all six reports', async () => {
+    for (const role of ['administrator', 'auditor'] as const) {
+      const p = await loginAsEnrolledStaff(app, role);
+      const body = await catalogAs(p.cookie);
+      expect(ids(body)).toEqual([...REPORT_IDS].sort());
+      // The descriptor explains WHY a report is gated, so the UI can say so.
+      const payroll = body.reports.find((r) => r.id === 'payroll-cost');
+      expect(payroll?.requiredPermissions).toContain('salary.read');
+      expect(payroll?.category).toBe('financial');
+    }
   });
 
-  it("Recruiter's catalog is recruitment-shaped — no GRO, no payroll, no compliance", async () => {
-    const { body } = await catalogFor('recruiter');
-    expect(ids(body)).toEqual(['recruitment-pipeline', 'service-operations', 'workforce']);
-  });
-
-  it("Finance's catalog is financial-shaped — payroll but no recruitment or GRO", async () => {
-    const { body } = await catalogFor('finance');
-    expect(ids(body)).toEqual(['payroll-cost', 'service-operations', 'workforce']);
-  });
-
-  it("GRO Officer's catalog carries GRO + compliance but not payroll", async () => {
-    const { body } = await catalogFor('gro_officer');
-    expect(ids(body)).toEqual([
-      'compliance-expiry',
-      'gro-workload',
-      'service-operations',
-      'workforce',
-    ]);
+  // ADR-013 narrowing: every staff role read reports in v1.6.
+  it('HR and GRO officers have no reporting surface (403)', async () => {
+    for (const role of ['hr_officer', 'gro_officer'] as const) {
+      const p = await loginAsStaff(app, role);
+      await request(app.getHttpServer()).get('/reports').set('Cookie', p.cookie).expect(403);
+      await request(app.getHttpServer())
+        .get('/reports/workforce')
+        .set('Cookie', p.cookie)
+        .expect(403);
+    }
   });
 
   it('runs a report the caller is entitled to, in the shared table shape', async () => {
-    const finance = await loginAsStaff(app, 'finance');
+    const auditor = await loginAsEnrolledStaff(app, 'auditor');
     const res = await request(app.getHttpServer())
       .get('/reports/payroll-cost')
-      .set('Cookie', finance.cookie)
+      .set('Cookie', auditor.cookie)
       .expect(200);
 
     const body = reportResultResponseSchema.parse(res.body);
@@ -102,28 +105,8 @@ describe('Reports API (REP-02, e2e)', () => {
     expect(new Date(body.generatedAt).toString()).not.toBe('Invalid Date');
   });
 
-  it('refuses a report whose underlying data the caller may not read (403)', async () => {
-    const recruiter = await loginAsStaff(app, 'recruiter');
-    const res = await request(app.getHttpServer())
-      .get('/reports/payroll-cost')
-      .set('Cookie', recruiter.cookie)
-      .expect(403);
-    // The 403 names what is missing rather than pretending the report is absent.
-    expect(res.body.message).toContain('salary.read');
-
-    await request(app.getHttpServer())
-      .get('/reports/gro-workload')
-      .set('Cookie', recruiter.cookie)
-      .expect(403);
-    // …and what they ARE entitled to still works.
-    await request(app.getHttpServer())
-      .get('/reports/recruitment-pipeline')
-      .set('Cookie', recruiter.cookie)
-      .expect(200);
-  });
-
   it('unknown report id → 404', async () => {
-    const staff = await loginAsStaff(app);
+    const staff = await loginAsEnrolledStaff(app, 'administrator');
     await request(app.getHttpServer())
       .get('/reports/not-a-report')
       .set('Cookie', staff.cookie)
@@ -140,5 +123,56 @@ describe('Reports API (REP-02, e2e)', () => {
 
     await request(app.getHttpServer()).get('/reports').expect(401);
     await request(app.getHttpServer()).get('/reports/workforce').expect(401);
+  });
+});
+
+// The per-report data gate, proven against a NARROWER reader than any v1.7 role:
+// the Auditor with salary.read withheld. If the controller ever stopped checking
+// requiredPermissions, `payroll-cost` would appear and run here.
+describe('Reports API — the per-report data gate (REP-02, narrowed policy)', () => {
+  let app: INestApplication;
+
+  class NarrowedPolicy extends PolicyService {
+    override can(role: string | null | undefined, permission: string): boolean {
+      if (role === 'auditor' && permission === 'salary.read') return false;
+      return super.can(role, permission);
+    }
+  }
+
+  beforeAll(async () => {
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(PolicyService)
+      .useClass(NarrowedPolicy)
+      .compile();
+    app = moduleRef.createNestApplication();
+    await app.init();
+  });
+
+  afterAll(async () => {
+    await cleanupHelperUsers(app);
+    await app.close();
+  });
+
+  it('a reader without salary.read neither sees nor runs payroll-cost (403 names it)', async () => {
+    const auditor = await loginAsEnrolledStaff(app, 'auditor');
+    const res = await request(app.getHttpServer())
+      .get('/reports')
+      .set('Cookie', auditor.cookie)
+      .expect(200);
+    const listed = reportCatalogResponseSchema.parse(res.body).reports.map((r) => r.id);
+    expect(listed).not.toContain('payroll-cost');
+    expect(listed).toContain('workforce');
+
+    const refused = await request(app.getHttpServer())
+      .get('/reports/payroll-cost')
+      .set('Cookie', auditor.cookie)
+      .expect(403);
+    // The 403 names what is missing rather than pretending the report is absent.
+    expect(refused.body.message).toContain('salary.read');
+    // …and what they ARE entitled to still works.
+    await request(app.getHttpServer())
+      .get('/reports/workforce')
+      .set('Cookie', auditor.cookie)
+      .expect(200);
   });
 });

@@ -21,7 +21,7 @@ import { Link, usePathname } from '@/i18n/navigation';
 // the nav row already marks the page — UX-11 established exactly one
 // `aria-current` per screen, and two would announce "current page" twice.
 
-// Ungated on purpose: a recruiter who deep-links to /gro sees the 403 state, and
+// Ungated on purpose: someone who deep-links to a screen they cannot use sees the 403 state, and
 // the header should still say where they are. The labels are the nav's own keys,
 // so the line and the highlighted nav row always agree.
 // Order matters where one route is a prefix of another: `/me/requests` must be
@@ -51,7 +51,6 @@ const SCREENS: { href: string; key: string }[] = [
   { href: '/portal/company', key: 'portalCompany' },
   { href: '/portal/employees', key: 'portalEmployees' },
   { href: '/portal/documents', key: 'portalDocuments' },
-  { href: '/portal/users', key: 'portalUsers' },
 ];
 
 // A record screen publishes its own name — the header cannot know it, and

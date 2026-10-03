@@ -27,7 +27,7 @@ describe('Configuration API (CONF-01, e2e)', () => {
   let app: INestApplication;
   let owner: PrismaClient;
   let staff: TestPrincipal; // hr_officer — config.read, NOT config.write
-  let admin: TestPrincipal; // system_admin — config.write (enrolled → full session)
+  let admin: TestPrincipal; // administrator — config.write (enrolled → full session)
 
   const http = () => app.getHttpServer();
 
@@ -45,7 +45,7 @@ describe('Configuration API (CONF-01, e2e)', () => {
     });
     await resetStore();
     staff = await loginAsStaff(app, 'hr_officer');
-    admin = await loginAsEnrolledStaff(app, 'system_admin');
+    admin = await loginAsEnrolledStaff(app, 'administrator');
   });
 
   afterAll(async () => {
@@ -91,7 +91,7 @@ describe('Configuration API (CONF-01, e2e)', () => {
       .expect(403);
   });
 
-  it('System Admin sets a system setting; effective value reflects it', async () => {
+  it('an Administrator sets a system setting; effective value reflects it', async () => {
     const res = await request(http())
       .patch('/config/system/calendar.display')
       .set('Cookie', admin.cookie)

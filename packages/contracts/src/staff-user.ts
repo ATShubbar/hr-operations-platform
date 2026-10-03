@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 // Staff users (UX-10b). Consultancy staff accounts — the matrix row
-// "System config & staff users": System Admin CRUD, Company Admin R.
+// "System config & staff users": Administrator CRUD, Auditor R (v1.7).
 //
 // TWO RESPONSE SHAPES ON PURPOSE, and the difference is the whole point of the
 // permission split:
@@ -19,16 +19,13 @@ import { z } from 'zod';
 
 export const staffUserStatusSchema = z.enum(['active', 'disabled']);
 
-// The seven staff roles from the frozen matrix. Client roles are managed
-// through client-user.* and are not addressable here.
+// The four staff roles (ADR-013, architecture.md v1.7). The client role is
+// managed through client-user.* and is not addressable here.
 export const staffUserRoleSchema = z.enum([
-  'system_admin',
-  'company_admin',
-  'recruiter',
+  'administrator',
   'hr_officer',
   'gro_officer',
-  'finance',
-  'read_only',
+  'auditor',
 ]);
 
 export const createStaffUserRequestSchema = z.object({

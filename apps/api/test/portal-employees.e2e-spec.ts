@@ -84,8 +84,8 @@ describe('Client portal — /portal/employees (PORTAL-02, e2e)', () => {
     clientB = cB.id;
     empA = (await seedEmployee(clientA, 'Alice A')).id;
     empB = (await seedEmployee(clientB, 'Bob B')).id;
-    repA = await loginAsClientRep(app, clientA, 'client_admin');
-    repB = await loginAsClientRep(app, clientB, 'client_user');
+    repA = await loginAsClientRep(app, clientA, 'client_manager');
+    repB = await loginAsClientRep(app, clientB, 'client_manager');
     staff = await loginAsStaff(app, 'hr_officer');
   });
 

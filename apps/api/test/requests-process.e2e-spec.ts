@@ -23,8 +23,8 @@ describe('Request processing (REQ-03, e2e)', () => {
   let owner: PrismaClient;
   let http: ReturnType<INestApplication['getHttpServer']>;
   let clientA: string;
-  let admin: TestPrincipal; // enrolled company_admin — request.process
-  let rep: TestPrincipal; // client_admin of A — the creator; no request.process
+  let admin: TestPrincipal; // enrolled administrator — request.process
+  let rep: TestPrincipal; // client manager of A — the creator; no request.process
 
   const createOpenRequest = async (): Promise<string> => {
     const res = await request(http)
@@ -47,8 +47,8 @@ describe('Request processing (REQ-03, e2e)', () => {
       data: { nameAr: 'شركة الطلبات', nameEn: 'REQ-03 Client', status: 'active' },
     });
     clientA = c.id;
-    admin = await loginAsEnrolledStaff(app, 'company_admin');
-    rep = await loginAsClientRep(app, clientA, 'client_admin');
+    admin = await loginAsEnrolledStaff(app, 'administrator');
+    rep = await loginAsClientRep(app, clientA, 'client_manager');
   });
 
   afterAll(async () => {
@@ -110,7 +110,7 @@ describe('Request processing (REQ-03, e2e)', () => {
     const id = await createOpenRequest();
     await request(http)
       .post(`/requests/${id}/process`)
-      .set('Cookie', rep.cookie) // client_admin lacks request.process
+      .set('Cookie', rep.cookie) // a client manager lacks request.process
       .send({ status: 'in_progress' })
       .expect(403);
     await request(http)

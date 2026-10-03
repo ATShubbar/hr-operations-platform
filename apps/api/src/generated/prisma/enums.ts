@@ -27,15 +27,11 @@ export type PrincipalType = (typeof PrincipalType)[keyof typeof PrincipalType]
 
 
 export const Role = {
-  system_admin: 'system_admin',
-  company_admin: 'company_admin',
-  recruiter: 'recruiter',
+  administrator: 'administrator',
   hr_officer: 'hr_officer',
   gro_officer: 'gro_officer',
-  finance: 'finance',
-  read_only: 'read_only',
-  client_admin: 'client_admin',
-  client_user: 'client_user',
+  auditor: 'auditor',
+  client_manager: 'client_manager',
   employee: 'employee'
 } as const
 

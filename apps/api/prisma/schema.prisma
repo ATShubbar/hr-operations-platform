@@ -19,7 +19,9 @@ model AuthUser {
   displayName   String?       @map("display_name")
   passwordHash  String        @map("password_hash")
   principalType PrincipalType @map("principal_type")
-  role          Role          @default(read_only)
+  // No default (ROLE-03, ADR-013): every account is created with an explicit
+  // role — the old default would now be Auditor, i.e. pay visibility.
+  role          Role
   clientId      String?       @map("client_id") @db.Uuid
   // Employee self-service (ADR-011, SS-01): the ONE employee record an
   // `employee` principal is. A bare id, no foreign key — emp_employees belongs
@@ -71,18 +73,15 @@ enum PrincipalType {
   employee
 }
 
-// The nine roles from the frozen architecture's permission matrix.
-// Least-privilege default: read_only.
+// Six built-in roles (ADR-013, architecture.md v1.7). The database ties each to
+// its principal type (auth_users_role_principal_chk): the four staff roles,
+// client_manager for client reps, employee for employees.
 enum Role {
-  system_admin
-  company_admin
-  recruiter
+  administrator
   hr_officer
   gro_officer
-  finance
-  read_only
-  client_admin
-  client_user
+  auditor
+  client_manager
   employee
 }
 

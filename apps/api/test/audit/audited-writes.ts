@@ -25,9 +25,6 @@ export const AUDITED_WRITES: Record<string, string> = {
   'POST /staff-users': 'staff-user.create',
   'PATCH /staff-users/:id': 'staff-user.update',
   'DELETE /staff-users/:id': 'staff-user.delete',
-  'POST /client-users': 'client-user.create',
-  'PATCH /client-users/:id': 'client-user.update',
-  'DELETE /client-users/:id': 'client-user.delete',
   // ROLE-02: the staff path records the same resource/actions as the client path.
   'POST /clients/:clientId/users': 'client-user.create',
   'PATCH /clients/:clientId/users/:id': 'client-user.update',

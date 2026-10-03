@@ -34,24 +34,17 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-// Staff directory (UX-10b). The management view — System Admin CRUD, Company
-// Admin read-only, per the matrix row "System config & staff users".
+// Staff directory (UX-10b). The management view — Administrator CRUD, Auditor
+// read-only, per the matrix row "System config & staff users" (v1.7).
 //
 // The narrow `/staff-users/directory` endpoint is what Tasks and Audit use to
 // turn an id into a name; this screen is the other half, and it is gated on
-// `staff-user.read` so a Company Admin sees the roster while an HR Officer does
-// not. Write controls are gated separately, so the read-only admin gets a
-// directory rather than a set of buttons that 403.
+// `staff-user.read` so the Auditor sees the roster while an HR officer does
+// not. Write controls are gated separately, so the Auditor gets a directory
+// rather than a set of buttons that 403.
 
-const ROLES: readonly StaffUserRole[] = [
-  'system_admin',
-  'company_admin',
-  'recruiter',
-  'hr_officer',
-  'gro_officer',
-  'finance',
-  'read_only',
-];
+// The four staff roles (ADR-013), in the prototype's order.
+const ROLES: readonly StaffUserRole[] = ['administrator', 'hr_officer', 'gro_officer', 'auditor'];
 const STATUSES: readonly StaffUserStatus[] = ['active', 'disabled'];
 
 interface CreateForm {
@@ -314,7 +307,9 @@ export default function StaffUsersPage() {
               <Label>{t('colRole')}</Label>
               <Select
                 value={form.role}
-                onValueChange={(v) => setForm({ ...form, role: (v as StaffUserRole) ?? 'hr_officer' })}
+                onValueChange={(v) =>
+                  setForm({ ...form, role: (v as StaffUserRole) ?? 'hr_officer' })
+                }
               >
                 <SelectTrigger className="w-full">
                   <SelectValue>{(v) => (v ? t(`role.${String(v)}`) : '')}</SelectValue>

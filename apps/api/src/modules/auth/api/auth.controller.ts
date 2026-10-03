@@ -47,7 +47,9 @@ const DUMMY_HASH =
 const INVALID_CREDENTIALS = 'Invalid credentials';
 
 // Architecture rule (ADR-002): MFA is REQUIRED for admin roles.
-const MFA_REQUIRED_ROLES = new Set(['system_admin', 'company_admin']);
+// ADR-013: the Auditor reads every salary and the full audit log — as
+// sensitive a seat as the Administrator's.
+const MFA_REQUIRED_ROLES = new Set(['administrator', 'auditor']);
 
 @Controller('auth')
 export class AuthController {

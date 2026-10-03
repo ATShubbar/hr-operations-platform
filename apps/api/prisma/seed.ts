@@ -5,7 +5,7 @@ import {
   CLIENT_ROLES,
   PasswordService,
   STAFF_ROLES,
-  type ClientRole,
+  type StaffRole,
 } from '../src/modules/auth/public-api';
 
 // Development seed (WS-19, extended for AUTH-07). Deterministic and
@@ -70,62 +70,59 @@ export const SEED_USER_DOMAIN = 'seed.hr.local';
 // (below), so these credentials never exist outside development.
 const SEED_PASSWORD = 'Seed-dev-password-1';
 
-// One client-rep per seeded client, chosen to cover BOTH client roles across
-// the two clients (client A → admin, client B → user).
-const CLIENT_REP_ASSIGNMENTS: ReadonlyArray<{ clientId: string; role: ClientRole }> = [
-  { clientId: SEED_CLIENT_A, role: 'client_admin' },
-  { clientId: SEED_CLIENT_B, role: 'client_user' },
+// One client manager per seeded client (ADR-013: one client role).
+const CLIENT_REP_ASSIGNMENTS: ReadonlyArray<{ clientId: string; name: string }> = [
+  { clientId: SEED_CLIENT_A, name: 'Abdulaziz Al-Ghamdi' },
+  { clientId: SEED_CLIENT_B, name: 'Reem Al-Mutairi' },
 ];
 
 const clientLetter = (clientId: string): string =>
   clientId === SEED_CLIENT_A ? 'a' : 'b';
 
-// Real names for the seeded staff (UX-10b). Without them the directory is a list
-// of email addresses, Tasks still shows an id where a person belongs, and
-// "Today" still has nothing to greet anyone with.
-const STAFF_NAMES: Record<string, string> = {
-  system_admin: 'Layla Al-Rashid',
-  company_admin: 'Faisal Al-Otaibi',
-  recruiter: 'Huda Al-Qahtani',
-  hr_officer: 'Omar Al-Shehri',
-  gro_officer: 'Turki Al-Harbi',
-  finance: 'Maha Al-Dossary',
-  read_only: 'Sami Al-Zahrani',
-};
+// The seeded staff (UX-10b names), one account per person. ROLE-03 (ADR-013)
+// kept every person and gave them their new role — exactly what the migration
+// did to existing accounts — so tasks and calendar events stay spread across
+// five owners. The first account of each role keeps the `staff-<role>@` address
+// sign-in instructions rely on; further holders of a role are numbered.
+const STAFF_ACCOUNTS: ReadonlyArray<{ email: string; role: StaffRole; name: string }> = [
+  { email: 'staff-administrator', role: 'administrator', name: 'Faisal Al-Otaibi' },
+  { email: 'staff-administrator-2', role: 'administrator', name: 'Layla Al-Rashid' },
+  { email: 'staff-hr_officer', role: 'hr_officer', name: 'Omar Al-Shehri' },
+  // Formerly the Recruiter and Finance seats (ADR-013: both → HR officer).
+  { email: 'staff-hr_officer-2', role: 'hr_officer', name: 'Huda Al-Qahtani' },
+  { email: 'staff-hr_officer-3', role: 'hr_officer', name: 'Maha Al-Dossary' },
+  { email: 'staff-gro_officer', role: 'gro_officer', name: 'Turki Al-Harbi' },
+  { email: 'staff-auditor', role: 'auditor', name: 'Sami Al-Zahrani' },
+];
 
 // The employee record the seed's employee account is bound to (SS-01).
 const SEED_EMPLOYEE_USER_RECORD = 'e0000001-0000-4000-8000-000000000002';
 
-const CLIENT_REP_NAMES: Record<string, string> = {
-  client_admin: 'Abdulaziz Al-Ghamdi',
-  client_user: 'Reem Al-Mutairi',
-};
-
 async function seedUsers(prisma: PrismaClient): Promise<number> {
   const passwords = new PasswordService();
 
-  // One staff user per role (all seven staff roles) + one client-rep per
-  // seeded client. Admin roles (system_admin/company_admin) are seeded WITHOUT
-  // an mfa_secret — they log in to an enroll-required session until they
-  // enroll, exactly as AUTH-06 requires; the seed never fakes enrollment.
+  // Every staff account + one client manager per seeded client. The
+  // MFA-required roles (Administrator, Auditor — ADR-013) are seeded WITHOUT an
+  // mfa_secret: they sign in to an enroll-required session until they enroll,
+  // exactly as AUTH-06 requires; the seed never fakes enrollment.
   const staffUsers: Prisma.AuthUserCreateManyInput[] = await Promise.all(
-    STAFF_ROLES.map(async (role) => ({
-      email: `staff-${role}@${SEED_USER_DOMAIN}`,
+    STAFF_ACCOUNTS.map(async ({ email, role, name }) => ({
+      email: `${email}@${SEED_USER_DOMAIN}`,
       passwordHash: await passwords.hash(SEED_PASSWORD),
       principalType: 'staff' as const,
       role,
-      displayName: STAFF_NAMES[role] ?? null,
+      displayName: name,
     })),
   );
 
   const clientRepUsers: Prisma.AuthUserCreateManyInput[] = await Promise.all(
-    CLIENT_REP_ASSIGNMENTS.map(async ({ clientId, role }) => ({
-      email: `${role}-${clientLetter(clientId)}@${SEED_USER_DOMAIN}`,
+    CLIENT_REP_ASSIGNMENTS.map(async ({ clientId, name }) => ({
+      email: `client_manager-${clientLetter(clientId)}@${SEED_USER_DOMAIN}`,
       passwordHash: await passwords.hash(SEED_PASSWORD),
       principalType: 'client_rep' as const,
-      role,
+      role: 'client_manager' as const,
       clientId,
-      displayName: CLIENT_REP_NAMES[role] ?? null,
+      displayName: name,
     })),
   );
 
@@ -375,10 +372,10 @@ async function seedRequests(prisma: PrismaClient): Promise<number> {
   // reps. Due dates are relative, and SOME ARE IN THE PAST — an ops console with
   // nothing overdue cannot show what it is for.
   const repA = await prisma.authUser.findUnique({
-    where: { email: `client_admin-a@${SEED_USER_DOMAIN}` },
+    where: { email: `client_manager-a@${SEED_USER_DOMAIN}` },
   });
   const repB = await prisma.authUser.findUnique({
-    where: { email: `client_user-b@${SEED_USER_DOMAIN}` },
+    where: { email: `client_manager-b@${SEED_USER_DOMAIN}` },
   });
   if (!repA || !repB) return 0; // reps not seeded → skip
 
@@ -408,16 +405,16 @@ async function seedTasks(prisma: PrismaClient): Promise<number> {
     (await prisma.authUser.findUnique({ where: { email: `${email}@${SEED_USER_DOMAIN}` } }))?.id ?? null;
   const gro = await byEmail('staff-gro_officer');
   const hr = await byEmail('staff-hr_officer');
-  const recruiter = await byEmail('staff-recruiter');
-  const finance = await byEmail('staff-finance');
+  const hiringLead = await byEmail('staff-hr_officer-2');
+  const payrollLead = await byEmail('staff-hr_officer-3');
 
   const tasks = [
     { id: 'b0000001-0000-4000-8000-000000000001', clientId: SEED_CLIENT_A, requestId: 'a0000001-0000-4000-8000-000000000002', title: 'Prepare iqama renewal paperwork — Ahmed Hassan', status: 'in_progress' as const, priority: 'high' as const, dueDate: daysFromNow(2), assigneeUserId: gro },
     { id: 'b0000001-0000-4000-8000-000000000002', clientId: SEED_CLIENT_A, title: 'Quarterly GOSI reconciliation', status: 'open' as const, priority: 'normal' as const, dueDate: daysFromNow(-2), assigneeUserId: gro },
     { id: 'b0000001-0000-4000-8000-000000000003', clientId: SEED_CLIENT_A, title: 'Collect signed contract — Noura Alsubaie', status: 'done' as const, priority: 'normal' as const, dueDate: daysFromNow(-9), assigneeUserId: hr },
     { id: 'b0000001-0000-4000-8000-000000000004', clientId: SEED_CLIENT_A, title: 'Chase expired iqama — Syed Ali', status: 'open' as const, priority: 'high' as const, dueDate: daysFromNow(-5), assigneeUserId: hr },
-    { id: 'b0000001-0000-4000-8000-000000000005', clientId: SEED_CLIENT_A, title: 'Schedule interviews — Senior Accountant', status: 'in_progress' as const, priority: 'normal' as const, dueDate: daysFromNow(4), assigneeUserId: recruiter },
-    { id: 'b0000002-0000-4000-8000-000000000001', clientId: SEED_CLIENT_B, title: 'WPS file upload — August', status: 'open' as const, priority: 'high' as const, dueDate: daysFromNow(1), assigneeUserId: finance },
+    { id: 'b0000001-0000-4000-8000-000000000005', clientId: SEED_CLIENT_A, title: 'Schedule interviews — Senior Accountant', status: 'in_progress' as const, priority: 'normal' as const, dueDate: daysFromNow(4), assigneeUserId: hiringLead },
+    { id: 'b0000002-0000-4000-8000-000000000001', clientId: SEED_CLIENT_B, title: 'WPS file upload — August', status: 'open' as const, priority: 'high' as const, dueDate: daysFromNow(1), assigneeUserId: payrollLead },
     { id: 'b0000002-0000-4000-8000-000000000002', clientId: SEED_CLIENT_B, title: 'Safety induction records — new joiners', status: 'open' as const, priority: 'low' as const, dueDate: daysFromNow(21), assigneeUserId: null },
     { id: 'b0000003-0000-4000-8000-000000000001', clientId: SEED_CLIENT_C, title: 'Fleet insurance renewal quotes', status: 'open' as const, priority: 'normal' as const, dueDate: daysFromNow(11), assigneeUserId: null },
     { id: 'b0000004-0000-4000-8000-000000000001', clientId: SEED_CLIENT_D, title: 'Nursing licence verification — Sarah Alnuaimi', status: 'in_progress' as const, priority: 'high' as const, dueDate: daysFromNow(7), assigneeUserId: hr },
@@ -432,10 +429,10 @@ async function seedTasks(prisma: PrismaClient): Promise<number> {
 async function seedVacancies(prisma: PrismaClient): Promise<number> {
   // Open positions (REC-01), across EVERY status so the workflow control has
   // legal moves to offer and the pipeline board has more than one lane in play.
-  const recruiter = await prisma.authUser.findUnique({
-    where: { email: `staff-recruiter@${SEED_USER_DOMAIN}` },
+  const hiringLead = await prisma.authUser.findUnique({
+    where: { email: `staff-hr_officer-2@${SEED_USER_DOMAIN}` },
   });
-  const by = recruiter?.id ?? null;
+  const by = hiringLead?.id ?? null;
   const vacancies = [
     { id: 'c0000001-0000-4000-8000-000000000001', clientId: SEED_CLIENT_A, titleAr: 'محاسب أول', titleEn: 'Senior Accountant', description: 'Finance department hire for the Riyadh office.', department: 'Finance', headcount: 1, status: 'open' as const, openedByUserId: by },
     { id: 'c0000001-0000-4000-8000-000000000002', clientId: SEED_CLIENT_A, titleAr: 'مشرف موقع', titleEn: 'Site Supervisor', department: 'Operations', headcount: 2, status: 'draft' as const, openedByUserId: by },
@@ -524,16 +521,16 @@ async function seedCalendarEvents(prisma: PrismaClient): Promise<number> {
   // "Today" have something of their own alongside the borrowed deadlines.
   const byEmail = async (email: string) =>
     (await prisma.authUser.findUnique({ where: { email: `${email}@${SEED_USER_DOMAIN}` } }))?.id ?? null;
-  const recruiter = await byEmail('staff-recruiter');
+  const hiringLead = await byEmail('staff-hr_officer-2');
   const gro = await byEmail('staff-gro_officer');
   const hr = await byEmail('staff-hr_officer');
-  if (!recruiter || !gro || !hr) return 0;
+  if (!hiringLead || !gro || !hr) return 0;
   const events = [
-    { id: 'f0000001-0000-4000-8000-000000000001', ownerUserId: recruiter, clientId: SEED_CLIENT_A, title: 'Interview — Salem Alqahtani — Senior Accountant', location: 'Riyadh office — Room 2', startAt: daysFromNowAt(1, 9), endAt: daysFromNowAt(1, 10), allDay: false },
+    { id: 'f0000001-0000-4000-8000-000000000001', ownerUserId: hiringLead, clientId: SEED_CLIENT_A, title: 'Interview — Salem Alqahtani — Senior Accountant', location: 'Riyadh office — Room 2', startAt: daysFromNowAt(1, 9), endAt: daysFromNowAt(1, 10), allDay: false },
     { id: 'f0000001-0000-4000-8000-000000000002', ownerUserId: gro, clientId: SEED_CLIENT_A, title: 'Muqeem visit — iqama renewals batch', location: 'Muqeem service center', startAt: daysFromNowAt(0, 7, 30), endAt: daysFromNowAt(0, 9, 30), allDay: false },
     { id: 'f0000001-0000-4000-8000-000000000003', ownerUserId: gro, clientId: SEED_CLIENT_B, title: 'Qiwa appointment — sponsorship transfer', location: 'Qiwa service center', startAt: daysFromNowAt(2, 8), endAt: daysFromNowAt(2, 9), allDay: false },
     { id: 'f0000001-0000-4000-8000-000000000004', ownerUserId: hr, clientId: SEED_CLIENT_D, title: 'Client review — Gulf Medical Group', location: 'Client premises', startAt: daysFromNowAt(3, 11), endAt: daysFromNowAt(3, 12, 30), allDay: false },
-    { id: 'f0000001-0000-4000-8000-000000000005', ownerUserId: recruiter, clientId: SEED_CLIENT_C, title: 'Interview — Imran Khan — Truck Driver', location: 'Video call', startAt: daysFromNowAt(4, 13), endAt: daysFromNowAt(4, 14), allDay: false },
+    { id: 'f0000001-0000-4000-8000-000000000005', ownerUserId: hiringLead, clientId: SEED_CLIENT_C, title: 'Interview — Imran Khan — Truck Driver', location: 'Video call', startAt: daysFromNowAt(4, 13), endAt: daysFromNowAt(4, 14), allDay: false },
     { id: 'f0000001-0000-4000-8000-000000000006', ownerUserId: hr, title: 'Team weekly', location: 'Riyadh office — Room 1', startAt: daysFromNowAt(6, 6), endAt: daysFromNowAt(6, 7), allDay: false },
   ];
   for (const { id, ...rest } of events) {
@@ -621,13 +618,13 @@ async function main(): Promise<void> {
     const rowCount = await prisma.coreScopeCheck.count({
       where: { note: { startsWith: 'seed:' } },
     });
-    const roleCount = STAFF_ROLES.length + CLIENT_REP_ASSIGNMENTS.length;
+    const rolesCovered = new Set(STAFF_ACCOUNTS.map((a) => a.role)).size + 1 + 1; // + client_manager + employee
     process.stdout.write(
       `Seed complete: ${clientCount} client companies; ${employeeCount} employees; ${documentCount} documents; ${requestCount} requests; ${taskCount} tasks; ${vacancyCount} vacancies; ${candidateCount} candidates; ${groCount} GRO processes; ${calendarCount} calendar events; ${rowCount} scope-check rows ` +
         `${notificationCount} notifications (purged ${purgedNotifications} orphans); ` +
         `across clients A (${SEED_CLIENT_A}) and B (${SEED_CLIENT_B}); ${userCount} auth users ` +
-        `(${STAFF_ROLES.length} staff roles + ${CLIENT_REP_ASSIGNMENTS.length} client reps + 1 employee, ` +
-        `${roleCount + 1}/${STAFF_ROLES.length + CLIENT_ROLES.length + 1} distinct roles covered).\n`,
+        `(${STAFF_ACCOUNTS.length} staff + ${CLIENT_REP_ASSIGNMENTS.length} client managers + 1 employee, ` +
+        `${rolesCovered}/${STAFF_ROLES.length + CLIENT_ROLES.length + 1} roles covered).\n`,
     );
   } finally {
     await prisma.$disconnect();

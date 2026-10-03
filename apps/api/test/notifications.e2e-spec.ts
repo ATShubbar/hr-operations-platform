@@ -6,7 +6,9 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AppModule } from '../src/app.module';
 import { PrismaClient } from '../src/generated/prisma/client';
 import { NotificationsService } from '../src/modules/notifications/public-api';
-import { cleanupHelperUsers, loginAsStaff, type TestPrincipal } from './helpers/login';
+import { cleanupHelperUsers, loginAsStaff, type TestPrincipal,
+  loginAsEnrolledStaff,
+} from './helpers/login';
 
 // NOTIF-02: in-app notifications. notify() (the producer entry point) writes a
 // per-user record; the read/mark-read API is self-service — a user only ever
@@ -55,7 +57,7 @@ describe('In-app notifications (NOTIF-02, e2e)', () => {
     });
     service = app.get(NotificationsService);
     alice = await loginAsStaff(app, 'hr_officer');
-    bob = await loginAsStaff(app, 'read_only');
+    bob = await loginAsEnrolledStaff(app, 'auditor');
   });
 
   afterAll(async () => {

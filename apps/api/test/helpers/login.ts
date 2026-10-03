@@ -23,7 +23,7 @@ export interface TestPrincipal {
   email: string;
 }
 
-// Default is hr_officer: admin roles (system_admin/company_admin) require
+// Default is hr_officer: the MFA-required roles (administrator, auditor — ADR-013) require
 // MFA enrollment (AUTH-06) and get limited sessions until enrolled — use an
 // explicit admin role only when testing that flow.
 export async function loginAsStaff(
@@ -36,7 +36,7 @@ export async function loginAsStaff(
 export async function loginAsClientRep(
   app: INestApplication,
   clientId: string,
-  role: ClientRole = 'client_admin',
+  role: ClientRole = 'client_manager',
 ): Promise<TestPrincipal> {
   return createAndLogin(app, clientId, role);
 }
@@ -96,7 +96,7 @@ async function createAndLogin(
 
 // Full-session admin principal: logs in (limited enroll_required session),
 // enrolls MFA with a real TOTP code, and returns the upgraded FULL session.
-// Use for admin roles (system_admin/company_admin) that cannot reach a full
+// Use for the MFA-required roles (administrator, auditor) that cannot reach a full
 // session without MFA enrollment (AUTH-06).
 export async function loginAsEnrolledStaff(
   app: INestApplication,

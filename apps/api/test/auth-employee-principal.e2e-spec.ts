@@ -47,7 +47,7 @@ describe('Employee principal (SS-01, e2e)', () => {
     it('accepts each well-formed principal', async () => {
       await expect(create({ principalType: 'staff', role: 'hr_officer' })).resolves.toBeTruthy();
       await expect(
-        create({ principalType: 'client_rep', role: 'client_user', clientId: CLIENT_A }),
+        create({ principalType: 'client_rep', role: 'client_manager', clientId: CLIENT_A }),
       ).resolves.toBeTruthy();
       await expect(
         create({ principalType: 'employee', role: 'employee', employeeId: randomUUID() }),
@@ -73,12 +73,12 @@ describe('Employee principal (SS-01, e2e)', () => {
         'staff carrying a company',
         { principalType: 'staff', role: 'hr_officer', clientId: CLIENT_A },
       ],
-      ['a client rep with no company', { principalType: 'client_rep', role: 'client_user' }],
+      ['a client rep with no company', { principalType: 'client_rep', role: 'client_manager' }],
       [
         'a client rep bound to an employee record',
         {
           principalType: 'client_rep',
-          role: 'client_user',
+          role: 'client_manager',
           clientId: CLIENT_A,
           employeeId: randomUUID(),
         },
@@ -97,8 +97,14 @@ describe('Employee principal (SS-01, e2e)', () => {
         'a client rep holding the employee role',
         { principalType: 'client_rep', role: 'employee', clientId: CLIENT_A },
       ],
+      // ROLE-03 (ADR-013): the check now ties EVERY principal type to its roles.
+      ['staff holding the client role', { principalType: 'staff', role: 'client_manager' }],
+      [
+        'a client rep holding a staff role',
+        { principalType: 'client_rep', role: 'administrator', clientId: CLIENT_A },
+      ],
     ])('refuses %s (role check)', async (_label, over) => {
-      await expect(create(over)).rejects.toThrow(/auth_users_employee_role_chk/);
+      await expect(create(over)).rejects.toThrow(/auth_users_role_principal_chk/);
     });
 
     it('refuses a second account for the same employee record', async () => {

@@ -24,7 +24,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 // Staff client-company management (CLIENT-02). Cross-client by design: staff
 // manage every client. Per the matrix, `client.read` is held by all staff;
-// create/update/delete by System/Company Admin only — enforced by the
+// create/update/delete by the Administrator only — enforced by the
 // deny-by-default guard, so no role checks here. Client-rep "read own"
 // (scoped) is a separate concern (CLIENT-03).
 @Controller('clients')

@@ -52,7 +52,7 @@ describe('Audit read API — admin-only (AUDIT-04, e2e)', () => {
         { resource: RESOURCE, action: 'delete', actorId: ACTOR_Y, clientId: CLIENT_B },
       ],
     });
-    sysAdmin = await loginAsEnrolledStaff(app, 'system_admin');
+    sysAdmin = await loginAsEnrolledStaff(app, 'administrator');
   });
 
   afterAll(async () => {
@@ -69,14 +69,15 @@ describe('Audit read API — admin-only (AUDIT-04, e2e)', () => {
 
   // ---- Authorization matrix ----
 
-  it('System Admin → 200 with entries', async () => {
+  it('Administrator → 200 with entries', async () => {
     const res = await get(sysAdmin.cookie).expect(200);
     expect((res.body.entries as AuditRow[]).length).toBe(4);
   });
 
-  it('Company Admin → 200', async () => {
-    const admin = await loginAsEnrolledStaff(app, 'company_admin');
-    await get(admin.cookie).expect(200);
+  // v1.7: the Auditor reads the audit log too (ADR-013).
+  it('Auditor → 200', async () => {
+    const auditor = await loginAsEnrolledStaff(app, 'auditor');
+    await get(auditor.cookie).expect(200);
   });
 
   it('non-admin staff (hr_officer) → 403 (lacks audit.read)', async () => {
@@ -86,7 +87,7 @@ describe('Audit read API — admin-only (AUDIT-04, e2e)', () => {
   });
 
   it('client rep → 403', async () => {
-    const rep = await loginAsClientRep(app, CLIENT_A, 'client_admin');
+    const rep = await loginAsClientRep(app, CLIENT_A, 'client_manager');
     await get(rep.cookie).expect(403);
   });
 

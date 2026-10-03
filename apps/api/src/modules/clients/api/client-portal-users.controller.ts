@@ -20,24 +20,21 @@ import {
 import { RequirePermission } from '../../../auth/permissions.decorator';
 import { scopeOf } from '../../../auth/scope';
 import { requestContext } from '../../../context/request-context';
+import type { AuthUserModel as AuthUser } from '../../../generated/prisma/models';
 import { ClientsService } from '../application/clients.service';
 import { ClientUsersService } from '../application/client-users.service';
-import { toClientUserResponse } from './client-users.controller';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-// Client portal users, managed BY STAFF (ROLE-02, ADR-013). The client-rep
-// path (`/client-users`, CLIENT-03) takes the company from the caller's session;
-// this one takes it from the PATH, because an Administrator works across every
-// client. The two share `ClientUsersService`, so the rules (unique email, audit
-// in the same transaction, sessions ended on disable/role change, soft delete)
-// cannot drift between them.
+// Client portal users, managed BY STAFF (ROLE-02, ADR-013) — the only path
+// since ROLE-03 retired the client-rep one (`/client-users`, CLIENT-03), whose
+// company came from the caller's session. Here it comes from the PATH, because
+// an Administrator works across every client.
 //
-// STAFF ONLY. Client reps hold the same `client-user.*` permissions today, so
-// the permission guard alone would let a Client Admin address ANOTHER company
-// by changing the path — `scopeOf` refuses every non-staff principal first.
-// ADR-013 moves the capability to Administrators alone (ROLE-03); this card adds
-// the staff path before that, so nobody is ever without it.
+// STAFF ONLY, checked before anything else. No client role holds
+// `client-user.*` any more, so the guard alone already refuses client reps —
+// `scopeOf` stays as the second wall: a future grant to a client role must not
+// silently let one address ANOTHER company by changing the path.
 @Controller('clients/:clientId/users')
 export class ClientPortalUsersController {
   constructor(
@@ -123,4 +120,16 @@ export class ClientPortalUsersController {
 
 function assertUserId(id: string): void {
   if (!UUID_RE.test(id)) throw new NotFoundException('Client user not found');
+}
+
+// One response shape (CLIENT-03's, unchanged).
+function toClientUserResponse(user: AuthUser): ClientUserResponse {
+  return {
+    id: user.id,
+    email: user.email,
+    role: user.role as ClientUserResponse['role'],
+    status: user.status as ClientUserResponse['status'],
+    createdAt: user.createdAt.toISOString(),
+    updatedAt: user.updatedAt.toISOString(),
+  };
 }

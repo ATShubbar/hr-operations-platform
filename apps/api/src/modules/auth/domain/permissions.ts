@@ -8,23 +8,24 @@
 // - Roles come from the architecture's permission matrix; granting happens
 //   HERE, in data — never as role conditionals in handlers.
 
+// WHO holds each permission is ROLE_PERMISSIONS below (the v1.7 matrix, ADR-013);
+// the comments in this list say what each permission MEANS and where it came from.
 export const PERMISSIONS = [
   // Walking-skeleton exemplar capabilities. Real module permissions are
   // added here in the same commit as their endpoints.
   'example.read',
   'scope-check.read',
   'scope-check.create',
-  // Audit log read — admins only (permission matrix: System/Company Admin).
+  // Audit log read.
   'audit.read',
-  // Client companies (permission matrix): all staff read; admins create/update/
-  // archive. Client-rep "read own" (scoped) is granted when its endpoint lands.
+  // Client companies: staff read the registry; writes create/update/archive.
+  // A client rep's own company is read through the portal (portal.read).
   'client.read',
   'client.create',
   'client.update',
   'client.delete',
-  // Staff users (permission matrix row "System config & staff users", UX-10b).
-  // Management is System Admin CRUD / Company Admin R — the row says "–" for
-  // every other role.
+  // Staff users — ADMINISTERING accounts (matrix row "System config & staff
+  // users", UX-10b).
   'staff-user.read',
   'staff-user.create',
   'staff-user.update',
@@ -39,8 +40,8 @@ export const PERMISSIONS = [
   // no status, no MFA state. Owner-approved as a catalog addition, not a matrix
   // change (UX-10b, option 2).
   'staff-user.directory',
-  // Client portal users (permission matrix): Client Admin manages its own
-  // client's users (CRUD own). Client User has none of these.
+  // Client portal users (CLIENT-03; ROLE-02/03): managing a client's portal
+  // accounts over the staff path /clients/:clientId/users. Staff-only.
   'client-user.read',
   'client-user.create',
   'client-user.update',
@@ -57,15 +58,15 @@ export const PERMISSIONS = [
   'govdata.read',
   'govdata.update',
   // Documents (DOC-02/03; permission matrix): all staff read; CRUD roles upload
-  // and delete (category scope — recruiter → recruitment, GRO → gov, admin/HR →
-  // all — is a finer in-handler check on upload + delete).
+  // and delete (category scope — GRO → government categories, Administrator/HR
+  // officer → all — is a finer in-handler check on upload + delete).
   'document.read',
   'document.upload',
   'document.delete',
   // Configuration (CONF-01/02; permission matrix): all staff read effective
-  // settings + catalog; only System Admin writes the SYSTEM level (deployment-
-  // wide defaults); Company Admin writes PER-CLIENT overrides (never the client
-  // themselves). Per-user write lands with CONF-03.
+  // settings + catalog; `config.write` is the SYSTEM level (deployment-wide
+  // defaults), `config.write-client` the PER-CLIENT overrides (never written by
+  // the client themselves).
   'config.read',
   'config.write',
   'config.write-client',
@@ -78,57 +79,50 @@ export const PERMISSIONS = [
   // toggling which categories email is sent for — is notification-pref.update.
   'notification.read',
   'notification-pref.update',
-  // Document-expiry engine (EXP-02): admins may trigger the system-wide scan on
+  // Document-expiry engine (EXP-02): triggering the system-wide scan on
   // demand (POST /expiry/scan). The automatic daily run is scheduled, not a
   // permissioned route.
   'expiry.run',
-  // Requests (REQ-02; permission matrix): all staff + both client roles READ;
-  // Company Admin + client reps CREATE; Company Admin + Client Admin UPDATE
-  // (Client User is create+read only). Advancing status is request.process (REQ-03).
+  // Requests (REQ-02): read, raise, edit. Client managers read + raise their own
+  // company's. Advancing status is request.process (REQ-03).
   'request.read',
   'request.create',
   'request.update',
-  // Advancing a request through its status workflow (REQ-03): Company Admin + HR
-  // Officer + GRO Officer (matrix — the RU-process roles). Staff-only.
+  // Advancing a request through its status workflow (REQ-03). Staff-only.
   'request.process',
   // Tasks (TASK-02; permission matrix): internal work items, staff-only. Most
   // staff read/create/update tasks restricted to OWN/ASSIGNED; `task.read-all`
-  // lifts that to all-tasks (Admins + Read Only). Company Admin also deletes.
+  // lifts that to all tasks.
   'task.read',
   'task.read-all',
   'task.create',
   'task.update',
   'task.delete',
-  // Recruitment vacancies (REC-02; permission matrix). NOT granted to every staff
-  // role — GRO Officer + Finance are excluded from recruitment. Recruiter has full
-  // CRUD; Company Admin reads/updates/approves; System Admin/HR Officer/Read Only
-  // read; both client roles read their OWN vacancies (portal-style). `vacancy.approve`
-  // advances the status workflow (draft → open → filled/closed).
+  // Recruitment vacancies (REC-02). Granted per role, not via STAFF_BASE; client
+  // managers read their OWN company's vacancies. `vacancy.approve` advances the
+  // status workflow (draft → open → filled/closed).
   'vacancy.read',
   'vacancy.create',
   'vacancy.update',
   'vacancy.approve',
   'vacancy.delete',
   // Recruitment candidates (REC-04; permission matrix — same row as vacancies but
-  // STAFF-INTERNAL: clients never see candidates). Recruiter has full CRUD +
-  // pipeline control; Company Admin reads/updates/advances; System Admin/HR Officer/
-  // Read Only read; GRO/Finance excluded. `candidate.advance` walks the stage workflow.
+  // STAFF-INTERNAL: clients never see candidates, REC-03). `candidate.advance`
+  // walks the stage workflow.
   'candidate.read',
   'candidate.create',
   'candidate.update',
   'candidate.advance',
   'candidate.delete',
   // GRO government processes (GRO-02; permission matrix — the frozen catalog names
-  // exactly these two). `gro.read` — all staff except Recruiter/Finance read, plus
-  // both client roles read their OWN (status only); `gro.process` — GRO Officer +
-  // Company Admin create/update/advance. No delete verb (cancel via status).
+  // exactly these two). `gro.read` — client managers read their OWN as status
+  // only; `gro.process` — create/update/advance. No delete verb (cancel via status).
   'gro.read',
   'gro.process',
   // Calendar (CAL-02; permission matrix). STAFF-ONLY. All staff read (own events by
-  // default); `calendar.read-all` lifts read/update/delete to ALL events (System
-  // Admin, Company Admin, Read Only). Company Admin + Recruiter/HR/GRO/Finance create
-  // + update their own; only Company Admin deletes (matrix: Company Admin is CRUD,
-  // the CRU roles have no delete).
+  // default); `calendar.read-all` lifts read/update/delete to ALL events — so a
+  // role cannot be "write own, read all" (ROLE-03 found this; the v1.7 matrix
+  // follows the prototype's RWCD for HR/GRO).
   'calendar.read',
   'calendar.read-all',
   'calendar.create',
@@ -136,18 +130,17 @@ export const PERMISSIONS = [
   'calendar.delete',
   // Google Calendar integration (GCAL-02; ADR-009). One coarse permission gates the
   // outbound invitation surface (create/update/cancel/read) — the staff who schedule
-  // interviews and meetings hold it (Company Admin + Recruiter + HR/GRO Officers).
+  // interviews, meetings and government appointments hold it.
   'integration.google-calendar',
-  // Reporting (REP-02; permission matrix — every staff role reads reports). This
-  // is the COARSE gate on /reports; WHICH reports a caller sees is a second,
-  // finer check against each report's declared requiredPermissions (the report
-  // catalog), so `report.read` alone never exposes salary or GRO figures.
-  // Client Admin's "own summary" (matrix) is a portal surface, not this route.
+  // Reporting (REP-02). The COARSE gate on /reports; WHICH reports a caller sees
+  // is a second, finer check against each report's declared requiredPermissions
+  // (the report catalog), so `report.read` alone never exposes salary or GRO
+  // figures. Administrator + Auditor since v1.7 (ADR-013).
   'report.read',
   // Exporting a report (REP-03) is a DISTINCT capability from reading it: a bulk
   // extraction is the point where data leaves the platform's authorization
-  // boundary, and it is audited. Granted to every staff role that reads reports
-  // EXCEPT Read Only, whose whole identity is passive access.
+  // boundary, and it is audited. Administrator only — the Auditor reads, and
+  // reading is not bulk extraction.
   'report.export',
   // Client Portal (PORTAL-01): client-only self-service access. Gates /portal/*.
   'portal.read',
@@ -164,7 +157,7 @@ export const PERMISSIONS = [
   'self-service.create',
   // SS-06a: staff management of employee self-service ACCOUNTS (ADR-011): invite
   // (or re-invite) an employee, read the account's state, deactivate/reactivate.
-  // Company Admin + HR Officer only. `invite` is a verb outside the base set —
+  // `invite` is a verb outside the base set —
   // named in ADR-011 and approved with it, because "create" would misdescribe an
   // account that cannot be used until its holder accepts.
   'employee-user.read',
@@ -176,21 +169,14 @@ export const PERMISSIONS = [
 
 export type Permission = (typeof PERMISSIONS)[number];
 
-export const STAFF_ROLES = [
-  'system_admin',
-  'company_admin',
-  'recruiter',
-  'hr_officer',
-  'gro_officer',
-  'finance',
-  'read_only',
-] as const;
+// Six built-in roles (ADR-013, architecture.md v1.7) — four staff, one client,
+// one employee. The database ties each to its principal type
+// (auth_users_role_principal_chk), so these lists and the column cannot drift.
+export const STAFF_ROLES = ['administrator', 'hr_officer', 'gro_officer', 'auditor'] as const;
 
-export const CLIENT_ROLES = ['client_admin', 'client_user'] as const;
+export const CLIENT_ROLES = ['client_manager'] as const;
 
-// Employee self-service (ADR-011). One role for the third principal type; the
-// database ties it to that principal in both directions
-// (auth_users_employee_role_chk).
+// Employee self-service (ADR-011). One role for the third principal type.
 export const EMPLOYEE_ROLES = ['employee'] as const;
 
 export type StaffRole = (typeof STAFF_ROLES)[number];
@@ -198,9 +184,12 @@ export type ClientRole = (typeof CLIENT_ROLES)[number];
 export type EmployeeRole = (typeof EMPLOYEE_ROLES)[number];
 export type RoleName = StaffRole | ClientRole | EmployeeRole;
 
-// Every staff role: example capability, session end, reading client companies,
-// reading the employee core profile, and reading configuration (all staff read
-// effective settings — matrix).
+// Every staff role, Auditor included: session, the colleague directory, client
+// companies, the employee core profile, effective configuration, documents,
+// own notifications/preferences, requests, and own tasks + own calendar (the
+// `.read-all` capabilities lift those scopes). Reports are NOT here since v1.7:
+// the prototype's navigation makes Reports an Administrator screen, and the
+// Auditor reads them as part of reading everything (ADR-013).
 const STAFF_BASE: readonly Permission[] = [
   'example.read',
   'session.end',
@@ -215,32 +204,17 @@ const STAFF_BASE: readonly Permission[] = [
   'notification.read',
   'notification-pref.update',
   'request.read',
-  // Tasks: every staff role reads tasks (own/assigned by default — task.read-all
-  // lifts the scope to all).
   'task.read',
-  // Calendar: every staff role reads the calendar (own events by default —
-  // calendar.read-all lifts the scope to all events).
   'calendar.read',
-  // Reporting (REP-02): the matrix gives every staff role R on Reports. The
-  // per-role parentheticals ("Recruiter R (recruitment)", "Finance R
-  // (financial)") are enforced by each report's own requiredPermissions, not by
-  // withholding this one.
-  'report.read',
 ];
-// System/Company Admin extra: audit read + client CRUD (matrix) + triggering
-// the document-expiry scan on demand (EXP-02).
-const ADMIN_EXTRA: readonly Permission[] = [
-  'audit.read',
-  // Matrix: System Admin CRUD, Company Admin R. The writes live on system_admin.
-  'staff-user.read',
-  'client.create',
-  'client.update',
-  'client.delete',
-  'expiry.run',
-];
-// Both client roles: the scope-check exemplar + session end + managing their
-// own per-user preferences (CONF-03 — every authenticated principal).
-const ALL_CLIENT: readonly Permission[] = [
+
+// The client manager (one company, mostly read): the scope-check exemplar,
+// session end, own preferences + notifications, the portal surface (company,
+// employees redacted to status, available documents), its own requests (read +
+// raise — the prototype's client is `RC`, no update), its own vacancies, and
+// its own GRO processes as status only. Portal users are an Administrator's
+// (ADR-013, ROLE-02).
+const CLIENT_MANAGER: readonly Permission[] = [
   'scope-check.read',
   'scope-check.create',
   'session.end',
@@ -248,68 +222,28 @@ const ALL_CLIENT: readonly Permission[] = [
   'config.write-self',
   'notification.read',
   'notification-pref.update',
-  // Requests (REQ-02): both client roles read + create their own client's
-  // requests; Client Admin additionally updates (added in CLIENT_ADMIN).
   'request.read',
   'request.create',
-  // Client Portal (PORTAL-01): the client self-service surface. A client-only
-  // permission (staff never hold it) that gates every /portal/* read — reps use
-  // dedicated portal endpoints, not the staff resource endpoints.
   'portal.read',
-  // Recruitment (REC-02): both client roles read their OWN client's vacancies.
   'vacancy.read',
-  // GRO (GRO-02): both client roles read their OWN client's processes (status only).
   'gro.read',
 ];
-// Client Admin additionally manages its own client's portal users (matrix —
-// Client User does NOT).
-const CLIENT_ADMIN: readonly Permission[] = [
-  ...ALL_CLIENT,
-  'client-user.read',
-  'client-user.create',
-  'client-user.update',
-  'client-user.delete',
-  // Client Admin updates its own client's requests (Client User does not).
-  'request.update',
-];
 
-// Seeded straight from the architecture permission matrix (rows: employee core,
-// salary, govdata). Each staff role diverges — field-level sensitivity means
-// e.g. Finance updates salary but never govdata, GRO the reverse.
+// Each bundle is a column of the v1.7 permission matrix; the matrix spec
+// (test/role-matrix.e2e-spec.ts) asserts every cell, so a change here that the
+// matrix does not sanction fails CI.
 export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
-  // core R · salary R · govdata R (read-only on employee data; power is config):
-  // the ONLY holder of config.write — writes deployment-wide system settings.
-  system_admin: [
+  // Everything, including pay, access and system configuration.
+  administrator: [
     ...STAFF_BASE,
-    ...ADMIN_EXTRA,
-    // ROLE-02 (ADR-013): client portal users are managed by Administrators, the
-    // role System Admin and Company Admin become — over the STAFF path
-    // (`/clients/:clientId/users`); `/client-users` still refuses staff.
-    'client-user.read',
-    'client-user.create',
-    'client-user.update',
-    'client-user.delete',
+    'audit.read',
+    'staff-user.read',
     'staff-user.create',
     'staff-user.update',
     'staff-user.delete',
-    'salary.read',
-    'govdata.read',
-    'config.write',
-    'report.export',
-    'task.read-all',
-    'vacancy.read',
-    'candidate.read',
-    'gro.read',
-    // Calendar: System Admin reads all events (matrix R), no create/update/delete.
-    'calendar.read-all',
-  ],
-  // core CRUD · salary R · govdata R; manages PER-CLIENT config overrides
-  // (matrix — per-client settings are Company Admin's, distinct from the
-  // System Admin's system-level config.write).
-  company_admin: [
-    // ROLE-02 (ADR-013): client portal users are managed by Administrators, the
-    // role System Admin and Company Admin become — over the STAFF path
-    // (`/clients/:clientId/users`); `/client-users` still refuses staff.
+    'client.create',
+    'client.update',
+    'client.delete',
     'client-user.read',
     'client-user.create',
     'client-user.update',
@@ -317,19 +251,18 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'employee-user.read',
     'employee-user.invite',
     'employee-user.update',
-    ...STAFF_BASE,
-    ...ADMIN_EXTRA,
     'employee.create',
     'employee.update',
     'employee.delete',
     'salary.read',
+    'salary.update',
     'govdata.read',
+    'govdata.update',
+    'config.write',
     'config.write-client',
-    'report.export',
+    'expiry.run',
     'document.upload',
     'document.delete',
-    // Requests: Company Admin has full CRUD (create + update here; delete later)
-    // and processes them.
     'request.create',
     'request.update',
     'request.process',
@@ -337,33 +270,6 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'task.create',
     'task.update',
     'task.delete',
-    // Recruitment: Company Admin reads/updates/approves vacancies (no create/delete)
-    // and reads/updates/advances candidates.
-    'vacancy.read',
-    'vacancy.update',
-    'vacancy.approve',
-    'candidate.read',
-    'candidate.update',
-    'candidate.advance',
-    // GRO: Company Admin reads + manages processes (matrix RU → gro.read + gro.process).
-    'gro.read',
-    'gro.process',
-    // Calendar: Company Admin is CRUD-all (matrix) — read-all + create/update/delete.
-    'calendar.read-all',
-    'calendar.create',
-    'calendar.update',
-    'calendar.delete',
-    // Google Calendar: schedules outbound invitations (GCAL-02).
-    'integration.google-calendar',
-  ],
-  // core R · salary – · govdata – · documents: recruitment (category-scoped).
-  // The primary recruitment role: full vacancy CRUD + approve (matrix).
-  recruiter: [
-    ...STAFF_BASE,
-    'document.upload',
-    'document.delete',
-    'task.create',
-    'task.update',
     'vacancy.read',
     'vacancy.create',
     'vacancy.update',
@@ -374,86 +280,96 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'candidate.update',
     'candidate.advance',
     'candidate.delete',
-    'report.export',
-    // Calendar: CRU own (matrix) — no read-all, no delete.
+    'gro.read',
+    'gro.process',
+    'calendar.read-all',
     'calendar.create',
     'calendar.update',
-    // Google Calendar: schedules interview invitations (GCAL-02).
+    'calendar.delete',
     'integration.google-calendar',
+    'report.read',
+    'report.export',
   ],
-  // core CRUD · salary RU · govdata R · documents: all
+  // People files end to end — pay, contracts, hiring (prototype `hr`: employees
+  // RWC, procedures RWC, documents RWCD, requests RWCD, payroll RW, hiring RWC,
+  // calendar RWCD). No employee delete; no Reports, no audit (ADR-013).
   hr_officer: [
+    ...STAFF_BASE,
     'employee-user.read',
     'employee-user.invite',
     'employee-user.update',
-    ...STAFF_BASE,
     'employee.create',
     'employee.update',
-    'employee.delete',
     'salary.read',
     'salary.update',
-    'govdata.read',
-    'report.export',
-    'document.upload',
-    'document.delete',
-    'request.process',
-    'task.create',
-    'task.update',
-    // HR Officer reads vacancies + candidates (matrix R); recruitment CRUD is the
-    // Recruiter's. GRO: reads processes (matrix R). Calendar: CRU own.
-    'vacancy.read',
-    'candidate.read',
-    'gro.read',
-    'calendar.create',
-    'calendar.update',
-    // Google Calendar: schedules meeting invitations (GCAL-02).
-    'integration.google-calendar',
-  ],
-  // core RU · salary – · govdata CRUD · documents: government (category-scoped).
-  // The primary GRO role: full process management (matrix CRUD → gro.read + gro.process).
-  gro_officer: [
-    ...STAFF_BASE,
-    'employee.update',
     'govdata.read',
     'govdata.update',
     'document.upload',
     'document.delete',
+    'request.create',
+    'request.update',
     'request.process',
     'task.create',
     'task.update',
+    'vacancy.read',
+    'vacancy.create',
+    'vacancy.update',
+    'vacancy.approve',
+    'candidate.read',
+    'candidate.create',
+    'candidate.update',
+    'candidate.advance',
     'gro.read',
     'gro.process',
-    'report.export',
-    // Calendar: CRU own (matrix).
+    'calendar.read-all',
     'calendar.create',
     'calendar.update',
-    // Google Calendar: schedules government-appointment invitations (GCAL-02).
+    'calendar.delete',
     'integration.google-calendar',
   ],
-  // core R · salary RU · govdata – (no recruitment/GRO; Calendar CRU own — matrix)
-  finance: [
+  // Government portals and procedures; no pay (prototype `gro`: employees R,
+  // procedures RWCD, documents RWC — government categories only, requests RW,
+  // hiring RW, calendar RWCD). No Reports, no audit (ADR-013).
+  gro_officer: [
     ...STAFF_BASE,
-    'salary.read',
-    'salary.update',
-    'report.export',
+    'govdata.read',
+    'govdata.update',
+    'document.upload',
+    'request.process',
     'task.create',
     'task.update',
+    'vacancy.read',
+    'vacancy.update',
+    'candidate.read',
+    'candidate.update',
+    'candidate.advance',
+    'gro.read',
+    'gro.process',
+    'calendar.read-all',
     'calendar.create',
     'calendar.update',
+    'calendar.delete',
+    'integration.google-calendar',
   ],
-  // core R · salary – · govdata R (no recruitment/GRO perms — matrix). Calendar:
-  // read all (matrix R), no create/update/delete.
-  read_only: [
+  // Reads everything, changes nothing (prototype `auditor`: R on all nine
+  // resources). Reads reports but does not EXPORT them — a bulk extraction is
+  // not passive access (REP-03). MFA-required, like the Administrator.
+  auditor: [
     ...STAFF_BASE,
+    'audit.read',
+    'staff-user.read',
+    'client-user.read',
+    'employee-user.read',
+    'salary.read',
     'govdata.read',
     'task.read-all',
     'vacancy.read',
     'candidate.read',
     'gro.read',
     'calendar.read-all',
+    'report.read',
   ],
-  client_admin: CLIENT_ADMIN,
-  client_user: ALL_CLIENT,
+  client_manager: CLIENT_MANAGER,
   // `session.end` (SS-01 — logout is permission-gated, and an account that
   // cannot end its own session is worse than one that can do nothing) and
   // `self-service.read` (SS-03 — the /me surface, behind the SS-02 database

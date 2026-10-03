@@ -61,22 +61,24 @@ describe('GET /auth/me (AUTH-08, e2e)', () => {
   });
 
   it('admin → elevated capabilities (audit.read + client.create)', async () => {
-    const admin = await loginAsEnrolledStaff(app, 'company_admin');
+    const admin = await loginAsEnrolledStaff(app, 'administrator');
     const body = (await me(admin.cookie).expect(200)).body as MeBody;
-    expect(body.role).toBe('company_admin');
+    expect(body.role).toBe('administrator');
     expect(body.permissions).toEqual(
       expect.arrayContaining(['audit.read', 'client.create', 'client.update', 'client.delete']),
     );
   });
 
   it('client rep → principal_type client_rep + client binding + client caps', async () => {
-    const rep = await loginAsClientRep(app, CLIENT_A, 'client_admin');
+    const rep = await loginAsClientRep(app, CLIENT_A, 'client_manager');
     const body = (await me(rep.cookie).expect(200)).body as MeBody;
     expect(body).toMatchObject({ principalType: 'client_rep', clientId: CLIENT_A });
     expect(body.permissions).toEqual(
-      expect.arrayContaining(['scope-check.read', 'client-user.create']),
+      expect.arrayContaining(['scope-check.read', 'portal.read', 'request.create']),
     );
-    // A client rep never has staff/admin capabilities.
+    // A client rep never has staff/admin capabilities — and since ADR-013 not
+    // portal-user management either (Administrators do that).
     expect(body.permissions).not.toContain('client.create');
+    expect(body.permissions).not.toContain('client-user.create');
   });
 });

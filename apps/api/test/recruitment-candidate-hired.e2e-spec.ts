@@ -40,7 +40,7 @@ describe('Recruitment — CandidateHired → Employees (REC-05, e2e)', () => {
     http = app.getHttpServer();
     candidates = app.get(CandidatesService);
     vacancies = app.get(VacanciesService);
-    recruiter = await loginAsStaff(app, 'recruiter');
+    recruiter = await loginAsStaff(app, 'hr_officer');
     owner = new PrismaClient({
       adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL ?? '' }),
     });

@@ -75,7 +75,6 @@
     "today": "Today",
     "openMenu": "Open menu",
     "closeMenu": "Close",
-    "portalUsers": "Portal users",
     "staffUsers": "Staff users",
     "skipToContent": "Skip to content",
     "groupClients": "Clients",
@@ -792,15 +791,11 @@
       "searchPlaceholder": "Search title or category…"
     },
     "users": {
-      "title": "Portal users",
-      "subtitle": "People at your company who can sign in to this portal.",
       "invite": "Invite user",
       "inviteTitle": "Invite a portal user",
       "editTitle": "Edit portal user",
       "colEmail": "Email",
-      "colRole": "Role",
       "colStatus": "Status",
-      "colCreated": "Added",
       "initialPassword": "Initial password",
       "initialPasswordHint": "The person signs in with this and should change it afterwards. At least 8 characters.",
       "empty": "No portal users yet.",
@@ -811,10 +806,6 @@
       "cancel": "Cancel",
       "error": "Could not load portal users.",
       "saveError": "Could not save. Check the details and try again.",
-      "role": {
-        "client_admin": "Administrator",
-        "client_user": "Standard user"
-      },
       "status": {
         "active": "Active",
         "disabled": "Disabled"
@@ -969,15 +960,11 @@
       "document": "Document expiry"
     },
     "role": {
-      "system_admin": "System Admin",
-      "company_admin": "Company Admin",
-      "recruiter": "Recruiter",
-      "hr_officer": "HR Officer",
-      "gro_officer": "GRO Officer",
-      "finance": "Finance",
-      "read_only": "Read Only",
-      "client_admin": "Client Admin",
-      "client_user": "Client User",
+      "administrator": "Administrator",
+      "hr_officer": "HR officer",
+      "gro_officer": "GRO officer",
+      "auditor": "Auditor",
+      "client_manager": "Client manager",
       "employee": "Employee"
     },
     "greeting": "Hello, {name}"
@@ -1021,13 +1008,10 @@
     "error": "Could not load staff users.",
     "saveError": "Could not save. You cannot change your own role or disable your own account.",
     "role": {
-      "system_admin": "System administrator",
-      "company_admin": "Company administrator",
-      "recruiter": "Recruiter",
+      "administrator": "Administrator",
       "hr_officer": "HR officer",
       "gro_officer": "GRO officer",
-      "finance": "Finance",
-      "read_only": "Read only"
+      "auditor": "Auditor"
     },
     "status": {
       "active": "Active",
@@ -1035,15 +1019,11 @@
     }
   },
   "roles": {
-    "system_admin": "System Administrator",
-    "company_admin": "Company Administrator",
-    "hr_officer": "HR Officer",
-    "gro_officer": "GRO Officer",
-    "recruiter": "Recruiter",
-    "finance": "Finance",
-    "read_only": "Read Only",
-    "client_admin": "Client Administrator",
-    "client_user": "Client User",
+    "administrator": "Administrator",
+    "hr_officer": "HR officer",
+    "gro_officer": "GRO officer",
+    "auditor": "Auditor",
+    "client_manager": "Client manager",
     "employee": "Employee"
   },
   "account": {

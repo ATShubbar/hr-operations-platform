@@ -147,7 +147,6 @@ export function AppNav({
   const canPortal = useCan('portal.read');
   // Employee self-service (SS-07): only the employee role holds this.
   const canSelfService = useCan('self-service.read');
-  const canPortalUsers = useCan('client-user.read');
 
   const groups: Group[] = canSelfService
     ? [
@@ -169,10 +168,8 @@ export function AppNav({
               { href: '/portal/company', label: t('nav.portalCompany'), icon: Building2 },
               { href: '/portal/employees', label: t('nav.portalEmployees'), icon: UsersRound },
               { href: '/portal/documents', label: t('nav.portalDocuments'), icon: FileText },
-              // Client ADMIN only — the matrix gives client-user.* to that role alone.
-              ...(canPortalUsers
-                ? [{ href: '/portal/users', label: t('nav.portalUsers'), icon: UserRound }]
-                : []),
+              // No "Portal users" since ROLE-03: Administrators manage a client's
+              // portal accounts from Clients (ADR-013).
             ],
           },
         ]

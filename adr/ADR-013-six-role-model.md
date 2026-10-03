@@ -104,8 +104,8 @@ Widenings (each a consequence of following the prototype):
   - gains hiring create/update;
   - gains GRO procedures (create/update);
   - gains government-data update;
-  - gains request delete;
-  - gains calendar delete + read-all.
+  - gains request create/update;
+  - gains calendar delete + read-all (CRUD on every event — rev. 1).
 - **GRO officer:**
   - gains hiring read/update (previously excluded from recruitment);
   - gains calendar delete + read-all.
@@ -142,6 +142,15 @@ Narrowings:
    - removing the client's *Portal users* screen.
 
    Client managers lose `client-user.*` only after Administrators can already do it.
+
+## Revisions
+- **rev. 1 (ROLE-03, 2026-10-03):** the HR and GRO officers' Calendar cell was written as
+  "CRUD (own) + R (all)". The calendar API cannot express that split —
+  `calendar.read-all` lifts update and delete along with read (CAL-02) — so both follow the
+  prototype's `calendar: RWCD`: CRUD on every event. Also found while implementing: the
+  Employee column's "Notification preferences: U (own)" has never been granted
+  (`notification-pref.update` is not in the employee bundle since ADR-011 rev. 3); recorded,
+  not changed here.
 
 ## Consequences
 - architecture.md v1.7 replaces the "Roles" list and the permission matrix.

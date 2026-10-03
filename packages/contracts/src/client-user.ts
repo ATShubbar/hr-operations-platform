@@ -1,25 +1,26 @@
 import { z } from 'zod';
 
-// Client portal users (CLIENT-03). A Client Admin manages the client_rep users
-// of its own client company. Client users are auth_users (principal_type
-// client_rep); this API never exposes password/mfa material.
-export const clientUserRoleSchema = z.enum(['client_admin', 'client_user']);
+// Client portal users (CLIENT-03; ROLE-02/03). Administrators manage the
+// client_rep users of any client over /clients/:clientId/users. Since ADR-013
+// there is ONE client role, Client manager, so a role is never chosen — it is
+// still carried on the response for symmetry with staff accounts. Client users
+// are auth_users (principal_type client_rep); this API never exposes
+// password/mfa material.
+export const clientUserRoleSchema = z.enum(['client_manager']);
 export const clientUserStatusSchema = z.enum(['active', 'disabled']);
 
 export const createClientUserRequestSchema = z.object({
   email: z.email(),
   password: z.string().min(8),
-  role: clientUserRoleSchema,
 });
 
+// Status is the only thing to change: with one client role there is no role
+// to move between (ADR-013).
 export const updateClientUserRequestSchema = z
   .object({
-    role: clientUserRoleSchema.optional(),
-    status: clientUserStatusSchema.optional(),
+    status: clientUserStatusSchema,
   })
-  .refine((v) => v.role !== undefined || v.status !== undefined, {
-    message: 'Provide at least one of role or status',
-  });
+  .strict();
 
 export const clientUserResponseSchema = z.object({
   id: z.uuid(),

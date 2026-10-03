@@ -24,7 +24,7 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
 // Configuration API (CONF-01). Reads (effective settings + catalog) need
 // config.read (held by all staff); the system-level write needs config.write
-// (System Admin only, per the matrix — deny-by-default guard enforces it, no
+// (Administrator only, per the matrix — deny-by-default guard enforces it, no
 // role check here). Per-key PATCH so each change is one validated value and one
 // audit entry; CONF-02/03 mirror the shape at /config/client/:key and
 // /config/me/:key.
@@ -72,7 +72,7 @@ export class ConfigController {
     return { key: row.key, level: 'system', value: row.value };
   }
 
-  // ---- per-client level (CONF-02) — staff-managed (Company Admin) for an
+  // ---- per-client level (CONF-02) — staff-managed (Administrator) for an
   // explicit client; the client never sets their own (architecture.md). ----
 
   @RequirePermission('config.read')

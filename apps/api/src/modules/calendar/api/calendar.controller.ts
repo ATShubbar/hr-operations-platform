@@ -148,7 +148,7 @@ export class CalendarController {
       }
     }
 
-    // GRO deadlines — only for gro.read holders (Recruiter/Finance excluded)
+    // GRO deadlines — only for gro.read holders
     if (this.policy.can(role, 'gro.read')) {
       const procs = await this.gro.list();
       for (const p of procs) {

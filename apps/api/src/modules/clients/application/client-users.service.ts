@@ -7,26 +7,25 @@ import {
   SessionsService,
   UsersService,
   type ClientRepStatus,
-  type ClientRole,
 } from '../../auth/public-api';
 import { AuditService } from '../../audit/public-api';
 
 interface InviteInput {
   email: string;
   password: string;
-  role: ClientRole;
 }
 interface UpdateInput {
-  role?: ClientRole;
-  status?: ClientRepStatus;
+  status: ClientRepStatus;
 }
 
-// Client portal user management (CLIENT-03). A Client Admin manages the
-// client_rep users of ITS OWN client. Identity lives in auth_users (owned by
-// the auth module), so this service drives auth's UsersService — it never
-// touches auth_users directly. Every method is scoped to a clientId that the
-// CALLER's context supplies; a client_id is never taken from request input.
-// Mutations write their audit entry in the same transaction (AUDIT-03).
+// Client portal user management (CLIENT-03; ROLE-02/03). An Administrator
+// manages the client_rep users of a client over the STAFF path — the clientId
+// comes from the route, after the controller has checked the caller is staff
+// and the company exists. Since ADR-013 every client rep is a Client manager,
+// so the role is fixed here rather than chosen. Identity lives in auth_users
+// (owned by the auth module), so this service drives auth's UsersService — it
+// never touches auth_users directly. Mutations write their audit entry in the
+// same transaction (AUDIT-03).
 @Injectable()
 export class ClientUsersService {
   constructor(
@@ -45,7 +44,7 @@ export class ClientUsersService {
     try {
       return await this.prisma.$transaction(async (tx) => {
         const user = await this.users.createClientRepUser(
-          { email: input.email, passwordHash, clientId, role: input.role },
+          { email: input.email, passwordHash, clientId, role: 'client_manager' },
           tx,
         );
         await this.audit.record(tx, {
@@ -82,15 +81,15 @@ export class ClientUsersService {
         resource: 'client-user',
         action: 'update',
         clientId,
-        before: { role: before.role, status: before.status },
-        after: { role: row?.role, status: row?.status },
+        before: { status: before.status },
+        after: { status: row?.status },
       });
       return { before, row };
     });
     if (!result) return null;
-    // A disable or a role change ends live sessions (SS-06a) — the session
-    // caches the role, and a disabled account must not keep working on one.
-    if (result.row?.status === 'disabled' || result.row?.role !== result.before.role) {
+    // A disable ends live sessions (SS-06a) — a disabled account must not keep
+    // working on a session opened before it was disabled.
+    if (result.row?.status === 'disabled') {
       await this.sessions.destroyAllForUser(id);
     }
     return result.row;

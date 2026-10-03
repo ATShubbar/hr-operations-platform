@@ -6,7 +6,9 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AppModule } from '../src/app.module';
 import { PrismaClient } from '../src/generated/prisma/client';
 import { CaptureGoogleCalendarClient } from '../src/modules/integrations/public-api';
-import { cleanupHelperUsers, loginAsClientRep, loginAsStaff, type TestPrincipal } from './helpers/login';
+import { cleanupHelperUsers, loginAsClientRep, loginAsStaff, type TestPrincipal,
+  loginAsEnrolledStaff,
+} from './helpers/login';
 
 // GCAL-02: the Google Calendar invitations API (ADR-009). Staff schedule outbound
 // invitations; the service sends via the adapter (the only path to Google) and
@@ -19,7 +21,7 @@ describe('Google Calendar invitations API (GCAL-02, e2e)', () => {
   let http: ReturnType<INestApplication['getHttpServer']>;
   let capture: CaptureGoogleCalendarClient;
   let recruiter: TestPrincipal; // integration.google-calendar
-  let finance: TestPrincipal; // no integration permission
+  let auditor: TestPrincipal; // no integration permission (v1.7: reads only)
   let repClient: string;
   let rep: TestPrincipal; // client rep — no access
   let invId = '';
@@ -51,9 +53,9 @@ describe('Google Calendar invitations API (GCAL-02, e2e)', () => {
       data: { nameAr: 'شركة التكامل', nameEn: 'GCAL Client', status: 'active' },
     });
     repClient = c.id;
-    recruiter = await loginAsStaff(app, 'recruiter');
-    finance = await loginAsStaff(app, 'finance');
-    rep = await loginAsClientRep(app, repClient, 'client_admin');
+    recruiter = await loginAsStaff(app, 'hr_officer');
+    auditor = await loginAsEnrolledStaff(app, 'auditor');
+    rep = await loginAsClientRep(app, repClient, 'client_manager');
   });
 
   afterAll(async () => {
@@ -65,7 +67,7 @@ describe('Google Calendar invitations API (GCAL-02, e2e)', () => {
     await app.close();
   });
 
-  it('a recruiter schedules an invitation — sent via the adapter + persisted with the whitelisted payload', async () => {
+  it('an HR officer schedules an invitation — sent via the adapter + persisted with the whitelisted payload', async () => {
     const res = await post(recruiter.cookie, BODY).expect(201);
     expect(res.body.externalEventId).toMatch(/^gcal-dev-/);
     expect(res.body.status).toBe('scheduled');
@@ -114,8 +116,8 @@ describe('Google Calendar invitations API (GCAL-02, e2e)', () => {
     await post(recruiter.cookie, { ...BODY, referenceCode: 'REC-2026-9002', attendeeEmails: ['not-an-email'] }).expect(400);
   });
 
-  it('Finance staff lack the permission (403)', async () => {
-    await post(finance.cookie, { ...BODY, referenceCode: 'REC-2026-9003' }).expect(403);
+  it('the Auditor lacks the permission (403)', async () => {
+    await post(auditor.cookie, { ...BODY, referenceCode: 'REC-2026-9003' }).expect(403);
   });
 
   it('a client rep has no access (403); unauth → 401', async () => {

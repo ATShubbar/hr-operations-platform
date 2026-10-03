@@ -46,7 +46,7 @@ describe('Staff user management + directory (UX-10b, e2e)', () => {
   let app: INestApplication;
   let owner: PrismaClient;
   let sysAdmin: TestPrincipal; // CRUD
-  let coAdmin: TestPrincipal; // read only
+  let auditor: TestPrincipal; // read only
   let hr: TestPrincipal; // directory only
   let rep: TestPrincipal; // client rep — nothing
 
@@ -71,10 +71,12 @@ describe('Staff user management + directory (UX-10b, e2e)', () => {
     owner = new PrismaClient({
       adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL ?? '' }),
     });
-    sysAdmin = await loginAsEnrolledStaff(app, 'system_admin');
-    coAdmin = await loginAsEnrolledStaff(app, 'company_admin');
+    sysAdmin = await loginAsEnrolledStaff(app, 'administrator');
+    // v1.7: the matrix row's "R" column is the Auditor (Company Admin became an
+    // Administrator, who holds CRUD).
+    auditor = await loginAsEnrolledStaff(app, 'auditor');
     hr = await loginAsStaff(app, 'hr_officer');
-    rep = await loginAsClientRep(app, CLIENT_A, 'client_admin');
+    rep = await loginAsClientRep(app, CLIENT_A, 'client_manager');
     await owner.auditEntry.deleteMany({ where: { resource: 'staff-user' } });
     await owner.authUser.deleteMany({ where: { email: { startsWith: MARK } } });
   });
@@ -93,7 +95,7 @@ describe('Staff user management + directory (UX-10b, e2e)', () => {
     await request(http()).post('/staff-users').send({}).expect(401);
   });
 
-  it('System Admin creates a staff user → 201, and no secret material leaks', async () => {
+  it('an Administrator creates a staff user → 201, and no secret material leaks', async () => {
     const res = await create(sysAdmin.cookie).expect(201);
     const body = res.body as StaffUserBody;
     expect(body.id).toMatch(/^[0-9a-f-]{36}$/);
@@ -106,18 +108,18 @@ describe('Staff user management + directory (UX-10b, e2e)', () => {
     expect(JSON.stringify(body)).not.toMatch(/password|hash|secret/i);
   });
 
-  it('Company Admin READS but cannot write (matrix: CRUD vs R)', async () => {
-    await request(http()).get('/staff-users').set('Cookie', coAdmin.cookie).expect(200);
-    await create(coAdmin.cookie).expect(403);
+  it('the Auditor READS but cannot write (matrix: CRUD vs R)', async () => {
+    await request(http()).get('/staff-users').set('Cookie', auditor.cookie).expect(200);
+    await create(auditor.cookie).expect(403);
     const target = (await create(sysAdmin.cookie).expect(201)).body as StaffUserBody;
     await request(http())
       .patch(`/staff-users/${target.id}`)
-      .set('Cookie', coAdmin.cookie)
+      .set('Cookie', auditor.cookie)
       .send({ status: 'disabled' })
       .expect(403);
     await request(http())
       .delete(`/staff-users/${target.id}`)
-      .set('Cookie', coAdmin.cookie)
+      .set('Cookie', auditor.cookie)
       .expect(403);
   });
 
@@ -135,7 +137,7 @@ describe('Staff user management + directory (UX-10b, e2e)', () => {
   describe('the directory is narrower than the management view', () => {
     it('every staff role can read it', async () => {
       await request(http()).get('/staff-users/directory').set('Cookie', hr.cookie).expect(200);
-      await request(http()).get('/staff-users/directory').set('Cookie', coAdmin.cookie).expect(200);
+      await request(http()).get('/staff-users/directory').set('Cookie', auditor.cookie).expect(200);
     });
 
     it('it returns id + displayName + role and NOTHING else', async () => {
@@ -174,7 +176,7 @@ describe('Staff user management + directory (UX-10b, e2e)', () => {
       await request(http())
         .patch(`/staff-users/${myId}`)
         .set('Cookie', sysAdmin.cookie)
-        .send({ role: 'read_only' })
+        .send({ role: 'auditor' })
         .expect(400);
     });
 

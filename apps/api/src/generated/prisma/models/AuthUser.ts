@@ -330,7 +330,7 @@ export type AuthUserCreateInput = {
   displayName?: string | null
   passwordHash: string
   principalType: $Enums.PrincipalType
-  role?: $Enums.Role
+  role: $Enums.Role
   clientId?: string | null
   employeeId?: string | null
   status?: $Enums.UserStatus
@@ -347,7 +347,7 @@ export type AuthUserUncheckedCreateInput = {
   displayName?: string | null
   passwordHash: string
   principalType: $Enums.PrincipalType
-  role?: $Enums.Role
+  role: $Enums.Role
   clientId?: string | null
   employeeId?: string | null
   status?: $Enums.UserStatus
@@ -398,7 +398,7 @@ export type AuthUserCreateManyInput = {
   displayName?: string | null
   passwordHash: string
   principalType: $Enums.PrincipalType
-  role?: $Enums.Role
+  role: $Enums.Role
   clientId?: string | null
   employeeId?: string | null
   status?: $Enums.UserStatus
@@ -541,7 +541,7 @@ export type AuthUserCreateWithoutTokensInput = {
   displayName?: string | null
   passwordHash: string
   principalType: $Enums.PrincipalType
-  role?: $Enums.Role
+  role: $Enums.Role
   clientId?: string | null
   employeeId?: string | null
   status?: $Enums.UserStatus
@@ -557,7 +557,7 @@ export type AuthUserUncheckedCreateWithoutTokensInput = {
   displayName?: string | null
   passwordHash: string
   principalType: $Enums.PrincipalType
-  role?: $Enums.Role
+  role: $Enums.Role
   clientId?: string | null
   employeeId?: string | null
   status?: $Enums.UserStatus

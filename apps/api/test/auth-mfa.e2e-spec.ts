@@ -85,7 +85,7 @@ describe('MFA / TOTP (AUTH-06, e2e)', () => {
   it('admin without MFA gets a limited session and MUST enroll (ADR-002)', async () => {
     // The helper logs in after creating the user — for an admin that login
     // itself returns the limited enroll_required session.
-    const admin = await loginAsStaff(app, 'company_admin');
+    const admin = await loginAsStaff(app, 'administrator');
     const http = app.getHttpServer();
 
     // Limited: no access to normal endpoints…
@@ -110,7 +110,7 @@ describe('MFA / TOTP (AUTH-06, e2e)', () => {
   });
 
   it('non-admin without enrollment logs in fully — behavior unchanged', async () => {
-    const staff = await loginAsStaff(app, 'recruiter');
+    const staff = await loginAsStaff(app, 'hr_officer');
     await request(app.getHttpServer())
       .get('/example/greeting')
       .set('Cookie', staff.cookie)

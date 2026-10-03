@@ -46,8 +46,8 @@ describe('Client portal — /portal/company (PORTAL-01, e2e)', () => {
     });
     clientA = cA.id;
     clientB = cB.id;
-    repA = await loginAsClientRep(app, clientA, 'client_admin');
-    repB = await loginAsClientRep(app, clientB, 'client_user');
+    repA = await loginAsClientRep(app, clientA, 'client_manager');
+    repB = await loginAsClientRep(app, clientB, 'client_manager');
     staff = await loginAsStaff(app, 'hr_officer');
   });
 

@@ -5,11 +5,14 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AppModule } from '../src/app.module';
 import { PrismaClient } from '../src/generated/prisma/client';
-import { cleanupHelperUsers, loginAsClientRep, loginAsStaff, type TestPrincipal } from './helpers/login';
+import { cleanupHelperUsers, loginAsClientRep, loginAsStaff, type TestPrincipal,
+  loginAsEnrolledStaff,
+} from './helpers/login';
 
 // REC-02: the vacancies HTTP API. Asymmetric dual-path — staff (recruiter) do full
 // CRUD + the vacancy.approve status workflow across clients; client reps only READ
-// their OWN client's vacancies; GRO/Finance staff can't see recruitment at all.
+// their OWN client's vacancies. v1.7 (ADR-013): HR officer CRU + approve, GRO
+// officer R + U, delete is the Administrator's alone.
 
 describe('Vacancies API (REC-02, e2e)', () => {
   let app: INestApplication;
@@ -17,10 +20,11 @@ describe('Vacancies API (REC-02, e2e)', () => {
   let http: ReturnType<INestApplication['getHttpServer']>;
   let clientA: string;
   let clientB: string;
-  let recruiter: TestPrincipal; // staff, full vacancy CRUD + approve
-  let gro: TestPrincipal; // staff WITHOUT vacancy.read
-  let repA: TestPrincipal; // client_admin of A (read own)
-  let repB: TestPrincipal; // client_user of B (read own)
+  let recruiter: TestPrincipal; // hr_officer — CRU + approve, no delete
+  let gro: TestPrincipal; // gro_officer — R + U
+  let admin: TestPrincipal; // administrator — the only delete
+  let repA: TestPrincipal; // client manager of A (read own)
+  let repB: TestPrincipal; // client manager of B (read own)
   let vacA = ''; // a vacancy owned by client A
   let vacB = ''; // a vacancy owned by client B
 
@@ -43,10 +47,11 @@ describe('Vacancies API (REC-02, e2e)', () => {
     });
     clientA = cA.id;
     clientB = cB.id;
-    recruiter = await loginAsStaff(app, 'recruiter');
+    recruiter = await loginAsStaff(app, 'hr_officer');
     gro = await loginAsStaff(app, 'gro_officer');
-    repA = await loginAsClientRep(app, clientA, 'client_admin');
-    repB = await loginAsClientRep(app, clientB, 'client_user');
+    admin = await loginAsEnrolledStaff(app, 'administrator');
+    repA = await loginAsClientRep(app, clientA, 'client_manager');
+    repB = await loginAsClientRep(app, clientB, 'client_manager');
   });
 
   afterAll(async () => {
@@ -58,7 +63,7 @@ describe('Vacancies API (REC-02, e2e)', () => {
     await app.close();
   });
 
-  it('recruiter creates vacancies (draft) for either client', async () => {
+  it('an HR officer creates vacancies (draft) for either client', async () => {
     const a = await post(recruiter.cookie, {
       clientId: clientA,
       title: { ar: 'محاسب', en: 'Accountant' },
@@ -83,7 +88,7 @@ describe('Vacancies API (REC-02, e2e)', () => {
     }).expect(404);
   });
 
-  it('recruiter updates a vacancy', async () => {
+  it('an HR officer updates a vacancy', async () => {
     const res = await request(http)
       .patch(`/vacancies/${vacA}`)
       .set('Cookie', recruiter.cookie)
@@ -145,16 +150,23 @@ describe('Vacancies API (REC-02, e2e)', () => {
     await request(http).delete(`/vacancies/${vacA}`).set('Cookie', repA.cookie).expect(403);
   });
 
-  it('GRO staff cannot read recruitment (403 — vacancy.read not granted)', async () => {
-    await request(http).get('/vacancies').set('Cookie', gro.cookie).expect(403);
+  it('a GRO officer reads vacancies (ADR-013 widening) but cannot approve or delete', async () => {
+    await request(http).get('/vacancies').set('Cookie', gro.cookie).expect(200);
+    await request(http)
+      .post(`/vacancies/${vacB}/status`)
+      .set('Cookie', gro.cookie)
+      .send({ status: 'closed' })
+      .expect(403);
+    await request(http).delete(`/vacancies/${vacB}`).set('Cookie', gro.cookie).expect(403);
   });
 
   it('rejects unauthenticated callers (401)', async () => {
     await request(http).get('/vacancies').expect(401);
   });
 
-  it('recruiter deletes a vacancy', async () => {
-    await request(http).delete(`/vacancies/${vacB}`).set('Cookie', recruiter.cookie).expect(200);
+  it('delete is the Administrator\'s: an HR officer gets 403, an Administrator deletes', async () => {
+    await request(http).delete(`/vacancies/${vacB}`).set('Cookie', recruiter.cookie).expect(403);
+    await request(http).delete(`/vacancies/${vacB}`).set('Cookie', admin.cookie).expect(200);
     await request(http).get(`/vacancies/${vacB}`).set('Cookie', recruiter.cookie).expect(404);
   });
 });

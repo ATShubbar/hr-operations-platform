@@ -6,7 +6,9 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AppModule } from '../src/app.module';
 import { PrismaClient } from '../src/generated/prisma/client';
 import { VacanciesService } from '../src/modules/recruitment/public-api';
-import { cleanupHelperUsers, loginAsClientRep, loginAsStaff, type TestPrincipal } from './helpers/login';
+import { cleanupHelperUsers, loginAsClientRep, loginAsStaff, type TestPrincipal,
+  loginAsEnrolledStaff,
+} from './helpers/login';
 
 // REC-04: the candidates HTTP API. STAFF-INTERNAL — recruiter does full CRUD +
 // pipeline transitions; GRO/Finance can't read recruitment; client reps have no
@@ -19,8 +21,12 @@ describe('Candidates API (REC-04, e2e)', () => {
   let http: ReturnType<INestApplication['getHttpServer']>;
   let clientId: string;
   let vacancyId: string;
-  let recruiter: TestPrincipal; // full CRUD + advance
-  let gro: TestPrincipal; // no candidate.read
+  // v1.7 (ADR-013): hiring is an HR officer's (CRU + advance, no delete); the
+  // GRO officer reads/updates/advances (visa & mobilisation); delete is the
+  // Administrator's alone.
+  let recruiter: TestPrincipal; // hr_officer
+  let gro: TestPrincipal; // gro_officer — R + U + advance
+  let admin: TestPrincipal; // administrator — the only delete
   let rep: TestPrincipal; // client rep — no access
   let candId = '';
 
@@ -43,9 +49,10 @@ describe('Candidates API (REC-04, e2e)', () => {
     clientId = c.id;
     const v = await app.get(VacanciesService).create({ clientId, titleAr: 'محاسب', titleEn: 'Accountant' });
     vacancyId = v.id;
-    recruiter = await loginAsStaff(app, 'recruiter');
+    recruiter = await loginAsStaff(app, 'hr_officer');
     gro = await loginAsStaff(app, 'gro_officer');
-    rep = await loginAsClientRep(app, clientId, 'client_admin');
+    admin = await loginAsEnrolledStaff(app, 'administrator');
+    rep = await loginAsClientRep(app, clientId, 'client_manager');
   });
 
   afterAll(async () => {
@@ -60,7 +67,7 @@ describe('Candidates API (REC-04, e2e)', () => {
     await app.close();
   });
 
-  it('recruiter creates a candidate (applied) — clientId derived from the vacancy', async () => {
+  it('an HR officer creates a candidate (applied) — clientId derived from the vacancy', async () => {
     const res = await post(recruiter.cookie, {
       vacancyId,
       name: { ar: 'سالم', en: 'Salem' },
@@ -80,7 +87,7 @@ describe('Candidates API (REC-04, e2e)', () => {
     }).expect(400);
   });
 
-  it('recruiter updates a candidate', async () => {
+  it('an HR officer updates a candidate', async () => {
     const res = await request(http)
       .patch(`/candidates/${candId}`)
       .set('Cookie', recruiter.cookie)
@@ -115,8 +122,11 @@ describe('Candidates API (REC-04, e2e)', () => {
     expect(hiredOnly.body.candidates.every((c: { stage: string }) => c.stage === 'hired')).toBe(true);
   });
 
-  it('GRO staff cannot read candidates (403 — candidate.read not granted)', async () => {
-    await request(http).get('/candidates').set('Cookie', gro.cookie).expect(403);
+  it('a GRO officer reads candidates (ADR-013 widening) but cannot create or delete', async () => {
+    await request(http).get('/candidates').set('Cookie', gro.cookie).expect(200);
+    await post(gro.cookie, { vacancyId, name: { ar: 'ن', en: 'N' } }).expect(403);
+    const created = await post(recruiter.cookie, { vacancyId, name: { ar: 'ن', en: 'N' } }).expect(201);
+    await request(http).delete(`/candidates/${created.body.id}`).set('Cookie', gro.cookie).expect(403);
   });
 
   it('a client rep has no access to candidates (403)', async () => {
@@ -128,9 +138,10 @@ describe('Candidates API (REC-04, e2e)', () => {
     await request(http).get('/candidates').expect(401);
   });
 
-  it('recruiter deletes a candidate', async () => {
+  it('delete is the Administrator\'s: an HR officer gets 403, an Administrator deletes', async () => {
     const created = await post(recruiter.cookie, { vacancyId, name: { ar: 'ن', en: 'N' } }).expect(201);
-    await request(http).delete(`/candidates/${created.body.id}`).set('Cookie', recruiter.cookie).expect(200);
+    await request(http).delete(`/candidates/${created.body.id}`).set('Cookie', recruiter.cookie).expect(403);
+    await request(http).delete(`/candidates/${created.body.id}`).set('Cookie', admin.cookie).expect(200);
     await request(http).get(`/candidates/${created.body.id}`).set('Cookie', recruiter.cookie).expect(404);
   });
 });

@@ -101,7 +101,7 @@ describe('Document-expiry schedule + trigger (EXP-02, e2e)', () => {
   });
 
   it('POST /expiry/scan runs the scan for an admin and returns a summary', async () => {
-    const admin = await loginAsEnrolledStaff(app, 'company_admin');
+    const admin = await loginAsEnrolledStaff(app, 'administrator');
     expect(await alertCount(clientTrigger)).toBe(0);
 
     const res = await request(app.getHttpServer())

@@ -30,9 +30,9 @@ interface ClientBody {
 describe('Client management API (CLIENT-02, e2e)', () => {
   let app: INestApplication;
   let owner: PrismaClient; // audit reads + cleanup
-  let admin: TestPrincipal; // company_admin (enrolled) — full CRUD
+  let admin: TestPrincipal; // administrator (enrolled) — full CRUD
   let staff: TestPrincipal; // hr_officer — read only
-  let rep: TestPrincipal; // client_admin — no client.read
+  let rep: TestPrincipal; // client manager — no client.read
   const createdIds: string[] = [];
 
   const http = () => app.getHttpServer();
@@ -55,9 +55,9 @@ describe('Client management API (CLIENT-02, e2e)', () => {
     owner = new PrismaClient({
       adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL ?? '' }),
     });
-    admin = await loginAsEnrolledStaff(app, 'company_admin');
+    admin = await loginAsEnrolledStaff(app, 'administrator');
     staff = await loginAsStaff(app, 'hr_officer');
-    rep = await loginAsClientRep(app, CLIENT_A, 'client_admin');
+    rep = await loginAsClientRep(app, CLIENT_A, 'client_manager');
   });
 
   afterAll(async () => {
@@ -165,7 +165,7 @@ describe('Client management API (CLIENT-02, e2e)', () => {
       orderBy: { id: 'asc' },
     });
     expect(entries.map((e) => e.action)).toEqual(['create', 'update', 'archive']);
-    expect(entries.every((e) => e.actorId === admin.userId && e.actorRole === 'company_admin')).toBe(
+    expect(entries.every((e) => e.actorId === admin.userId && e.actorRole === 'administrator')).toBe(
       true,
     );
     // before/after captured on the update.

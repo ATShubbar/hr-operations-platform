@@ -31,12 +31,13 @@ interface ResponseHeaders {
 
 // Reports API (REP-02) — STAFF-ONLY, read-only.
 //
-// TWO gates, deliberately. `report.read` (matrix: every staff role) admits a
-// caller to the reporting surface at all; each report's own
+// TWO gates, deliberately. `report.read` (v1.7: Administrator + Auditor) admits
+// a caller to the reporting surface at all; each report's own
 // `requiredPermissions` then decides which reports that caller may list and run.
-// That second check is what makes the matrix's parentheticals real — a Recruiter
-// holds report.read but not salary.read, so `payroll-cost` is neither listed for
-// them nor runnable, and no salary figure can be reached through this route.
+// Both v1.7 readers read all underlying data, but the second check stays: it is
+// what keeps any narrower reader (a role holding report.read but not
+// salary.read) out of `payroll-cost` — proven with a narrowed policy in
+// reports-api.e2e-spec.
 //
 // The catalog is FILTERED rather than annotated-and-hidden, so what a caller can
 // see is exactly what they can run.
@@ -61,9 +62,9 @@ export class ReportsController {
 
   // Export (REP-03). TWO permissions on top of the data gate: `report.export` is
   // a distinct capability from reading — bulk extraction is the point at which
-  // data leaves the platform's authorization boundary, so Read Only (whose whole
+  // data leaves the platform's authorization boundary, so the Auditor (whose whole
   // identity is passive access) reads every report it may see but exports none.
-  // The report's own requiredPermissions still apply, so a Recruiter cannot
+  // The report's own requiredPermissions still apply, so a narrower reader cannot
   // export payroll any more than they could read it.
   @RequirePermission('report.export')
   @Get(':id/export')
