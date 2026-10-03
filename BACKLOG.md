@@ -2250,6 +2250,77 @@ results** for the most common typing variants (`احمد` does not match `أحم
   maps, with raw-value fallback), and the dead `home` namespace was serialising
   "Walking skeleton" into EVERY page's HTML payload (next-intl ships all messages).
 
+## Design-system epic — the People & Gro redesign (DS)
+
+Source: the owner's Claude Design project *People & Gro console design* — a design
+system (`_ds/people-amp-gro-design-system-…`, 113 primitives extracted from a shadcn-studio
+UI kit) plus an interactive console prototype (`People & Gro Console.dc.html`, seventeen
+screens). Read through the design connector after `/design-login`. **The prototype file is
+266 KB against a 256 KB read cap and arrived truncated** — screen markup readable, trailing
+state/data not; the owner's full download is required before the screen cards (DS-04+).
+
+**Owner decisions (2026-10-03):**
+1. **Visual first, features later.** Re-present what exists in the new design first. The
+   prototype's unbuilt features each get an architecture amendment + card afterwards.
+2. **Monochrome** — near-black primary, no brand hue. **Reverses the UI/UX epic's
+   "gold-on-neutral identity stays".** The PEOPLE&GRO mark and login brand panel keep their
+   artwork colours (logo, not chrome).
+3. **Employee self-service INTO scope** — **reverses architecture.md line 44** ("Out of scope
+   (v1 and current roadmap): employee self-service"). Sequenced FIRST among the features, as
+   its own architecture-amendment card (new principal type, login model, permission tier) —
+   never built under a visual card.
+
+**Conflicts found in the prototype, and how each is handled:** LTR-only (0 `dir="rtl"`, 88
+physical CSS properties, 0 logical) → every screen rebuilt RTL-first, the prototype is a
+reference; its soft status badge **fails AA in every tone** (2.86–4.13:1) → shape adopted,
+our AA tones kept; Geist headings have **no Arabic** → composed with Plex, measured; dark-mode
+tokens → not shipped; the "P" tile → the designer never had the logo (its README says so),
+the real mark stays.
+
+**Prototype features NOT yet built (each needs an architecture amendment before a card):**
+employee self-service ("Me": documents, identifiers, pay, requests) — *decided in scope*;
+leave (balances, accrual, carry-over, request/approve); dependants; mobility sequences
+(onboarding / final exit as ordered steps with blockers); editable roles + permission matrix
+and editable field-level access (the matrix is part of the frozen contract); Saudisation /
+Nitaqat reporting; request comments + attachments; saved views; a "viewing as" role switcher
+(treat as a prototype device unless decided otherwise).
+
+| ID | Task | Depends on | Status |
+|---|---|---|---|
+| DS-01 | Foundation: tokens, controls, overlays, display face — monochrome, Arabic- and AA-safe | — | **done** ([evidence](evidence/ux/DS-01.md)) |
+| DS-02 | Shell: sidebar + header in the prototype's structure | DS-01 | planned |
+| DS-03 | Primitives: full-grid `DataTable`, badges vs status pills, card/stat blocks | DS-01 | planned |
+| DS-04+ | Screens, one per card: Overview, People + tabbed person record, Clients + record, Work queue, Requests, Hiring, Calendar (month/week), Reports, Audit | DS-02, DS-03, full prototype download | planned |
+| ARCH-SS | Architecture amendment: employee self-service (reverses architecture.md line 44) | owner decision (done) | planned |
+
+### DS-01 — Foundation: the People & Gro design system, monochrome
+- **Objective:** move the token layer to the redesign's system so later screen cards inherit
+  it, rather than restyling seventeen screens one by one.
+- **Files:** `app/globals.css`, `app/[locale]/layout.tsx`,
+  `components/ui/{card,dialog,popover,select,input,textarea,button,badge,status-pill}.tsx`,
+  `scripts/verify-status-contrast.mjs`.
+- **DoD:** tokens swapped; all screens walked in both locales with 0px overflow; status
+  contrast re-measured ≥4.5:1; Arabic font routing measured; CLS 0; lint/typecheck/build
+  15/15; no API change; decisions recorded.
+- **Evidence:** `evidence/ux/DS-01.md`.
+- **Dependencies:** none. **Risks/decisions:** **the token delta was small** — base-rhea already
+  shares the system's neutral ramp and its radius scale matches step for step (6/8/10/14/18/
+  22/26); the real changes were primary (gold → neutral-900, inherited by 18 consumers), the
+  page ground (warm off-white → white, since surfaces now separate by RING), sidebar primary
+  and the chart ladder. **Three measured deviations from the system:** (1) Geist only as
+  `--font-display` composed `Geist, Plex Arabic, …` with `adjustFontFallback: false` — Latin
+  h1 432.20 = Geist, Arabic h1 794.02 = Plex (Arial would be 630.28), so the "Geist Fallback"
+  trap from the Today preview is avoided; only `h1` takes it, card/section titles stay Inter
+  Medium per the system's own correction; (2) StatusPill takes the soft badge's SHAPE (full
+  radius, tint, no outline) but keeps our AA tones, because the system's as-designed colours
+  fail in every tone; (3) **a pre-existing AA failure surfaced and fixed** — muted-foreground
+  `.556` on the muted surface measured **4.34:1**; the same pair is the system's AND was ours
+  before, so not introduced here; `.54` clears every ground (4.64–5.06:1). Focus halo measured
+  at exactly the system's `--pg-ring-focus` (3px neutral-400 / 50%) — first reading caught the
+  200ms transition mid-animation. **One sweep result discarded** (a portal check that ran still
+  signed in as staff); re-run as the real client admin. Tables, the `Active` Badge, and the aged
+  seed are explicitly deferred.
+
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 
 | Epic | Source | Gate |

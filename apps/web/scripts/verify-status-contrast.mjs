@@ -1,5 +1,6 @@
-// Measures the UX-01 semantic status tokens: OKLCH → sRGB → WCAG contrast, so
-// the ratios in evidence/ux/UX-01.md are measured rather than asserted.
+// Measures the semantic status tokens and, since DS-01, the monochrome core roles:
+// OKLCH → sRGB → WCAG contrast, so the ratios in evidence/ux/UX-01.md and
+// evidence/ux/DS-01.md are measured rather than asserted.
 //
 //   node apps/web/scripts/verify-status-contrast.mjs
 //
@@ -30,7 +31,7 @@ const hex = (c) => '#' + oklchToLinear(...c)
   .map((v) => Math.round((v <= 0.0031308 ? v * 12.92 : 1.055 * v ** (1 / 2.4) - 0.055) * 255)
     .toString(16).padStart(2, '0')).join('');
 
-const BG   = [0.975, 0.003, 95];   // proposed --background
+const BG   = [1, 0, 0];            // --background: white since DS-01 (was 0.975/0.003/95)
 const CARD = [1, 0, 0];            // --card stays white
 
 const T = {
@@ -70,4 +71,37 @@ ramp.forEach(([n, l]) => console.log('  ', n.padEnd(9), l.toFixed(4)));
 console.log('  → critical is clearly darkest. The middle three are close: a monotonic greyscale');
 console.log('    ramp across five hues is INCOMPATIBLE with holding all five at 4.5:1 on a light');
 console.log('    tint. Non-colour redundancy therefore comes from the label + icon (UX-02),');
-console.log('    which is what WCAG 1.4.1 actually requires. Ordered data uses --chart-1..5.');
+console.log('    which is what WCAG 1.4.1 actually requires.');
+
+// ---------------------------------------------------------------------------
+// DS-01 — the monochrome core roles (People & Gro design system)
+const PRIMARY = [0.205, 0, 0], PRIMARY_FG = [0.985, 0, 0];
+const MUTED = [0.97, 0, 0], MUTED_FG = [0.54, 0, 0], SIDEBAR = [0.985, 0, 0], FG = [0.145, 0, 0];
+const row = (label, a, b, min) => {
+  const r = ratio(a, b);
+  console.log('  ', label.padEnd(44), (r.toFixed(2) + ':1').padEnd(9), r >= min ? 'PASS' : 'FAIL', `(need ${min})`);
+};
+console.log('\nDS-01 CORE ROLES');
+row('primary-foreground on primary (button text)', PRIMARY_FG, PRIMARY, 4.5);
+row('foreground on background (body text)', FG, BG, 4.5);
+row('muted-foreground on background', MUTED_FG, BG, 4.5);
+row('muted-foreground on sidebar', MUTED_FG, SIDEBAR, 4.5);
+row('muted-foreground on muted surface', MUTED_FG, MUTED, 4.5);
+row('primary as a focus/active fill vs page', PRIMARY, BG, 3.0);
+
+// The system's own soft badge, AS DESIGNED: label in the mid-strength status hue
+// on a 10% tint of that hue over white. Reported so the reason StatusPill keeps
+// our deep tones is on record — this is not what ships.
+const srgbLum = ([r, g, b]) => {
+  const lin = (v) => { v /= 255; return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+  return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+};
+const srgbRatio = (a, b) => { const x = srgbLum(a), y = srgbLum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+console.log('\nTHE SYSTEM\'S SOFT BADGE AS DESIGNED (hue text on its own 10% tint) — NOT shipped:');
+for (const [n, c] of Object.entries({ info: [2, 132, 199], error: [220, 38, 38], success: [22, 163, 74], warning: [217, 119, 6] })) {
+  const tint = c.map((v) => Math.round(255 * 0.9 + v * 0.1));
+  const r = srgbRatio(c, tint);
+  console.log('  ', n.padEnd(9), (r.toFixed(2) + ':1').padEnd(9), r >= 4.5 ? 'PASS' : 'FAIL');
+}
+console.log('  → StatusPill takes the system\'s SHAPE (full radius, tint, no outline) and keeps');
+console.log('    the deep tones above, which pass on the same tint.');

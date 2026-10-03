@@ -754,7 +754,34 @@ footer had no viewport-height box, so "bottom" meant the bottom of the PAGE — 
 internally-scrolling nav (after: 792 of 800). Sidebar 240 → **260px** (icon column + identity
 block; no label truncates, measured `scrollWidth` vs `clientWidth`); the sheet keeps its 44px
 rows (WCAG 2.5.5) from the SAME component (the UX-05 rule).
-Next: OCI-02 (owner-run) unblocking OCI-03/04/05.
+**INFRA PIVOT (owner, 2026-09): provider is now GOOGLE CLOUD, Dammam `me-central2`** — reverses
+ADR-006 rev. 5 (OCI), NOT yet recorded as rev. 6 (card GCP-01 awaits approval). Owner created
+project **`peoplegro-prod`** and verified in its OWN console: Cloud SQL PostgreSQL (16 and 18
+offered → **use 16**, local+CI are `postgres:16`), GKE, Memorystore, bucket, HMAC interop keys,
+Artifact Registry, Workload Identity Federation — ALL available in me-central2. Open: GKE
+Autopilot vs Standard, whether the project has an organization, cost (US-region estimate
+$180–260/mo for GKE+Cloud SQL+Memorystore+LB; the $50 budget alert will NOT hold; levers: Redis
+as a pod, no HA, and the big one — Cloud Run would be ~$25/mo but violates ADR-010 clause 1).
+`gcloud` is NOT installed on this machine. Nothing provisioned. Prod needs a DOMAIN: the session
+cookie is `secure` in production and Google certificates are issued for domains, not IPs.
+**DESIGN-SYSTEM epic (DS) STARTED — the People & Gro redesign.** Source: the owner's Claude
+Design project (design system + a 17-screen interactive prototype), read via the design
+connector after `/design-login`; the prototype is 266 KB vs a 256 KB read cap and arrived
+TRUNCATED (full download needed before screen cards). **Owner decisions:** visual first,
+features later; **MONOCHROME** (reverses the UI/UX epic's gold-on-neutral); **employee
+self-service INTO scope** (reverses architecture.md line 44 — its own architecture-amendment
+card, ARCH-SS, sequenced first among features). The prototype is LTR-only (88 physical CSS
+properties, 0 logical) and its soft status badge FAILS AA in every tone (2.86–4.13:1).
+**DS-01 done — foundation:** `--primary` gold → neutral-900, page ground → white (surfaces
+separate by RING now), radius scale already matched the system step for step; Card/Dialog
+radius 14 + 16px + the 10% outset ring, controls radius 10 (Select 8), no press translate,
+focus halo = the system's 3px neutral-400/50%. **Geist** joins ONLY as `--font-display`
+composed with Plex (`adjustFontFallback: false`) — Latin h1 432.20 = Geist, Arabic h1 794.02 =
+Plex (Arial 630.28); only `h1` takes it. StatusPill takes the soft SHAPE, keeps our AA tones.
+**Pre-existing AA failure surfaced + fixed:** muted-foreground on muted measured 4.34:1 (the
+system's pair AND ours before) → `.54`, now 4.64–5.06:1 on every ground. Verified 14 screens ×
+2 locales × 2 widths + portal + login (CLS 0). Next: DS-02 shell, DS-03 primitives (full-grid
+tables), then screens; GCP-01 still awaiting approval.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { IBM_Plex_Sans_Arabic, Inter } from 'next/font/google';
+import { Geist, IBM_Plex_Sans_Arabic, Inter } from 'next/font/google';
 import { NextIntlClientProvider, hasLocale } from 'next-intl';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
@@ -28,6 +28,24 @@ import '../globals.css';
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-latin',
+  display: 'swap',
+  adjustFontFallback: false,
+});
+
+// Display face (DS-01, the People & Gro design system): Geist carries headings and
+// the numbers that are the point of a card; Inter keeps every control and
+// paragraph, as the system itself specifies — they are not interchangeable.
+//
+// Geist has NO ARABIC GLYPHS, and loading it the obvious way (`geist.className`)
+// REPLACES the whole family — measured on the Today preview, Arabic then rendered
+// in "Geist Fallback", a metric-adjusted Arial (943.34px vs Plex's 1086.44px).
+// So it gets exactly Inter's treatment above: a variable only, no generated
+// fallback, composed in globals.css as `--font-display, --font-arabic, …` so the
+// per-character fallback still routes Arabic to Plex.
+const geist = Geist({
+  subsets: ['latin'],
+  weight: ['600'],
+  variable: '--font-display',
   display: 'swap',
   adjustFontFallback: false,
 });
@@ -88,7 +106,7 @@ export default async function LocaleLayout({
     <html
       lang={locale}
       dir={directionFor(locale)}
-      className={`${inter.variable} ${plexArabic.variable}`}
+      className={`${inter.variable} ${geist.variable} ${plexArabic.variable}`}
     >
       <body>
         <NextIntlClientProvider>

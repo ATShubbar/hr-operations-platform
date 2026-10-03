@@ -5,7 +5,10 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-    --font-heading: var(--font-sans);
+    /* Display stack (DS-01). Geist for headings, composed with the Arabic face
+       BEHIND it so Arabic headings still route to Plex per character — Geist has
+       no Arabic glyphs. Same construction as --font-sans, for the same reason. */
+    --font-heading: var(--font-display), var(--font-arabic), ui-sans-serif, system-ui, sans-serif;
     /* One stack, not a locale switch (UX-08). Inter carries no Arabic glyphs, so
        the browser's per-CHARACTER fallback already does the routing for us: Latin
        resolves from Inter, Arabic falls through to IBM Plex Sans Arabic. A mixed
@@ -43,11 +46,13 @@
     --color-card: var(--card);
     --color-foreground: var(--foreground);
     --color-background: var(--background);
-    /* Semantic status tier (UX-01). A SEPARATE tier from the brand: `--primary`
-       is a gold at hue 92, which is also where a warning colour naturally sits,
-       so anything tinted with the brand reads as brand rather than as caution.
-       Status components must reference these tokens and never --primary/--brand
-       (enforced by the hr/no-brand-in-status lint rule).
+    /* Semantic status tier (UX-01). A SEPARATE tier from the brand. Since DS-01
+       `--primary` is near-black (the People & Gro system has no brand hue), so the
+       original gold-vs-warning collision is gone — but the separation still
+       matters: colour in this interface is reserved for MEANING, and the primary
+       is the one thing that must never carry a status. Status components
+       reference these tokens and never --primary/--brand (enforced by the
+       hr/no-brand-in-status lint rule).
 
        Three roles per tone:
          --status-X          the tone itself — text, dots, icons, and any
@@ -87,37 +92,55 @@
     --card-foreground: oklch(0.145 0 0);
     --popover: oklch(1 0 0);
     --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.852 0.199 91.936);
-    --primary-foreground: oklch(0.421 0.095 57.708);
-    --secondary: oklch(0.967 0.001 286.375);
-    --secondary-foreground: oklch(0.21 0.006 285.885);
+    /* DS-01: the People & Gro system is value-driven, not hue-driven — primary is
+       neutral-900, and emphasis comes from contrast. This one token is what
+       turns the primary buttons, active-state fills and the skip link from gold
+       to near-black. (The brand MARK keeps its own colours: BrandMark and the
+       login panel use sampled constants, not this token — the logo is artwork,
+       not interface chrome.) */
+    --primary: oklch(0.205 0 0);
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.97 0 0);
+    --secondary-foreground: oklch(0.205 0 0);
     --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
+    /* DS-01: neutral-500 (0.556) is the system's secondary text, and on its own
+       muted surface (neutral-100) it measures 4.34:1 — below AA. The same pair was
+       ours before DS-01 too, so this is a pre-existing defect the extended contrast
+       script surfaced, not one the redesign introduced. 0.546 is the first value
+       that clears 4.5:1 on white, sidebar AND muted; 0.54 leaves a little headroom.
+       A one-percent lightness shift — invisible, and now measured. */
+    --muted-foreground: oklch(0.54 0 0);
     --accent: oklch(0.97 0 0);
     --accent-foreground: oklch(0.205 0 0);
     --destructive: oklch(0.577 0.245 27.325);
     --border: oklch(0.922 0 0);
     --input: oklch(0.922 0 0);
     --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.905 0.182 98.111);
-    --chart-2: oklch(0.795 0.184 86.047);
-    --chart-3: oklch(0.681 0.162 75.834);
-    --chart-4: oklch(0.554 0.135 66.442);
-    --chart-5: oklch(0.476 0.114 61.907);
+    /* DS-01: the system's neutral VALUE ladder (950/400/700/300/500). It ALTERNATES
+       dark and light rather than descending, so adjacent CATEGORICAL series stay
+       separable. Nothing consumes these yet; if an ORDERED series ever needs a
+       ramp, sort them by lightness rather than using them in this order. */
+    --chart-1: oklch(0.145 0 0);
+    --chart-2: oklch(0.708 0 0);
+    --chart-3: oklch(0.371 0 0);
+    --chart-4: oklch(0.87 0 0);
+    --chart-5: oklch(0.556 0 0);
+    /* 10px. The derived scale (sm 6 · md 8 · lg 10 · xl 14 · 2xl 18 · 3xl 22 ·
+       4xl 26) already matches the People & Gro system step for step. */
     --radius: 0.625rem;
     --sidebar: oklch(0.985 0 0);
     --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.681 0.162 75.834);
-    --sidebar-primary-foreground: oklch(0.987 0.026 102.212);
+    --sidebar-primary: oklch(0.205 0 0);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
     --sidebar-accent: oklch(0.97 0 0);
     --sidebar-accent-foreground: oklch(0.205 0 0);
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.708 0 0);
-    /* UX-01: lifted off pure white. --card/--popover stay at 1.0, so a card now
-       reads as a raised surface rather than as a hairline outline on the same
-       colour. Biased very slightly warm (hue 95) toward the gold accent — a
-       chosen neutral, not an inherited grey. */
-    --background: oklch(0.975 0.003 95);
+    /* DS-01: back to white. UX-01 lifted the page off white so cards would read
+       as surfaces against it; the People & Gro system solves the same problem
+       with a RING on every surface instead, so the ground can stay flat white
+       and the warm bias (which only made sense beside a gold accent) goes. */
+    --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
 
     /* Status tones — ratios measured, not asserted (evidence/ux/UX-01.md).
@@ -192,5 +215,12 @@
     }
   html {
     @apply font-sans;
+    }
+  /* DS-01: page titles in the display face, at the system's tracking for 20–24px.
+     Only h1 — card and section titles stay Inter Medium, as the system specifies
+     ("the kit sets titles in Inter Medium rather than Geist"). */
+  h1 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.01em;
     }
 }
