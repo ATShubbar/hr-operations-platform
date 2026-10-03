@@ -22,6 +22,7 @@ One decision per file, numbered in creation order. A record is never edited to c
 | [ADR-008](ADR-008-modular-monolith-and-stack.md) | Modular monolith, single deployment, tech stack | Accepted |
 | [ADR-009](ADR-009-google-calendar-data-minimization.md) | Google Calendar integration with data minimization | Accepted |
 | [ADR-010](ADR-010-cloud-portability.md) | Cloud portability — the provider-neutral interface contract | Accepted |
+| [ADR-011](ADR-011-employee-self-service.md) | Employee self-service — a third principal, isolated to one employee record | Accepted (amends ADR-002; architecture.md v1.5) |
 
 ## Template
 

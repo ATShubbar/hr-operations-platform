@@ -26,8 +26,8 @@ build contract. Changes go through ADRs (adr/), never through drift.
 
 | File | What |
 |---|---|
-| architecture.md | Frozen v1.4 build contract |
-| adr/README.md | Decision index (ADR-001..010, statuses) |
+| architecture.md | Frozen build contract — **v1.5** (ADR-011 employee self-service) |
+| adr/README.md | Decision index (ADR-001..011, statuses) |
 | BACKLOG.md | Task board + cards + working rules |
 | ACTION-PLAN.md | Phased plan, DoD checklists with evidence rule |
 | evidence/skeleton/ | Per-task proof (WS-01..) |
@@ -804,6 +804,21 @@ longer type-checks; status is StatusPill (employee record converted). New **`Sta
 UX-04) on Expiry + Reports. Verified 15 routes × 2 locales × 2 widths + 16 portal. Next: the
 screen cards (DS-04+, need the owner's full prototype download) or ARCH-SS; GCP-01 still
 awaiting approval.
+**ARCH-SS done — employee self-service is IN the architecture (ADR-011, architecture.md
+v1.5).** Reverses v1.1's "employees are managed records, not users". Owner chose: **email +
+password** (existing login) · **staff-invited** accounts (HR Officer/Company Admin,
+`employee-user.*`) · employees see their **full own record** (profile, available docs, gov
+identifiers WITH numbers, pay), read-only, changes via requests · **client reps see
+employee-raised requests**. Third principal `employee` bound to an `employee_id`; the client
+is DERIVED at sign-in (a sponsorship transfer follows the record). **Isolation is the
+narrowest in the system — one record:** app scoping + RLS on `app.employee_id` (never the
+company-wide client policies), and the harness probes a **same-client other employee**
+(scope name `employee` — `self` is CONF-03's). Per-client `flag.employee-self-service`,
+default off. Lives in a delivery module `modules/self-service`, which also orchestrates
+invites and reacts to termination by calling Auth (Auth, a foundation module, must not
+subscribe to domain events). Matrix has an "Employee (self)" column + an employee-accounts
+row. **Known gaps:** password reset + real email are prerequisites (SS-06); no-email
+employees excluded; ar/en only for an expatriate workforce. Build = SS-01..07, all planned.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

@@ -1,10 +1,11 @@
 # HR Operations Platform — Architecture
 
 ## Version
-**v1.4 — FROZEN as Version 1 (2026-07-18).**
+**v1.5 — FROZEN (v1.4 frozen 2026-07-18; v1.5 amended by ADR-011, 2026-10-03).**
 This document is the build contract. Changes now require either a new ADR (for decisions) or an explicit unfreeze with a version bump — implementation drift is not a change mechanism. Implementation work is tracked in `BACKLOG.md`.
 
 ### Changelog
+- **v1.5** — **Employee self-service brought into scope (ADR-011)**, reversing the v1.1 exclusion: a third principal type (`employee`, bound to one employee record), staff-invited accounts, email + password sign-in, a per-client opt-in flag, read-only access to one's own record (profile, documents, government data including numbers, pay) plus raising requests; isolation narrower than the client company (application scoping + RLS on `app.employee_id`, a same-client "other employee" probe in CI); "Employee (self)" column and an employee-accounts row added to the permission matrix; `Employee Self-Service` added as a delivery module.
 - **v1.4** — Added permission naming convention (`resource.action`); widened Google Calendar whitelist (names, titles, attachments allowed; government identifiers and compensation data remain prohibited); Configuration settings split into explicit system / per-client / per-user levels with precedence; walking-skeleton DoD items in `ACTION-PLAN.md` now require linked evidence. ADR-002, ADR-005, ADR-009 revised accordingly.
 - **v1.3** — Created `adr/` folder with numbered Architecture Decision Records (ADR-001…009) and an index/template in `adr/README.md`. Decisions of record now live there; this document holds the stable principles and links to them.
 - **v1.2** — Added role-permission matrix; Google Calendar redesigned around data minimization (interview/invitation scheduling only, explicit field whitelist); localization made configurable with Saudi defaults; added module dependency graph; walking-skeleton definitions of done added to `ACTION-PLAN.md`; RLS+Prisma spike formalized in `SPIKE-001-rls-prisma-pooling.md`.
@@ -33,15 +34,17 @@ There is no multi-consultancy tenancy in scope. The enforced isolation boundary 
 - Every client-owned record carries a mandatory `client_id` (including child tables — denormalized, never derived through joins).
 - **Consultancy staff** access records across clients according to their role and permissions.
 - **Client company representatives** (Client Admin / Client User) are hard-isolated to their own client company's records. No cross-client visibility, ever.
-- Enforcement is layered: application-level scoping in every query **plus PostgreSQL Row-Level Security as a fail-closed backstop** for client-representative sessions. A missed `where` clause must fail closed, not leak.
-- Automated cross-client isolation tests run in CI: every client-facing endpoint is probed with a wrong-client principal; any leak is a build failure.
+- **Employees** using self-service (ADR-011) are hard-isolated to **their own employee record** — a boundary narrower than the client company. No visibility of colleagues, including colleagues at the same client.
+- Enforcement is layered: application-level scoping in every query **plus PostgreSQL Row-Level Security as a fail-closed backstop** for client-representative and employee sessions (employee sessions on `app.employee_id`, never on the company-wide client policies). A missed `where` clause must fail closed, not leak.
+- Automated cross-client isolation tests run in CI: every client-facing endpoint is probed with a wrong-client principal, and every employee-facing endpoint with **another employee of the same client** and an employee of another client; any leak is a build failure.
 
 *Future note:* if the product later becomes multi-consultancy SaaS, a top-level organization scope would wrap this model. We do not build it now; we simply avoid schema decisions that would make it impossible (no global uniqueness constraints on business identifiers that should be per-organization).
 
 ## Users & Authorization
 
-**In scope:** consultancy staff and authorized client company representatives only.
-**Out of scope (v1 and current roadmap):** employee self-service. Employees are managed records, not users. The identity model keeps a future employee-actor possible but nothing is built for it.
+**In scope:** consultancy staff, authorized client company representatives, and — since v1.5 (ADR-011) — **employees using self-service** for their own record, where their client company has opted in.
+**Out of scope:** employee editing of their own record (changes are requested, and made by staff); leave, dependants; phone/SMS sign-in; languages beyond Arabic and English (a known gap for the expatriate workforce — see ADR-011).
+*History:* v1.1–v1.4 excluded employee self-service ("employees are managed records, not users"); ADR-011 reversed that on 2026-10-03.
 
 ### Roles
 | Role | Population | Scope |
@@ -55,13 +58,14 @@ There is no multi-consultancy tenancy in scope. The enforced isolation boundary 
 | Read Only | Consultancy | Read-only across permitted modules |
 | Client Admin | Client company | Own client's records; manages own client users |
 | Client User | Client company | Own client's records, reduced permissions |
+| Employee | Client company's workforce | **Own employee record only**, read-only + raise requests; staff-invited; per-client opt-in (ADR-011) |
 
 ### Authorization model
 - **Permission-based RBAC**: roles map to named permissions (`employee.read`, `document.upload`, …); code checks permissions, never role names.
 - **Deny by default**: an endpoint or query without an explicit permission check is inaccessible. Guards enforce this centrally (NestJS global guard + per-route permission metadata).
 - One central policy service (`can(actor, action, resource)`); no inline role conditionals scattered in handlers.
 - Field-level sensitivity is part of the model: e.g., client users may see iqama expiry but not salary; salary visibility is a distinct permission.
-- One identity system for both staff and client representatives (single user store, principal type + client binding on the user record); separate login surfaces if UX requires.
+- One identity system for staff, client representatives and employees (single user store; principal type `staff` / `client_rep` / `employee`; client reps carry a client binding, employees an **employee binding** from which the client is derived at sign-in — ADR-011); separate login surfaces if UX requires.
 - MFA available from day one; required for System Admin and Company Admin.
 
 ### Permission naming convention
@@ -78,6 +82,7 @@ Every permission follows one pattern: **`resource.action`** — lowercase, dot-s
 | System config & staff users | `config`, `staff-user` | `config.update`, `staff-user.create` |
 | Client companies | `client` | `client.read`, `client.create` |
 | Client portal users | `client-user` | `client-user.create` |
+| Employee self-service accounts | `employee-user` | `employee-user.invite` |
 | Employees — core profile | `employee` | `employee.read`, `employee.update` |
 | Employees — salary & financial | `salary` | `salary.read`, `salary.update` |
 | Employees — government data | `govdata` | `govdata.read`, `govdata.update` |
@@ -94,25 +99,26 @@ Every permission follows one pattern: **`resource.action`** — lowercase, dot-s
 ### Permission matrix (seed)
 
 Legend: **C**reate · **R**ead · **U**pdate · **D**elete/archive · **–** no access.
-Client Admin and Client User are always scoped to **their own client company only**. This matrix is the seed for the permission catalog; the catalog in code is authoritative, and anything not granted here is denied by default.
+Client Admin and Client User are always scoped to **their own client company only**; Employee is scoped to **their own employee record only**, and only where their client company has opted in (ADR-011). This matrix is the seed for the permission catalog; the catalog in code is authoritative, and anything not granted here is denied by default.
 
-| Capability / data | System Admin | Company Admin | Recruiter | HR Officer | GRO Officer | Finance | Read Only | Client Admin | Client User |
-|---|---|---|---|---|---|---|---|---|---|
-| System config & staff users | CRUD | R | – | – | – | – | – | – | – |
-| Client companies | CRUD | CRUD | R | R | R | R | R | R (own) | R (own) |
-| Client portal users | R | R | – | – | – | – | – | CRUD (own) | – |
-| Employees — core profile | R | CRUD | R | CRUD | RU | R | R | R (own) | R (own) |
-| Employees — salary & financial | R | R | – | RU | – | RU | – | – | – |
-| Employees — government data (iqama, visas, GOSI) | R | R | – | R | CRUD | – | R | R (own, expiry/status only) | R (own, expiry/status only) |
-| Documents | R | CRUD | CRUD (recruitment docs) | CRUD | CRUD (gov docs) | R | R | CR (own) | R (own) |
-| Recruitment (vacancies, candidates, pipeline) | R | RU | CRUD | R | – | – | R | R (own vacancies) | R (own vacancies) |
-| GRO workflows | R | RU | – | R | CRUD | – | R | R (own, status only) | R (own, status only) |
-| Requests | R | CRUD | R | RU (process) | RU (process) | R | R | CRU (own) | CR (own) |
-| Tasks (internal) | R | CRUD | CRU (own/assigned) | CRU (own/assigned) | CRU (own/assigned) | CRU (own/assigned) | R | – | – |
-| Calendar | R | CRUD | CRU (own) | CRU (own) | CRU (own) | CRU (own) | R | – | – |
-| Reports | R | R | R (recruitment) | R (HR ops) | R (GRO) | R (financial) | R | R (own summary) | – |
-| Audit logs | R | R | – | – | – | – | – | – | – |
-| Notification preferences | CRUD (all) | CRUD (all) | U (own) | U (own) | U (own) | U (own) | U (own) | U (own) | U (own) |
+| Capability / data | System Admin | Company Admin | Recruiter | HR Officer | GRO Officer | Finance | Read Only | Client Admin | Client User | Employee (self) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| System config & staff users | CRUD | R | – | – | – | – | – | – | – | – |
+| Client companies | CRUD | CRUD | R | R | R | R | R | R (own) | R (own) | – |
+| Client portal users | R | R | – | – | – | – | – | CRUD (own) | – | – |
+| Employee self-service accounts (ADR-011) | R | CRU | – | CRU | – | – | – | – | – | – |
+| Employees — core profile | R | CRUD | R | CRUD | RU | R | R | R (own) | R (own) | R (self) |
+| Employees — salary & financial | R | R | – | RU | – | RU | – | – | – | R (self) |
+| Employees — government data (iqama, visas, GOSI) | R | R | – | R | CRUD | – | R | R (own, expiry/status only) | R (own, expiry/status only) | R (self, incl. numbers) |
+| Documents | R | CRUD | CRUD (recruitment docs) | CRUD | CRUD (gov docs) | R | R | CR (own) | R (own) | R (self, available only) |
+| Recruitment (vacancies, candidates, pipeline) | R | RU | CRUD | R | – | – | R | R (own vacancies) | R (own vacancies) | – |
+| GRO workflows | R | RU | – | R | CRUD | – | R | R (own, status only) | R (own, status only) | – |
+| Requests | R | CRUD | R | RU (process) | RU (process) | R | R | CRU (own) | CR (own) | CR (self-raised) |
+| Tasks (internal) | R | CRUD | CRU (own/assigned) | CRU (own/assigned) | CRU (own/assigned) | CRU (own/assigned) | R | – | – | – |
+| Calendar | R | CRUD | CRU (own) | CRU (own) | CRU (own) | CRU (own) | R | – | – | – |
+| Reports | R | R | R (recruitment) | R (HR ops) | R (GRO) | R (financial) | R | R (own summary) | – | – |
+| Audit logs | R | R | – | – | – | – | – | – | – | – |
+| Notification preferences | CRUD (all) | CRUD (all) | U (own) | U (own) | U (own) | U (own) | U (own) | U (own) | U (own) | U (own) |
 
 ## Tech Stack
 ### Frontend
@@ -170,8 +176,9 @@ Invariants (not configurable):
 8. Tasks
 9. Calendar
 10. Client Portal (delivery surface over existing modules — client-scoped views, no business logic of its own)
-11. Reporting
-12. Billing (future)
+11. Employee Self-Service — "Me" (delivery surface over Employees, Documents, Requests — one employee's own record, no business logic of its own; ADR-011)
+12. Reporting
+13. Billing (future)
 
 ## Shared Modules
 - Notifications (in-app + email in v1; SMS/WhatsApp via KSA-local provider later)
@@ -308,6 +315,7 @@ graph TD
 | 8 | **Client Portal** | Thin, client-scoped delivery surface over Employees, Documents, Requests; ships once there is real data and workflows to expose; first hard test of RLS + client-representative auth in production |
 | 9 | **Calendar + Google Calendar integration** | Depends on Tasks/Requests/GRO deadlines being real; integration guardrails per Integrations section |
 | 10 | **Reporting** | Reads everything; v1 = transactional queries + materialized views on the primary — no warehouse, no ETL |
+| 11 | **Employee self-service** (ADR-011) | Needs Employees, Documents, Requests and the client-portal isolation pattern proven in production first; a password-reset flow and a real email transport are prerequisites |
 | — | **Future**: Billing (ZATCA-ready), government connectors, SMS/WhatsApp notifications, AI & automation | Explicitly out of current scope |
 
 ## AI Master Prompt
@@ -316,7 +324,7 @@ You are a Principal Software Architect helping build an enterprise HR Operations
 
 Rules:
 - Modular Monolith only. Next.js + NestJS + PostgreSQL + Prisma.
-- One consultancy, many client companies: every client-owned table carries `client_id`; client representatives are hard-isolated to their own client.
+- One consultancy, many client companies: every client-owned table carries `client_id`; client representatives are hard-isolated to their own client; employees (self-service, ADR-011) are hard-isolated to their own employee record.
 - Deny-by-default authorization: no endpoint or query ships without an explicit permission check.
 - Never generate code outside the current module; modules interact only via `public-api.ts` services and domain events. No cross-module DB access.
 - Every capability has exactly one owning module; prefer minimal duplication over cross-module coupling.

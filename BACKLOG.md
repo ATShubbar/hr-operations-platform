@@ -2291,7 +2291,7 @@ Nitaqat reporting; request comments + attachments; saved views; a "viewing as" r
 | DS-02 | Shell: sidebar + header in the prototype's structure | DS-01 | **done** |
 | DS-03 | Primitives: full-grid `DataTable`, badges vs status pills, card/stat blocks | DS-01 | **done** |
 | DS-04+ | Screens, one per card: Overview, People + tabbed person record, Clients + record, Work queue, Requests, Hiring, Calendar (month/week), Reports, Audit | DS-02, DS-03, full prototype download | planned |
-| ARCH-SS | Architecture amendment: employee self-service (reverses architecture.md line 44) | owner decision (done) | planned |
+| ARCH-SS | Architecture amendment: employee self-service (reverses architecture.md line 44) | owner decision (done) | **done** — ADR-011, architecture.md v1.5 ([evidence](evidence/arch/ARCH-SS.md)) |
 
 ### DS-01 — Foundation: the People & Gro design system, monochrome
 - **Objective:** move the token layer to the redesign's system so later screen cards inherit
@@ -2366,6 +2366,39 @@ Nitaqat reporting; request comments + attachments; saved views; a "viewing as" r
   never mapped to red — only the type allowed it. **DS-02 corrected:** Chrome 152 skips
   letter-spacing on Arabic (147.92px at 0 / 0.025em / 0.2em). Found-not-fixed: audit actor
   names in mono; expiry's filter row still form + Apply.
+
+### ARCH-SS — Employee self-service enters the architecture (ADR-011, v1.5)
+- **Objective:** amend the frozen contract so employees can sign in to their own file;
+  record the decision and plan the build. **No code.**
+- **Files:** NEW `adr/ADR-011-employee-self-service.md`; `architecture.md` (→ v1.5),
+  `adr/ADR-002-authorization-model.md` (amendment note), `adr/README.md`, `ACTION-PLAN.md`,
+  `BACKLOG.md`, `CLAUDE.md`.
+- **DoD:** ADR-011 written with options + decision + consequences; architecture.md v1.5 with
+  the scope line, roles, identity, isolation and a full "Employee (self)" matrix column; no
+  document left claiming self-service is out of scope except marked history; SS epic planned.
+- **Evidence:** `evidence/arch/ARCH-SS.md`.
+- **Dependencies:** owner decision (DS epic, 2026-10-03). **Decisions (owner, all four
+  recommended):** email + password · staff-invited accounts · employees see their full own
+  record incl. identifier numbers and pay, read-only · client reps see employee-raised
+  requests. Card defaults: per-client opt-in flag (off), isolation to ONE record (RLS on
+  `app.employee_id`, never the company-wide client policies) with a same-client
+  "other employee" CI probe, changes via requests only. **Design correction while writing:**
+  the first draft had Auth subscribe to the termination event — a foundation module
+  depending on a domain module; moved to `modules/self-service`, which calls Auth's public
+  API. **Risks:** SS-06 needs a real email transport (invitations + password reset); no-email
+  employees excluded; ar/en only for a largely expatriate workforce (known gap).
+
+### SS epic — employee self-service (ADR-011)
+
+| ID | Task | Depends on | Status |
+|---|---|---|---|
+| SS-01 | Identity: `employee` principal type + `employee_id` binding (migration); one email = one account across principals; sign-in derives the client from the record | ARCH-SS | planned |
+| SS-02 | Isolation: `app.employee_id` GUC (SPIKE-001 `NULLIF` form) + RLS policies on employee-scoped tables + harness scope **`employee`** (NOT `self` — that name is taken by CONF-03's per-user endpoints) probing a same-client other employee and an other-client employee | SS-01 | planned |
+| SS-03 | Permissions + "Me" API: `employee` role, whitelisted self view in Employees, `modules/self-service`, `flag.employee-self-service` (per client, default off) | SS-02 | planned |
+| SS-04 | My documents: list (`available` only) + presigned download | SS-03 | planned |
+| SS-05 | My requests: raise + track; client reps see them | SS-03 | planned |
+| SS-06 | Accounts: staff invitation (`employee-user.*`), set password from the link, password reset, deactivate + revoke on termination (event → self-service → Auth) | SS-03; **real email transport for production** | planned |
+| SS-07 | "Me" web screens — phone-first (375px), ar/en, RTL | SS-04, SS-05 | planned |
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

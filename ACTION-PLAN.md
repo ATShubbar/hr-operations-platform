@@ -130,7 +130,7 @@ Each step has a binary, demonstrable exit condition. The skeleton is not "mostly
 | 5.4 | **Reporting**: transactional queries + materialized views; permission-filtered; export | 4.1–4.4 |
 
 ## Explicitly deferred (do not build, do not partially build)
-- Employee self-service (identity model keeps the door open; nothing else)
+- ~~Employee self-service~~ — **moved into scope 2026-10-03 by ADR-011** (architecture.md v1.5); implementation is the SS epic in `BACKLOG.md`.
 - Government platform connectors (schemas are connector-ready; that is the entire v1 commitment)
 - Billing / ZATCA e-invoicing
 - SMS/WhatsApp notification channels
