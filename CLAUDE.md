@@ -780,7 +780,19 @@ composed with Plex (`adjustFontFallback: false`) — Latin h1 432.20 = Geist, Ar
 Plex (Arial 630.28); only `h1` takes it. StatusPill takes the soft SHAPE, keeps our AA tones.
 **Pre-existing AA failure surfaced + fixed:** muted-foreground on muted measured 4.34:1 (the
 system's pair AND ours before) → `.54`, now 4.64–5.06:1 on every ground. Verified 14 screens ×
-2 locales × 2 widths + portal + login (CLS 0). Next: DS-02 shell, DS-03 primitives (full-grid
+2 locales × 2 widths + portal + login (CLS 0).
+**DS-02 done — the shell:** sidebar 248px, 56px brand row + header, 36px rows / radius 8 /
+16px icons, uppercase group labels (tracking **LTR-only** — letter-spacing breaks Arabic
+joins), a pinned **`NavFoot`** (Settings → initials avatar + name + role → sign-out icon;
+sign-out LEFT the header) rendered by sidebar and sheet alike. **The header carries a location
+line** (`header-location.tsx`: `PEOPLE&GRO / screen / record`; record screens publish their
+name via `useRecordLabel`) — this **reverses the UI/UX epic's no-breadcrumbs decision** on the
+owner's call; only the screen crumb links, and the current crumb has NO `aria-current` (the nav
+row owns it — UX-11's one-per-screen). **Nav counts** (open requests, my unfinished tasks) via
+`NavCountsProvider`: existing endpoints, **exactly 2 extra requests per app load on a prod
+build** (dev shows 4 = StrictMode), **staff-only** because client reps also hold
+`request.read`. Active row keeps its weight (owner-approved deviation). Verified 14 screens ×
+2 locales × 2 widths + record crumb + 4 portal screens × 4. Next: DS-03 primitives (full-grid
 tables), then screens; GCP-01 still awaiting approval.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
@@ -796,6 +808,11 @@ tables), then screens; GCP-01 still awaiting approval.
 - Local ports: Postgres 5433, Redis 6380, MinIO 9002 (API) / 9003 (console) — non-default because 5432/6379/9000 belong to other local tooling. `docker compose up -d` now includes MinIO; storage e2e (STOR-01) requires it up. StorageService is endpoint-configurable + `forcePathStyle` (MinIO); prod object-store provider is still ADR-006-open. Presigned uploads go browser→object-store DIRECTLY (never through the API); this works on MinIO's default CORS locally — a stricter production object store must have CORS configured for the web origin (DOC-05).
 - Tailwind v4 `@theme` only EMITS a utility when the class appears in scanned source — a new token is not a usable class until something references it. Verify with a real consumer, not by injecting a class at runtime.
 - Do NOT run `next build` (prod) while the web dev/preview server is running — it clobbers `.next` and the dev server then throws `Cannot find module './NNN.js'`. Stop the dev server first, or verify only via the dev server (AUTH-08).
+- The Browser pane SCALES an emulated viewport larger than the pane (e.g. 1280 in a ~600px
+  pane), and coordinate clicks then drift — a click aimed at one nav row lands on another.
+  Click at a size that fits the pane (375), or verify the handler with `element.click()`;
+  for layout sweeps, load each route in a same-origin `<iframe>` sized to the width — each
+  frame is its own media-query viewport and nothing is clicked (DS-02).
 - Chrome throttles `setTimeout` to ~1s in a non-foreground tab, so ANY in-browser timing
   measured through timers is quantised to multiples of 1000ms (UX-05: readings of 999/1000/
   3999/5001/6000 looked like an app bug and were the browser). Foreground the tab, or don't

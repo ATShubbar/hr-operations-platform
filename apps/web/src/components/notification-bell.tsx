@@ -38,7 +38,7 @@ function BellIcon() {
       strokeWidth="1.8"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="h-5 w-5"
+      className="size-4"
       aria-hidden="true"
     >
       <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
@@ -127,7 +127,7 @@ export function NotificationBell() {
           <button
             type="button"
             aria-label={t('open')}
-            className="relative flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+            className="relative flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           />
         }
       >
@@ -184,7 +184,10 @@ export function NotificationBell() {
                 >
                   <div className="flex w-full items-center gap-2">
                     {!n.readAt && (
-                      <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" aria-hidden="true" />
+                      <span
+                        className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
+                        aria-hidden="true"
+                      />
                     )}
                     <span className="flex-1 text-sm font-medium">
                       {locale === 'ar' ? n.title.ar : n.title.en}

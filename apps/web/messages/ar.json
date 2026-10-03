@@ -79,7 +79,11 @@
     "skipToContent": "تخطَّ إلى المحتوى",
     "groupClients": "العملاء",
     "groupOperations": "العمليات",
-    "groupRecruitment": "التوظيف"
+    "groupRecruitment": "التوظيف",
+    "consoleSubtitle": "لوحة العمليات",
+    "location": "الموقع",
+    "countRequests": "{count, plural, zero {لا طلبات بانتظار المعالجة} one {طلب واحد بانتظار المعالجة} two {طلبان بانتظار المعالجة} few {# طلبات بانتظار المعالجة} many {# طلبًا بانتظار المعالجة} other {# طلب بانتظار المعالجة}}",
+    "countTasks": "{count, plural, zero {لا مهام مسندة إليك} one {مهمة واحدة مسندة إليك} two {مهمتان مسندتان إليك} few {# مهام مسندة إليك} many {# مهمة مسندة إليك} other {# مهمة مسندة إليك}}"
   },
   "documents": {
     "title": "المستندات",

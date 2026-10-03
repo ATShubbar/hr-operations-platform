@@ -2,17 +2,31 @@
 
 import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
-import { AppNav } from '@/components/app-nav';
+import { AppNav, NavFoot } from '@/components/app-nav';
 import { BrandMark } from '@/components/brand-mark';
+import { HeaderLocation, HeaderLocationProvider } from '@/components/header-location';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { MobileNav } from '@/components/mobile-nav';
+import { NavCountsProvider } from '@/components/nav-counts';
 import { NotificationBell } from '@/components/notification-bell';
-import { SignOutButton } from '@/components/sign-out-button';
 
 // Authenticated app shell (AUDIT-05, made role-aware in AUTH-08). The link list
 // itself moved to AppNav in UX-05 so the sidebar and the mobile sheet render the
-// same thing — see that file for why.
+// same thing — see that file for why. DS-02 took the People & Gro console's
+// geometry: a 248px sidebar with a 56px brand row and a pinned identity foot,
+// and a 56px header that carries LOCATION (HeaderLocation) rather than account
+// controls — sign-out moved down to the identity it ends.
 export function AppShell({ children }: { children: ReactNode }) {
+  return (
+    <NavCountsProvider>
+      <HeaderLocationProvider>
+        <ShellFrame>{children}</ShellFrame>
+      </HeaderLocationProvider>
+    </NavCountsProvider>
+  );
+}
+
+function ShellFrame({ children }: { children: ReactNode }) {
   const t = useTranslations();
 
   return (
@@ -32,36 +46,45 @@ export function AppShell({ children }: { children: ReactNode }) {
         {t('nav.skipToContent')}
       </a>
 
-      {/* 260px, up from 240: the grouped nav (UX-17) adds an icon column and an
-          identity block, and at 240 the longest labels truncated. */}
-      {/* `sticky top-0 h-dvh`: the nav now ends in a footer group pinned with
-          `mt-auto`, and without a viewport-height box that "bottom" is the
-          bottom of the PAGE — measured, Settings sat 2243px down on a long
-          screen. The sidebar owns its own scroll instead. */}
-      <aside className="hidden w-[260px] shrink-0 border-e bg-sidebar text-sidebar-foreground md:sticky md:top-0 md:flex md:h-dvh md:flex-col">
-        <div className="flex h-14 shrink-0 items-center px-4">
-          <BrandMark width={132} />
+      {/* 248px (DS-02, the design's width; UX-17 had widened to 260 for its
+          identity block, which now lives in the foot).
+
+          `sticky top-0 h-dvh`: without a viewport-height box the pinned foot's
+          "bottom" is the bottom of the PAGE — measured in UX-17, the footer sat
+          2243px down a long screen. The nav owns its own scroll instead. */}
+      <aside className="hidden w-[248px] shrink-0 border-e bg-sidebar text-sidebar-foreground md:sticky md:top-0 md:flex md:h-dvh md:flex-col">
+        <div className="flex h-14 shrink-0 flex-col items-start justify-center gap-1 border-b px-4">
+          {/* The mark keeps its artwork colours on the navy chip (UX-15) — the
+              design's monochrome tile is a placeholder for a logo we have. */}
+          <BrandMark width={104} className="px-2 py-1.5" />
+          <span className="text-[11px] leading-[13px] text-muted-foreground">
+            {t('nav.consoleSubtitle')}
+          </span>
         </div>
         <AppNav className="min-h-0 overflow-y-auto" />
+        <NavFoot />
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 items-center gap-2 border-b px-4 md:gap-4">
+        <header className="flex h-14 shrink-0 items-center gap-2 border-b bg-background px-4 md:gap-3 md:px-6">
           {/* The mobile entry point into the nav (UX-05); the sidebar takes over
               at md, so both the trigger and the sheet are md:hidden. */}
           <MobileNav />
-          <span className="truncate text-sm font-medium md:hidden">{t('nav.console')}</span>
-          <div className="ms-auto flex shrink-0 items-center gap-1 md:gap-2">
+          <HeaderLocation />
+          <div className="ms-auto flex shrink-0 items-center gap-1">
             <NotificationBell />
-            <LanguageSwitcher />
-            <SignOutButton />
+            <LanguageSwitcher className="inline-flex h-8 items-center rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground" />
           </div>
         </header>
         {/* tabIndex={-1} is what makes the skip link actually SKIP: a hash link
             to a non-focusable element scrolls and leaves focus where it was, so
             the next Tab returns to the nav — the failure mode that makes half
             the skip links on the web decorative. */}
-        <main id="main-content" tabIndex={-1} className="min-w-0 flex-1 px-4 py-6 outline-none md:px-6">
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="min-w-0 flex-1 px-4 py-6 outline-none md:px-6"
+        >
           {children}
         </main>
       </div>

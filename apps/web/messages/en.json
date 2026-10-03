@@ -79,7 +79,11 @@
     "skipToContent": "Skip to content",
     "groupClients": "Clients",
     "groupOperations": "Operations",
-    "groupRecruitment": "Recruitment"
+    "groupRecruitment": "Recruitment",
+    "consoleSubtitle": "Operations console",
+    "location": "Location",
+    "countRequests": "{count, plural, one {# request waiting} other {# requests waiting}}",
+    "countTasks": "{count, plural, one {# task assigned to you} other {# tasks assigned to you}}"
   },
   "documents": {
     "title": "Documents",

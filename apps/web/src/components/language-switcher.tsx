@@ -4,7 +4,11 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Link, usePathname } from '@/i18n/navigation';
 import { apiFetch } from '@/lib/api';
 
-export function LanguageSwitcher() {
+export function LanguageSwitcher({
+  className = 'text-sm underline underline-offset-4',
+}: {
+  className?: string;
+}) {
   const locale = useLocale();
   const pathname = usePathname();
   const t = useTranslations('common');
@@ -22,12 +26,7 @@ export function LanguageSwitcher() {
   };
 
   return (
-    <Link
-      href={pathname}
-      locale={other}
-      onClick={persist}
-      className="text-sm underline underline-offset-4"
-    >
+    <Link href={pathname} locale={other} onClick={persist} className={className}>
       {t('switchLanguage')}
     </Link>
   );

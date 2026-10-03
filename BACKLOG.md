@@ -2288,7 +2288,7 @@ Nitaqat reporting; request comments + attachments; saved views; a "viewing as" r
 | ID | Task | Depends on | Status |
 |---|---|---|---|
 | DS-01 | Foundation: tokens, controls, overlays, display face — monochrome, Arabic- and AA-safe | — | **done** ([evidence](evidence/ux/DS-01.md)) |
-| DS-02 | Shell: sidebar + header in the prototype's structure | DS-01 | planned |
+| DS-02 | Shell: sidebar + header in the prototype's structure | DS-01 | **done** |
 | DS-03 | Primitives: full-grid `DataTable`, badges vs status pills, card/stat blocks | DS-01 | planned |
 | DS-04+ | Screens, one per card: Overview, People + tabbed person record, Clients + record, Work queue, Requests, Hiring, Calendar (month/week), Reports, Audit | DS-02, DS-03, full prototype download | planned |
 | ARCH-SS | Architecture amendment: employee self-service (reverses architecture.md line 44) | owner decision (done) | planned |
@@ -2320,6 +2320,30 @@ Nitaqat reporting; request comments + attachments; saved views; a "viewing as" r
   200ms transition mid-animation. **One sweep result discarded** (a portal check that ran still
   signed in as staff); re-run as the real client admin. Tables, the `Active` Badge, and the aged
   seed are explicitly deferred.
+
+### DS-02 — Shell: sidebar + header in the People & Gro console's structure
+- **Objective:** the frame every screen sits in takes the prototype's structure — 248px
+  sidebar, 56px brand row and header, 36px rows, a pinned identity foot, a location line —
+  keeping every route and permission gate.
+- **Files:** `components/{app-shell,app-nav,mobile-nav,notification-bell,language-switcher}.tsx`,
+  NEW `components/{header-location,nav-counts}.tsx`, `employees/[id]/page.tsx`,
+  `messages/{en,ar}.json`; `sign-out-button.tsx` deleted.
+- **DoD:** geometry 248/56/36/radius 8 measured; every screen in both locales at 1280 and 375
+  with 0px overflow; one `aria-current` per screen; sign-out reachable on desktop and in the
+  sheet; crumb correct on list and record screens; counts equal the API and absent without
+  permission; extra requests measured; no API change.
+- **Evidence:** `evidence/ux/DS-02.md`.
+- **Dependencies:** DS-01. **Risks/decisions:** three owner-approved calls — (1) the active
+  row keeps its WEIGHT (deviation from the system; UX-11's non-colour cue); (2) counts for
+  open Requests and my unfinished Tasks from existing endpoints, **exactly 2 extra requests
+  per app load measured on a production build** (dev shows 4 — StrictMode), staff-only
+  because client reps also hold `request.read`; (3) **the location line reverses the UI/UX
+  epic's no-breadcrumbs decision** — it names where you are and carries a record's name; only
+  the screen crumb links. Sign-out moved from the header to the identity foot. Two defects
+  caught by measuring: **two `aria-current` per screen** (nav row + crumb — the crumb's was
+  dropped, it is text not a link), and the sheet's sign-out at **y=937 in an 812px sheet**
+  (foot now pinned, nav scrolls). Group-label tracking is LTR-only — letter-spacing breaks
+  Arabic joins. Found-not-fixed: Today re-fetches `/auth/me`.
 
 ## Post-skeleton epics (not yet broken down — task cards authored when their phase starts)
 

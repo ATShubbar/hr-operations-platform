@@ -39,6 +39,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { useRecordLabel } from '@/components/header-location';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -81,6 +82,9 @@ export default function EmployeeDetailPage() {
   const [error, setError] = useState('');
   const [dialog, setDialog] = useState<DialogKind>(null);
   const [terminating, setTerminating] = useState(false);
+
+  // The header's location line ends in this employee's name (DS-02).
+  useRecordLabel(emp ? (locale === 'ar' ? emp.name.ar : emp.name.en) : null);
 
   async function load() {
     setLoading(true);
@@ -179,7 +183,12 @@ export default function EmployeeDetailPage() {
             {t(EMPLOYMENT_STATUS_KEY[emp.employmentStatus])}
           </Badge>
           {canTerminate && emp.employmentStatus !== 'terminated' && (
-            <Button variant="outline" size="sm" onClick={() => void terminate()} disabled={terminating}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => void terminate()}
+              disabled={terminating}
+            >
               {terminating ? t('terminating') : t('terminate')}
             </Button>
           )}
@@ -231,17 +240,39 @@ export default function EmployeeDetailPage() {
       >
         {emp.salary && (
           <CardContent className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
-            <Field label={t('fieldBasicSalary')} value={money(emp.salary.basicSalary, emp.salary.currency)} />
-            <Field label={t('fieldHousing')} value={money(emp.salary.housingAllowance, emp.salary.currency)} />
-            <Field label={t('fieldTransport')} value={money(emp.salary.transportAllowance, emp.salary.currency)} />
-            <Field label={t('fieldOther')} value={money(emp.salary.otherAllowances, emp.salary.currency)} />
-            <Field label={t('fieldGosiWage')} value={money(emp.salary.gosiWage, emp.salary.currency)} />
+            <Field
+              label={t('fieldBasicSalary')}
+              value={money(emp.salary.basicSalary, emp.salary.currency)}
+            />
+            <Field
+              label={t('fieldHousing')}
+              value={money(emp.salary.housingAllowance, emp.salary.currency)}
+            />
+            <Field
+              label={t('fieldTransport')}
+              value={money(emp.salary.transportAllowance, emp.salary.currency)}
+            />
+            <Field
+              label={t('fieldOther')}
+              value={money(emp.salary.otherAllowances, emp.salary.currency)}
+            />
+            <Field
+              label={t('fieldGosiWage')}
+              value={money(emp.salary.gosiWage, emp.salary.currency)}
+            />
             <Field
               label={t('fieldGosiBasis')}
-              value={emp.salary.gosiContributionBasis ? t(GOSI_BASIS_KEY[emp.salary.gosiContributionBasis]) : null}
+              value={
+                emp.salary.gosiContributionBasis
+                  ? t(GOSI_BASIS_KEY[emp.salary.gosiContributionBasis])
+                  : null
+              }
             />
             <Field label={t('fieldIban')} value={emp.salary.bankIban} mono />
-            <Field label={t('fieldWps')} value={emp.salary.wpsStatus ? t(WPS_KEY[emp.salary.wpsStatus]) : null} />
+            <Field
+              label={t('fieldWps')}
+              value={emp.salary.wpsStatus ? t(WPS_KEY[emp.salary.wpsStatus]) : null}
+            />
           </CardContent>
         )}
       </GroupCard>
@@ -258,29 +289,51 @@ export default function EmployeeDetailPage() {
         {emp.govdata && (
           <CardContent className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
             <Field label={t('fieldIqama')} value={emp.govdata.iqamaNumber} mono />
-            <Field label={t('fieldIqamaExpiry')} value={dualDate(emp.govdata.iqamaExpiry, locale)} />
+            <Field
+              label={t('fieldIqamaExpiry')}
+              value={dualDate(emp.govdata.iqamaExpiry, locale)}
+            />
             <Field label={t('fieldNationalId')} value={emp.govdata.nationalId} mono />
             <Field label={t('fieldBorder')} value={emp.govdata.borderNumber} mono />
             <Field label={t('fieldPassport')} value={emp.govdata.passportNumber} mono />
-            <Field label={t('fieldPassportExpiry')} value={dualDate(emp.govdata.passportExpiry, locale)} />
+            <Field
+              label={t('fieldPassportExpiry')}
+              value={dualDate(emp.govdata.passportExpiry, locale)}
+            />
             <Field label={t('fieldWorkPermit')} value={emp.govdata.workPermitNumber} mono />
-            <Field label={t('fieldWorkPermitExpiry')} value={dualDate(emp.govdata.workPermitExpiry, locale)} />
+            <Field
+              label={t('fieldWorkPermitExpiry')}
+              value={dualDate(emp.govdata.workPermitExpiry, locale)}
+            />
             <Field label={t('fieldGosiRegNo')} value={emp.govdata.gosiRegistrationNumber} mono />
             <Field
               label={t('fieldGosiRegStatus')}
-              value={emp.govdata.gosiRegistrationStatus ? t(GOSI_REG_KEY[emp.govdata.gosiRegistrationStatus]) : null}
+              value={
+                emp.govdata.gosiRegistrationStatus
+                  ? t(GOSI_REG_KEY[emp.govdata.gosiRegistrationStatus])
+                  : null
+              }
             />
             <Field label={t('fieldAbsher')} value={emp.govdata.absherServiceRef} mono />
             <Field
               label={t('fieldExitReentry')}
-              value={emp.govdata.exitReentryStatus ? t(EXIT_REENTRY_KEY[emp.govdata.exitReentryStatus]) : null}
+              value={
+                emp.govdata.exitReentryStatus
+                  ? t(EXIT_REENTRY_KEY[emp.govdata.exitReentryStatus])
+                  : null
+              }
             />
-            <Field label={t('fieldExitReentryExpiry')} value={dualDate(emp.govdata.exitReentryExpiry, locale)} />
+            <Field
+              label={t('fieldExitReentryExpiry')}
+              value={dualDate(emp.govdata.exitReentryExpiry, locale)}
+            />
           </CardContent>
         )}
       </GroupCard>
 
-      {dialog === 'core' && <CoreDialog emp={emp} onClose={() => setDialog(null)} onSaved={onSaved} />}
+      {dialog === 'core' && (
+        <CoreDialog emp={emp} onClose={() => setDialog(null)} onSaved={onSaved} />
+      )}
       {dialog === 'salary' && emp.salary && (
         <SalaryDialog emp={emp} onClose={() => setDialog(null)} onSaved={onSaved} />
       )}
@@ -301,15 +354,7 @@ function BackLink({ t }: { t: (k: string) => string }) {
   );
 }
 
-function Field({
-  label,
-  value,
-  mono,
-}: {
-  label: string;
-  value: string | null;
-  mono?: boolean;
-}) {
+function Field({ label, value, mono }: { label: string; value: string | null; mono?: boolean }) {
   return (
     <div className="space-y-0.5">
       <div className="text-xs text-muted-foreground">{label}</div>
@@ -556,18 +601,55 @@ function CoreDialog({ emp, onClose, onSaved }: DialogProps) {
   }
 
   return (
-    <EditDialog title={t('editCoreTitle')} onClose={onClose} onSubmit={onSubmit} saving={saving} err={err}>
+    <EditDialog
+      title={t('editCoreTitle')}
+      onClose={onClose}
+      onSubmit={onSubmit}
+      saving={saving}
+      err={err}
+    >
       <TextField label={t('nameEn')} value={f.nameEn} onChange={set('nameEn')} />
       <TextField label={t('nameAr')} value={f.nameAr} onChange={set('nameAr')} dir="rtl" />
-      <TextField label={t('fieldNationality')} value={f.nationality} onChange={set('nationality')} />
-      <SelectField label={t('fieldGender')} value={f.gender} onChange={set('gender')} options={GENDER_VALUES} labelFor={(v) => t(GENDER_KEY[v])} />
+      <TextField
+        label={t('fieldNationality')}
+        value={f.nationality}
+        onChange={set('nationality')}
+      />
+      <SelectField
+        label={t('fieldGender')}
+        value={f.gender}
+        onChange={set('gender')}
+        options={GENDER_VALUES}
+        labelFor={(v) => t(GENDER_KEY[v])}
+      />
       <TextField label={t('fieldJobTitleEn')} value={f.jobTitleEn} onChange={set('jobTitleEn')} />
-      <TextField label={t('fieldJobTitleAr')} value={f.jobTitleAr} onChange={set('jobTitleAr')} dir="rtl" />
+      <TextField
+        label={t('fieldJobTitleAr')}
+        value={f.jobTitleAr}
+        onChange={set('jobTitleAr')}
+        dir="rtl"
+      />
       <TextField label={t('fieldDepartment')} value={f.department} onChange={set('department')} />
-      <SelectField label={t('fieldContractType')} value={f.contractType} onChange={set('contractType')} options={CONTRACT_TYPE_VALUES} labelFor={(v) => t(CONTRACT_TYPE_KEY[v])} />
+      <SelectField
+        label={t('fieldContractType')}
+        value={f.contractType}
+        onChange={set('contractType')}
+        options={CONTRACT_TYPE_VALUES}
+        labelFor={(v) => t(CONTRACT_TYPE_KEY[v])}
+      />
       <DateField label={t('fieldHireDate')} value={f.hireDate} onChange={set('hireDate')} />
-      <DateField label={t('fieldContractEndDate')} value={f.contractEndDate} onChange={set('contractEndDate')} />
-      <SelectField label={t('fieldEmploymentStatus')} value={f.employmentStatus} onChange={set('employmentStatus')} options={EMPLOYMENT_STATUS_VALUES} labelFor={(v) => t(EMPLOYMENT_STATUS_KEY[v])} />
+      <DateField
+        label={t('fieldContractEndDate')}
+        value={f.contractEndDate}
+        onChange={set('contractEndDate')}
+      />
+      <SelectField
+        label={t('fieldEmploymentStatus')}
+        value={f.employmentStatus}
+        onChange={set('employmentStatus')}
+        options={EMPLOYMENT_STATUS_VALUES}
+        labelFor={(v) => t(EMPLOYMENT_STATUS_KEY[v])}
+      />
     </EditDialog>
   );
 }
@@ -603,16 +685,51 @@ function SalaryDialog({ emp, onClose, onSaved }: DialogProps) {
   }
 
   return (
-    <EditDialog title={t('editSalaryTitle')} onClose={onClose} onSubmit={onSubmit} saving={saving} err={err}>
-      <TextField label={t('fieldCurrency')} value={f.currency} onChange={set('currency')} dir="ltr" />
+    <EditDialog
+      title={t('editSalaryTitle')}
+      onClose={onClose}
+      onSubmit={onSubmit}
+      saving={saving}
+      err={err}
+    >
+      <TextField
+        label={t('fieldCurrency')}
+        value={f.currency}
+        onChange={set('currency')}
+        dir="ltr"
+      />
       <NumField label={t('fieldBasicSalary')} value={f.basicSalary} onChange={set('basicSalary')} />
-      <NumField label={t('fieldHousing')} value={f.housingAllowance} onChange={set('housingAllowance')} />
-      <NumField label={t('fieldTransport')} value={f.transportAllowance} onChange={set('transportAllowance')} />
-      <NumField label={t('fieldOther')} value={f.otherAllowances} onChange={set('otherAllowances')} />
+      <NumField
+        label={t('fieldHousing')}
+        value={f.housingAllowance}
+        onChange={set('housingAllowance')}
+      />
+      <NumField
+        label={t('fieldTransport')}
+        value={f.transportAllowance}
+        onChange={set('transportAllowance')}
+      />
+      <NumField
+        label={t('fieldOther')}
+        value={f.otherAllowances}
+        onChange={set('otherAllowances')}
+      />
       <NumField label={t('fieldGosiWage')} value={f.gosiWage} onChange={set('gosiWage')} />
-      <SelectField label={t('fieldGosiBasis')} value={f.gosiContributionBasis} onChange={set('gosiContributionBasis')} options={GOSI_BASIS_VALUES} labelFor={(v) => t(GOSI_BASIS_KEY[v])} />
+      <SelectField
+        label={t('fieldGosiBasis')}
+        value={f.gosiContributionBasis}
+        onChange={set('gosiContributionBasis')}
+        options={GOSI_BASIS_VALUES}
+        labelFor={(v) => t(GOSI_BASIS_KEY[v])}
+      />
       <TextField label={t('fieldIban')} value={f.bankIban} onChange={set('bankIban')} dir="ltr" />
-      <SelectField label={t('fieldWps')} value={f.wpsStatus} onChange={set('wpsStatus')} options={WPS_VALUES} labelFor={(v) => t(WPS_KEY[v])} />
+      <SelectField
+        label={t('fieldWps')}
+        value={f.wpsStatus}
+        onChange={set('wpsStatus')}
+        options={WPS_VALUES}
+        labelFor={(v) => t(WPS_KEY[v])}
+      />
     </EditDialog>
   );
 }
@@ -659,20 +776,89 @@ function GovdataDialog({ emp, onClose, onSaved }: DialogProps) {
   }
 
   return (
-    <EditDialog title={t('editGovdataTitle')} onClose={onClose} onSubmit={onSubmit} saving={saving} err={err}>
-      <TextField label={t('fieldIqama')} value={f.iqamaNumber} onChange={set('iqamaNumber')} dir="ltr" />
-      <DateField label={t('fieldIqamaExpiry')} value={f.iqamaExpiry} onChange={set('iqamaExpiry')} />
-      <TextField label={t('fieldNationalId')} value={f.nationalId} onChange={set('nationalId')} dir="ltr" />
-      <TextField label={t('fieldBorder')} value={f.borderNumber} onChange={set('borderNumber')} dir="ltr" />
-      <TextField label={t('fieldPassport')} value={f.passportNumber} onChange={set('passportNumber')} dir="ltr" />
-      <DateField label={t('fieldPassportExpiry')} value={f.passportExpiry} onChange={set('passportExpiry')} />
-      <TextField label={t('fieldWorkPermit')} value={f.workPermitNumber} onChange={set('workPermitNumber')} dir="ltr" />
-      <DateField label={t('fieldWorkPermitExpiry')} value={f.workPermitExpiry} onChange={set('workPermitExpiry')} />
-      <TextField label={t('fieldGosiRegNo')} value={f.gosiRegistrationNumber} onChange={set('gosiRegistrationNumber')} dir="ltr" />
-      <SelectField label={t('fieldGosiRegStatus')} value={f.gosiRegistrationStatus} onChange={set('gosiRegistrationStatus')} options={GOSI_REG_VALUES} labelFor={(v) => t(GOSI_REG_KEY[v])} />
-      <TextField label={t('fieldAbsher')} value={f.absherServiceRef} onChange={set('absherServiceRef')} dir="ltr" />
-      <SelectField label={t('fieldExitReentry')} value={f.exitReentryStatus} onChange={set('exitReentryStatus')} options={EXIT_REENTRY_VALUES} labelFor={(v) => t(EXIT_REENTRY_KEY[v])} />
-      <DateField label={t('fieldExitReentryExpiry')} value={f.exitReentryExpiry} onChange={set('exitReentryExpiry')} />
+    <EditDialog
+      title={t('editGovdataTitle')}
+      onClose={onClose}
+      onSubmit={onSubmit}
+      saving={saving}
+      err={err}
+    >
+      <TextField
+        label={t('fieldIqama')}
+        value={f.iqamaNumber}
+        onChange={set('iqamaNumber')}
+        dir="ltr"
+      />
+      <DateField
+        label={t('fieldIqamaExpiry')}
+        value={f.iqamaExpiry}
+        onChange={set('iqamaExpiry')}
+      />
+      <TextField
+        label={t('fieldNationalId')}
+        value={f.nationalId}
+        onChange={set('nationalId')}
+        dir="ltr"
+      />
+      <TextField
+        label={t('fieldBorder')}
+        value={f.borderNumber}
+        onChange={set('borderNumber')}
+        dir="ltr"
+      />
+      <TextField
+        label={t('fieldPassport')}
+        value={f.passportNumber}
+        onChange={set('passportNumber')}
+        dir="ltr"
+      />
+      <DateField
+        label={t('fieldPassportExpiry')}
+        value={f.passportExpiry}
+        onChange={set('passportExpiry')}
+      />
+      <TextField
+        label={t('fieldWorkPermit')}
+        value={f.workPermitNumber}
+        onChange={set('workPermitNumber')}
+        dir="ltr"
+      />
+      <DateField
+        label={t('fieldWorkPermitExpiry')}
+        value={f.workPermitExpiry}
+        onChange={set('workPermitExpiry')}
+      />
+      <TextField
+        label={t('fieldGosiRegNo')}
+        value={f.gosiRegistrationNumber}
+        onChange={set('gosiRegistrationNumber')}
+        dir="ltr"
+      />
+      <SelectField
+        label={t('fieldGosiRegStatus')}
+        value={f.gosiRegistrationStatus}
+        onChange={set('gosiRegistrationStatus')}
+        options={GOSI_REG_VALUES}
+        labelFor={(v) => t(GOSI_REG_KEY[v])}
+      />
+      <TextField
+        label={t('fieldAbsher')}
+        value={f.absherServiceRef}
+        onChange={set('absherServiceRef')}
+        dir="ltr"
+      />
+      <SelectField
+        label={t('fieldExitReentry')}
+        value={f.exitReentryStatus}
+        onChange={set('exitReentryStatus')}
+        options={EXIT_REENTRY_VALUES}
+        labelFor={(v) => t(EXIT_REENTRY_KEY[v])}
+      />
+      <DateField
+        label={t('fieldExitReentryExpiry')}
+        value={f.exitReentryExpiry}
+        onChange={set('exitReentryExpiry')}
+      />
     </EditDialog>
   );
 }

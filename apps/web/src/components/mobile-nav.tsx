@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Dialog as DialogPrimitive } from '@base-ui/react/dialog';
 import { MenuIcon } from 'lucide-react';
 
-import { AppNav } from '@/components/app-nav';
+import { AppNav, NavFoot } from '@/components/app-nav';
 import { BrandMark } from '@/components/brand-mark';
 import { Button } from '@/components/ui/button';
 import { usePathname } from '@/i18n/navigation';
@@ -70,7 +70,7 @@ export function MobileNav() {
       <DialogPrimitive.Portal>
         <DialogPrimitive.Backdrop className="fixed inset-0 z-50 bg-black/40 duration-150 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 md:hidden" />
         <DialogPrimitive.Popup
-          className="fixed inset-y-0 start-0 z-50 flex h-dvh w-72 max-w-[85vw] flex-col overflow-y-auto border-e bg-sidebar text-sidebar-foreground shadow-xl outline-none duration-150 data-open:animate-in data-open:slide-in-from-start data-closed:animate-out data-closed:slide-out-to-start md:hidden"
+          className="fixed inset-y-0 start-0 z-50 flex h-dvh w-72 max-w-[85vw] flex-col overflow-hidden border-e bg-sidebar text-sidebar-foreground shadow-xl outline-none duration-150 data-open:animate-in data-open:slide-in-from-start data-closed:animate-out data-closed:slide-out-to-start md:hidden"
           // `slide-in-from-start` / `slide-out-to-start` are direction-aware
           // (tw-animate-css resolves them through `:dir()`), so in Arabic the
           // sheet enters from the right without a second class.
@@ -78,9 +78,7 @@ export function MobileNav() {
           <div className="flex h-14 shrink-0 items-center justify-between gap-2 px-4">
             {/* The title still carries the NAME for assistive tech — the mark is
                 an image, and a dialog needs a text accessible name (UX-15). */}
-            <DialogPrimitive.Title className="sr-only">
-              {t('common.appName')}
-            </DialogPrimitive.Title>
+            <DialogPrimitive.Title className="sr-only">{t('common.appName')}</DialogPrimitive.Title>
             <BrandMark width={120} decorative />
             <DialogPrimitive.Close
               render={<Button variant="ghost" size="sm" />}
@@ -89,7 +87,10 @@ export function MobileNav() {
               {t('nav.closeMenu')}
             </DialogPrimitive.Close>
           </div>
-          <AppNav variant="sheet" />
+          <AppNav variant="sheet" className="min-h-0 overflow-y-auto" />
+          {/* Identity + sign-out, as in the sidebar (DS-02) — sign-out left the
+              header, so on a phone this is the only place it lives. */}
+          <NavFoot variant="sheet" />
         </DialogPrimitive.Popup>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
