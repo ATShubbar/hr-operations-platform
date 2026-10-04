@@ -564,6 +564,7 @@
     "status": {
       "open": "Open",
       "in_progress": "In progress",
+      "info_needed": "Info needed",
       "resolved": "Resolved",
       "closed": "Closed",
       "cancelled": "Cancelled"
@@ -594,7 +595,6 @@
     "approveMenu": "Approve, then hand the work to",
     "askInfo": "Ask for more detail",
     "decline": "Decline",
-    "soonHint": "Coming soon",
     "assignedTo": "Assigned to {name}",
     "assignedSub": "{role} · now in the work queue",
     "openQueue": "Open work queue",
@@ -608,9 +608,23 @@
     "trailAction": {
       "create": "Submitted",
       "update": "Details edited",
-      "process": "Status or assignment changed"
+      "process": "Status or assignment changed",
+      "ask-info": "Asked for more detail",
+      "info-returned": "Returned by the requester's reply"
     },
-    "trailBy": "{name} · {role}"
+    "trailBy": "{name} · {role}",
+    "askTitle": "Ask for more detail",
+    "askLead": "Say what's missing. Your note is posted to the request's comments, and the request waits on the requester until their side replies.",
+    "askNote": "What do you need?",
+    "askPlaceholder": "e.g. Which bank should the letter be addressed to?",
+    "askCancel": "Cancel",
+    "askSend": "Ask",
+    "asking": "Asking…",
+    "asked": "Asked for more detail. The requester has been told.",
+    "infoStaffTitle": "Waiting on the requester",
+    "infoStaffSub": "A reply from their side — a comment or a file — sends it back to where it was.",
+    "infoRequesterTitle": "PEOPLE&GRO needs more detail",
+    "infoRequesterSub": "Read the question in the comments below and reply, or attach a file. Your reply sends the request back to the team."
   },
   "tasks": {
     "saveError": "Could not save — check your permissions.",
@@ -905,6 +919,7 @@
       "overdue": "Overdue",
       "reqOpen": "Requests open",
       "reqInProgress": "Requests in progress",
+      "reqInfoNeeded": "Requests waiting on the requester",
       "reqDone": "Requests closed",
       "reqOverdue": "Requests overdue",
       "taskOpen": "Tasks open",

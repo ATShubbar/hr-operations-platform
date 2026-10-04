@@ -13,6 +13,7 @@ import { AuditService } from '../../audit/public-api';
 import { UsersService } from '../../auth/public-api';
 import { EventBus } from '../../events/public-api';
 import { RequestCommentAddedEvent } from '../domain/request-comment-added.event';
+import { returnIfWaiting } from './requester-reply';
 
 type Tx = Prisma.TransactionClient;
 type Reads = Pick<Tx, 'request' | 'requestComment'>;
@@ -22,7 +23,8 @@ type Reads = Pick<Tx, 'request' | 'requestComment'>;
 // employee own raised requests via RLS). A request the caller cannot see is
 // null (→ 404) on every path, before any comment is read or written. Every
 // comment is audited (resource 'request-comment') in the same transaction, and
-// after the commit a RequestCommentAdded fact tells Notifications.
+// after the commit a RequestCommentAdded fact tells Notifications. A comment from
+// the requester's side also returns a request waiting on them (THREAD-03).
 @Injectable()
 export class RequestThreadService {
   constructor(
@@ -102,6 +104,8 @@ export class RequestThreadService {
         clientId: request.clientId,
         after: { requestId, length: row.body.length },
       });
+      // THREAD-03: the requester's side answering brings a waiting request back.
+      if (!byStaff) await returnIfWaiting(tx, this.audit, request);
       return { request, row };
     });
     if (!done) return null;

@@ -406,7 +406,9 @@ async function seedRequests(prisma: PrismaClient): Promise<number> {
     { id: 'a0000002-0000-4000-8000-000000000004', clientId: SEED_CLIENT_B, type: 'letter' as const, title: 'Bank account opening letter — Kamal Uddin', priority: 'low' as const, status: 'open' as const, dueDate: daysFromNow(14), createdByUserId: repB.id },
   ];
   for (const { id, ...rest } of requests) {
-    await prisma.request.upsert({ where: { id }, create: { id, ...rest }, update: rest });
+    // Reset to the seeded state — including clearing a pending "Ask for more
+    // detail" (THREAD-03): the status and its return target travel together.
+    await prisma.request.upsert({ where: { id }, create: { id, ...rest }, update: { ...rest, infoReturnsTo: null } });
   }
 
   // A short conversation on two of them (THREAD-01, ADR-016), so the thread on

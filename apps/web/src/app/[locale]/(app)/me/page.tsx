@@ -58,8 +58,9 @@ export default function MyFilePage() {
       setData({
         profile,
         documents: docs.documents,
-        openRequests: reqs.requests.filter((r) => r.status === 'open' || r.status === 'in_progress')
-          .length,
+        openRequests: reqs.requests.filter((r) =>
+          ['open', 'in_progress', 'info_needed'].includes(r.status),
+        ).length,
       });
       setState('ready');
     } catch (err) {

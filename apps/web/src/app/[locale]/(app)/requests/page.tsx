@@ -36,6 +36,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { StatusAction } from '@/components/ui/status-action';
 import { StatusPill } from '@/components/ui/status-pill';
 import { toastSuccess } from '@/components/ui/toast';
+import { AskInfoDialog } from './ask-info-dialog';
+import { InfoNeededBanner } from './info-needed-banner';
 import { NewRequestDialog } from './new-request-dialog';
 import { RequestThread } from './request-thread';
 
@@ -44,10 +46,11 @@ import { RequestThread } from './request-thread';
 //
 // The prototype's decisions map onto the existing workflow (REQ-03) rather than
 // inventing one: "Approve and assign" = open → in_progress WITH an assignee, in
-// one `process` call; "Decline" = → cancelled. What the workflow does not have —
-// asking the requester for more detail, withdrawing a decision, a service level,
-// and the request thread (attachments + comments) — is shown, marked "coming
-// soon" (owner rule). The decision trail is the request's curated history
+// one `process` call; "Decline" = → cancelled; "Ask for more detail" = →
+// info_needed with a required note (THREAD-03 — the requester's reply returns it
+// to where it was). The thread is ADR-016's (THREAD-01/02). What the workflow
+// still does not have — withdrawing a decision, a service level — is shown,
+// marked "coming soon" (owner rule). The decision trail is the request's curated history
 // (GET /requests/:id/history: what, who, when — never values).
 //
 // Kept although the prototype's staff view lacks them, because the screen had
@@ -55,11 +58,13 @@ import { RequestThread } from './request-thread';
 // status filter above the list (requests accumulate), and the later workflow
 // moves (resolve / close / reopen) once a request is past its decision.
 
-const STATUSES = ['open', 'in_progress', 'resolved', 'closed', 'cancelled'] as const;
+const STATUSES = ['open', 'in_progress', 'info_needed', 'resolved', 'closed', 'cancelled'] as const;
 const ALL = 'all';
 const NEXT: Record<RequestStatus, readonly RequestStatus[]> = {
   open: ['in_progress', 'cancelled'],
   in_progress: ['resolved', 'cancelled'],
+  // Staff move a waiting request on by hand; the requester's reply does it itself.
+  info_needed: ['open', 'in_progress', 'cancelled'],
   resolved: ['closed', 'in_progress'],
   closed: [],
   cancelled: [],
@@ -157,19 +162,33 @@ export default function RequestsPage() {
 
   // ---- decisions ----
   const [approveOpen, setApproveOpen] = useState(false);
+  const [askOpen, setAskOpen] = useState(false);
   const [deciding, setDeciding] = useState(false);
   const [decideError, setDecideError] = useState('');
   const [trailKey, setTrailKey] = useState(0);
+  // Re-mounts the thread after asking — the note was posted to it server-side.
+  const [threadKey, setThreadKey] = useState(0);
 
-  async function process(r: RequestResponse, status: RequestStatus, assigneeUserId?: string) {
+  async function process(
+    r: RequestResponse,
+    status: RequestStatus,
+    assigneeUserId?: string,
+    note?: string,
+  ) {
     setDeciding(true);
     setDecideError('');
     try {
       await apiFetch(`/requests/${r.id}/process`, {
         method: 'POST',
-        body: JSON.stringify({ status, ...(assigneeUserId ? { assigneeUserId } : {}) }),
+        body: JSON.stringify({
+          status,
+          ...(assigneeUserId ? { assigneeUserId } : {}),
+          ...(note ? { note } : {}),
+        }),
       });
       setApproveOpen(false);
+      setAskOpen(false);
+      setThreadKey((k) => k + 1);
       await load(r.id);
       setTrailKey((k) => k + 1);
       return true;
@@ -356,8 +375,23 @@ export default function RequestsPage() {
                   )}
                 </p>
 
-                {/* The request thread (ADR-016, THREAD-01). */}
-                <RequestThread base={`/requests/${req.id}`} canPost={canComment} />
+                {req.status === 'info_needed' && (
+                  <InfoNeededBanner audience={isStaff ? 'staff' : 'requester'} />
+                )}
+
+                {/* The request thread (ADR-016). A reply from the requester's side
+                    can return a waiting request, so it re-reads the request. */}
+                <RequestThread
+                  key={`thread-${req.id}-${threadKey}`}
+                  base={`/requests/${req.id}`}
+                  canPost={canComment}
+                  onPosted={() => {
+                    if (req.status === 'info_needed') {
+                      void load(req.id);
+                      setTrailKey((k) => k + 1);
+                    }
+                  }}
+                />
 
                 {decideError && (
                   <p role="alert" className="text-sm text-destructive">
@@ -404,11 +438,8 @@ export default function RequestsPage() {
                         </ul>
                       </PopoverContent>
                     </Popover>
-                    <Button variant="outline" disabled aria-describedby="ask-soon">
+                    <Button variant="outline" disabled={deciding} onClick={() => setAskOpen(true)}>
                       {t('askInfo')}
-                      <span id="ask-soon" className="text-[11px] font-normal text-muted-foreground">
-                        {t('soonHint')}
-                      </span>
                     </Button>
                     <span className="grow" />
                     <Button
@@ -447,7 +478,17 @@ export default function RequestsPage() {
 
                 {/* Past the decision, the rest of the workflow (REQ-03) stays reachable. */}
                 {canProcess && req.status !== 'open' && NEXT[req.status].length > 0 && (
-                  <div className="flex justify-end">
+                  <div className="flex flex-wrap items-center justify-end gap-2">
+                    {req.status === 'in_progress' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={deciding}
+                        onClick={() => setAskOpen(true)}
+                      >
+                        {t('askInfo')}
+                      </Button>
+                    )}
                     <StatusAction
                       next={NEXT[req.status]}
                       onSelect={(s) => void process(req, s)}
@@ -457,12 +498,27 @@ export default function RequestsPage() {
                   </div>
                 )}
 
-                {isStaff && <DecisionTrail key={`${req.id}-${trailKey}`} requestId={req.id} />}
+                {isStaff && (
+                  <DecisionTrail key={`trail-${req.id}-${trailKey}`} requestId={req.id} />
+                )}
               </div>
             </>
           )}
         </div>
       </div>
+
+      <AskInfoDialog
+        open={askOpen}
+        onOpenChange={(o) => {
+          setAskOpen(o);
+          if (!o) setDecideError('');
+        }}
+        busy={deciding}
+        error={askOpen ? decideError : ''}
+        onAsk={async (note) => {
+          if (req && (await process(req, 'info_needed', undefined, note))) toastSuccess(t('asked'));
+        }}
+      />
 
       <NewRequestDialog
         open={newOpen}

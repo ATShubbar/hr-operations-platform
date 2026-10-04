@@ -303,6 +303,7 @@ export const RequestScalarFieldEnum = {
   title: 'title',
   description: 'description',
   status: 'status',
+  infoReturnsTo: 'infoReturnsTo',
   priority: 'priority',
   dueDate: 'dueDate',
   createdByUserId: 'createdByUserId',

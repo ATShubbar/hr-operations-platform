@@ -12,6 +12,8 @@ export const requestTypeSchema = z.enum([
 export const requestStatusSchema = z.enum([
   'open',
   'in_progress',
+  // THREAD-03 (ADR-016): waiting on the requester ("Ask for more detail").
+  'info_needed',
   'resolved',
   'closed',
   'cancelled',
@@ -64,10 +66,19 @@ export const updateRequestRequestSchema = z.object({
 
 // Process (REQ-03): advance status (validated server-side against the workflow)
 // and optionally set/clear the assignee. Staff only (request.process).
-export const processRequestRequestSchema = z.object({
-  status: requestStatusSchema,
-  assigneeUserId: z.uuid().nullable().optional(),
-});
+// THREAD-03: asking for more detail (`info_needed`) REQUIRES a note — posted to
+// the thread as the asker's comment — and a note is accepted for nothing else.
+export const processRequestRequestSchema = z
+  .object({
+    status: requestStatusSchema,
+    assigneeUserId: z.uuid().nullable().optional(),
+    note: z.string().trim().min(1).max(4000).optional(),
+  })
+  .strict()
+  .refine((v) => (v.status === 'info_needed') === (v.note !== undefined), {
+    message: 'A note is required when asking for more detail, and only then',
+    path: ['note'],
+  });
 
 export const requestListResponseSchema = z.object({
   requests: z.array(requestResponseSchema),

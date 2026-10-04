@@ -349,6 +349,7 @@ export class ReportingService {
       client: label,
       reqOpen: 0,
       reqInProgress: 0,
+      reqInfoNeeded: 0,
       reqDone: 0,
       reqOverdue: 0,
       taskOpen: 0,
@@ -367,6 +368,8 @@ export class ReportingService {
       if (!row) continue;
       if (r.status === 'open') row.reqOpen = (row.reqOpen as number) + 1;
       else if (r.status === 'in_progress') row.reqInProgress = (row.reqInProgress as number) + 1;
+      // THREAD-03: waiting on the requester is still open work, not done.
+      else if (r.status === 'info_needed') row.reqInfoNeeded = (row.reqInfoNeeded as number) + 1;
       else row.reqDone = (row.reqDone as number) + 1; // resolved / closed / cancelled
       if (isActiveRequest(r.status) && isPastDue(r.dueDate, now)) {
         row.reqOverdue = (row.reqOverdue as number) + 1;
@@ -403,6 +406,7 @@ export class ReportingService {
         text('client', 'Client'),
         count('reqOpen', 'Requests open'),
         count('reqInProgress', 'Requests in progress'),
+        count('reqInfoNeeded', 'Requests waiting on the requester'),
         count('reqDone', 'Requests closed'),
         count('reqOverdue', 'Requests overdue'),
         count('taskOpen', 'Tasks open'),

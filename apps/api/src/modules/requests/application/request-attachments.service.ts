@@ -29,6 +29,7 @@ import { EventBus } from '../../events/public-api';
 import { FILE_SCANNER, StorageService, type FileScanner } from '../../storage/public-api';
 import { matchesSignature } from '../domain/file-signature';
 import { RequestAttachmentAddedEvent } from '../domain/request-attachment-added.event';
+import { returnIfWaiting } from './requester-reply';
 
 type Tx = Prisma.TransactionClient;
 
@@ -192,6 +193,13 @@ export class RequestAttachmentsService {
         clientId: file.clientId,
         after: { requestId, status: verdict.status, sizeBytes: stat.size, ...(verdict.reason ? { reason: verdict.reason } : {}) },
       });
+      // THREAD-03: a file from the requester's side that passed its checks
+      // answers a request waiting on them. Re-read on this connection — the
+      // status may have moved since the first read.
+      if (verdict.status === 'available' && path.kind !== 'staff') {
+        const current = await this.findRequest(tx, requestId);
+        if (current) await returnIfWaiting(tx, this.audit, current);
+      }
       return tx.requestAttachment.findUniqueOrThrow({ where: { id: file.id } });
     });
     if (updated.status === 'available') await this.publish(request, updated, path.kind === 'staff');

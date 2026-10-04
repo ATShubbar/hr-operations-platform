@@ -92,6 +92,20 @@ read receipts, holiday calendars.
   virus-scan seam moved from Documents to **Storage** (architecture.md already lists scanning
   under Storage), so Requests doesn't depend on Documents. No matrix or catalog change.
 
+- **rev. 2 (THREAD-03, 2026-10-04) — "Ask for more detail", three owner decisions.**
+  ★ Asking **requires a note** — the question — posted to the thread as the asker's comment in
+  the same transaction (one notification to the requester: "More detail needed on your request",
+  not a second "new comment" one). ★ On an employee-raised request, a reply from **the employee
+  OR their company's client manager** returns it (both are the requester's side and both see the
+  thread). ★ The reply returns it **to where it was** — `open`, or `in_progress` with its
+  assignee — **not always `open`** as the original text said: a new column
+  `req_requests.info_returns_to` holds it while `info_needed` (a CHECK keeps the two together).
+  A trigger lets the client and employee roles leave `info_needed` ONLY to that status and never
+  enter it; the employee role gains UPDATE on exactly `status`/`info_returns_to` of a waiting
+  request it raised (`employee_reply_returns`). Staff may still move it on by hand (open / in
+  progress / cancelled). Staff comments and files never return it; a file returns it only once it
+  has passed its checks. Audited as `ask-info` and `info-returned` (the decision trail labels both).
+
 ## Links
 - architecture.md v1.10; ADR-004 (events), ADR-011 (self-service), ADR-012 (prototype fidelity),
   ADR-013 (roles); DOC-04 (scan hook)

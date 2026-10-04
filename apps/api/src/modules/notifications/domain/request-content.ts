@@ -7,6 +7,7 @@ import type { RequestStatus } from '@hr/contracts';
 const STATUS_LABELS: Record<RequestStatus, { ar: string; en: string }> = {
   open: { ar: 'مفتوح', en: 'Open' },
   in_progress: { ar: 'قيد المعالجة', en: 'In progress' },
+  info_needed: { ar: 'بانتظار معلومات', en: 'Info needed' },
   resolved: { ar: 'تم الحل', en: 'Resolved' },
   closed: { ar: 'مغلق', en: 'Closed' },
   cancelled: { ar: 'ملغى', en: 'Cancelled' },
@@ -21,6 +22,17 @@ export function buildRequestStatusContent(args: {
   title: string;
   status: RequestStatus;
 }): RequestContent {
+  // THREAD-03: "Ask for more detail" is a request to the reader, not news — it
+  // says what to do (the question itself is in the thread).
+  if (args.status === 'info_needed') {
+    return {
+      title: { ar: 'مطلوب مزيد من التفاصيل لطلبك', en: 'More detail needed on your request' },
+      body: {
+        ar: `يحتاج فريق PEOPLE&GRO إلى مزيد من التفاصيل بشأن «${args.title}». اقرأ السؤال في الطلب وردّ عليه.`,
+        en: `PEOPLE&GRO needs more detail on "${args.title}". Read the question on the request and reply there.`,
+      },
+    };
+  }
   const label = STATUS_LABELS[args.status];
   return {
     title: { ar: `تحديث حالة الطلب: ${label.ar}`, en: `Request updated: ${label.en}` },

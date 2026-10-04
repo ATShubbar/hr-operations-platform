@@ -12,6 +12,7 @@ import { LoadError } from '@/components/ui/load-state';
 import { Skeleton, SkeletonRegion } from '@/components/ui/skeleton';
 import { StatusPill } from '@/components/ui/status-pill';
 import { cn } from '@/lib/utils';
+import { InfoNeededBanner } from '../../requests/info-needed-banner';
 import { RequestThread } from '../../requests/request-thread';
 import { RaiseRequestDialog } from '../raise-request-dialog';
 
@@ -33,8 +34,10 @@ export default function MyRequestsPage() {
   const [notice, setNotice] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    setState('loading');
+  // `quiet`: re-read without the loading state — after a reply that may have
+  // returned a request waiting on me (THREAD-03).
+  const load = useCallback(async (quiet = false) => {
+    if (!quiet) setState('loading');
     try {
       const res = await apiFetch<SelfRequestListResponse>('/me/requests');
       setRequests(res.requests);
@@ -148,7 +151,14 @@ export default function MyRequestsPage() {
                     {r.description}
                   </p>
                 )}
-                <RequestThread base={`/me/requests/${r.id}`} canPost />
+                {r.status === 'info_needed' && <InfoNeededBanner audience="requester" />}
+                <RequestThread
+                  base={`/me/requests/${r.id}`}
+                  canPost
+                  onPosted={() => {
+                    if (r.status === 'info_needed') void load(true);
+                  }}
+                />
               </div>
             );
           })()}

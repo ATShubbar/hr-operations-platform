@@ -28,4 +28,7 @@ export interface UpdateRequestInput {
 export interface ProcessRequestInput {
   status: RequestStatus;
   assigneeUserId?: string | null;
+  // THREAD-03: what the requester must send — required for `info_needed` (the
+  // contract enforces it) and posted to the thread as the asker's comment.
+  note?: string;
 }

@@ -1308,7 +1308,17 @@ service, `AttachmentPath` staff·client·employee): create → presigned PUT →
 rejected, virus scan quarantined, first bytes ≠ declared type rejected) → 300s download named `inline; filename*=` →
 remove (uploader only, soft: "File removed by …" line). Non-uploaders get 404 on pending/refused files. The scanner seam
 is now Storage's **`FILE_SCANNER`** (moved from Documents). UAT smoke gains an attachment round-trip (a seeded file needs
-IAM for the seed account → SEED-01). API **617/617**. Next: **THREAD-03** (Ask for more detail).
+IAM for the seed account → SEED-01). API **617/617**.
+**THREAD-03 done — "Ask for more detail" (ADR-016 rev. 2).** `info_needed` (own enum migration) +
+`req_requests.info_returns_to` (CHECK: present ⇔ info_needed, only open/in_progress). Staff `process` with a REQUIRED
+`note` (contract refine; the note is posted as the asker's comment in the same tx, ONE notification "More detail needed
+on your request"); audited `ask-info`. The requester's side replying — the client manager, or the employee who raised it
+— with a comment or a CONFIRMED file returns it **to where it was** (`requester-reply.ts` `returnIfWaiting`, in the
+reply's own fenced tx; audited `info-returned`); staff replies never do. Trigger `req_requests_info_guard`: app roles
+can't enter info_needed and may leave only to the recorded status; `app_employee` gets UPDATE on just status/
+info_returns_to of a waiting request it raised. Web: Ask dialog (required note), `InfoNeededBanner` (staff/requester),
+amber `warning` tone, counted as open in queue/dashboard/My file, Service operations column `reqInfoNeeded`. API
+**632/632**. Next: **THREAD-04** (service level per type — owner confirms the days).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
@@ -1322,6 +1332,12 @@ IAM for the seed account → SEED-01). API **617/617**. Next: **THREAD-03** (Ask
   in the LTR layout). Wrap it: `<span class="truncate"><bdi>…</bdi></span>`. And never put a user's free text (a file
   name) inside a translated SENTENCE: Unicode isolates (FSI…PDI) in an LTR paragraph split an Arabic sentence into runs
   laid out left to right, so the verb lands at the wrong end — worse than no isolate (THREAD-02).
+- Two SIBLINGS keyed the same way (`${id}-${counter}`) whenever their counters agree makes React DROP one of them —
+  the request thread rendered empty after a re-mount because its new key equalled the decision trail's. Prefix keys
+  by role (`thread-…`, `trail-…`); the console says "Encountered two children with the same key" (THREAD-03).
+- A seed that UPSERTS rows back to a seeded status must also reset every column a CHECK ties to that status — the
+  seed left `info_returns_to` set and re-seeding failed on any request someone had put in `info_needed`, which would
+  have broken Seed UAT the first time it was used (THREAD-03).
 - A WITH CHECK red proof can be MASKED by the read policy: an INSERT … RETURNING row the caller can't SELECT fails anyway,
   so loosening the write policy changes nothing for that forgery. Test a forgery the read policy WOULD let back out
   (THREAD-01: a colleague's request labelled with my own employee id).

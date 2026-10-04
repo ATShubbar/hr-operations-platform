@@ -167,21 +167,49 @@ export class RequestsService {
           `Cannot move a request from '${before.status}' to '${input.status}'`,
         );
       }
+      const asking = input.status === 'info_needed';
+      if (asking && !input.note) throw new BadRequestException('Say what is needed when asking for more detail');
       const row = await tx.request.update({
         where: { id },
         data: {
           status: input.status,
+          // THREAD-03: remember where the requester's reply returns it; leaving
+          // info_needed (by hand) forgets it.
+          infoReturnsTo: asking ? before.status : null,
           ...(input.assigneeUserId !== undefined ? { assigneeUserId: input.assigneeUserId } : {}),
         },
       });
       await this.audit.record(tx, {
         resource: 'request',
         resourceId: row.id,
-        action: 'process',
+        action: asking ? 'ask-info' : 'process',
         clientId: row.clientId,
         before: snapshot(before),
         after: snapshot(row),
       });
+      if (asking) {
+        // The note IS the question: posted to the thread as the asker's comment,
+        // in the same transaction. The status notification tells the requester
+        // (one notification, not a second "new comment" one).
+        const actor = requestContext.get()?.actorId;
+        if (!actor) throw new BadRequestException('No signed-in user');
+        const note = await tx.requestComment.create({
+          data: {
+            requestId: row.id,
+            clientId: row.clientId,
+            requesterEmployeeId: row.requesterEmployeeId,
+            authorUserId: actor,
+            body: input.note!.trim(),
+          },
+        });
+        await this.audit.record(tx, {
+          resource: 'request-comment',
+          resourceId: note.id,
+          action: 'create',
+          clientId: row.clientId,
+          after: { requestId: row.id, length: note.body.length },
+        });
+      }
       return { before, row };
     });
     if (!result) return null;

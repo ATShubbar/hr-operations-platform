@@ -27,7 +27,7 @@ One decision per file, numbered in creation order. A record is never edited to c
 | [ADR-013](ADR-013-six-role-model.md) | Six built-in roles from the People & Gro prototype — Administrator, HR officer, GRO officer, Auditor, Client manager, Employee | Accepted (amends ADR-002; architecture.md v1.7) |
 | [ADR-014](ADR-014-leave.md) | Leave — the employer approves, PEOPLE&GRO files; statutory types, caps and annual balances | Accepted (amends architecture.md scope, modules, catalog + matrix; v1.8) |
 | [ADR-015](ADR-015-global-search.md) | Global search — one permission-aware read across modules; identifier lookups audited | Accepted (amends architecture.md modules, catalog + matrix; v1.9) |
-| [ADR-016](ADR-016-request-thread.md) | The request thread — comments and attachments both sides see, "Ask for more detail", a service level per type | Accepted (amends architecture.md matrix, catalog, request statuses; v1.10) · rev. 1 (THREAD-02: removed files stay as a line, 20 files per request, `rejected`) |
+| [ADR-016](ADR-016-request-thread.md) | The request thread — comments and attachments both sides see, "Ask for more detail", a service level per type | Accepted (amends architecture.md matrix, catalog, request statuses; v1.10) · rev. 1 (THREAD-02: removed files stay as a line, 20 files per request, `rejected`) · rev. 2 (THREAD-03: a required note, either requester-side reply, returns to where it was) |
 
 ## Template
 

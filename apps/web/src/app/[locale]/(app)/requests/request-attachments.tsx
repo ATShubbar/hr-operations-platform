@@ -27,7 +27,15 @@ const MAX_BYTES = 10 * 1024 * 1024;
 // check and the size/type check; only a file that passes is attached. A removed
 // file stays as a "removed by …" line (a thread is a record). Only the person
 // who uploaded a file removes it.
-export function RequestAttachments({ base, canPost }: { base: string; canPost: boolean }) {
+export function RequestAttachments({
+  base,
+  canPost,
+  onAttached,
+}: {
+  base: string;
+  canPost: boolean;
+  onAttached?: () => void;
+}) {
   const t = useTranslations('thread');
   const locale = useLocale() as Locale;
   const router = useRouter();
@@ -93,8 +101,10 @@ export function RequestAttachments({ base, canPost }: { base: string; canPost: b
       const done = await apiFetch<RequestAttachment>(`${url}/${issued.attachment.id}/confirm`, {
         method: 'POST',
       });
-      if (done.status === 'available') toastSuccess(t('attached'));
-      else setUploadError(done.status === 'quarantined' ? t('quarantined') : t('rejected'));
+      if (done.status === 'available') {
+        toastSuccess(t('attached'));
+        onAttached?.();
+      } else setUploadError(done.status === 'quarantined' ? t('quarantined') : t('rejected'));
       await load();
     } catch (err) {
       if (bounce(err)) return;

@@ -192,6 +192,7 @@ export class RequestsController {
     const row = await this.requests.process(id, {
       status: parsed.data.status,
       assigneeUserId: parsed.data.assigneeUserId,
+      note: parsed.data.note,
     });
     if (!row) throw new NotFoundException('Request not found');
     return this.respondOne(row);

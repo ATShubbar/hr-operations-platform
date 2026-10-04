@@ -35,6 +35,8 @@ import { figuresFor, underManagement } from '../clients/client-figures';
 // is stored), and procedures are grouped by TYPE (no portal is stored).
 
 const OPEN = new Set(['open', 'in_progress']);
+// A request waiting on its requester (THREAD-03) still counts as open.
+const REQUEST_OPEN = new Set(['open', 'in_progress', 'info_needed']);
 const ASSIGNABLE = new Set(['administrator', 'hr_officer', 'gro_officer']);
 const MONTHS = 6;
 
@@ -89,7 +91,7 @@ export function ReportsDashboard() {
     const saudis = staffRows.filter(isSaudi).length;
     const docs = staffRows.flatMap(datedDocs);
     const procs = data.processes.filter((p) => GRO_ACTIVE.has(p.status));
-    const reqs = data.requests.filter((r) => OPEN.has(r.status));
+    const reqs = data.requests.filter((r) => REQUEST_OPEN.has(r.status));
     const tasks = data.tasks.filter((x) => OPEN.has(x.status));
     const work = [
       ...procs.map((p) => ({ due: p.dueDate, who: p.assigneeUserId })),

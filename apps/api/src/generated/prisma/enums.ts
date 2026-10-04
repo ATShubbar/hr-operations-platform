@@ -180,6 +180,7 @@ export type RequestType = (typeof RequestType)[keyof typeof RequestType]
 export const RequestStatus = {
   open: 'open',
   in_progress: 'in_progress',
+  info_needed: 'info_needed',
   resolved: 'resolved',
   closed: 'closed',
   cancelled: 'cancelled'

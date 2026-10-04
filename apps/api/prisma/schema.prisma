@@ -451,6 +451,9 @@ model Request {
   title               String
   description         String?
   status              RequestStatus    @default(open)
+  // THREAD-03 (ADR-016 rev. 2): while `info_needed`, where the requester's reply
+  // returns it — `open` or `in_progress` (with its assignee). Null otherwise.
+  infoReturnsTo       RequestStatus?   @map("info_returns_to")
   priority            RequestPriority  @default(normal)
   dueDate             DateTime?        @map("due_date") @db.Date
   createdByUserId     String           @map("created_by_user_id") @db.Uuid
@@ -541,6 +544,7 @@ enum RequestType {
 enum RequestStatus {
   open
   in_progress
+  info_needed
   resolved
   closed
   cancelled

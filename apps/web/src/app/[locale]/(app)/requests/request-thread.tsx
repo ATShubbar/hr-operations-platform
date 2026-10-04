@@ -18,7 +18,17 @@ import { RequestAttachments } from './request-attachments';
 // request; who may ADD is the caller's permission (`canPost` — the Auditor reads
 // only). `base` is the request's own path: /requests/:id for staff and client
 // managers, /me/requests/:id for the employee who raised it.
-export function RequestThread({ base, canPost }: { base: string; canPost: boolean }) {
+export function RequestThread({
+  base,
+  canPost,
+  onPosted,
+}: {
+  base: string;
+  canPost: boolean;
+  // A reply from the requester's side can return a request waiting on them
+  // (THREAD-03), so the page re-reads the request after anything is posted.
+  onPosted?: () => void;
+}) {
   const t = useTranslations('thread');
   const locale = useLocale() as Locale;
   const router = useRouter();
@@ -56,6 +66,7 @@ export function RequestThread({ base, canPost }: { base: string; canPost: boolea
       });
       setComments((c) => [...(c ?? []), row]);
       setDraft('');
+      onPosted?.();
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
       setSendError(t('sendError'));
@@ -74,7 +85,7 @@ export function RequestThread({ base, canPost }: { base: string; canPost: boolea
 
   return (
     <div className="flex flex-col gap-4">
-      <RequestAttachments base={base} canPost={canPost} />
+      <RequestAttachments base={base} canPost={canPost} onAttached={onPosted} />
 
       <section className="flex flex-col gap-2 border-t pt-4">
         <h3 className="flex items-baseline gap-1.5 text-[13px] leading-[18px] font-medium">

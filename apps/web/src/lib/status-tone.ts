@@ -33,6 +33,9 @@ const GRO: Record<string, StatusTone> = {
 const REQUEST: Record<string, StatusTone> = {
   open: 'info',
   in_progress: 'info',
+  // THREAD-03: waiting on the requester — amber, so it doesn't read as one more
+  // blue "open" (the prototype tells its pending and info states apart by tone).
+  info_needed: 'warning',
   resolved: 'ok',
   closed: 'ok',
   cancelled: 'neutral',

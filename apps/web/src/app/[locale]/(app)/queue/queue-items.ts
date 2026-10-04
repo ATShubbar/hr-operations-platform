@@ -29,6 +29,8 @@ import type { QueueItem } from './queue-actions';
 export type QueueView = 'open' | 'finished';
 
 const OPEN = new Set(['open', 'in_progress']);
+// A request waiting on its requester (THREAD-03) is still open work, not finished.
+const REQUEST_OPEN = new Set(['open', 'in_progress', 'info_needed']);
 const DONE = {
   procedure: new Set(['completed', 'cancelled']),
   request: new Set(['resolved', 'closed', 'cancelled']),
@@ -89,7 +91,7 @@ export function useQueueItems(
       });
     }
     for (const q of requests.filter((x) =>
-      view === 'open' ? OPEN.has(x.status) : DONE.request.has(x.status),
+      view === 'open' ? REQUEST_OPEN.has(x.status) : DONE.request.has(x.status),
     )) {
       items.push({
         kind: 'request',
