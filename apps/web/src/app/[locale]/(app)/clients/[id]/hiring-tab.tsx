@@ -1,0 +1,167 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
+import type {
+  CandidateListResponse,
+  CandidateResponse,
+  VacancyListResponse,
+  VacancyResponse,
+} from '@hr/contracts';
+import { Link, useRouter } from '@/i18n/navigation';
+import { apiFetch, ApiError } from '@/lib/api';
+import { useNationalityName } from '@/lib/nationality';
+import { cn } from '@/lib/utils';
+import { Avatar } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { COLUMNS, isActive, type Column } from '../../hiring/stages';
+
+// The Client record's Hiring tab (DS-11): this company's slice of the hiring
+// board (DS-09) — a bar per board column and the candidates in it — with "Open
+// board" to move them. The Visa & mobilisation column is the board's
+// "coming soon" one and counts nothing yet. Rejected and withdrawn candidates
+// have left the board, so they are not counted here either.
+//
+// The parent renders this only for candidate.read holders; a client manager
+// never sees candidates (REC-03, kept in DS-09).
+
+// The board's ramp: the pipeline in ink, the visa stage amber, onboarded green.
+const FILL: Record<Column, string> = {
+  applied: 'bg-neutral-900',
+  screening: 'bg-neutral-900',
+  interview: 'bg-neutral-900',
+  offer: 'bg-neutral-900',
+  visa: 'bg-status-warning',
+  hired: 'bg-status-ok',
+};
+
+export function HiringTab({ clientId }: { clientId: string }) {
+  const t = useTranslations('clients');
+  const th = useTranslations('hiring');
+  const locale = useLocale();
+  const router = useRouter();
+  const nationalityName = useNationalityName(locale);
+  const [candidates, setCandidates] = useState<CandidateResponse[] | null>(null);
+  const [vacancies, setVacancies] = useState<VacancyResponse[]>([]);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    Promise.all([
+      apiFetch<CandidateListResponse>('/candidates'),
+      apiFetch<VacancyListResponse>(`/vacancies?clientId=${clientId}`).catch(() => ({
+        vacancies: [],
+      })),
+    ])
+      .then(([c, v]) => {
+        // In board order, so the list reads like the columns beside it.
+        const order = (x: CandidateResponse) => COLUMNS.indexOf(x.stage as Column);
+        setCandidates(
+          c.candidates
+            .filter((x) => x.clientId === clientId && isActive(x.stage))
+            .sort((a, b) => order(a) - order(b)),
+        );
+        setVacancies(v.vacancies);
+      })
+      .catch((err) => {
+        if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
+        setCandidates([]);
+        setError(t('hiringError'));
+      });
+  }, [clientId]);
+
+  const pool = candidates ?? [];
+  const role = (c: CandidateResponse) => {
+    const v = vacancies.find((x) => x.id === c.vacancyId);
+    return v ? (locale === 'ar' ? v.title.ar : v.title.en) : '';
+  };
+
+  return (
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1.2fr]">
+      <section
+        aria-labelledby="client-pipeline"
+        className="flex flex-col gap-3 rounded-xl bg-card px-5 py-[18px] ring-1 ring-foreground/10"
+      >
+        <div className="flex flex-col gap-0.5">
+          <h2 id="client-pipeline" className="text-base leading-6 font-medium">
+            {t('pipeline')}
+          </h2>
+          <p className="text-[13px] leading-[18px] text-muted-foreground">
+            {t('pipelineSummary', { count: pool.length })}
+          </p>
+        </div>
+        <ul className="flex flex-col gap-3">
+          {COLUMNS.map((col) => {
+            const n = col === 'visa' ? 0 : pool.filter((c) => c.stage === col).length;
+            const pct = pool.length ? Math.round((n / pool.length) * 100) : 0;
+            return (
+              <li key={col} className="flex items-center gap-3">
+                <span className="w-[118px] shrink-0 text-xs leading-4 text-neutral-700">
+                  {th(`column.${col}`)}
+                </span>
+                {col === 'visa' ? (
+                  // The board's "coming soon" column: no bar to draw, so say so.
+                  <span className="grow text-[11px] leading-4 text-neutral-400">{th('soon')}</span>
+                ) : (
+                  <span
+                    aria-hidden
+                    className="block h-2 grow overflow-hidden rounded-full bg-neutral-100"
+                  >
+                    <span
+                      className={cn('block h-2 rounded-full', FILL[col])}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </span>
+                )}
+                <span className="w-6 shrink-0 text-end font-mono text-xs">{n}</span>
+              </li>
+            );
+          })}
+        </ul>
+        <div className="flex pt-2">
+          <Button variant="outline" size="sm" nativeButton={false} render={<Link href="/hiring" />}>
+            {t('openBoard')}
+          </Button>
+        </div>
+      </section>
+
+      <section
+        aria-labelledby="client-candidates"
+        className="overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10"
+      >
+        <h2 id="client-candidates" className="px-5 py-4 text-base leading-6 font-medium">
+          {t('candidates')}
+        </h2>
+        {error && (
+          <p role="alert" className="border-t px-5 py-2 text-sm text-destructive">
+            {error}
+          </p>
+        )}
+        {candidates !== null && pool.length === 0 && !error && (
+          <p className="border-t px-5 py-7 text-center text-[13px] leading-[18px] text-neutral-400">
+            {t('candidatesEmpty')}
+          </p>
+        )}
+        <ul>
+          {pool.map((c) => {
+            const name = locale === 'ar' ? c.name.ar : c.name.en;
+            return (
+              <li key={c.id} className="flex items-center gap-2.5 border-t px-5 py-3">
+                <Avatar name={c.name.en} size="sm" />
+                <span className="flex min-w-0 grow flex-col gap-px">
+                  <span className="truncate text-[13px] leading-[18px] font-medium">{name}</span>
+                  <span className="truncate text-[11px] leading-[15px] text-muted-foreground">
+                    {[role(c), nationalityName(c.nationality)].filter(Boolean).join(' · ')}
+                  </span>
+                </span>
+                <Badge variant="outline" className="shrink-0">
+                  {th(`column.${c.stage as Column}`)}
+                </Badge>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+    </div>
+  );
+}

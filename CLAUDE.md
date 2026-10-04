@@ -1046,6 +1046,14 @@ Commercial "soon". Figures computed in the browser (`clients/client-figures.ts`)
 excludes leavers, Open items = active GRO processes ONLY (tasks are own-scoped → per-viewer
 counts), every figure matched SQL for all 5 companies. People's document rules extracted to
 `lib/employee-docs.ts`. No API change. Next: DS-11 (the record's Requests/Open work/Hiring).
+**DS-11 done — the Client record's Requests, Open work and Hiring tabs.** Requests: newest first,
+each a link to `/requests?r=`. Open work = active procedures (person named, Resolve) + open
+tasks AS THE VIEWER SEES THEM (owner decision: task.read-all → all, else own/assigned, with a
+note; the Overview tile stays procedures-only). Hiring = pipeline bars over the board's six
+columns + candidates in board order, Open board → `/hiring`. The procedure rows + Resolve +
+GRO-03 expiry dialog were EXTRACTED to `components/gro-work-list.tsx` and both records render
+them. Verified per role against SQL (tasks: HR 1 · GRO 2 · Admin 4 · Auditor 4, no buttons).
+No API change. Next: DS-12 (Work queue).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

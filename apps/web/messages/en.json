@@ -317,9 +317,6 @@
       "commercial": "Commercial"
     },
     "soon": {
-      "requests": "Everything this company has asked for, and where each one stands.",
-      "work": "Procedures, requests and internal tasks running against this company's staff.",
-      "hiring": "This company's pipeline and the candidates in it.",
       "records": "Main contact, authorised signatories, registrations (Qiwa, GOSI, VAT) and the portals we hold credentials for.",
       "fees": "Government fees paid on this company's behalf.",
       "commercial": "Service tier, pricing, term, invoices and payment status.",
@@ -362,7 +359,27 @@
     "colEmployee": "Employee",
     "colPosition": "Position",
     "colFirstDue": "First document due",
-    "colLeft": "Left"
+    "colLeft": "Left",
+    "requestsTitle": "Requests",
+    "requestsEmpty": "No requests on file.",
+    "submittedOn": "submitted {date}",
+    "dueOn": "due {date}",
+    "workTitle": "Open work",
+    "workEmpty": "Nothing open. Everything is filed.",
+    "workError": "Could not load or update this company's open work. Try again.",
+    "workProcedures": "{count, plural, one {# procedure} other {# procedures}}",
+    "workTasks": "{count, plural, one {# task} other {# tasks}}",
+    "markDone": "Mark done",
+    "taskDone": "“{title}” marked done.",
+    "tasksOwnNote": "Tasks show only the ones you created or are assigned to. Administrators and auditors see every task.",
+    "pipeline": "Pipeline",
+    "pipelineSummary": "{count, plural, =0 {No candidates on the board for this company.} one {# candidate on the board for this company.} other {# candidates on the board for this company.}}",
+    "openBoard": "Open board",
+    "candidates": "Candidates",
+    "candidatesEmpty": "No open pipeline for this company.",
+    "hiringError": "Could not load this company's candidates.",
+    "requestsHint": "Everything this company has asked for, and where each one stands.",
+    "workHint": "Government procedures and internal tasks running against this company's staff — requests have their own tab."
   },
   "audit": {
     "title": "Audit log",

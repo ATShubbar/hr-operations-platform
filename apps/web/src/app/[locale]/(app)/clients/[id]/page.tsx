@@ -31,14 +31,17 @@ import { StartProcedureDialog } from '../../employees/[id]/start-procedure-dialo
 import { ClientFormDialog } from '../client-form-dialog';
 import { figuresFor } from '../client-figures';
 import { PortalUsersDialog } from '../portal-users-dialog';
+import { HiringTab } from './hiring-tab';
+import { OpenWorkTab } from './open-work-tab';
 import { OverviewTab } from './overview-tab';
 import { PeopleTab } from './people-tab';
+import { RequestsTab } from './requests-tab';
 
 // The Client record (DS-10) — the prototype's record page (ADR-012): a back
 // link, a header card (both names, status, View register, Start a procedure),
 // and eight tabs.
 //
-// Built here: Overview and People. Requests, Open work and Hiring are DS-11.
+// Built: Overview and People (DS-10); Requests, Open work and Hiring (DS-11).
 // Records, Fees and Commercial need data a client does not store yet (contacts,
 // signatories, registrations, service tier, billing) — the client profile and
 // billing feature epics — so they are shown "coming soon" (owner rule).
@@ -58,7 +61,7 @@ const TABS = [
   'commercial',
 ] as const;
 type Tab = (typeof TABS)[number];
-const BUILT = new Set<Tab>(['overview', 'people']);
+const BUILT = new Set<Tab>(['overview', 'people', 'requests', 'work', 'hiring']);
 
 export default function ClientRecordPage() {
   const t = useTranslations('clients');
@@ -71,6 +74,7 @@ export default function ClientRecordPage() {
   const canArchive = useCan('client.delete');
   const canPortalUsers = useCan('client-user.read');
   const canStartProcedure = useCan('gro.process');
+  const canReadCandidates = useCan('candidate.read');
 
   const [client, setClient] = useState<ClientResponse | null>(null);
   const [employees, setEmployees] = useState<EmployeeResponse[]>([]);
@@ -118,6 +122,18 @@ export default function ClientRecordPage() {
   useEffect(() => {
     void load();
   }, [id]);
+
+  // A procedure moved on in Open work: refetch the company's processes (and, for a
+  // completion that wrote an expiry back, its people) without the page skeleton.
+  async function reloadWork() {
+    const q = `?clientId=${id}`;
+    const [e, g] = await Promise.all([
+      apiFetch<EmployeeListResponse>(`/employees${q}`).catch(() => ({ employees })),
+      apiFetch<GroProcessListResponse>(`/gro-processes${q}`).catch(() => ({ processes })),
+    ]);
+    setEmployees(e.employees);
+    setProcesses(g.processes);
+  }
 
   const staff = useMemo(
     () => employees.filter((e) => e.employmentStatus !== 'terminated'),
@@ -298,6 +314,27 @@ export default function ClientRecordPage() {
 
         <TabsPanel value="people">
           <PeopleTab staff={staff} clientId={client.id} />
+        </TabsPanel>
+
+        <TabsPanel value="requests">
+          <RequestsTab requests={requests} />
+        </TabsPanel>
+
+        <TabsPanel value="work">
+          <OpenWorkTab
+            clientId={client.id}
+            processes={processes}
+            employees={employees}
+            onChanged={reloadWork}
+          />
+        </TabsPanel>
+
+        <TabsPanel value="hiring">
+          {canReadCandidates ? (
+            <HiringTab clientId={client.id} />
+          ) : (
+            <NoAccess capability="candidate.read" />
+          )}
         </TabsPanel>
 
         {TABS.filter((k) => !BUILT.has(k)).map((k) => (
