@@ -151,6 +151,14 @@ Narrowings:
   Employee column's "Notification preferences: U (own)" has never been granted
   (`notification-pref.update` is not in the employee bundle since ADR-011 rev. 3); recorded,
   not changed here.
+- **rev. 2 (UAT-01, 2026-10-04) — a UAT-only exception to two-factor sign-in.** The owner
+  chose that UAT (`https://uat.peopleandgro.com`, sample data only, no outbound email) signs
+  in with a password for every role, with simple shared logins (`admin@` / `hr@` / `gro@` /
+  `auditor@` / `client@` / `employee@peopleandgro.com`). Recorded risk, accepted by the
+  owner: anyone who guesses the UAT password is Administrator on UAT. The rule above is
+  **unchanged everywhere else**: `UAT_DISABLE_MFA=true` takes effect only when
+  `APP_WEB_ORIGIN` is the UAT address (`auth/domain/uat-mfa.ts`, pinned by
+  `test/uat-mfa-switch.e2e-spec.ts`), so production cannot lose it by a copied variable.
 
 ## Consequences
 - architecture.md v1.7 replaces the "Roles" list and the permission matrix.

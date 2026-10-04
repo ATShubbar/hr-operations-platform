@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient, Prisma } from '../src/generated/prisma/client';
-import { seedPasswordFor } from './seed-guard';
+import { SEED_USER_DOMAIN, seedEmailFor, seedPasswordFor, UAT_SEED_EMAILS } from './seed-guard';
 import {
   CLIENT_ROLES,
   PasswordService,
@@ -65,7 +65,11 @@ const yearsAgo = (years: number): Date => daysFromNow(-365 * years);
 // Seeded principals live under this domain so cleanup is a single deleteMany
 // scoped by email — never colliding with the `e2e-helper-` users the harness
 // creates and cleans on its own.
-export const SEED_USER_DOMAIN = 'seed.hr.local';
+export { SEED_USER_DOMAIN };
+
+// The address a seed account signs in with: @seed.hr.local everywhere except
+// UAT, where the owner chose simple @peopleandgro.com logins (UAT-01).
+const seedEmail = (local: string): string => seedEmailFor(local, process.env);
 
 // One shared password across seed users: the public dev one locally, an
 // owner-generated secret on UAT, and the seed never runs on production at all
@@ -110,7 +114,7 @@ async function seedUsers(prisma: PrismaClient): Promise<number> {
   // exactly as AUTH-06 requires; the seed never fakes enrollment.
   const staffUsers: Prisma.AuthUserCreateManyInput[] = await Promise.all(
     STAFF_ACCOUNTS.map(async ({ email, role, name }) => ({
-      email: `${email}@${SEED_USER_DOMAIN}`,
+      email: seedEmail(email),
       passwordHash: await passwords.hash(SEED_PASSWORD),
       principalType: 'staff' as const,
       role,
@@ -120,7 +124,7 @@ async function seedUsers(prisma: PrismaClient): Promise<number> {
 
   const clientRepUsers: Prisma.AuthUserCreateManyInput[] = await Promise.all(
     CLIENT_REP_ASSIGNMENTS.map(async ({ clientId, name }) => ({
-      email: `client_manager-${clientLetter(clientId)}@${SEED_USER_DOMAIN}`,
+      email: seedEmail(`client_manager-${clientLetter(clientId)}`),
       passwordHash: await passwords.hash(SEED_PASSWORD),
       principalType: 'client_rep' as const,
       role: 'client_manager' as const,
@@ -137,7 +141,7 @@ async function seedUsers(prisma: PrismaClient): Promise<number> {
   // permissions until SS-03, so it can sign in and do nothing else.
   const employeeUsers: Prisma.AuthUserCreateManyInput[] = [
     {
-      email: `employee-a@${SEED_USER_DOMAIN}`,
+      email: seedEmail('employee-a'),
       passwordHash: await passwords.hash(SEED_PASSWORD),
       principalType: 'employee' as const,
       role: 'employee' as const,
@@ -150,8 +154,15 @@ async function seedUsers(prisma: PrismaClient): Promise<number> {
 
   // Idempotency: replace exactly the seed-owned users (by email domain),
   // leaving any test- or manually-created users untouched.
+  // On UAT the addresses are @peopleandgro.com, so delete EXACTLY the seed's own
+  // addresses there — never another account at the company domain.
   await prisma.authUser.deleteMany({
-    where: { email: { endsWith: `@${SEED_USER_DOMAIN}` } },
+    where: {
+      OR: [
+        { email: { endsWith: `@${SEED_USER_DOMAIN}` } },
+        { email: { in: Object.values(UAT_SEED_EMAILS) } },
+      ],
+    },
   });
   await prisma.authUser.createMany({ data });
 
@@ -375,10 +386,10 @@ async function seedRequests(prisma: PrismaClient): Promise<number> {
   // reps. Due dates are relative, and SOME ARE IN THE PAST — an ops console with
   // nothing overdue cannot show what it is for.
   const repA = await prisma.authUser.findUnique({
-    where: { email: `client_manager-a@${SEED_USER_DOMAIN}` },
+    where: { email: seedEmail('client_manager-a') },
   });
   const repB = await prisma.authUser.findUnique({
-    where: { email: `client_manager-b@${SEED_USER_DOMAIN}` },
+    where: { email: seedEmail('client_manager-b') },
   });
   if (!repA || !repB) return 0; // reps not seeded → skip
 
@@ -405,7 +416,7 @@ async function seedTasks(prisma: PrismaClient): Promise<number> {
   // "assign to me" action and the own/assigned scope were invisible to everyone
   // else who signed in.
   const byEmail = async (email: string) =>
-    (await prisma.authUser.findUnique({ where: { email: `${email}@${SEED_USER_DOMAIN}` } }))?.id ?? null;
+    (await prisma.authUser.findUnique({ where: { email: seedEmail(email) } }))?.id ?? null;
   const gro = await byEmail('staff-gro_officer');
   const hr = await byEmail('staff-hr_officer');
   const hiringLead = await byEmail('staff-hr_officer-2');
@@ -433,7 +444,7 @@ async function seedVacancies(prisma: PrismaClient): Promise<number> {
   // Open positions (REC-01), across EVERY status so the workflow control has
   // legal moves to offer and the pipeline board has more than one lane in play.
   const hiringLead = await prisma.authUser.findUnique({
-    where: { email: `staff-hr_officer-2@${SEED_USER_DOMAIN}` },
+    where: { email: seedEmail('staff-hr_officer-2') },
   });
   const by = hiringLead?.id ?? null;
   const vacancies = [
@@ -499,7 +510,7 @@ async function seedGroProcesses(prisma: PrismaClient): Promise<number> {
   // Government processes (GRO-01) across the workflow, INCLUDING overdue ones —
   // a deadline screen with everything comfortably in the future teaches nothing.
   const gro = await prisma.authUser.findUnique({
-    where: { email: `staff-gro_officer@${SEED_USER_DOMAIN}` },
+    where: { email: seedEmail('staff-gro_officer') },
   });
   const by = gro?.id ?? null;
   const processes = [
@@ -523,7 +534,7 @@ async function seedCalendarEvents(prisma: PrismaClient): Promise<number> {
   // Staff calendar events (CAL-01), placed in the CURRENT week so the agenda and
   // "Today" have something of their own alongside the borrowed deadlines.
   const byEmail = async (email: string) =>
-    (await prisma.authUser.findUnique({ where: { email: `${email}@${SEED_USER_DOMAIN}` } }))?.id ?? null;
+    (await prisma.authUser.findUnique({ where: { email: seedEmail(email) } }))?.id ?? null;
   const hiringLead = await byEmail('staff-hr_officer-2');
   const gro = await byEmail('staff-gro_officer');
   const hr = await byEmail('staff-hr_officer');
@@ -549,7 +560,7 @@ async function seedCalendarEvents(prisma: PrismaClient): Promise<number> {
 // to the old ids.
 async function seedNotifications(prisma: PrismaClient): Promise<number> {
   const byEmail = async (email: string) =>
-    (await prisma.authUser.findUnique({ where: { email: `${email}@${SEED_USER_DOMAIN}` } }))?.id ?? null;
+    (await prisma.authUser.findUnique({ where: { email: seedEmail(email) } }))?.id ?? null;
   const hr = await byEmail('staff-hr_officer');
   const gro = await byEmail('staff-gro_officer');
   if (!hr || !gro) return 0;

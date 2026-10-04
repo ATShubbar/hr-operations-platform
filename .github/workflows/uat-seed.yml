@@ -72,7 +72,7 @@ jobs:
           gcloud run jobs deploy uat-smoke --image "$REPO/seed:$TAG" --region "$REGION" \
             --service-account "$SA" \
             --command node --args scripts/uat-smoke.mjs \
-            --set-env-vars "SMOKE_BASE=$BASE" \
+            --set-env-vars "SMOKE_BASE=$BASE,SMOKE_ACCOUNTS=uat" \
             --set-secrets SEED_PASSWORD=uat-seed-password:latest \
             --max-retries 0 --task-timeout 300 --labels env=uat --quiet
           gcloud run jobs execute uat-smoke --region "$REGION" --wait

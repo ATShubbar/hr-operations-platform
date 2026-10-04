@@ -34,6 +34,7 @@ import { UsersService } from '../application/users.service';
 import { AccountTokensService } from '../application/account-tokens.service';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { AuditService } from '../../audit/public-api';
+import { mfaSwitchedOffForUat } from '../domain/uat-mfa';
 
 // One answer for every unusable link — unknown, used, expired, replaced, or for a
 // disabled account — so the endpoint reveals nothing about which.
@@ -155,6 +156,13 @@ export class AuthController {
       employeeId: user.employeeId,
       mfa: 'full',
     };
+
+    if (mfaSwitchedOffForUat()) {
+      // UAT-01: UAT only (the switch checks the origin) — no challenge, no
+      // enrolment, for every role.
+      await this.setSession(res, base);
+      return { userId: user.id, principalType: user.principalType };
+    }
 
     if (user.mfaSecret) {
       // Enrolled: credentials alone earn only a challenge session.

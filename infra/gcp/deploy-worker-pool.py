@@ -34,7 +34,10 @@ def plain_env():
         if not line or line.startswith("#"):
             continue
         k, v = line.split(":", 1)
-        out.append({"name": k.strip(), "value": v.strip()})
+        v = v.strip()
+        if len(v) >= 2 and v[0] == v[-1] and v[0] in "\"'":
+            v = v[1:-1]  # a quoted YAML scalar, e.g. "true"
+        out.append({"name": k.strip(), "value": v})
     return out
 
 

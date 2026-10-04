@@ -6,3 +6,7 @@ STORAGE_ENDPOINT: https://storage.googleapis.com
 STORAGE_REGION: me-central1
 STORAGE_BUCKET: peoplegro-uat-documents
 APP_WEB_ORIGIN: https://uat.peopleandgro.com
+# UAT-01 (owner decision; ADR-013 UAT exception): no authenticator on UAT. The
+# code honours this ONLY when APP_WEB_ORIGIN is the UAT address (uat-mfa.ts), so
+# copying it into a production config would do nothing.
+UAT_DISABLE_MFA: "true"

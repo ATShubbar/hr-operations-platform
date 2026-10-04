@@ -31,3 +31,4 @@ export type {
   CreateEmployeeUserInput,
   CreateStaffUserInput,
 } from './domain/user';
+export { UAT_ORIGIN, mfaSwitchedOffForUat } from './domain/uat-mfa';

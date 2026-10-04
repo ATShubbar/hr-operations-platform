@@ -10,12 +10,25 @@
 // that notification is emailed by the BullMQ WORKER, so its log line
 // `email → client_manager-a@seed.hr.local` proves the worker processes jobs.
 //
-// Administrator and Auditor are deliberately absent: both must enrol an
-// authenticator, and a script must not enrol one on the owner's behalf.
+// Administrator and Auditor are checked only on UAT (SMOKE_ACCOUNTS=uat), where
+// UAT-01 removed the authenticator; elsewhere both must enrol one, and a script
+// must not enrol one on anybody's behalf.
 
 const BASE = (process.env.SMOKE_BASE ?? 'https://uat.peopleandgro.com').replace(/\/+$/, '');
 const PASSWORD = process.env.SEED_PASSWORD ?? '';
 const DOMAIN = 'seed.hr.local';
+// UAT-01: on UAT the seed accounts are simple @peopleandgro.com logins and no
+// role needs an authenticator, so Administrator and Auditor are checked too.
+const UAT = process.env.SMOKE_ACCOUNTS === 'uat';
+const UAT_EMAILS = {
+  'staff-administrator': 'admin@peopleandgro.com',
+  'staff-hr_officer': 'hr@peopleandgro.com',
+  'staff-gro_officer': 'gro@peopleandgro.com',
+  'staff-auditor': 'auditor@peopleandgro.com',
+  'client_manager-a': 'client@peopleandgro.com',
+  'employee-a': 'employee@peopleandgro.com',
+};
+const emailOf = (user) => (UAT ? UAT_EMAILS[user] : `${user}@${DOMAIN}`);
 const CLIENT_A = '11111111-1111-4111-8111-111111111111';
 
 let failures = 0;
@@ -46,7 +59,7 @@ async function call(path, { cookie, method = 'GET', body } = {}) {
 async function signIn(user) {
   const res = await call('/auth/login', {
     method: 'POST',
-    body: { email: `${user}@${DOMAIN}`, password: PASSWORD },
+    body: { email: emailOf(user), password: PASSWORD },
   });
   const set = res.headers.getSetCookie?.() ?? [];
   const session = set.map((c) => c.split(';')[0]).find((c) => c.startsWith('hr_session='));
@@ -61,10 +74,17 @@ const ROLES = [
   { user: 'staff-gro_officer', role: 'gro_officer', allowed: '/gro-processes', refused: '/reports' },
   { user: 'client_manager-a', role: 'client_manager', allowed: '/requests', refused: '/tasks' },
   { user: 'employee-a', role: 'employee', allowed: '/auth/me', refused: '/employees' },
+  // Only where no authenticator is required (UAT-01); `/me` is employee-only.
+  ...(UAT
+    ? [
+        { user: 'staff-administrator', role: 'administrator', allowed: '/audit', refused: '/me' },
+        { user: 'staff-auditor', role: 'auditor', allowed: '/audit', refused: '/me' },
+      ]
+    : []),
 ];
 
 async function main() {
-  if (PASSWORD.length < 16) {
+  if (PASSWORD.length < 8) {
     check(false, 'SEED_PASSWORD is present');
     return;
   }
@@ -137,7 +157,7 @@ async function main() {
       });
       check(moved.json?.status === 'in_progress', 'request: taken up by HR', `HTTP ${moved.status}`);
       process.stdout.write(
-        `INFO  worker proof: look for "email → client_manager-a@${DOMAIN}" in the uat-worker log after ${new Date().toISOString()} (request ${raised.json.id})\n`,
+        `INFO  worker proof: look for "email → ${emailOf('client_manager-a')}" in the uat-worker log after ${new Date().toISOString()} (request ${raised.json.id})\n`,
       );
     }
   }
