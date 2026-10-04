@@ -1,10 +1,4 @@
-import {
-  Controller,
-  ForbiddenException,
-  Get,
-  NotFoundException,
-  Param,
-} from '@nestjs/common';
+import { Controller, ForbiddenException, Get, NotFoundException, Param } from '@nestjs/common';
 import type {
   ClientResponse,
   DocumentListResponse,
@@ -24,8 +18,8 @@ import { ConfigService } from '../../configuration/public-api';
 import { DocumentsService, toDocumentResponse } from '../../documents/public-api';
 import {
   EmployeesService,
+  PORTAL_EMPLOYEE_VISIBILITY,
   toEmployeeResponse,
-  type EmployeeVisibility,
 } from '../../employees/public-api';
 import { StorageService } from '../../storage/public-api';
 
@@ -36,11 +30,9 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 // A portal download URL is short-lived (matches the staff download TTL, DOC-03).
 const PORTAL_DOWNLOAD_TTL_SECONDS = 300;
 
-// What a client rep may see of their own employees (PORTAL-02): core profile +
-// government STATUS/EXPIRY, but never salary and never the raw government
-// IDENTIFIER numbers (those stay in staff custody). This is the deferred EMP-02
-// `status` tier, now live for the portal path.
-const PORTAL_EMPLOYEE_VISIBILITY: EmployeeVisibility = { salary: false, govdata: 'status' };
+// What a client rep may see of their own employees: PORTAL_EMPLOYEE_VISIBILITY
+// (employees/domain/employee-view.ts — moved there in DS-21 so GET /access
+// describes the same tier this enforces).
 
 // The Client Portal (PORTAL-01; architecture.md module 10) — a client-scoped
 // DELIVERY surface with no business logic of its own: it reads from the domain

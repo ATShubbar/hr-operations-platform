@@ -15,6 +15,23 @@ export interface EmployeeVisibility {
   govdata: 'full' | 'status' | 'none';
 }
 
+// The STAFF tier (EMP-02): pay behind salary.read, government data in full
+// behind govdata.read, otherwise none. `can` answers for the caller's role. The
+// staff controller enforces with this, and GET /access (DS-21) describes with
+// it — so the Settings → Access table cannot claim something this does not do.
+export function staffVisibility(can: (permission: string) => boolean): EmployeeVisibility {
+  return {
+    salary: can('salary.read'),
+    govdata: can('govdata.read') ? 'full' : 'none',
+  };
+}
+
+// What a client rep may see of their own employees (PORTAL-02): core profile +
+// government STATUS/EXPIRY, but never salary and never the raw government
+// IDENTIFIER numbers (those stay in staff custody). Moved here from the portal
+// controller in DS-21 so GET /access reads the same constant.
+export const PORTAL_EMPLOYEE_VISIBILITY: EmployeeVisibility = { salary: false, govdata: 'status' };
+
 function iso(d: Date | null): string | null {
   return d ? d.toISOString() : null;
 }

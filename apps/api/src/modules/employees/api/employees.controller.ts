@@ -27,7 +27,11 @@ import type { Prisma } from '../../../generated/prisma/client';
 import { PolicyService } from '../../auth/public-api';
 import { ClientsService } from '../../clients/public-api';
 import { EmployeesService } from '../application/employees.service';
-import { toEmployeeResponse, type EmployeeVisibility } from '../domain/employee-view';
+import {
+  staffVisibility,
+  toEmployeeResponse,
+  type EmployeeVisibility,
+} from '../domain/employee-view';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -161,12 +165,8 @@ export class EmployeesController {
 
   private readVisibility(): EmployeeVisibility {
     const role = requestContext.get()?.role;
-    return {
-      salary: this.policy.can(role, 'salary.read'),
-      // Staff see full govdata; the status-only tier is for the client-rep
-      // portal path (deferred), so here it is full-or-none.
-      govdata: this.policy.can(role, 'govdata.read') ? 'full' : 'none',
-    };
+    // Staff see full govdata or none; the status-only tier is the portal's.
+    return staffVisibility((p) => this.policy.can(role, p));
   }
 
   private async require(id: string): Promise<EmployeeRecord> {

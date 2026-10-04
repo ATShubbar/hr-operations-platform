@@ -57,6 +57,14 @@ export {
   type RoleListResponse,
 } from './role.js';
 export {
+  accessGroupSchema,
+  accessLevelSchema,
+  accessResponseSchema,
+  type AccessGroup,
+  type AccessLevel,
+  type AccessResponse,
+} from './access.js';
+export {
   genderSchema,
   employmentStatusSchema,
   contractTypeSchema,

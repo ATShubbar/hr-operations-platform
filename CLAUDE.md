@@ -1135,6 +1135,14 @@ employee side), identifiers + pay side by side, a requests strip. At 375 a fixed
 the chip inside its card while the PAGE showed 0 overflow — measure a table against its CARD, not
 only the page. **Found:** seeded documents have NO objects in MinIO (Download → `NoSuchKey` on seed
 data; real uploads work) — SEED-01 follow-up. No API change.
+**DS-21 done — Settings.** `/settings` = tabs **Access** (default; `settings/access-table.tsx`: the
+prototype's field-access table, 6 groups × 6 roles, read-only) · **Preferences** (language, applies-
+to-you, notification emails) · **System** (system settings, feature switches, per-client — only with
+`config.write`/`config.write-client`). **API: `GET /access`** (`employees/api/access.controller.ts`,
+`config.read-self` + `scopeOf` refuses employees; registry `client-read`) — DERIVED from the enforced
+rules, which now live in ONE place: `staffVisibility(can)` + `PORTAL_EMPLOYEE_VISIBILITY` in
+`employee-view.ts` (the employees + portal controllers enforce with them). Its spec cross-checks the
+table against real `GET /employees/:id` responses. API **515/515** ×2.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

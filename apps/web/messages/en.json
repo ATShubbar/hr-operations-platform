@@ -191,7 +191,34 @@
     "originClient": "Client override",
     "originSystem": "System default",
     "effectiveValue": "Effective value",
-    "clearOverride": "Clear override"
+    "clearOverride": "Clear override",
+    "access": {
+      "title": "Access",
+      "subtitle": "What each role can see on an employee record — as the system enforces it today.",
+      "groupCol": "Field group",
+      "group": {
+        "profile": "Employee profile and role",
+        "expiries": "Document expiry dates",
+        "identifiers": "Government identifiers",
+        "pay": "Pay and bank details",
+        "clients": "Client companies",
+        "calendar": "Scheduling calendar"
+      },
+      "level": {
+        "full": "Full",
+        "own_company": "Own company",
+        "own_record": "Own record",
+        "hidden": "Hidden",
+        "none": "No access"
+      },
+      "editingSoon": "Changing who sees what is coming soon. Until then these rules are fixed.",
+      "error": "Couldn't load the access table."
+    },
+    "tab": {
+      "access": "Access",
+      "prefs": "Preferences",
+      "system": "System"
+    }
   },
   "employees": {
     "loading": "Loading…",

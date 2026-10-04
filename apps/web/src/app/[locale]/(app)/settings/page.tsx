@@ -14,11 +14,13 @@ import { usePathname, useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useCan } from '@/lib/session';
 import { NotificationPreferences } from '@/components/notification-preferences';
+import { AccessTable } from './access-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LoadError } from '@/components/ui/load-state';
 import { Skeleton, SkeletonRegion } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs';
 import { StatusPill } from '@/components/ui/status-pill';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -31,8 +33,12 @@ import {
 } from '@/components/ui/select';
 
 type Locale = 'ar' | 'en';
+type SettingsTab = 'access' | 'prefs' | 'system';
 const CAL_VALUES = ['hijri', 'gregorian', 'dual'] as const;
 
+// DS-21: three tabs — Access (the prototype's Settings screen: what each role sees
+// on an employee record, read-only), Preferences, and System (Administrator).
+//
 // Configuration settings UI (CONF-05) — the first place the three-level
 // resolution is user-visible. Everyone manages their own preferences (the
 // ui.language control persists to /config/me); Administrators additionally edit
@@ -51,6 +57,10 @@ export default function SettingsPage() {
   // Per-client overrides (config.write-client) are distinct from the
   // system-level config.write; both are the Administrator's (v1.7).
   const canWriteClient = useCan('config.write-client');
+  // DS-21: Access (everyone who reaches Settings) · Preferences (everyone) ·
+  // System (Administrator — system settings, feature switches, per-client).
+  const showSystem = canWriteSystem || canWriteClient;
+  const [tab, setTab] = useState<SettingsTab>('access');
 
   const [me, setMe] = useState<Record<string, unknown> | null>(null);
   const [system, setSystem] = useState<Record<string, unknown> | null>(null);
@@ -228,242 +238,267 @@ export default function SettingsPage() {
     v === 'hijri' ? t('calHijri') : v === 'gregorian' ? t('calGregorian') : t('calDual');
 
   return (
-    <div className="space-y-6">
+    <div className="flex max-w-[1240px] flex-col gap-4">
       <div>
         <h1 className="text-2xl font-semibold">{t('title')}</h1>
         <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
       </div>
 
-      {error && (
-        <LoadError message={error} onRetry={() => void load()} hasContent={false} />
-      )}
+      {error && <LoadError message={error} onRetry={() => void load()} hasContent={false} />}
 
-      {/* ---- My preferences (everyone) ---- */}
-      <Card>
-        <CardHeader className="border-b">
-          <CardTitle>{t('prefsTitle')}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="max-w-xs space-y-1.5">
-            <Label>{t('language')}</Label>
-            <Select
-              value={String(me['ui.language'] ?? locale)}
-              onValueChange={(v) => void setLanguage(v ?? 'ar')}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue>{(v) => (v === 'en' ? t('langEn') : t('langAr'))}</SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ar">{t('langAr')}</SelectItem>
-                <SelectItem value="en">{t('langEn')}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+      <Tabs value={tab} onValueChange={(v) => setTab(v as SettingsTab)} className="gap-4">
+        <TabsList aria-label={t('title')}>
+          <TabsTab value="access">{t('tab.access')}</TabsTab>
+          <TabsTab value="prefs">{t('tab.prefs')}</TabsTab>
+          {showSystem && <TabsTab value="system">{t('tab.system')}</TabsTab>}
+        </TabsList>
 
-      {/* ---- Applies to you (resolved; everyone) ---- */}
-      <Card>
-        <CardHeader className="border-b">
-          <CardTitle>{t('appliesTitle')}</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
-          <Field label={t('calendarDisplay')} value={calValue(me['calendar.display'])} />
-          <Field label={t('timezone')} value={String(me['timezone'] ?? '—')} />
-          <Field
-            label={t('workingWeek')}
-            value={workingWeek.map((d) => t(`days.${d}`)).join(locale === 'ar' ? '، ' : ', ') || '—'}
-          />
-        </CardContent>
-      </Card>
+        <TabsPanel value="access">
+          <AccessTable />
+        </TabsPanel>
 
-      {/* ---- Notification preferences (everyone) ---- */}
-      <NotificationPreferences />
-
-      {/* ---- System settings (Administrator only) ---- */}
-      {canWriteSystem && system && (
-        <>
+        <TabsPanel value="prefs" className="space-y-6">
+          {/* ---- My preferences (everyone) ---- */}
           <Card>
             <CardHeader className="border-b">
-              <CardTitle>{t('systemTitle')}</CardTitle>
+              <CardTitle>{t('prefsTitle')}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-5">
-              <p className="text-sm text-muted-foreground">{t('systemSubtitle')}</p>
+            <CardContent className="space-y-4">
               <div className="max-w-xs space-y-1.5">
-                <Label>{t('calendarDisplay')}</Label>
+                <Label>{t('language')}</Label>
                 <Select
-                  value={String(system['calendar.display'] ?? 'dual')}
-                  onValueChange={(v) => void patchSystem('calendar.display', v ?? 'dual')}
+                  value={String(me['ui.language'] ?? locale)}
+                  onValueChange={(v) => void setLanguage(v ?? 'ar')}
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue>{(v) => calValue(v)}</SelectValue>
+                    <SelectValue>{(v) => (v === 'en' ? t('langEn') : t('langAr'))}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    {CAL_VALUES.map((v) => (
-                      <SelectItem key={v} value={v}>
-                        {calValue(v)}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="ar">{t('langAr')}</SelectItem>
+                    <SelectItem value="en">{t('langEn')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex max-w-md items-end gap-2">
-                <div className="flex-1 space-y-1.5">
-                  <Label htmlFor="tz">{t('timezone')}</Label>
-                  <Input id="tz" value={tz} onChange={(e) => setTz(e.target.value)} />
-                </div>
-                <Button
-                  variant="outline"
-                  disabled={busy || tz === String(system['timezone'] ?? '')}
-                  onClick={() => void patchSystem('timezone', tz)}
-                >
-                  {busy ? t('saving') : t('save')}
-                </Button>
-              </div>
             </CardContent>
           </Card>
 
+          {/* ---- Applies to you (resolved; everyone) ---- */}
           <Card>
             <CardHeader className="border-b">
-              <CardTitle>{t('flagsTitle')}</CardTitle>
+              <CardTitle>{t('appliesTitle')}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <p className="text-sm text-muted-foreground">{t('flagsSubtitle')}</p>
-              {Object.entries(flags).map(([key, on]) => (
-                <div key={key} className="flex items-center justify-between gap-4 border-b pb-3 last:border-0">
-                  <div>
-                    <div className="text-sm font-medium">{key.replace('flag.', '')}</div>
-                    {descriptions[key] && (
-                      <div className="text-xs text-muted-foreground">{descriptions[key]}</div>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Badge variant={on ? 'default' : 'secondary'}>
-                      {on ? t('enabled') : t('disabled')}
-                    </Badge>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={busy}
-                      onClick={() => void patchSystem(key, !on)}
-                    >
-                      {on ? t('disable') : t('enable')}
-                    </Button>
-                  </div>
-                </div>
-              ))}
+            <CardContent className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
+              <Field label={t('calendarDisplay')} value={calValue(me['calendar.display'])} />
+              <Field label={t('timezone')} value={String(me['timezone'] ?? '—')} />
+              <Field
+                label={t('workingWeek')}
+                value={
+                  workingWeek.map((d) => t(`days.${d}`)).join(locale === 'ar' ? '، ' : ', ') || '—'
+                }
+              />
             </CardContent>
           </Card>
-        </>
-      )}
 
-      {/* ---- Per-client overrides (UX-10a, Administrator) ---- */}
-      {canWriteClient && (
-        <Card>
-          <CardHeader className="border-b">
-            <CardTitle>{t('clientTitle')}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">{t('clientSubtitle')}</p>
+          {/* ---- Notification preferences (everyone) ---- */}
+          <NotificationPreferences />
+        </TabsPanel>
 
-            <div className="space-y-1.5">
-              <Label>{t('clientPick')}</Label>
-              <Select
-                value={selectedClient}
-                onValueChange={(v) => {
-                  const id = v ?? '';
-                  setSelectedClient(id);
-                  void loadClientSettings(id);
-                }}
-              >
-                <SelectTrigger className="w-full max-w-sm">
-                  <SelectValue placeholder={t('clientPickPlaceholder')}>
-                    {(v) => {
-                      const c = clients.find((x) => x.id === v);
-                      if (!c) return t('clientPickPlaceholder');
-                      return locale === 'ar' ? c.name.ar : c.name.en;
-                    }}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {clients.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {locale === 'ar' ? c.name.ar : c.name.en}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {selectedClient && clientSettings && (
-              <div className="space-y-3">
-                {catalog
-                  .filter((def) => def.levels.includes('client'))
-                  .map((def) => {
-                    const clientValue = clientSettings[def.key];
-                    const systemValue = system?.[def.key];
-                    // The API returns the EFFECTIVE value, not the raw override,
-                    // so "overridden" is inferred by comparison. An override set
-                    // to the same value as the system default is indistinguish-
-                    // able here — showing that honestly would need the API to
-                    // return the override set, which is a contract change.
-                    const overridden = JSON.stringify(clientValue) !== JSON.stringify(systemValue);
-                    const isBool = typeof clientValue === 'boolean';
-                    return (
-                      <div
-                        key={def.key}
-                        className="flex flex-wrap items-center justify-between gap-3 border-b pb-3 last:border-0"
+        {showSystem && (
+          <TabsPanel value="system" className="space-y-6">
+            {/* ---- System settings (Administrator only) ---- */}
+            {canWriteSystem && system && (
+              <>
+                <Card>
+                  <CardHeader className="border-b">
+                    <CardTitle>{t('systemTitle')}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-5">
+                    <p className="text-sm text-muted-foreground">{t('systemSubtitle')}</p>
+                    <div className="max-w-xs space-y-1.5">
+                      <Label>{t('calendarDisplay')}</Label>
+                      <Select
+                        value={String(system['calendar.display'] ?? 'dual')}
+                        onValueChange={(v) => void patchSystem('calendar.display', v ?? 'dual')}
                       >
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium">
-                              <bdi dir="ltr">{def.key}</bdi>
-                            </span>
-                            <StatusPill tone={overridden ? 'info' : 'neutral'}>
-                              {overridden ? t('originClient') : t('originSystem')}
-                            </StatusPill>
-                          </div>
-                          <div className="text-xs text-muted-foreground">{def.description}</div>
-                          <div className="mt-1 text-xs text-muted-foreground">
-                            {t('effectiveValue')}: <bdi dir="ltr">{JSON.stringify(clientValue)}</bdi>
-                          </div>
+                        <SelectTrigger className="w-full">
+                          <SelectValue>{(v) => calValue(v)}</SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {CAL_VALUES.map((v) => (
+                            <SelectItem key={v} value={v}>
+                              {calValue(v)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex max-w-md items-end gap-2">
+                      <div className="flex-1 space-y-1.5">
+                        <Label htmlFor="tz">{t('timezone')}</Label>
+                        <Input id="tz" value={tz} onChange={(e) => setTz(e.target.value)} />
+                      </div>
+                      <Button
+                        variant="outline"
+                        disabled={busy || tz === String(system['timezone'] ?? '')}
+                        onClick={() => void patchSystem('timezone', tz)}
+                      >
+                        {busy ? t('saving') : t('save')}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="border-b">
+                    <CardTitle>{t('flagsTitle')}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <p className="text-sm text-muted-foreground">{t('flagsSubtitle')}</p>
+                    {Object.entries(flags).map(([key, on]) => (
+                      <div
+                        key={key}
+                        className="flex items-center justify-between gap-4 border-b pb-3 last:border-0"
+                      >
+                        <div>
+                          <div className="text-sm font-medium">{key.replace('flag.', '')}</div>
+                          {descriptions[key] && (
+                            <div className="text-xs text-muted-foreground">{descriptions[key]}</div>
+                          )}
                         </div>
-                        <div className="flex shrink-0 items-center gap-2">
-                          {/* Booleans get a real control. The other shapes —
+                        <div className="flex items-center gap-3">
+                          <Badge variant={on ? 'default' : 'secondary'}>
+                            {on ? t('enabled') : t('disabled')}
+                          </Badge>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={busy}
+                            onClick={() => void patchSystem(key, !on)}
+                          >
+                            {on ? t('disable') : t('enable')}
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              </>
+            )}
+
+            {/* ---- Per-client overrides (UX-10a, Administrator) ---- */}
+            {canWriteClient && (
+              <Card>
+                <CardHeader className="border-b">
+                  <CardTitle>{t('clientTitle')}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-muted-foreground">{t('clientSubtitle')}</p>
+
+                  <div className="space-y-1.5">
+                    <Label>{t('clientPick')}</Label>
+                    <Select
+                      value={selectedClient}
+                      onValueChange={(v) => {
+                        const id = v ?? '';
+                        setSelectedClient(id);
+                        void loadClientSettings(id);
+                      }}
+                    >
+                      <SelectTrigger className="w-full max-w-sm">
+                        <SelectValue placeholder={t('clientPickPlaceholder')}>
+                          {(v) => {
+                            const c = clients.find((x) => x.id === v);
+                            if (!c) return t('clientPickPlaceholder');
+                            return locale === 'ar' ? c.name.ar : c.name.en;
+                          }}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {clients.map((c) => (
+                          <SelectItem key={c.id} value={c.id}>
+                            {locale === 'ar' ? c.name.ar : c.name.en}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {selectedClient && clientSettings && (
+                    <div className="space-y-3">
+                      {catalog
+                        .filter((def) => def.levels.includes('client'))
+                        .map((def) => {
+                          const clientValue = clientSettings[def.key];
+                          const systemValue = system?.[def.key];
+                          // The API returns the EFFECTIVE value, not the raw override,
+                          // so "overridden" is inferred by comparison. An override set
+                          // to the same value as the system default is indistinguish-
+                          // able here — showing that honestly would need the API to
+                          // return the override set, which is a contract change.
+                          const overridden =
+                            JSON.stringify(clientValue) !== JSON.stringify(systemValue);
+                          const isBool = typeof clientValue === 'boolean';
+                          return (
+                            <div
+                              key={def.key}
+                              className="flex flex-wrap items-center justify-between gap-3 border-b pb-3 last:border-0"
+                            >
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-medium">
+                                    <bdi dir="ltr">{def.key}</bdi>
+                                  </span>
+                                  <StatusPill tone={overridden ? 'info' : 'neutral'}>
+                                    {overridden ? t('originClient') : t('originSystem')}
+                                  </StatusPill>
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {def.description}
+                                </div>
+                                <div className="mt-1 text-xs text-muted-foreground">
+                                  {t('effectiveValue')}:{' '}
+                                  <bdi dir="ltr">{JSON.stringify(clientValue)}</bdi>
+                                </div>
+                              </div>
+                              <div className="flex shrink-0 items-center gap-2">
+                                {/* Booleans get a real control. The other shapes —
                               enums, arrays, timezone strings — have no editor
                               metadata in the catalog (no options, no type), so
                               rendering one would mean re-declaring every shape in
                               the web app. They stay readable, and clearing an
                               override still works. */}
-                          {isBool && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              disabled={busy}
-                              onClick={() => void patchClient(def.key, !clientValue)}
-                            >
-                              {clientValue ? t('disable') : t('enable')}
-                            </Button>
-                          )}
-                          {overridden && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              disabled={busy}
-                              onClick={() => void clearClientOverride(def.key)}
-                            >
-                              {t('clearOverride')}
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-              </div>
+                                {isBool && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={busy}
+                                    onClick={() => void patchClient(def.key, !clientValue)}
+                                  >
+                                    {clientValue ? t('disable') : t('enable')}
+                                  </Button>
+                                )}
+                                {overridden && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    disabled={busy}
+                                    onClick={() => void clearClientOverride(def.key)}
+                                  >
+                                    {t('clearOverride')}
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             )}
-          </CardContent>
-        </Card>
-      )}
+          </TabsPanel>
+        )}
+      </Tabs>
     </div>
   );
 }
