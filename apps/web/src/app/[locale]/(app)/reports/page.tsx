@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { LoadError, NoAccess } from '@/components/ui/load-state';
 import { SkeletonRegion, SkeletonRows } from '@/components/ui/skeleton';
 import { StatTile } from '@/components/ui/stat-tile';
+import { ReportsDashboard } from './dashboard';
 import {
   Table,
   TableBody,
@@ -21,6 +22,11 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
+// Reports (DS-16): the prototype's analytics dashboard on top (dashboard.tsx),
+// and REP-04's catalog below it as "Detailed reports" (owner decision — the
+// tabular reports and their audited CSV export are real features the prototype
+// lacks). The header's "Export report" downloads the selected detailed report.
+//
 // Reports console (REP-04). The catalog arrives ALREADY filtered by the API to
 // what this caller may run (REP-02), so the page never has to reason about
 // permissions to decide what to offer — it renders what it is given. The only
@@ -152,107 +158,137 @@ export default function ReportsPage() {
     );
   }
 
+  const today = new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-GB', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(new Date());
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">{t('title')}</h1>
-        <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
+    <div className="flex max-w-[1240px] flex-col gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
+        <div className="flex min-w-0 grow flex-col gap-1">
+          <h1 className="text-2xl font-semibold">{t('title')}</h1>
+          <p className="text-sm text-pretty text-muted-foreground">
+            {t('dash.titleLine', { date: today })}
+          </p>
+        </div>
+        {canExport && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="shrink-0 self-start sm:self-auto"
+            onClick={() => void download()}
+            disabled={exporting || !result}
+            title={result ? t('exportOf', { name: t(`report.${result.id}`) }) : undefined}
+          >
+            {exporting ? t('exporting') : t('exportReport')}
+          </Button>
+        )}
       </div>
 
-      {reports.length === 0 && !loading ? (
-        <div className="rounded-lg border p-8 text-center text-sm text-muted-foreground">
-          {t('noReports')}
-        </div>
-      ) : (
-        <div className="flex flex-wrap gap-2">
-          {reports.map((r) => (
-            <Button
-              key={r.id}
-              variant={r.id === selected ? 'default' : 'outline'}
-              onClick={() => setSelected(r.id)}
-            >
-              {t(`report.${r.id}`)}
-            </Button>
-          ))}
-        </div>
-      )}
+      <ReportsDashboard />
 
-      {error && (
-        <LoadError
-          message={error}
-          // Retry whichever step failed: with no catalog there is nothing to run.
-          onRetry={() => void (reports.length === 0 ? loadCatalog() : runReport(selected))}
-          hasContent={Boolean(result)}
-        />
-      )}
+      <section aria-labelledby="detailed" className="flex flex-col gap-4 pt-4">
+        <div className="flex flex-col gap-0.5 border-t pt-4">
+          <h2 id="detailed" className="text-lg font-medium">
+            {t('detailedTitle')}
+          </h2>
+          <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
+        </div>
 
-      {result && (
-        <section className="space-y-4">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-medium">{t(`report.${result.id}`)}</h2>
-                <Badge variant="secondary">{t(`category.${categoryOf(reports, result.id)}`)}</Badge>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {t('generatedAt', {
-                  date: dualDate(result.generatedAt, locale) ?? result.generatedAt.slice(0, 10),
-                })}
-              </p>
-            </div>
-            {canExport && (
-              <Button variant="outline" onClick={() => void download()} disabled={exporting}>
-                {exporting ? t('exporting') : t('exportCsv')}
-              </Button>
-            )}
+        {reports.length === 0 && !loading ? (
+          <div className="rounded-lg border p-8 text-center text-sm text-muted-foreground">
+            {t('noReports')}
           </div>
-
-          {/* whole-report totals */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            {Object.entries(result.summary).map(([key, total]) => (
-              <StatTile key={key} label={label(key, key)} value={total.toLocaleString(locale)} />
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {reports.map((r) => (
+              <Button
+                key={r.id}
+                variant={r.id === selected ? 'default' : 'outline'}
+                onClick={() => setSelected(r.id)}
+              >
+                {t(`report.${r.id}`)}
+              </Button>
             ))}
           </div>
+        )}
 
-          {result.rows.length === 0 ? (
-            <div className="rounded-lg border p-8 text-center text-sm text-muted-foreground">
-              {t('noRows')}
+        {error && (
+          <LoadError
+            message={error}
+            // Retry whichever step failed: with no catalog there is nothing to run.
+            onRetry={() => void (reports.length === 0 ? loadCatalog() : runReport(selected))}
+            hasContent={Boolean(result)}
+          />
+        )}
+
+        {result && (
+          <section className="space-y-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-medium">{t(`report.${result.id}`)}</h3>
+                  <Badge variant="secondary">
+                    {t(`category.${categoryOf(reports, result.id)}`)}
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {t('generatedAt', {
+                    date: dualDate(result.generatedAt, locale) ?? result.generatedAt.slice(0, 10),
+                  })}
+                </p>
+              </div>
             </div>
-          ) : (
-            <Table label={t(`report.${result.id}`)}>
-              <TableHeader>
-                <TableRow>
-                  {result.columns.map((c) => (
-                    <TableHead key={c.key} className={c.numeric ? 'text-end' : undefined}>
-                      {label(c.key, c.label)}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {result.rows.map((row, i) => (
-                  <TableRow key={i}>
+
+            {/* whole-report totals */}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+              {Object.entries(result.summary).map(([key, total]) => (
+                <StatTile key={key} label={label(key, key)} value={total.toLocaleString(locale)} />
+              ))}
+            </div>
+
+            {result.rows.length === 0 ? (
+              <div className="rounded-lg border p-8 text-center text-sm text-muted-foreground">
+                {t('noRows')}
+              </div>
+            ) : (
+              <Table label={t(`report.${result.id}`)}>
+                <TableHeader>
+                  <TableRow>
                     {result.columns.map((c) => (
-                      <TableCell
-                        key={c.key}
-                        className={c.numeric ? 'text-end tabular-nums' : undefined}
-                      >
-                        {cell(row[c.key] ?? null, c.numeric)}
-                      </TableCell>
+                      <TableHead key={c.key} className={c.numeric ? 'text-end' : undefined}>
+                        {label(c.key, c.label)}
+                      </TableHead>
                     ))}
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </section>
-      )}
+                </TableHeader>
+                <TableBody>
+                  {result.rows.map((row, i) => (
+                    <TableRow key={i}>
+                      {result.columns.map((c) => (
+                        <TableCell
+                          key={c.key}
+                          className={c.numeric ? 'text-end tabular-nums' : undefined}
+                        >
+                          {cell(row[c.key] ?? null, c.numeric)}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </section>
+        )}
 
-      {loading && (
-        <SkeletonRegion label={tStates('loading')} className="rounded-lg border bg-card p-3">
-          <SkeletonRows rows={5} columns={5} />
-        </SkeletonRegion>
-      )}
+        {loading && (
+          <SkeletonRegion label={tStates('loading')} className="rounded-lg border bg-card p-3">
+            <SkeletonRows rows={5} columns={5} />
+          </SkeletonRegion>
+        )}
+      </section>
     </div>
   );
 }

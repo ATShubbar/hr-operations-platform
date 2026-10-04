@@ -1086,6 +1086,14 @@ groups with Hijri, server paging kept ("N+ events so far" on the last loaded day
 dialog listing changed fields before → after. Category is a fixed map in `lib/audit-category.ts`
 (Payroll maps to nothing yet → disabled "soon"); severity and Export "soon" (AUDIT-07). Entries
 now carry `resourceId`. Matched SQL (112 procedure rows, 33 for Omar, 1 for "archive"). Next: DS-16.
+**DS-16 done — Reports.** `/reports` = the prototype's dashboard (`reports/dashboard.tsx`: tiles
+Clients / Headcount+Saudi / Expiring 30d / Open items / Fees "soon"; Saudisation by client with
+the band "soon"; 6-month expiry forecast; officer workload incl. Unassigned; service level against
+each request's OWN due date; open procedures by TYPE — no portal stored) computed on the page from
+the list endpoints (reusing `lib/employee-docs` + `clients/client-figures`), then **Detailed
+reports** (REP-04 catalog; header Export report = the selected one, still audited). Every figure
+matched SQL. Found: REP-01's Workforce counts archived clients + leavers (39 vs 36) — REP-05
+follow-up. No API change. Next: DS-17 (Overview).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
