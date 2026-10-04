@@ -26,8 +26,8 @@ build contract. Changes go through ADRs (adr/), never through drift.
 
 | File | What |
 |---|---|
-| architecture.md | Frozen build contract — **v1.9** (ADR-011 self-service · ADR-012 LTR/prototype fidelity · ADR-013 six roles · ADR-014 leave · ADR-015 search) |
-| adr/README.md | Decision index (ADR-001..015, statuses) |
+| architecture.md | Frozen build contract — **v1.10** (ADR-011 self-service · ADR-012 LTR/prototype fidelity · ADR-013 six roles · ADR-014 leave · ADR-015 search · ADR-016 request thread) |
+| adr/README.md | Decision index (ADR-001..016, statuses) |
 | BACKLOG.md | Task board + cards + working rules |
 | ACTION-PLAN.md | Phased plan, DoD checklists with evidence rule |
 | evidence/skeleton/ | Per-task proof (WS-01..) |
@@ -1287,6 +1287,11 @@ passport/GOSI/work-permit number **only with `govdata.read`**; client managers o
 never by identifier); employees own requests/leave (self-service on). An identifier match is AUDITED
 (`search`/`identifier-lookup`, last 4 digits only). `@hr/text` is now an API dependency (server folds Arabic like the lists).
 Header box = `components/global-search.tsx` (combobox, phone icon). API **591/591**.
+**THREAD-00 done — the request thread is in the architecture (ADR-016, v1.10).** Owner: everything on a request's thread is
+visible to everyone on it (NO internal notes); all who see it post except the Auditor (`request.comment`; employees via
+`/me`); comments immutable; attachments (PDF/JPG/PNG ≤10MB) are the request's own `req_attachments`, scanned before
+download; `info_needed` ("Ask for more detail") returns to `open` on the REQUESTER's reply; a per-type working-day
+service level paused while info is needed (THREAD-04). Next: **THREAD-01** (comments).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

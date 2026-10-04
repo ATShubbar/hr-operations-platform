@@ -1,10 +1,11 @@
 # HR Operations Platform — Architecture
 
 ## Version
-**v1.9 — FROZEN (v1.4 frozen 2026-07-18; v1.5 amended by ADR-011, v1.6 by ADR-012, v1.7 by ADR-013 — all 2026-10-03; v1.8 by ADR-014 and v1.9 by ADR-015, 2026-10-04).**
+**v1.10 — FROZEN (v1.4 frozen 2026-07-18; v1.5 amended by ADR-011, v1.6 by ADR-012, v1.7 by ADR-013 — all 2026-10-03; v1.8 by ADR-014, v1.9 by ADR-015 and v1.10 by ADR-016, 2026-10-04).**
 This document is the build contract. Changes now require either a new ADR (for decisions) or an explicit unfreeze with a version bump — implementation drift is not a change mechanism. Implementation work is tracked in `BACKLOG.md`.
 
 ### Changelog
+- **v1.10** — **The request thread (ADR-016)**: comments and attachments visible to everyone on a request (no internal notes), posted by all who see it except the Auditor (`request.comment`; employees via `/me`); attachments scanned before download; a new status `info_needed` ("Ask for more detail") that the requester's reply returns to `open`; a per-type service level in working days, paused while info is needed.
 - **v1.9** — **Global search (ADR-015)**: a `Search` delivery module behind one endpoint, permission-aware per source (identifier matching only for `govdata.read` holders), a `search.read` permission for every role, and identifier lookups audited (last four digits only).
 - **v1.8** — **Leave brought into scope (ADR-014)**, reversing the v1.1–v1.7 exclusion: a `Leave` domain module (requests + a balance ledger); the employer's client manager approves, PEOPLE&GRO files; calendar days; the prototype's nine leave types with their caps; annual balances (21/30 days by service, monthly accrual from 1 January, carry-over capped at 10, may go below zero = unpaid); a `leave` row in the permission catalog and matrix; employees reach their own leave through self-service only.
 - **v1.7** — **Six built-in roles (ADR-013)**, taken from the owner's People & Gro prototype: Administrator · HR officer · GRO officer · Auditor · Client manager · Employee, replacing the ten-role set (System Admin + Company Admin → Administrator; HR Officer + Recruiter + Finance → HR officer; Read Only → Auditor; Client Admin + Client User → Client manager). Permission matrix rewritten from the prototype's `PERM_DEFAULT`, narrowed where its navigation is narrower (Reports and Audit logs: Administrator + Auditor). MFA required for Administrator and Auditor; no role is a default; client portal users are managed by Administrators only. The authorization model itself is unchanged. The v1.6 ten-role matrix is in git history (commit `8d13db0`). *Corrected in ROLE-03:* the Calendar cells for HR and GRO officers read "CRUD (own) + R (all)", which the code cannot express (`calendar.read-all` also lifts update/delete), so they follow the prototype's RWCD — CRUD on all events.
@@ -91,7 +92,7 @@ Every permission follows one pattern: **`resource.action`** — lowercase, dot-s
 | Documents | `document` | `document.upload`, `document.delete` |
 | Recruitment | `vacancy`, `candidate` | `candidate.create`, `vacancy.approve` |
 | GRO workflows | `gro` | `gro.process`, `gro.read` |
-| Requests | `request` | `request.create`, `request.process` |
+| Requests | `request` | `request.create`, `request.process`, `request.comment` |
 | Leave | `leave` | `leave.create`, `leave.approve`, `leave.file`, `leave.carry-over` |
 | Global search | `search` | `search.read` |
 | Tasks | `task` | `task.update` |
@@ -117,7 +118,7 @@ Client manager is always scoped to **their own client company only**; Employee i
 | Documents | CRUD | CRUD | CRU (gov docs) | R | R (own) | R (self, available only) |
 | Recruitment (vacancies, candidates, pipeline) | CRUD | CRU | RU | R | R (own vacancies) | – |
 | GRO workflows | CRUD | CRU | CRUD | R | R (own, status only) | – |
-| Requests | CRUD | CRUD | RU (process) | R | CR (own) | CR (self-raised) |
+| Requests (incl. the thread — ADR-016) | CRUD + comment | CRUD + comment | RU (process) + comment | R (thread too, no posting) | CR (own) + comment | CR (self-raised) + comment |
 | Leave (ADR-014) | CR + approve (on the client's behalf) + file + withdraw + run carry-over | CR + file + withdraw (own raises) | R + file | R | CR (own) + approve (own) + withdraw (own raises) | CR (self) + withdraw (self) |
 | Global search (ADR-015; results limited to what each role may already see) | R | R | R | R | R | R |
 | Tasks (internal) | CRUD | CRU (own/assigned) | CRU (own/assigned) | R | – | – |
