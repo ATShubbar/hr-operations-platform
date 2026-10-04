@@ -58,6 +58,14 @@ jobs:
       - name: Apply database migrations (includes RLS roles + policies)
         run: pnpm --filter @hr/api db:deploy
 
+      # Several e2e specs read the seed's fixed fixtures (client A, its
+      # employees). Locally the database is always seeded; CI never was, so those
+      # specs had failed on every push since they were written — unseen, because
+      # nothing deployed from CI until GCP-04. Seeding here makes CI run the suite
+      # under the same conditions as every local run.
+      - name: Seed the test database
+        run: pnpm --filter @hr/api db:seed
+
       - name: Lint, typecheck, test, build
         run: pnpm turbo run lint typecheck test build
 
