@@ -1194,6 +1194,15 @@ CNTXT lesson again). Compute in me-central2 has quota (72 CPUs); Cloud SQL/Memor
 UNPROVEN. Owner: **UAT in `me-central1` (Doha)**, sample data only (no personal data → residency not
 engaged). Production stays in-Kingdom, path open: **GCP-07**. Landmine: **gcloud needs Python ≥ 3.10** —
 macOS's 3.9 fails; use `CLOUDSDK_PYTHON=/opt/homebrew/bin/python3.14` in this shell.
+**GCP-03 done — UAT infrastructure exists in `me-central1` (Doha).** Prices read from the official
+Cloud Billing Catalog first (owner-approved). Artifact Registry `peoplegro` + a `dockerhub` REMOTE proxy;
+Cloud SQL `uat-pg` (`peoplegro-prod:me-central1:uat-pg`, PG16 Enterprise Micro, encrypted-only, no
+authorized networks, backups, deletion protection), DB `hr_platform`, user `migrator`; Redis on VM
+`uat-redis` (e2-micro, **no external IP**, 10.212.0.2) via `infra/gcp/uat-redis-startup.sh` (password
+from Secret Manager → root-only conf; pulls Redis through the proxy over Private Google Access;
+`noeviction` for BullMQ); bucket `peoplegro-uat-documents` (private, CORS uat origin); secrets with
+OWNER-generated values (never displayed); `uat-run`/`uat-redis-vm` with resource-scoped grants only.
+UAT ≈ $57/mo (worker pool ≈ $36 of it, GCP-04). Next: **GCP-04** (worker split + keyless deploy).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
