@@ -77,13 +77,15 @@ jobs:
       - name: Seed the test database
         run: pnpm --filter @hr/api db:seed
 
-      # Document e2e specs upload to object storage. A service container can't
-      # pass MinIO its `server /data` command, so it starts here instead.
+      # Document e2e specs upload to object storage. MinIO stopped publishing
+      # images (Docker Hub and Quay both refuse `minio/minio` since late 2025), so
+      # this is Bitnami's frozen MinIO build, pinned by digest. Its entrypoint
+      # starts the server itself (no `server /data` argument).
       - name: Start MinIO (object storage for the document specs)
         run: |
           docker run -d --name minio -p 9000:9000 \
             -e MINIO_ROOT_USER="$STORAGE_ACCESS_KEY" -e MINIO_ROOT_PASSWORD="$STORAGE_SECRET_KEY" \
-            minio/minio server /data
+            bitnamilegacy/minio@sha256:451fe6858cb770cc9d0e77ba811ce287420f781c7c1b806a386f6896471a349c
           for i in $(seq 1 30); do
             curl -fsS http://localhost:9000/minio/health/live && exit 0
             sleep 2
