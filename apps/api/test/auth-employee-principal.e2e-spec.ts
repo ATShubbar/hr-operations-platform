@@ -141,6 +141,8 @@ describe('Employee principal (SS-01, e2e)', () => {
     // (raising one's own request) — and NOTHING a staff or client-rep endpoint
     // checks (the isolation harness's principal fence).
     // SS-07 added the shell's own-identity controls (bell, language).
+    // ADR-015 added the header search — a `self` route whose results are the
+    // employee's own requests and leave (scoped in-app, proven in search.e2e).
     expect(res.body.permissions).toEqual([
       'session.end',
       'self-service.read',
@@ -148,6 +150,7 @@ describe('Employee principal (SS-01, e2e)', () => {
       'notification.read',
       'config.read-self',
       'config.write-self',
+      'search.read',
     ]);
   });
 

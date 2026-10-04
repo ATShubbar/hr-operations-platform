@@ -365,3 +365,10 @@ export {
   type CarryOverRequest,
   type CarryOverResponse,
 } from './leave.js';
+export {
+  searchQuerySchema,
+  searchHitSchema,
+  searchResponseSchema,
+  type SearchHit,
+  type SearchResponse,
+} from './search.js';

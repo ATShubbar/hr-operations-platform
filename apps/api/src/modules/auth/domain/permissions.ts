@@ -137,6 +137,10 @@ export const PERMISSIONS = [
   // Running the yearly carry-over by hand (LEAVE-03; ADR-014 rev. 1). The 1 January
   // job runs it automatically; this lets an Administrator re-run it (idempotent).
   'leave.carry-over',
+  // Global search (ADR-015, SEARCH-01): admits a caller to the header box. It
+  // reveals nothing by itself — each kind of result is gated by its own read
+  // permission (identifiers only for govdata.read). Every role holds it.
+  'search.read',
   // Calendar (CAL-02; permission matrix). STAFF-ONLY. All staff read (own events by
   // default); `calendar.read-all` lifts read/update/delete to ALL events — so a
   // role cannot be "write own, read all" (ROLE-03 found this; the v1.7 matrix
@@ -225,6 +229,8 @@ const STAFF_BASE: readonly Permission[] = [
   'request.read',
   'task.read',
   'calendar.read',
+  // ADR-015: the header search box (results gated per source).
+  'search.read',
 ];
 
 // The client manager (one company, mostly read): the scope-check exemplar,
@@ -251,6 +257,8 @@ const CLIENT_MANAGER: readonly Permission[] = [
   'leave.create',
   'leave.approve',
   'leave.withdraw',
+  // ADR-015: their own requests, leave and (portal on) people.
+  'search.read',
 ];
 
 // Each bundle is a column of the v1.7 permission matrix; the matrix spec
@@ -423,5 +431,8 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'notification.read',
     'config.read-self',
     'config.write-self',
+    // ADR-015: the header search — their own requests and leave only. A `self`
+    // route (the principal fence exempts it); the results are scoped in-app.
+    'search.read',
   ],
 };

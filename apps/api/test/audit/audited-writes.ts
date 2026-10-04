@@ -93,6 +93,8 @@ export const AUDITED_WRITES: Record<string, string> = {
 // only checks that each entry is still a live GET route.
 export const AUDITED_READS: Record<string, string> = {
   'GET /reports/:id/export': 'report.export',
+  // ADR-015: an identifier lookup (iqama, passport, …) that found someone.
+  'GET /search': 'search.identifier-lookup',
 };
 
 export const AUDIT_EXEMPT_WRITES: Record<string, string> = {

@@ -69,7 +69,8 @@ export default function MyLeavePage() {
   }
 
   useEffect(() => {
-    void load();
+    // `?l=<id>` opens one request (SEARCH-01 links here).
+    void load(new URLSearchParams(window.location.search).get('l') ?? undefined);
   }, []);
 
   const lq = useMemo(() => leave.find((r) => r.id === selected) ?? null, [leave, selected]);

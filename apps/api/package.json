@@ -2,7 +2,7 @@
   "name": "@hr/api",
   "version": "0.0.1",
   "private": true,
-  "description": "HR Operations Platform API — NestJS modular monolith",
+  "description": "HR Operations Platform API \u2014 NestJS modular monolith",
   "scripts": {
     "dev": "nest start --watch",
     "build": "nest build",
@@ -19,6 +19,7 @@
     "@aws-sdk/s3-request-presigner": "^3.700.0",
     "@hr/contracts": "workspace:*",
     "@hr/dates": "workspace:*",
+    "@hr/text": "workspace:*",
     "@nestjs/bullmq": "^11.0.0",
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",

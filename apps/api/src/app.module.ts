@@ -22,6 +22,7 @@ import { RecruitmentModule } from './modules/recruitment/public-api';
 import { GroModule } from './modules/gro/public-api';
 import { CalendarModule } from './modules/calendar/public-api';
 import { LeaveModule } from './modules/leave/public-api';
+import { SearchModule } from './modules/search/public-api';
 import { IntegrationsModule } from './modules/integrations/public-api';
 import { PortalModule } from './modules/portal/public-api';
 import { SelfServiceModule } from './modules/self-service/public-api';
@@ -52,6 +53,7 @@ import { ScopeCheckModule } from './modules/scope-check/public-api';
     GroModule,
     CalendarModule,
     LeaveModule,
+    SearchModule,
     IntegrationsModule,
     PortalModule,
     SelfServiceModule,

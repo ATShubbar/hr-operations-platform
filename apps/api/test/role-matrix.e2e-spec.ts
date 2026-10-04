@@ -140,6 +140,15 @@ const MATRIX: Record<string, Row> = {
     auditor: ['gro.read'],
     client_manager: ['gro.read'], // own, status only
   },
+  // ADR-015 (architecture.md v1.9): every role; results gated per source.
+  'Global search': {
+    administrator: ['search.read'],
+    hr_officer: ['search.read'],
+    gro_officer: ['search.read'],
+    auditor: ['search.read'],
+    client_manager: ['search.read'],
+    employee: ['search.read'],
+  },
   // ADR-014 (architecture.md v1.8). Employees reach their own leave through
   // /me/leave under self-service.* (already granted by the Requests row).
   Leave: {

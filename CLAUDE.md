@@ -26,8 +26,8 @@ build contract. Changes go through ADRs (adr/), never through drift.
 
 | File | What |
 |---|---|
-| architecture.md | Frozen build contract — **v1.8** (ADR-011 self-service · ADR-012 LTR/prototype fidelity · ADR-013 six roles · ADR-014 leave) |
-| adr/README.md | Decision index (ADR-001..014, statuses) |
+| architecture.md | Frozen build contract — **v1.9** (ADR-011 self-service · ADR-012 LTR/prototype fidelity · ADR-013 six roles · ADR-014 leave · ADR-015 search) |
+| adr/README.md | Decision index (ADR-001..015, statuses) |
 | BACKLOG.md | Task board + cards + working rules |
 | ACTION-PLAN.md | Phased plan, DoD checklists with evidence rule |
 | evidence/skeleton/ | Per-task proof (WS-01..) |
@@ -1281,6 +1281,12 @@ with an `audience`, nav badges (client manager → pending, staff → approved),
 (away today, a clash, an overdrawn person, carry-over, last year) + **`flag.employee-self-service` ON for seed company A**,
 and a leave step in the UAT smoke check. Note: `configuration-client.e2e` deletes EVERY client setting — locally, re-seed
 after the suite to get the flag back. API 580/580.
+**SEARCH-01 done — global search (ADR-015, v1.9).** `modules/search` (delivery, leaf): `GET /search?q=` (`search.read`, all
+roles), each kind gated by the caller's own access — people by name (`employee.read`) and by iqama/national ID/border/
+passport/GOSI/work-permit number **only with `govdata.read`**; client managers own company (people only with the portal on,
+never by identifier); employees own requests/leave (self-service on). An identifier match is AUDITED
+(`search`/`identifier-lookup`, last 4 digits only). `@hr/text` is now an API dependency (server folds Arabic like the lists).
+Header box = `components/global-search.tsx` (combobox, phone icon). API **591/591**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

@@ -9,6 +9,7 @@ import { LanguageSwitcher } from '@/components/language-switcher';
 import { MobileNav } from '@/components/mobile-nav';
 import { NavCountsProvider } from '@/components/nav-counts';
 import { NotificationBell } from '@/components/notification-bell';
+import { GlobalSearch } from './global-search';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import { useSession } from '@/lib/session';
 
@@ -89,27 +90,9 @@ function ShellFrame({ children }: { children: ReactNode }) {
           <MobileNav />
           <HeaderLocation />
           <div className="ms-auto flex shrink-0 items-center gap-1 md:gap-3">
-            {/* The prototype's global search (264×28), placed where it sits.
-                Not built yet (a feature epic): shown, disabled, and labelled
-                "coming soon" — owner decision; never a box that pretends to
-                search. Hidden on phones, as in the prototype's desktop layout. */}
-            <div className="relative hidden w-[264px] md:block">
-              <input
-                type="search"
-                disabled
-                aria-describedby="search-coming-soon"
-                placeholder={t('header.searchPlaceholder')}
-                className="h-7 w-full rounded-md border border-input bg-transparent ps-2.5 pe-12 text-sm text-muted-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed"
-              />
-              <span
-                id="search-coming-soon"
-                className="pointer-events-none absolute inset-y-0 end-2 flex items-center text-[11px] text-muted-foreground"
-              >
-                {/* "Soon", not "Coming soon": the full phrase crowded the
-                    prototype's placeholder down to "Search people, refs, I". */}
-                {t('states.soon')}
-              </span>
-            </div>
+            {/* The prototype's global search (264×28), placed where it sits —
+                live since SEARCH-01 (ADR-015). On phones, a search icon. */}
+            <GlobalSearch />
             <NotificationBell />
             <LanguageSwitcher className="inline-flex h-8 items-center rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground" />
           </div>

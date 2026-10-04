@@ -217,6 +217,10 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   // the colleague loop probes it directly; raising and withdrawing are writes
   // (scoping proven in leave-api.e2e + the LEAVE-01 RLS spec).
   'GET /me/leave': 'employee',
+  // Global search (ADR-015): every principal searches its OWN view — staff
+  // cross-client by permission, a client manager their company, an employee
+  // their own requests/leave. Scoping is proven per role in search.e2e.
+  'GET /search': 'self',
   'POST /me/leave': 'employee-write',
   'POST /me/leave/:id/withdraw': 'employee-write',
   // LEAVE-03: my balance carries my employee id (`employee.id`).

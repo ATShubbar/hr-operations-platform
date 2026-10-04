@@ -1982,5 +1982,31 @@
       "empty": "Request leave here; your employer decides, then People & Gro records it.",
       "submitted": "{ref} submitted · with your employer for a decision."
     }
+  },
+  "search": {
+    "label": "Search people, references and ID numbers",
+    "open": "Search",
+    "close": "Close search",
+    "kind": {
+      "person": "Person",
+      "client": "Client",
+      "procedure": "Procedure",
+      "task": "Task",
+      "request": "Request",
+      "leave": "Leave"
+    },
+    "matchedOn": {
+      "iqama": "Iqama number",
+      "national_id": "National ID",
+      "border": "Border number",
+      "passport": "Passport number",
+      "gosi": "GOSI number",
+      "work_permit": "Work permit number"
+    },
+    "searching": "Searching…",
+    "none": "Nothing matches “{q}”.",
+    "more": "More matches — keep typing to narrow them.",
+    "soon": "Dependants and fees aren't searchable yet.",
+    "results": "{count, plural, one {# result} other {# results}}"
   }
 }

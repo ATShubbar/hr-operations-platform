@@ -26,6 +26,7 @@ One decision per file, numbered in creation order. A record is never edited to c
 | [ADR-012](ADR-012-prototype-visual-fidelity.md) | Pixel-exact fidelity to the People & Gro prototype — LTR layout in both locales, prototype status colours | Accepted (revises ADR-005 on layout direction; architecture.md v1.6) |
 | [ADR-013](ADR-013-six-role-model.md) | Six built-in roles from the People & Gro prototype — Administrator, HR officer, GRO officer, Auditor, Client manager, Employee | Accepted (amends ADR-002; architecture.md v1.7) |
 | [ADR-014](ADR-014-leave.md) | Leave — the employer approves, PEOPLE&GRO files; statutory types, caps and annual balances | Accepted (amends architecture.md scope, modules, catalog + matrix; v1.8) |
+| [ADR-015](ADR-015-global-search.md) | Global search — one permission-aware read across modules; identifier lookups audited | Accepted (amends architecture.md modules, catalog + matrix; v1.9) |
 
 ## Template
 
