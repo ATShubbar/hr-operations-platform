@@ -204,8 +204,8 @@ Prices read from Google's **Cloud Billing Catalog** (official SKUs, `me-central1
 | 2026-10-04 | VM `uat-redis` | e2-micro (0.25 vCPU, 1 GiB) + 10 GB pd-standard, **no public IP** | core $0.026501/h · RAM $0.003552/GiB-h · disk $0.0486/GB-mo | ≈ $8 | owner, 2026-10-04 |
 | 2026-10-04 | Bucket `peoplegro-uat-documents` | Standard | $0.023/GiB-mo | < $0.10 | owner, 2026-10-04 |
 | 2026-10-04 | Secret Manager (2 secrets so far) | — | $0.06/secret-mo | ≈ $0.12 | owner, 2026-10-04 |
-| (GCP-04) | Cloud Run **worker pool** `uat-worker` | 1 vCPU, 512 MiB, always on | $0.000013/vCPU-s | ≈ $36 | pending |
-| (GCP-04) | Cloud Run `uat-api`, `uat-web` | scale to zero | per request | pennies | pending |
+| (GCP-04) | Cloud Run **worker pool** `uat-worker` | 1 vCPU, 512 MiB, always on | $0.000013/vCPU-s | ≈ $36 | running |
+| (GCP-04) | Cloud Run `uat-api`, `uat-web` | scale to zero | per request | pennies | running |
 | | **UAT total** | | | **≈ $57** | |
 
 ## Status log
@@ -232,3 +232,6 @@ Prices read from Google's **Cloud Billing Catalog** (official SKUs, `me-central1
 | 2026-10-04 | GCP-03 check: no `uat-*` account holds a project-level role; grants are resource-scoped only | verified |
 | 2026-10-04 | Note for PROD: the default network's `default-allow-ssh` / `default-allow-rdp` rules are open to 0.0.0.0/0 (harmless to IP-less VMs, but tighten before production) | open |
 | 2026-10-04 | Note: `gcloud` needs Python ≥ 3.10. macOS's built-in 3.9 fails; Homebrew's `python3.14` works (`CLOUDSDK_PYTHON=/opt/homebrew/bin/python3.14`) | — |
+| 2026-10-04 | GCP-04: `deploy-uat` (WIF, no key files) built + pushed `api`/`migrate`/`web-uat`, ran `uat-migrate` (role passwords set), deployed `uat-api` (internal), worker pool `uat-worker`, `uat-web` (public) | running |
+| 2026-10-04 | GCP-04 check: `https://uat-web-1048926106506.me-central1.run.app/api/health` 200 with the commit, `/api/ready` 200; `uat-api` direct → 404 | verified |
+| 2026-10-04 | GCP-04: worker `NOAUTH` from Redis (queue connection dropped the URL's password) → fixed in `2049886`; 0 worker log lines after the switchover | fixed |

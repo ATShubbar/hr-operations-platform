@@ -1203,6 +1203,17 @@ from Secret Manager → root-only conf; pulls Redis through the proxy over Priva
 `noeviction` for BullMQ); bucket `peoplegro-uat-documents` (private, CORS uat origin); secrets with
 OWNER-generated values (never displayed); `uat-run`/`uat-redis-vm` with resource-scoped grants only.
 UAT ≈ $57/mo (worker pool ≈ $36 of it, GCP-04). Next: **GCP-04** (worker split + keyless deploy).
+**GCP-04 done — UAT runs on Cloud Run in Doha, deployed by every push to `main`.** One image, two
+entrypoints (`dist/http.js` API, `dist/worker.js` BullMQ worker); `deploy-uat` (WIF, no key files) →
+build/push `api`/`migrate`/`web-uat` → `uat-migrate` job (migrations + `app_*` passwords from secrets)
+→ `uat-api` (INTERNAL) → worker pool `uat-worker` (REST v2, always on) → `uat-web` (public) → health
+gate. Live at **https://uat-web-1048926106506.me-central1.run.app** (`/api/health` shows the commit;
+no data yet). Going live exposed THREE pre-existing faults: **CI had been red for 30+ commits** (3
+specs need the seed; the seed needs the workspace packages built; the document specs had no object
+storage), **MinIO's images are gone** (CI uses `bitnamilegacy/minio` pinned by digest; docker-compose
+still names `minio/minio` — follow-up), and the **worker could not authenticate to Redis**
+(`redisConnection()` dropped the URL's password; local Redis has none). Worker job processing is
+proven in GCP-06. Next: **GCP-05** (uat.peopleandgro.com; the owner adds the Hostinger record).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
@@ -1274,6 +1285,12 @@ UAT ≈ $57/mo (worker pool ≈ $36 of it, GCP-04). Next: **GCP-04** (worker spl
 - Closing a dialog inside a `<Link>`'s onClick CANCELS the navigation — `next/link` runs
   `startTransition(() => router.push())` and the close unmounts the subtree owning that
   transition. Close on pathname change instead (UX-05).
+- `minio/minio` no longer exists on Docker Hub ("repository does not exist") or Quay (401) —
+  it only runs where it is cached. CI uses `bitnamilegacy/minio@sha256:451fe68…` (GCP-04).
+- Build a Redis connection from the WHOLE `REDIS_URL` — the queue's host+port copy dropped the
+  password and the UAT worker got `NOAUTH` while `/api/ready` stayed green (GCP-04).
+- GitHub's anonymous API is 60 requests/hour; a CI watcher polling 3 endpoints every 45s runs dry
+  mid-run. Watch deploys from the Google side (gcloud) and poll GitHub rarely (GCP-04).
 - e2e apps MUST `await app.listen(0, '127.0.0.1')`, never `app.init()` — supertest otherwise re-binds per
   request on the IPv6 wildcard and can be answered by ANOTHER program holding that port on 127.0.0.1
   (HARNESS-01: an SSH banner came back as an HTTP response). A scan spec enforces it.
