@@ -768,7 +768,9 @@ model LeaveEntry {
   id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   clientId        String         @map("client_id") @db.Uuid
   employeeId      String         @map("employee_id") @db.Uuid
-  requestId       String?        @unique @map("request_id") @db.Uuid
+  // A filed request writes ONE entry per leave year it touches (LEAVE-03: leave
+  // crossing 31 December is split by day), so this is unique per (request, year).
+  requestId       String?        @map("request_id") @db.Uuid
   kind            LeaveEntryKind
   type            LeaveType
   startDate       DateTime?      @map("start_date") @db.Date
@@ -777,9 +779,11 @@ model LeaveEntry {
   // The leave year the entry belongs to (a carried credit: the year it is
   // credited TO).
   leaveYear       Int            @map("leave_year")
-  createdByUserId String         @map("created_by_user_id") @db.Uuid
+  // NULL = written by the system (the 1 January carry-over job, LEAVE-03).
+  createdByUserId String?        @map("created_by_user_id") @db.Uuid
   createdAt       DateTime       @default(now()) @map("created_at")
 
+  @@unique([requestId, leaveYear])
   @@index([clientId])
   @@index([employeeId, leaveYear])
   @@map("lv_leave_entries")

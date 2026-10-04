@@ -3,6 +3,8 @@ import { AuditModule } from '../audit/public-api';
 import { AuthModule } from '../auth/public-api';
 import { EmployeesModule } from '../employees/public-api';
 import { LeaveController } from './api/leave.controller';
+import { LeaveBalanceService } from './application/leave-balance.service';
+import { LeaveCarryOverService } from './application/leave-carry-over.service';
 import { LeavePresenter } from './application/leave-presenter';
 import { LeaveService } from './application/leave.service';
 
@@ -14,7 +16,7 @@ import { LeaveService } from './application/leave.service';
 @Module({
   imports: [AuditModule, AuthModule, EmployeesModule],
   controllers: [LeaveController],
-  providers: [LeaveService, LeavePresenter],
-  exports: [LeaveService, LeavePresenter],
+  providers: [LeaveService, LeavePresenter, LeaveBalanceService, LeaveCarryOverService],
+  exports: [LeaveService, LeavePresenter, LeaveBalanceService, LeaveCarryOverService],
 })
 export class LeaveModule {}

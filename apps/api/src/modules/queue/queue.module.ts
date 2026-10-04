@@ -2,7 +2,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { Global, Injectable, Module, type BeforeApplicationShutdown } from '@nestjs/common';
 import { DiscoveryModule, DiscoveryService } from '@nestjs/core';
 import { Queue } from 'bullmq';
-import { DISPATCH_QUEUE, EXPIRY_QUEUE } from './queue.constants';
+import { DISPATCH_QUEUE, EXPIRY_QUEUE, LEAVE_QUEUE } from './queue.constants';
 
 // Async dispatch backbone (NOTIF-01). BullMQ over the existing Redis (Redis is
 // never a source of truth — sessions, cache, queues only). @Global so any module
@@ -66,7 +66,7 @@ class QueueShutdownGuard implements BeforeApplicationShutdown {
   imports: [
     DiscoveryModule,
     BullModule.forRoot({ connection: redisConnection() }),
-    BullModule.registerQueue({ name: DISPATCH_QUEUE }, { name: EXPIRY_QUEUE }),
+    BullModule.registerQueue({ name: DISPATCH_QUEUE }, { name: EXPIRY_QUEUE }, { name: LEAVE_QUEUE }),
   ],
   exports: [BullModule],
 })

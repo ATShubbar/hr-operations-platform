@@ -91,7 +91,7 @@ Every permission follows one pattern: **`resource.action`** — lowercase, dot-s
 | Recruitment | `vacancy`, `candidate` | `candidate.create`, `vacancy.approve` |
 | GRO workflows | `gro` | `gro.process`, `gro.read` |
 | Requests | `request` | `request.create`, `request.process` |
-| Leave | `leave` | `leave.create`, `leave.approve`, `leave.file` |
+| Leave | `leave` | `leave.create`, `leave.approve`, `leave.file`, `leave.carry-over` |
 | Tasks | `task` | `task.update` |
 | Calendar | `calendar` | `calendar.create` |
 | Reports | `report` | `report.read`, `report.export` |
@@ -116,7 +116,7 @@ Client manager is always scoped to **their own client company only**; Employee i
 | Recruitment (vacancies, candidates, pipeline) | CRUD | CRU | RU | R | R (own vacancies) | – |
 | GRO workflows | CRUD | CRU | CRUD | R | R (own, status only) | – |
 | Requests | CRUD | CRUD | RU (process) | R | CR (own) | CR (self-raised) |
-| Leave (ADR-014) | CR + approve (on the client's behalf) + file + withdraw | CR + file + withdraw (own raises) | R + file | R | CR (own) + approve (own) + withdraw (own raises) | CR (self) + withdraw (self) |
+| Leave (ADR-014) | CR + approve (on the client's behalf) + file + withdraw + run carry-over | CR + file + withdraw (own raises) | R + file | R | CR (own) + approve (own) + withdraw (own raises) | CR (self) + withdraw (self) |
 | Tasks (internal) | CRUD | CRU (own/assigned) | CRU (own/assigned) | R | – | – |
 | Calendar | CRUD | CRUD | CRUD | R | – | – |
 | Reports | R + export | – | – | R | – | – |

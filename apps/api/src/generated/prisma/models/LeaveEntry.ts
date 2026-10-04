@@ -236,7 +236,7 @@ export type LeaveEntryGroupByOutputType = {
   endDate: Date | null
   days: number
   leaveYear: number
-  createdByUserId: string
+  createdByUserId: string | null
   createdAt: Date
   _count: LeaveEntryCountAggregateOutputType | null
   _avg: LeaveEntryAvgAggregateOutputType | null
@@ -274,7 +274,7 @@ export type LeaveEntryWhereInput = {
   endDate?: Prisma.DateTimeNullableFilter<"LeaveEntry"> | Date | string | null
   days?: Prisma.IntFilter<"LeaveEntry"> | number
   leaveYear?: Prisma.IntFilter<"LeaveEntry"> | number
-  createdByUserId?: Prisma.UuidFilter<"LeaveEntry"> | string
+  createdByUserId?: Prisma.UuidNullableFilter<"LeaveEntry"> | string | null
   createdAt?: Prisma.DateTimeFilter<"LeaveEntry"> | Date | string
 }
 
@@ -289,27 +289,28 @@ export type LeaveEntryOrderByWithRelationInput = {
   endDate?: Prisma.SortOrderInput | Prisma.SortOrder
   days?: Prisma.SortOrder
   leaveYear?: Prisma.SortOrder
-  createdByUserId?: Prisma.SortOrder
+  createdByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
 export type LeaveEntryWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  requestId?: string
+  requestId_leaveYear?: Prisma.LeaveEntryRequestIdLeaveYearCompoundUniqueInput
   AND?: Prisma.LeaveEntryWhereInput | Prisma.LeaveEntryWhereInput[]
   OR?: Prisma.LeaveEntryWhereInput[]
   NOT?: Prisma.LeaveEntryWhereInput | Prisma.LeaveEntryWhereInput[]
   clientId?: Prisma.UuidFilter<"LeaveEntry"> | string
   employeeId?: Prisma.UuidFilter<"LeaveEntry"> | string
+  requestId?: Prisma.UuidNullableFilter<"LeaveEntry"> | string | null
   kind?: Prisma.EnumLeaveEntryKindFilter<"LeaveEntry"> | $Enums.LeaveEntryKind
   type?: Prisma.EnumLeaveTypeFilter<"LeaveEntry"> | $Enums.LeaveType
   startDate?: Prisma.DateTimeNullableFilter<"LeaveEntry"> | Date | string | null
   endDate?: Prisma.DateTimeNullableFilter<"LeaveEntry"> | Date | string | null
   days?: Prisma.IntFilter<"LeaveEntry"> | number
   leaveYear?: Prisma.IntFilter<"LeaveEntry"> | number
-  createdByUserId?: Prisma.UuidFilter<"LeaveEntry"> | string
+  createdByUserId?: Prisma.UuidNullableFilter<"LeaveEntry"> | string | null
   createdAt?: Prisma.DateTimeFilter<"LeaveEntry"> | Date | string
-}, "id" | "requestId">
+}, "id" | "requestId_leaveYear">
 
 export type LeaveEntryOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -322,7 +323,7 @@ export type LeaveEntryOrderByWithAggregationInput = {
   endDate?: Prisma.SortOrderInput | Prisma.SortOrder
   days?: Prisma.SortOrder
   leaveYear?: Prisma.SortOrder
-  createdByUserId?: Prisma.SortOrder
+  createdByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.LeaveEntryCountOrderByAggregateInput
   _avg?: Prisma.LeaveEntryAvgOrderByAggregateInput
@@ -345,7 +346,7 @@ export type LeaveEntryScalarWhereWithAggregatesInput = {
   endDate?: Prisma.DateTimeNullableWithAggregatesFilter<"LeaveEntry"> | Date | string | null
   days?: Prisma.IntWithAggregatesFilter<"LeaveEntry"> | number
   leaveYear?: Prisma.IntWithAggregatesFilter<"LeaveEntry"> | number
-  createdByUserId?: Prisma.UuidWithAggregatesFilter<"LeaveEntry"> | string
+  createdByUserId?: Prisma.UuidNullableWithAggregatesFilter<"LeaveEntry"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"LeaveEntry"> | Date | string
 }
 
@@ -360,7 +361,7 @@ export type LeaveEntryCreateInput = {
   endDate?: Date | string | null
   days: number
   leaveYear: number
-  createdByUserId: string
+  createdByUserId?: string | null
   createdAt?: Date | string
 }
 
@@ -375,7 +376,7 @@ export type LeaveEntryUncheckedCreateInput = {
   endDate?: Date | string | null
   days: number
   leaveYear: number
-  createdByUserId: string
+  createdByUserId?: string | null
   createdAt?: Date | string
 }
 
@@ -390,7 +391,7 @@ export type LeaveEntryUpdateInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   days?: Prisma.IntFieldUpdateOperationsInput | number
   leaveYear?: Prisma.IntFieldUpdateOperationsInput | number
-  createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -405,7 +406,7 @@ export type LeaveEntryUncheckedUpdateInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   days?: Prisma.IntFieldUpdateOperationsInput | number
   leaveYear?: Prisma.IntFieldUpdateOperationsInput | number
-  createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -420,7 +421,7 @@ export type LeaveEntryCreateManyInput = {
   endDate?: Date | string | null
   days: number
   leaveYear: number
-  createdByUserId: string
+  createdByUserId?: string | null
   createdAt?: Date | string
 }
 
@@ -435,7 +436,7 @@ export type LeaveEntryUpdateManyMutationInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   days?: Prisma.IntFieldUpdateOperationsInput | number
   leaveYear?: Prisma.IntFieldUpdateOperationsInput | number
-  createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -450,8 +451,13 @@ export type LeaveEntryUncheckedUpdateManyInput = {
   endDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   days?: Prisma.IntFieldUpdateOperationsInput | number
   leaveYear?: Prisma.IntFieldUpdateOperationsInput | number
-  createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type LeaveEntryRequestIdLeaveYearCompoundUniqueInput = {
+  requestId: string
+  leaveYear: number
 }
 
 export type LeaveEntryCountOrderByAggregateInput = {
@@ -591,7 +597,7 @@ export type $LeaveEntryPayload<ExtArgs extends runtime.Types.Extensions.Internal
     endDate: Date | null
     days: number
     leaveYear: number
-    createdByUserId: string
+    createdByUserId: string | null
     createdAt: Date
   }, ExtArgs["result"]["leaveEntry"]>
   composites: {}

@@ -12,6 +12,7 @@ import {
 import {
   createSelfLeaveRequestSchema,
   createSelfRequestRequestSchema,
+  type EmployeeLeaveResponse,
   type LeaveListResponse,
   type LeaveResponse,
   type DownloadResponse,
@@ -27,7 +28,7 @@ import { ClientsService } from '../../clients/public-api';
 import { ConfigService } from '../../configuration/public-api';
 import { DocumentsService, toSelfDocumentResponse } from '../../documents/public-api';
 import { EmployeesService, toSelfProfileResponse } from '../../employees/public-api';
-import { LeavePresenter, LeaveService } from '../../leave/public-api';
+import { LeaveBalanceService, LeavePresenter, LeaveService } from '../../leave/public-api';
 import { RequestsService, toSelfRequestResponse } from '../../requests/public-api';
 import { StorageService } from '../../storage/public-api';
 
@@ -59,6 +60,7 @@ export class SelfServiceController {
     private readonly requests: RequestsService,
     private readonly leave: LeaveService,
     private readonly presentLeave: LeavePresenter,
+    private readonly leaveBalances: LeaveBalanceService,
   ) {}
 
   @RequirePermission('self-service.read')
@@ -136,6 +138,16 @@ export class SelfServiceController {
   async myLeave(): Promise<LeaveListResponse> {
     const record = await this.ownRecord();
     return { leave: await this.presentLeave.many(await this.leave.listForEmployee(record.id)) };
+  }
+
+  // My annual-leave balance and history (LEAVE-03), through my own fenced path.
+  @RequirePermission('self-service.read')
+  @Get('leave/balance')
+  async myLeaveBalance(): Promise<EmployeeLeaveResponse> {
+    const record = await this.ownRecord();
+    const mine = await this.leaveBalances.mine(record.id);
+    if (!mine) throw new NotFoundException('Employee record not found');
+    return mine;
   }
 
   // Raise leave for myself. The employee id and company come from MY record;

@@ -136,7 +136,7 @@ describe('Leave (LEAVE-01, e2e)', () => {
 
       const filed = await asStaff(() => leave.file(raised.id));
       expect(filed).toMatchObject({ status: 'filed', filedByUserId: STAFF_USER });
-      const entry = await owner.leaveEntry.findUnique({ where: { requestId: raised.id } });
+      const [entry] = await owner.leaveEntry.findMany({ where: { requestId: raised.id } });
       expect(entry).toMatchObject({ kind: 'taken', type: 'annual', days: 5, leaveYear: 2026, employeeId: ids.me });
 
       const audit = await owner.auditEntry.findMany({

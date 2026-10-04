@@ -134,6 +134,9 @@ export const PERMISSIONS = [
   'leave.approve',
   'leave.file',
   'leave.withdraw',
+  // Running the yearly carry-over by hand (LEAVE-03; ADR-014 rev. 1). The 1 January
+  // job runs it automatically; this lets an Administrator re-run it (idempotent).
+  'leave.carry-over',
   // Calendar (CAL-02; permission matrix). STAFF-ONLY. All staff read (own events by
   // default); `calendar.read-all` lifts read/update/delete to ALL events — so a
   // role cannot be "write own, read all" (ROLE-03 found this; the v1.7 matrix
@@ -315,6 +318,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'leave.approve',
     'leave.file',
     'leave.withdraw',
+    'leave.carry-over',
   ],
   // People files end to end — pay, contracts, hiring (prototype `hr`: employees
   // RWC, procedures RWC, documents RWCD, requests RWCD, payroll RW, hiring RWC,

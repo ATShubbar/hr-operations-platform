@@ -1256,7 +1256,14 @@ proven load-bearing (loosen → red). API **550/550**.
 `UsersService.principals`) + per-caller `raisedByMe`. Bundles = the ADR-014 row, pinned by `role-matrix`. Filing is
 staff-only twice (bundle + `scopeOf`). `LeaveStatusChangedEvent` → Notifications tells the raiser (never about their own
 act); new notification category **`leave`** (own enum migration). Harness + audited-writes registered; the staff role
-has NO DELETE on leave, so test cleanup uses the owner connection. API **563/563**. Next: **LEAVE-03** (balances).
+has NO DELETE on leave, so test cleanup uses the owner connection. API **563/563**.
+**LEAVE-03 done — balances (ADR-014 rev. 1).** Pure `leave/domain/leave-balance.ts` (21→30 on the 5th anniversary,
+the prototype's `floor(days/30.44)+1` months, **accrual from the hire date for a mid-year hire**, signed `available`) +
+filing writes **one ledger entry per leave year** (leave crossing 31 Dec split by day). `GET /leave/balances[/:employeeId]`,
+`GET /me/leave/balance`, `POST /leave/carry-over` (`leave.carry-over`, Administrator; optional `clientId`). The
+**1 January 00:10 Riyadh carry-over job** runs on the worker (`LEAVE_QUEUE`, `LeaveWorkerModule` in MainModule only),
+idempotent via a partial unique index. **Go-live caveat:** load real opening balances before production's first 1 Jan, or
+everyone is credited the full cap. API **580/580**. Next: **LEAVE-04** (the Leaves screen).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

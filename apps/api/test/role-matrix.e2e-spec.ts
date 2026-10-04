@@ -143,7 +143,7 @@ const MATRIX: Record<string, Row> = {
   // ADR-014 (architecture.md v1.8). Employees reach their own leave through
   // /me/leave under self-service.* (already granted by the Requests row).
   Leave: {
-    administrator: ['leave.read', 'leave.create', 'leave.approve', 'leave.file', 'leave.withdraw'],
+    administrator: ['leave.read', 'leave.create', 'leave.approve', 'leave.file', 'leave.withdraw', 'leave.carry-over'],
     hr_officer: ['leave.read', 'leave.create', 'leave.file', 'leave.withdraw'],
     gro_officer: ['leave.read', 'leave.file'],
     auditor: ['leave.read'],

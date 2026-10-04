@@ -56,6 +56,7 @@ export const AUDITED_WRITES: Record<string, string> = {
   'POST /leave/:id/withdraw': 'leave.withdraw',
   'POST /me/leave': 'leave.create',
   'POST /me/leave/:id/withdraw': 'leave.withdraw',
+  'POST /leave/carry-over': 'leave-balance.carry-over',
   // SS-06a: employee accounts.
   'POST /employee-accounts/:employeeId/invite': 'employee-user.invite',
   'PATCH /employee-accounts/:employeeId': 'employee-user.update',

@@ -219,6 +219,8 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'GET /me/leave': 'employee',
   'POST /me/leave': 'employee-write',
   'POST /me/leave/:id/withdraw': 'employee-write',
+  // LEAVE-03: my balance carries my employee id (`employee.id`).
+  'GET /me/leave/balance': 'employee',
   // Leave (LEAVE-02): dual-path like Requests — staff cross-client, client
   // managers own company (RLS). Filing is PEOPLE&GRO's alone.
   'GET /leave': 'client-read',
@@ -228,6 +230,10 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'POST /leave/:id/decline': 'client-write',
   'POST /leave/:id/withdraw': 'client-write',
   'POST /leave/:id/file': 'staff',
+  // Balances (LEAVE-03): own company for client managers (proven in leave-balance-api.e2e).
+  'GET /leave/balances': 'client-read',
+  'GET /leave/balances/:employeeId': 'client-read',
+  'POST /leave/carry-over': 'staff',
   'GET /portal/company': 'client-read',
   'GET /portal/employees': 'client-read',
   'GET /portal/employees/:id': 'client-read',

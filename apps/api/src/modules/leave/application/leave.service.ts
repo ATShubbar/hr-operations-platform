@@ -14,6 +14,7 @@ import type { LeaveRequestModel as LeaveRequestRecord } from '../../../generated
 import { AuditService } from '../../audit/public-api';
 import { EventBus } from '../../events/public-api';
 import { EmployeesService } from '../../employees/public-api';
+import { splitByYear } from '../domain/leave-balance';
 import { LIVE_STATUSES, canMove, leaveEndDate, raiseRefusal } from '../domain/leave-rules';
 import { LeaveStatusChangedEvent } from '../domain/leave-status-changed.event';
 
@@ -91,8 +92,8 @@ export class LeaveService {
     return this.published(row);
   }
 
-  // PEOPLE&GRO files an approved request: the status AND its ledger entry in one
-  // transaction, so a balance never sees one without the other.
+  // PEOPLE&GRO files an approved request: the status AND its ledger entries in
+  // one transaction, so a balance never sees one without the other.
   async file(id: string): Promise<LeaveRequestRecord | null> {
     const filed = await this.prisma.$transaction(async (tx) => {
       const row = await this.move(tx, id, 'approved', 'filed', {
@@ -100,19 +101,21 @@ export class LeaveService {
         filedAt: new Date(),
       });
       if (!row) return null;
-      await tx.leaveEntry.create({
-        data: {
+      // One ledger entry per leave year the spell touches — leave crossing
+      // 31 December is split by day between the two years (LEAVE-03).
+      await tx.leaveEntry.createMany({
+        data: splitByYear(row.startDate, row.days).map((part) => ({
           clientId: row.clientId,
           employeeId: row.employeeId,
           requestId: row.id,
-          kind: 'taken',
+          kind: 'taken' as const,
           type: row.type,
-          startDate: row.startDate,
-          endDate: row.endDate,
-          days: row.days,
-          leaveYear: row.startDate.getUTCFullYear(),
+          startDate: part.startDate,
+          endDate: part.endDate,
+          days: part.days,
+          leaveYear: part.leaveYear,
           createdByUserId: actorId(),
-        },
+        })),
       });
       return row;
     });

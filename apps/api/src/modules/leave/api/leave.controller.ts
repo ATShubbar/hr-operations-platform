@@ -11,8 +11,12 @@ import {
   Query,
 } from '@nestjs/common';
 import {
+  carryOverRequestSchema,
   createLeaveRequestSchema,
   leaveQuerySchema,
+  type CarryOverResponse,
+  type EmployeeLeaveResponse,
+  type LeaveBalanceListResponse,
   type LeaveListResponse,
   type LeaveResponse,
 } from '@hr/contracts';
@@ -20,6 +24,8 @@ import { RequirePermission } from '../../../auth/permissions.decorator';
 import { scopeOf } from '../../../auth/scope';
 import { requestContext } from '../../../context/request-context';
 import type { LeaveRequestModel as LeaveRequestRecord } from '../../../generated/prisma/models';
+import { LeaveBalanceService } from '../application/leave-balance.service';
+import { LeaveCarryOverService } from '../application/leave-carry-over.service';
 import { LeavePresenter } from '../application/leave-presenter';
 import { LeaveService, type LeaveDecision } from '../application/leave.service';
 
@@ -34,6 +40,8 @@ export class LeaveController {
   constructor(
     private readonly leave: LeaveService,
     private readonly present: LeavePresenter,
+    private readonly balances: LeaveBalanceService,
+    private readonly carryOver: LeaveCarryOverService,
   ) {}
 
   @RequirePermission('leave.read')
@@ -48,6 +56,48 @@ export class LeaveController {
           await this.leave.listForClient(scope.clientId, { employeeId: f.employeeId, status: f.status })
         : await this.leave.list(f);
     return { leave: await this.present.many(rows) };
+  }
+
+  // ---- Balances (LEAVE-03) — declared BEFORE :id, or 'balances' would be an id.
+
+  // Everyone still employed: across clients (staff, optional ?clientId) or at the
+  // caller's own company (client manager — the company from the session).
+  @RequirePermission('leave.read')
+  @Get('balances')
+  async balanceList(@Query() query: unknown): Promise<LeaveBalanceListResponse> {
+    const q = leaveQuerySchema.safeParse(query);
+    const scope = scopeOf(requestContext.get());
+    return scope.kind === 'client'
+      ? this.balances.listForClient(scope.clientId)
+      : this.balances.listForStaff({ clientId: q.success ? q.data.clientId : undefined });
+  }
+
+  // One person's balance + leave history. Another company's employee → 404.
+  @RequirePermission('leave.read')
+  @Get('balances/:employeeId')
+  async balanceOne(@Param('employeeId') employeeId: string): Promise<EmployeeLeaveResponse> {
+    if (!UUID_RE.test(employeeId)) throw new NotFoundException('Employee not found');
+    const scope = scopeOf(requestContext.get());
+    const found =
+      scope.kind === 'client'
+        ? await this.balances.oneForClient(scope.clientId, employeeId)
+        : await this.balances.oneForStaff(employeeId);
+    if (!found) throw new NotFoundException('Employee not found');
+    return found;
+  }
+
+  // Re-run the yearly carry-over (the 1 January job does it automatically).
+  // Idempotent: nobody is credited twice for the same year.
+  @RequirePermission('leave.carry-over')
+  @Post('carry-over')
+  @HttpCode(200)
+  async runCarryOver(@Body() body: unknown): Promise<CarryOverResponse> {
+    const parsed = carryOverRequestSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException('Invalid year');
+    if (scopeOf(requestContext.get()).kind !== 'staff') throw new ForbiddenException();
+    return this.carryOver.run(parsed.data.year, requestContext.get()?.actorId ?? null, {
+      clientId: parsed.data.clientId,
+    });
   }
 
   @RequirePermission('leave.read')

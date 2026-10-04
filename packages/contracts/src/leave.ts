@@ -69,3 +69,72 @@ export type CreateSelfLeaveRequest = z.infer<typeof createSelfLeaveRequestSchema
 export type LeaveQuery = z.infer<typeof leaveQuerySchema>;
 export type LeaveResponse = z.infer<typeof leaveResponseSchema>;
 export type LeaveListResponse = z.infer<typeof leaveListResponseSchema>;
+
+// ---- Balances (LEAVE-03) --------------------------------------------------------
+// Annual leave for the current leave year (1 Jan – 31 Dec). `available` is signed:
+// below zero = overdrawn, the excess unpaid (ADR-014).
+export const leaveBalanceSchema = z.object({
+  year: z.number().int(),
+  entitlement: z.number().int(),
+  accrued: z.number().int(),
+  carried: z.number().int(),
+  taken: z.number().int(),
+  booked: z.number().int(),
+  pending: z.number().int(),
+  available: z.number().int(),
+  overdrawn: z.boolean(),
+  sick: z.number().int(),
+  unpaid: z.number().int(),
+});
+
+const balanceEmployeeSchema = z.object({
+  id: z.uuid(),
+  clientId: z.uuid(),
+  nameEn: z.string(),
+  nameAr: z.string(),
+  hireDate: z.string().nullable(),
+});
+
+export const leaveBalanceListResponseSchema = z.object({
+  // The day the figures are as of — Riyadh's calendar day.
+  today: z.string(),
+  balances: z.array(z.object({ employee: balanceEmployeeSchema, balance: leaveBalanceSchema })),
+});
+
+// One filed spell of leave (a ledger entry). A spell crossing 31 December is two
+// entries, one per year (owner decision).
+export const leaveHistoryEntrySchema = z.object({
+  ref: z.string().nullable(),
+  type: leaveTypeSchema,
+  startDate: z.string(),
+  endDate: z.string(),
+  days: z.number().int(),
+  leaveYear: z.number().int(),
+  // Ended on or before today, or still to come.
+  state: z.enum(['taken', 'booked']),
+});
+
+export const employeeLeaveResponseSchema = z.object({
+  today: z.string(),
+  employee: balanceEmployeeSchema,
+  balance: leaveBalanceSchema,
+  history: z.array(leaveHistoryEntrySchema),
+});
+
+// `clientId` limits a manual run to one company; omitted = everyone (the job).
+export const carryOverRequestSchema = z
+  .object({ year: z.number().int().min(2000).max(2100), clientId: z.uuid().optional() })
+  .strict();
+export const carryOverResponseSchema = z.object({
+  year: z.number().int(),
+  credited: z.number().int(),
+  alreadyCredited: z.number().int(),
+  nothingToCarry: z.number().int(),
+});
+
+export type LeaveBalance = z.infer<typeof leaveBalanceSchema>;
+export type LeaveBalanceListResponse = z.infer<typeof leaveBalanceListResponseSchema>;
+export type LeaveHistoryEntry = z.infer<typeof leaveHistoryEntrySchema>;
+export type EmployeeLeaveResponse = z.infer<typeof employeeLeaveResponseSchema>;
+export type CarryOverRequest = z.infer<typeof carryOverRequestSchema>;
+export type CarryOverResponse = z.infer<typeof carryOverResponseSchema>;

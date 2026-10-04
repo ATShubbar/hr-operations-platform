@@ -108,6 +108,18 @@ Public-holiday calendars; opening balances for real employees (a data-migration 
 production — UAT runs on the seed); setting the employee status to `on_leave` automatically;
 payroll effects of sick tiers and unpaid leave; correcting a filed leave.
 
+## Revisions
+- **rev. 1 (LEAVE-03, 2026-10-04) — balances, two owner decisions the prototype doesn't make.**
+  (1) A **mid-year hire accrues from the hire date**, not from 1 January (the prototype accrues
+  everyone from the leave-year start). (2) Leave **crossing 31 December is split by day** between
+  the two years — filing writes one ledger entry per year (unique per request + year). Also:
+  the carry-over is a **yearly job at 00:10 on 1 January, Riyadh** (on the worker; idempotent —
+  one credit per person per year, enforced by a partial unique index), and an Administrator may
+  re-run it (`leave.carry-over`, optionally for one company). **Consequence for go-live:** with
+  no ledger for the years before the system, the first carry-over credits everyone the full cap
+  (nothing recorded as taken) — real opening balances (out of scope above) must be loaded before
+  the first 1 January in production.
+
 ## Consequences
 - Line 48's exclusion is gone; a 14th business module and a 21st permission resource exist.
 - Two new tables follow `apps/api/src/modules/README.md` (client-scoped table checklist + the
