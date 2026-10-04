@@ -1,6 +1,9 @@
 # Multi-target build for the API.
-#   target=runtime  -> production API server (default)
-#   target=migrate  -> prisma migrate deploy runner (ECS one-off task)
+#   target=runtime  -> the API image. Default command: dist/http.js (HTTP only —
+#                      the Cloud Run service). The worker pool runs the SAME
+#                      image with `node dist/worker.js` (GCP-04).
+#   target=migrate  -> the Cloud Run migrate job: prisma/deploy.sh = migrate
+#                      deploy, then set the app_* role passwords from env.
 
 FROM node:22-slim AS builder
 WORKDIR /repo
@@ -17,7 +20,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=builder /prod/api .
 EXPOSE 3001
-CMD ["node", "dist/main.js"]
+CMD ["node", "dist/http.js"]
 
 FROM node:22-slim AS migrate
 WORKDIR /app
@@ -27,4 +30,4 @@ RUN npm init -y >/dev/null && npm install prisma@7.8.0 dotenv@17 >/dev/null && n
 COPY --from=builder /repo/apps/api/prisma ./prisma
 COPY --from=builder /repo/apps/api/prisma.config.ts ./prisma.config.ts
 ENV CHECKPOINT_DISABLE=1
-CMD ["npx", "prisma", "migrate", "deploy"]
+CMD ["sh", "prisma/deploy.sh"]
