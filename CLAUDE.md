@@ -26,8 +26,8 @@ build contract. Changes go through ADRs (adr/), never through drift.
 
 | File | What |
 |---|---|
-| architecture.md | Frozen build contract — **v1.7** (ADR-011 self-service · ADR-012 LTR/prototype fidelity · ADR-013 six roles) |
-| adr/README.md | Decision index (ADR-001..013, statuses) |
+| architecture.md | Frozen build contract — **v1.8** (ADR-011 self-service · ADR-012 LTR/prototype fidelity · ADR-013 six roles · ADR-014 leave) |
+| adr/README.md | Decision index (ADR-001..014, statuses) |
 | BACKLOG.md | Task board + cards + working rules |
 | ACTION-PLAN.md | Phased plan, DoD checklists with evidence rule |
 | evidence/skeleton/ | Per-task proof (WS-01..) |
@@ -1235,6 +1235,16 @@ stated risk (anyone guessing it is Administrator on UAT; sample data only, no ou
 `auth/domain/uat-mfa.ts` honours `UAT_DISABLE_MFA=true` ONLY when `APP_WEB_ORIGIN` is the UAT address, so production
 cannot lose MFA by a copied variable. Local dev/CI/e2e unchanged (`@seed.hr.local`, Administrator/Auditor enrol).
 Smoke 33/33 on UAT, all six roles.
+**UAT images fixed:** Next's standalone output omits `public/`, so `/brand/*.webp` (sidebar wordmark, login skyline)
+404'd on UAT — the web Dockerfile now copies `apps/web/public`.
+**LEAVE-00 done — Leave is IN the architecture (ADR-014, architecture.md v1.8).** Owner chose: the client manager
+approves, then PEOPLE&GRO files (Administrator may approve on the client's behalf) · **calendar days** · the full
+prototype balance (21/30 by service, monthly accrual from 1 Jan, carry-over ≤ 10, may go below zero = unpaid) ·
+raisers = employee, client manager (own), HR officer, Administrator. Nine statutory types with caps (server refuses
+over-cap and a second Hajj); only annual deducts. New `modules/leave` (`lv_leave_requests` + `lv_leave_entries`
+ledger), catalog row `leave.read/create/approve/file/withdraw` — **employees never hold `leave.*`**, they use `/me/…`
+under `self-service.*`. Not in Calendar/Queue (as the prototype). Labour Law references are the prototype's, NOT a
+legal review. Next: **LEAVE-01** (tables + service).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

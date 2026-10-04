@@ -1,10 +1,11 @@
 # HR Operations Platform — Architecture
 
 ## Version
-**v1.7 — FROZEN (v1.4 frozen 2026-07-18; v1.5 amended by ADR-011, v1.6 by ADR-012, v1.7 by ADR-013 — all 2026-10-03).**
+**v1.8 — FROZEN (v1.4 frozen 2026-07-18; v1.5 amended by ADR-011, v1.6 by ADR-012, v1.7 by ADR-013 — all 2026-10-03; v1.8 by ADR-014, 2026-10-04).**
 This document is the build contract. Changes now require either a new ADR (for decisions) or an explicit unfreeze with a version bump — implementation drift is not a change mechanism. Implementation work is tracked in `BACKLOG.md`.
 
 ### Changelog
+- **v1.8** — **Leave brought into scope (ADR-014)**, reversing the v1.1–v1.7 exclusion: a `Leave` domain module (requests + a balance ledger); the employer's client manager approves, PEOPLE&GRO files; calendar days; the prototype's nine leave types with their caps; annual balances (21/30 days by service, monthly accrual from 1 January, carry-over capped at 10, may go below zero = unpaid); a `leave` row in the permission catalog and matrix; employees reach their own leave through self-service only.
 - **v1.7** — **Six built-in roles (ADR-013)**, taken from the owner's People & Gro prototype: Administrator · HR officer · GRO officer · Auditor · Client manager · Employee, replacing the ten-role set (System Admin + Company Admin → Administrator; HR Officer + Recruiter + Finance → HR officer; Read Only → Auditor; Client Admin + Client User → Client manager). Permission matrix rewritten from the prototype's `PERM_DEFAULT`, narrowed where its navigation is narrower (Reports and Audit logs: Administrator + Auditor). MFA required for Administrator and Auditor; no role is a default; client portal users are managed by Administrators only. The authorization model itself is unchanged. The v1.6 ten-role matrix is in git history (commit `8d13db0`). *Corrected in ROLE-03:* the Calendar cells for HR and GRO officers read "CRUD (own) + R (all)", which the code cannot express (`calendar.read-all` also lifts update/delete), so they follow the prototype's RWCD — CRUD on all events.
 - **v1.6** — **Layout direction revised (ADR-012)**: the console is laid out left-to-right in BOTH locales to match the owner's People & Gro prototype pixel-for-pixel (owner decision, recommended against). Arabic stays a fully supported language — every string translated, Arabic text still runs right-to-left within its lines, Arabic typeface unchanged — only the screen is no longer mirrored. Status colours follow the prototype (below WCAG AA for text; colour is never the sole signal). Logical Tailwind utilities remain mandatory so the RTL layout stays one attribute away.
 - **v1.5** — **Employee self-service brought into scope (ADR-011)**, reversing the v1.1 exclusion: a third principal type (`employee`, bound to one employee record), staff-invited accounts, email + password sign-in, a per-client opt-in flag, read-only access to one's own record (profile, documents, government data including numbers, pay) plus raising requests; isolation narrower than the client company (application scoping + RLS on `app.employee_id`, a same-client "other employee" probe in CI); "Employee (self)" column and an employee-accounts row added to the permission matrix; `Employee Self-Service` added as a delivery module.
@@ -45,8 +46,8 @@ There is no multi-consultancy tenancy in scope. The enforced isolation boundary 
 ## Users & Authorization
 
 **In scope:** consultancy staff, authorized client company representatives, and — since v1.5 (ADR-011) — **employees using self-service** for their own record, where their client company has opted in.
-**Out of scope:** employee editing of their own record (changes are requested, and made by staff); leave, dependants; phone/SMS sign-in; languages beyond Arabic and English (a known gap for the expatriate workforce — see ADR-011).
-*History:* v1.1–v1.4 excluded employee self-service ("employees are managed records, not users"); ADR-011 reversed that on 2026-10-03.
+**Out of scope:** employee editing of their own record (changes are requested, and made by staff); dependants; phone/SMS sign-in; languages beyond Arabic and English (a known gap for the expatriate workforce — see ADR-011).
+*History:* v1.1–v1.4 excluded employee self-service ("employees are managed records, not users"); ADR-011 reversed that on 2026-10-03. v1.1–v1.7 also excluded leave; ADR-014 brought it in on 2026-10-04.
 
 ### Roles
 Six built-in roles since v1.7 (ADR-013). Editable roles and permissions are a later, safeguarded feature epic — until then these bundles are fixed in code.
@@ -90,6 +91,7 @@ Every permission follows one pattern: **`resource.action`** — lowercase, dot-s
 | Recruitment | `vacancy`, `candidate` | `candidate.create`, `vacancy.approve` |
 | GRO workflows | `gro` | `gro.process`, `gro.read` |
 | Requests | `request` | `request.create`, `request.process` |
+| Leave | `leave` | `leave.create`, `leave.approve`, `leave.file` |
 | Tasks | `task` | `task.update` |
 | Calendar | `calendar` | `calendar.create` |
 | Reports | `report` | `report.read`, `report.export` |
@@ -114,6 +116,7 @@ Client manager is always scoped to **their own client company only**; Employee i
 | Recruitment (vacancies, candidates, pipeline) | CRUD | CRU | RU | R | R (own vacancies) | – |
 | GRO workflows | CRUD | CRU | CRUD | R | R (own, status only) | – |
 | Requests | CRUD | CRUD | RU (process) | R | CR (own) | CR (self-raised) |
+| Leave (ADR-014) | CR + approve (on the client's behalf) + file + withdraw | CR + file + withdraw (own raises) | R + file | R | CR (own) + approve (own) + withdraw (own raises) | CR (self) + withdraw (self) |
 | Tasks (internal) | CRUD | CRU (own/assigned) | CRU (own/assigned) | R | – | – |
 | Calendar | CRUD | CRUD | CRUD | R | – | – |
 | Reports | R + export | – | – | R | – | – |
@@ -175,10 +178,11 @@ Invariants (not configurable):
 7. Requests
 8. Tasks
 9. Calendar
-10. Client Portal (delivery surface over existing modules — client-scoped views, no business logic of its own)
-11. Employee Self-Service — "Me" (delivery surface over Employees, Documents, Requests — one employee's own record, no business logic of its own; ADR-011)
-12. Reporting
-13. Billing (future)
+10. Leave (requests the employer approves and PEOPLE&GRO files, plus the annual balance ledger; ADR-014)
+11. Client Portal (delivery surface over existing modules — client-scoped views, no business logic of its own)
+12. Employee Self-Service — "Me" (delivery surface over Employees, Documents, Requests and — since v1.8 — Leave; one employee's own record, no business logic of its own; ADR-011, ADR-014)
+13. Reporting
+14. Billing (future)
 
 ## Shared Modules
 - Notifications (in-app + email in v1; SMS/WhatsApp via KSA-local provider later)
