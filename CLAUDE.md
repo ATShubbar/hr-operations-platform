@@ -1269,7 +1269,12 @@ everyone is credited the full cap. API **580/580**.
 Decline/File/Withdraw by permission) + Balances "next release"; Request leave dialog (date picker + Hijri echo — owner
 chose it over the 16-week list; server refusals mapped to translations). Client managers' nav gains Leaves. `lib/leave.ts`,
 `toneFor('leave')`. Verified live per role, en+ar, 0px overflow at 375. Fixed: filter squeezing tabs at 375; first-word
-split turning «عبد الله» into «عبد». No API change. Next: **LEAVE-05** (Balances tab + Person Leave tab + Run carry-over).
+split turning «عبد الله» into «عبد». No API change.
+**LEAVE-05 done — balances on screen.** Leaves → Balances (the prototype's 7-column table + search; staff rows open
+`/employees/:id?tab=leave`), the Person record's Leave tab (balance bar, four figures, carried/pending notes, history across
+years, Request leave pre-selected), Settings → System **Run carry-over** (Administrator). The Person record now honours
+`?tab=`. Figures matched hand-worked balances for three people; carry-over ran twice (36 credited → 36 already). No API
+change. Next: **LEAVE-06** (My leave for employees + nav counts + UAT seed).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

@@ -27,14 +27,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { StatusPill } from '@/components/ui/status-pill';
 import { Tabs, TabsList, TabsTab } from '@/components/ui/tabs';
 import { toastSuccess } from '@/components/ui/toast';
+import { BalancesTab } from './balances-tab';
 import { RequestLeaveDialog } from './request-leave-dialog';
 
 // Leaves (LEAVE-04, ADR-014) — the prototype's screen (ADR-012): four tiles, the
 // Requests tab (list beside the selected request's detail) and the Request leave
-// dialog. Who may do what comes from the server's bundles: raise (leave.create),
+// dialog, and (LEAVE-05) the Balances tab. Who may do what comes from the server's bundles: raise (leave.create),
 // approve/decline (leave.approve — a client manager for their own company, an
 // Administrator on the employer's behalf), file (leave.file, staff), withdraw
-// (whoever raised it, while pending). The Balances tab is LEAVE-05.
+// (whoever raised it, while pending).
 //
 // Kept from the prototype on purpose: no search box (its list has none), the
 // type filter, "N awaiting the employer, M awaiting filing" as the summary.
@@ -278,9 +279,7 @@ export default function LeavesPage() {
       </div>
 
       {tab === 'balances' ? (
-        <div className="rounded-xl bg-card px-6 py-12 text-center ring-1 ring-foreground/10">
-          <p className="mx-auto max-w-md text-sm text-pretty text-muted-foreground">{t('balancesSoon')}</p>
-        </div>
+        <BalancesTab rows={people} loading={loading} clientName={clientName} linkRows={isStaff} />
       ) : (
         <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[320px_1fr]">
           {/* ---- list ---- */}

@@ -34,11 +34,14 @@ export function RequestLeaveDialog({
   onOpenChange,
   people,
   onSubmitted,
+  preselect,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   people: Person[];
   onSubmitted: (row: LeaveResponse) => void;
+  // The person the dialog opens for (LEAVE-05: from their record's Leave tab).
+  preselect?: string;
 }) {
   const t = useTranslations('leaves');
   const td = useTranslations('leaves.dialog');
@@ -47,7 +50,7 @@ export function RequestLeaveDialog({
 
   const blank = () => ({
     type: 'annual' as LeaveType,
-    employeeId: '',
+    employeeId: preselect ?? '',
     days: '5',
     startDate: addDays(riyadhToday(), 14),
     details: '',

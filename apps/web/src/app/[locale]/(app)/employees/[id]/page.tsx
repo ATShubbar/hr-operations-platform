@@ -20,6 +20,7 @@ import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs';
 import { useRecordLabel } from '@/components/header-location';
 import { DocumentsTab } from './documents-tab';
 import { HistoryTab } from './history-tab';
+import { LeaveTab } from './leave-tab';
 import { OpenWorkTab } from './open-work-tab';
 import { ProfileTab } from './profile-tab';
 import { SelfServiceAccessCard } from './self-service-access-card';
@@ -88,6 +89,14 @@ export default function PersonRecordPage() {
   useEffect(() => {
     void load();
   }, [id]);
+
+  // `?tab=leave` opens a tab directly (LEAVE-05: Leaves → Balances rows link to
+  // the Leave tab). Read once, from window.location — useSearchParams would force
+  // a Suspense boundary on this page.
+  useEffect(() => {
+    const want = new URLSearchParams(window.location.search).get('tab');
+    if (want && (TABS as readonly string[]).includes(want)) setTab(want as Tab);
+  }, []);
 
   // A background change to this employee (a GRO completion writing an expiry
   // back) — refetch WITHOUT the loading state, which would swap the page for a
@@ -245,7 +254,11 @@ export default function PersonRecordPage() {
           <HistoryTab employeeId={emp.id} />
         </TabsPanel>
 
-        {(['family', 'leave', 'mob'] as const).map((k) => (
+        <TabsPanel value="leave">
+          <LeaveTab employeeId={emp.id} terminated={emp.employmentStatus === 'terminated'} />
+        </TabsPanel>
+
+        {(['family', 'mob'] as const).map((k) => (
           <TabsPanel key={k} value={k}>
             <div className="rounded-xl bg-card p-6 ring-1 ring-foreground/10">
               <EmptyState

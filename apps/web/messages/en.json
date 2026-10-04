@@ -1406,7 +1406,6 @@
     },
     "soon": {
       "family": "Dependants on this employee's sponsorship and their own iqama dates.",
-      "leave": "Balances, requests and leave taken.",
       "mob": "Onboarding and final-exit steps, in order, with what is blocking each."
     },
     "redaction": {
@@ -1808,7 +1807,6 @@
       "requests": "Requests",
       "balances": "Balances"
     },
-    "balancesSoon": "Balances arrive with the next release: accrued, carried, taken and booked days for everyone.",
     "allTypes": "Every leave type",
     "filterType": "Filter by leave type",
     "empty": "No leave yet.",
@@ -1922,6 +1920,59 @@
       "errHajj": "Hajj leave is granted once during service, and this person already has it on record.",
       "errLeaver": "Leave can't be requested for someone who has left.",
       "errGeneric": "The request couldn't be submitted. Check the details and try again."
+    },
+    "bal": {
+      "title": "Annual leave balances",
+      "note": "Annual leave only · available is accrued plus carried, less taken and booked. Statutory leave is recorded separately and does not draw on this.",
+      "search": "Search people",
+      "employee": "Employee",
+      "client": "Client",
+      "accrued": "Accrued",
+      "carried": "Carried",
+      "taken": "Taken",
+      "booked": "Booked",
+      "available": "Available",
+      "perYear": "{days} a year",
+      "none": "No one to show.",
+      "noMatch": "No one matches that search.",
+      "error": "Couldn't load balances.",
+      "asOf": "As of {date}"
+    },
+    "person": {
+      "title": "Annual leave balance",
+      "basis30": "30 days a year under article 109 · five years of service completed",
+      "basis21": "21 days a year under article 109 · rises to 30 after five years",
+      "daysAvailable": "days available",
+      "takenLegend": "{n} taken",
+      "bookedLegend": "{n} booked ahead",
+      "remainingLegend": "{n} remaining",
+      "overdrawn": "{n, plural, one {# day} other {# days}} beyond the entitlement, carried as unpaid",
+      "accrued": "Accrued this year",
+      "carried": "Carried over",
+      "sick": "Sick leave taken",
+      "unpaid": "Unpaid leave",
+      "carriedNote": "{n} days carried from {year}, capped at 10",
+      "nothingCarried": "Nothing carried from {year}",
+      "pending": "{n} days awaiting a decision, not yet deducted.",
+      "history": "Leave history",
+      "noHistory": "No leave on record.",
+      "paid": "Paid",
+      "unpaidLabel": "Unpaid",
+      "taken": "Taken",
+      "bookedState": "Booked",
+      "error": "Couldn't load this person's leave."
+    },
+    "carryOver": {
+      "title": "Leave carry-over",
+      "subtitle": "Runs automatically at 00:10 on 1 January (Riyadh): each person still employed is credited what last year left unused, at most 10 days. Run it here to repeat it or catch up; nobody is credited twice for the same year.",
+      "year": "Into the leave year",
+      "company": "Company",
+      "allCompanies": "Every company",
+      "run": "Run carry-over",
+      "running": "Running…",
+      "confirm": "Credit unused annual leave from {from} into {year}? It's safe to run again — anyone already credited for {year} is skipped.",
+      "done": "{year}: {credited} credited · {already} already credited · {nothing} with nothing to carry.",
+      "error": "The carry-over didn't run. Try again."
     }
   }
 }

@@ -16,6 +16,7 @@ import { useCan } from '@/lib/session';
 import { NotificationPreferences } from '@/components/notification-preferences';
 import { AccessTable } from './access-table';
 import { ExpiryScanSection } from './expiry-scan';
+import { LeaveCarryOverSection } from './leave-carry-over';
 import { GoogleCalendarSection } from './google-calendar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -63,10 +64,12 @@ export default function SettingsPage() {
   // System (Administrator — system settings, feature switches, per-client).
   // DS-22a: the expiry scan trigger (expiry.run) lives here too.
   const canRunScan = useCan('expiry.run');
+  // LEAVE-05: the yearly leave carry-over, re-runnable by the Administrator.
+  const canCarryOver = useCan('leave.carry-over');
   // DS-22c: Google Calendar invitations live here too. Someone who holds only
   // that (the HR and GRO officers) sees the tab as "Integrations", with only it.
   const canIntegrations = useCan('integration.google-calendar');
-  const systemSettings = canWriteSystem || canWriteClient || canRunScan;
+  const systemSettings = canWriteSystem || canWriteClient || canRunScan || canCarryOver;
   const showSystem = systemSettings || canIntegrations;
   const [tab, setTab] = useState<SettingsTab>('access');
   // `?tab=` arrives from old links (/integrations → ?tab=system). Read from
@@ -324,6 +327,7 @@ export default function SettingsPage() {
         {showSystem && (
           <TabsPanel value="system" className="space-y-6">
             {canRunScan && <ExpiryScanSection />}
+            {canCarryOver && <LeaveCarryOverSection />}
             {/* ---- System settings (Administrator only) ---- */}
             {canWriteSystem && system && (
               <>
