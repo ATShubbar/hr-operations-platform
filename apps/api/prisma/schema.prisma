@@ -38,7 +38,7 @@ model AuthUser {
   createdAt     DateTime      @default(now()) @map("created_at")
   updatedAt     DateTime      @updatedAt @map("updated_at")
 
-  tokens        AuthAccountToken[]
+  tokens AuthAccountToken[]
 
   @@map("auth_users")
 }
@@ -115,18 +115,18 @@ model CoreScopeCheck {
 // path (app_client INSERT + its RLS WITH CHECK) arrive in AUDIT-02, when
 // client-rep mutations are wired and testable.
 model AuditEntry {
-  id        BigInt   @id @default(autoincrement())
-  actorId   String?  @map("actor_id") @db.Uuid
-  actorRole String?  @map("actor_role")
-  clientId  String?  @map("client_id") @db.Uuid
-  resource  String
+  id         BigInt   @id @default(autoincrement())
+  actorId    String?  @map("actor_id") @db.Uuid
+  actorRole  String?  @map("actor_role")
+  clientId   String?  @map("client_id") @db.Uuid
+  resource   String
   // AUDIT-06: the id of the record this entry is about (null before AUDIT-06).
-  resourceId String? @map("resource_id") @db.Uuid
-  action    String
-  before    Json?    @db.JsonB
-  after     Json?    @db.JsonB
-  requestId String?  @map("request_id")
-  createdAt DateTime @default(now()) @map("created_at")
+  resourceId String?  @map("resource_id") @db.Uuid
+  action     String
+  before     Json?    @db.JsonB
+  after      Json?    @db.JsonB
+  requestId  String?  @map("request_id")
+  createdAt  DateTime @default(now()) @map("created_at")
 
   @@index([resource, action])
   @@index([resource, resourceId])
@@ -228,26 +228,26 @@ model Employee {
   nameEn                  String           @map("name_en")
   nationality             String // ISO 3166-1 alpha-2
   gender                  Gender?
-  dateOfBirth             DateTime?         @map("date_of_birth") @db.Date
-  jobTitleAr              String?           @map("job_title_ar")
-  jobTitleEn              String?           @map("job_title_en")
+  dateOfBirth             DateTime?        @map("date_of_birth") @db.Date
+  jobTitleAr              String?          @map("job_title_ar")
+  jobTitleEn              String?          @map("job_title_en")
   department              String?
-  hireDate                DateTime?         @map("hire_date") @db.Date
+  hireDate                DateTime?        @map("hire_date") @db.Date
   employmentStatus        EmploymentStatus @default(active) @map("employment_status")
   contractType            ContractType     @map("contract_type")
-  contractEndDate         DateTime?         @map("contract_end_date") @db.Date
-  countsTowardSaudization Boolean?          @map("counts_toward_saudization")
+  contractEndDate         DateTime?        @map("contract_end_date") @db.Date
+  countsTowardSaudization Boolean?         @map("counts_toward_saudization")
 
   // --- salary (salary.*) ---
-  currency               String   @default("SAR")
-  basicSalary            Decimal? @map("basic_salary") @db.Decimal(12, 2)
-  housingAllowance       Decimal? @map("housing_allowance") @db.Decimal(12, 2)
-  transportAllowance     Decimal? @map("transport_allowance") @db.Decimal(12, 2)
-  otherAllowances        Decimal? @map("other_allowances") @db.Decimal(12, 2)
-  gosiWage               Decimal? @map("gosi_wage") @db.Decimal(12, 2)
-  gosiContributionBasis  GosiContributionBasis? @map("gosi_contribution_basis")
-  bankIban               String?  @map("bank_iban")
-  wpsStatus              WpsStatus? @map("wps_status")
+  currency              String                 @default("SAR")
+  basicSalary           Decimal?               @map("basic_salary") @db.Decimal(12, 2)
+  housingAllowance      Decimal?               @map("housing_allowance") @db.Decimal(12, 2)
+  transportAllowance    Decimal?               @map("transport_allowance") @db.Decimal(12, 2)
+  otherAllowances       Decimal?               @map("other_allowances") @db.Decimal(12, 2)
+  gosiWage              Decimal?               @map("gosi_wage") @db.Decimal(12, 2)
+  gosiContributionBasis GosiContributionBasis? @map("gosi_contribution_basis")
+  bankIban              String?                @map("bank_iban")
+  wpsStatus             WpsStatus?             @map("wps_status")
 
   // --- govdata:id — identifiers (staff only) ---
   iqamaNumber            String? @map("iqama_number")
@@ -444,22 +444,22 @@ model NotificationPreference {
 // client_isolation policy enforces own-client on both read and write. title/
 // description are user-entered free text (author's language), not system ar/en.
 model Request {
-  id              String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  clientId        String          @map("client_id") @db.Uuid
-  type            RequestType
-  title           String
-  description     String?
-  status          RequestStatus   @default(open)
-  priority        RequestPriority @default(normal)
-  dueDate         DateTime?       @map("due_date") @db.Date
-  createdByUserId String          @map("created_by_user_id") @db.Uuid
-  assigneeUserId  String?         @map("assignee_user_id") @db.Uuid
+  id                  String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clientId            String          @map("client_id") @db.Uuid
+  type                RequestType
+  title               String
+  description         String?
+  status              RequestStatus   @default(open)
+  priority            RequestPriority @default(normal)
+  dueDate             DateTime?       @map("due_date") @db.Date
+  createdByUserId     String          @map("created_by_user_id") @db.Uuid
+  assigneeUserId      String?         @map("assignee_user_id") @db.Uuid
   // SS-05 (ADR-011): the employee who raised it, when an employee did (self-
   // service). NULL for staff- and client-rep-raised requests. A bare id — the
   // employee table belongs to Employees. The app_employee RLS policies key on it.
-  requesterEmployeeId String?     @map("requester_employee_id") @db.Uuid
-  createdAt       DateTime        @default(now()) @map("created_at")
-  updatedAt       DateTime        @updatedAt @map("updated_at")
+  requesterEmployeeId String?         @map("requester_employee_id") @db.Uuid
+  createdAt           DateTime        @default(now()) @map("created_at")
+  updatedAt           DateTime        @updatedAt @map("updated_at")
 
   @@index([clientId])
   @@index([status])
@@ -609,26 +609,26 @@ enum CandidateStage {
 // to emp_employees (no FK), like task_tasks.request_id. `dueDate` is stored
 // Gregorian (Hijri is a render concern — architecture rule).
 model GroProcess {
-  id              String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  clientId        String           @map("client_id") @db.Uuid
-  employeeId      String           @map("employee_id") @db.Uuid
-  type            GroProcessType
-  status          GroProcessStatus @default(not_started)
-  referenceNumber String?          @map("reference_number")
-  dueDate         DateTime?        @map("due_date") @db.Date
+  id               String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clientId         String           @map("client_id") @db.Uuid
+  employeeId       String           @map("employee_id") @db.Uuid
+  type             GroProcessType
+  status           GroProcessStatus @default(not_started)
+  referenceNumber  String?          @map("reference_number")
+  dueDate          DateTime?        @map("due_date") @db.Date
   // The government-document expiry this process establishes (e.g. the new iqama
   // expiry after a renewal). On completion (GRO-03) it is written back to the
   // employee's matching govdata expiry field. Gregorian storage (Hijri = render).
-  resultingExpiry DateTime?        @map("resulting_expiry") @db.Date
+  resultingExpiry  DateTime?        @map("resulting_expiry") @db.Date
   // The expiring document that auto-spawned this process (GRO-05), if any — a plain
   // cross-module reference to doc_documents (no FK). Its presence is the idempotency
   // key: the DocumentExpiring → GRO handler spawns at most one process per document.
-  sourceDocumentId String?         @map("source_document_id") @db.Uuid
-  assigneeUserId  String?          @map("assignee_user_id") @db.Uuid
-  notes           String?
-  createdByUserId String?          @map("created_by_user_id") @db.Uuid
-  createdAt       DateTime         @default(now()) @map("created_at")
-  updatedAt       DateTime         @updatedAt @map("updated_at")
+  sourceDocumentId String?          @map("source_document_id") @db.Uuid
+  assigneeUserId   String?          @map("assignee_user_id") @db.Uuid
+  notes            String?
+  createdByUserId  String?          @map("created_by_user_id") @db.Uuid
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
 
   @@index([clientId])
   @@index([employeeId])
@@ -718,4 +718,93 @@ model CalendarEvent {
   @@index([startAt])
   @@index([clientId])
   @@map("cal_events")
+}
+
+// ---- Leave (ADR-014, LEAVE-01) ---------------------------------------------
+// A leave request: raised by the employee, their client manager, an HR officer
+// or an Administrator; the client manager APPROVES (an Administrator may, on the
+// client's behalf); PEOPLE&GRO FILES it, which writes the ledger entry below.
+// Client-scoped (client_id) with an employee-self path (employee_id) — see the
+// migration for the RLS policies and the column-level grants that fence each
+// audience to the transitions it may make.
+model LeaveRequest {
+  id                 String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  // Human reference shown on screen (LV-0001…), from a sequence.
+  ref                String      @unique @default(dbgenerated("('LV-'::text || lpad((nextval('lv_leave_requests_ref_seq'::regclass))::text, 4, '0'::text))"))
+  clientId           String      @map("client_id") @db.Uuid
+  employeeId         String      @map("employee_id") @db.Uuid
+  type               LeaveType
+  startDate          DateTime    @map("start_date") @db.Date
+  // Calendar days (ADR-014): end_date = start_date + days − 1, checked in SQL.
+  days               Int
+  endDate            DateTime    @map("end_date") @db.Date
+  details            String?
+  status             LeaveStatus @default(pending)
+  raisedByUserId     String      @map("raised_by_user_id") @db.Uuid
+  // Set only when the employee raised it themselves (self-service) — the
+  // app_employee policies key on it, like req_requests.requester_employee_id.
+  raisedByEmployeeId String?     @map("raised_by_employee_id") @db.Uuid
+  decidedByUserId    String?     @map("decided_by_user_id") @db.Uuid
+  decidedAt          DateTime?   @map("decided_at")
+  // An Administrator approved/declined for the client (ADR-014).
+  decidedOnBehalf    Boolean     @default(false) @map("decided_on_behalf")
+  filedByUserId      String?     @map("filed_by_user_id") @db.Uuid
+  filedAt            DateTime?   @map("filed_at")
+  withdrawnAt        DateTime?   @map("withdrawn_at")
+  createdAt          DateTime    @default(now()) @map("created_at")
+  updatedAt          DateTime    @updatedAt @map("updated_at")
+
+  @@index([clientId])
+  @@index([employeeId])
+  @@index([status])
+  @@map("lv_leave_requests")
+}
+
+// The ledger a balance is computed from (LEAVE-03): filed leave of every type
+// (`taken`, linked to its request) and annual carry-over credits (`carried`).
+// Written by PEOPLE&GRO staff only.
+model LeaveEntry {
+  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clientId        String         @map("client_id") @db.Uuid
+  employeeId      String         @map("employee_id") @db.Uuid
+  requestId       String?        @unique @map("request_id") @db.Uuid
+  kind            LeaveEntryKind
+  type            LeaveType
+  startDate       DateTime?      @map("start_date") @db.Date
+  endDate         DateTime?      @map("end_date") @db.Date
+  days            Int
+  // The leave year the entry belongs to (a carried credit: the year it is
+  // credited TO).
+  leaveYear       Int            @map("leave_year")
+  createdByUserId String         @map("created_by_user_id") @db.Uuid
+  createdAt       DateTime       @default(now()) @map("created_at")
+
+  @@index([clientId])
+  @@index([employeeId, leaveYear])
+  @@map("lv_leave_entries")
+}
+
+enum LeaveType {
+  annual
+  sick
+  maternity
+  paternity
+  marriage
+  bereavement
+  hajj
+  emergency
+  unpaid
+}
+
+enum LeaveStatus {
+  pending
+  approved
+  declined
+  withdrawn
+  filed
+}
+
+enum LeaveEntryKind {
+  taken
+  carried
 }

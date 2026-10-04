@@ -1244,7 +1244,13 @@ raisers = employee, client manager (own), HR officer, Administrator. Nine statut
 over-cap and a second Hajj); only annual deducts. New `modules/leave` (`lv_leave_requests` + `lv_leave_entries`
 ledger), catalog row `leave.read/create/approve/file/withdraw` — **employees never hold `leave.*`**, they use `/me/…`
 under `self-service.*`. Not in Calendar/Queue (as the prototype). Labour Law references are the prototype's, NOT a
-legal review. Next: **LEAVE-01** (tables + service).
+legal review.
+**LEAVE-01 done — the leave data layer.** `lv_leave_requests` (ref `LV-0001…`, calendar-day CHECK `end = start + days − 1`,
+status facts CHECKed) + `lv_leave_entries` (ledger: `taken` from filed requests, `carried` credits). `LeaveService`, three
+paths (staff · client manager · employee), audited as resource `leave`; filing writes status + ledger in one tx; moves are
+conditional updates (lost race → 409). **The DB fences each audience with COLUMN-LEVEL UPDATE grants + RESTRICTIVE
+policies**: a client manager can never file or touch the ledger, an employee can only withdraw their own raise. Each policy
+proven load-bearing (loosen → red). API **550/550**. Next: **LEAVE-02** (HTTP + `leave.*` bundles).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
@@ -1261,6 +1267,9 @@ legal review. Next: **LEAVE-01** (tables + service).
 - `prisma migrate dev` refuses to run here ("non-interactive environment"). Generate SQL with
   `npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script`,
   write the migration folder by hand, then `pnpm db:deploy` + `pnpm db:generate` (SS-01).
+- To limit WHICH COLUMNS a role may update (not just which rows), use a column-level grant
+  (`GRANT UPDATE (col, …)`) — RLS can't see columns. Pair it with a RESTRICTIVE policy for the allowed status moves;
+  restrictive policies AND with the permissive scope policy (LEAVE-01).
 - Never choose a data path with `principalType === 'client_rep' ? … : staff` — it fails OPEN
   for every other principal. Use `scopeOf(ctx)` from `src/auth/scope.ts`; a test enforces it (SS-01). The scan
   matches the shape ANYWHERE in API src, display mappings included — map with a table (DS-08).
