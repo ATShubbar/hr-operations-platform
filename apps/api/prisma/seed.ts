@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient, Prisma } from '../src/generated/prisma/client';
+import { seedPasswordFor } from './seed-guard';
 import {
   CLIENT_ROLES,
   PasswordService,
@@ -66,9 +67,11 @@ const yearsAgo = (years: number): Date => daysFromNow(-365 * years);
 // creates and cleans on its own.
 export const SEED_USER_DOMAIN = 'seed.hr.local';
 
-// One shared dev password across seed users. The seed is production-guarded
-// (below), so these credentials never exist outside development.
-const SEED_PASSWORD = 'Seed-dev-password-1';
+// One shared password across seed users: the public dev one locally, an
+// owner-generated secret on UAT, and the seed never runs on production at all
+// (seed-guard.ts, GCP-06). Decided once, at load, so a refusal happens before
+// anything touches the database.
+const SEED_PASSWORD = seedPasswordFor(process.env);
 
 // One client manager per seeded client (ADR-013: one client role).
 const CLIENT_REP_ASSIGNMENTS: ReadonlyArray<{ clientId: string; name: string }> = [
@@ -579,10 +582,6 @@ async function purgeOrphanNotifications(prisma: PrismaClient): Promise<number> {
 }
 
 async function main(): Promise<void> {
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('Refusing to seed: NODE_ENV=production. The seed is development-only.');
-  }
-
   const prisma = new PrismaClient({
     adapter: new PrismaPg(process.env.DATABASE_URL ?? ''),
   });

@@ -1,0 +1,78 @@
+name: Seed UAT
+
+# GCP-06. MANUAL ONLY — never on push. Resets UAT to the seed scenario
+# (sample data only; no real client, employee or candidate data may ever enter
+# UAT) and/or runs the per-role smoke check through the public web address.
+#
+# Keyless like deploy-uat: the Workload Identity provider accepts only this
+# repository on main. The seed password comes from Secret Manager
+# (`uat-seed-password`, owner-generated) and is never printed; seed-guard.ts
+# refuses to run in production mode without SEED_TARGET=uat and that password.
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: What to run
+        type: choice
+        options: [seed-and-smoke, smoke-only]
+        default: seed-and-smoke
+      base:
+        description: Address the smoke check uses
+        type: string
+        default: https://uat.peopleandgro.com
+
+concurrency:
+  group: deploy-uat
+  cancel-in-progress: false
+
+jobs:
+  seed-uat:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      REGION: me-central1
+      REPO: me-central1-docker.pkg.dev/peoplegro-prod/peoplegro
+      TAG: ${{ github.sha }}
+      SQL: peoplegro-prod:me-central1:uat-pg
+      SA: uat-seed@peoplegro-prod.iam.gserviceaccount.com
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/1048926106506/locations/global/workloadIdentityPools/github/providers/hr-operations-platform
+          service_account: uat-deployer@peoplegro-prod.iam.gserviceaccount.com
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Build and push the seed image
+        run: |
+          gcloud auth configure-docker me-central1-docker.pkg.dev --quiet
+          docker build -f apps/api/Dockerfile --target seed -t "$REPO/seed:$TAG" .
+          docker push "$REPO/seed:$TAG"
+
+      - name: Seed (resets UAT to the sample scenario)
+        if: inputs.action == 'seed-and-smoke'
+        run: |
+          gcloud run jobs deploy uat-seed --image "$REPO/seed:$TAG" --region "$REGION" \
+            --service-account "$SA" \
+            --set-cloudsql-instances "$SQL" \
+            --set-env-vars SEED_TARGET=uat \
+            --set-secrets DATABASE_URL=uat-database-url:latest,SEED_PASSWORD=uat-seed-password:latest \
+            --memory 1Gi --max-retries 0 --task-timeout 900 --labels env=uat --quiet
+          gcloud run jobs execute uat-seed --region "$REGION" --wait
+
+      - name: Smoke check (every role, a document round-trip, a worker job)
+        env:
+          BASE: ${{ inputs.base }}
+        run: |
+          gcloud run jobs deploy uat-smoke --image "$REPO/seed:$TAG" --region "$REGION" \
+            --service-account "$SA" \
+            --command node --args scripts/uat-smoke.mjs \
+            --set-env-vars "SMOKE_BASE=$BASE" \
+            --set-secrets SEED_PASSWORD=uat-seed-password:latest \
+            --max-retries 0 --task-timeout 300 --labels env=uat --quiet
+          gcloud run jobs execute uat-smoke --region "$REGION" --wait

@@ -4,6 +4,11 @@
 #                      image with `node dist/worker.js` (GCP-04).
 #   target=migrate  -> the Cloud Run migrate job: prisma/deploy.sh = migrate
 #                      deploy, then set the app_* role passwords from env.
+#   target=seed     -> the Cloud Run jobs `uat-seed` (prisma/seed.ts) and
+#                      `uat-smoke` (scripts/uat-smoke.mjs). UAT ONLY (GCP-06): the
+#                      builder's full workspace, because the seed loads API modules.
+#                      seed-guard.ts refuses without SEED_TARGET=uat + a supplied
+#                      password, so this image cannot seed production.
 
 FROM node:22-slim AS builder
 WORKDIR /repo
@@ -31,3 +36,8 @@ COPY --from=builder /repo/apps/api/prisma ./prisma
 COPY --from=builder /repo/apps/api/prisma.config.ts ./prisma.config.ts
 ENV CHECKPOINT_DISABLE=1
 CMD ["sh", "prisma/deploy.sh"]
+
+FROM builder AS seed
+WORKDIR /repo/apps/api
+ENV NODE_ENV=production CHECKPOINT_DISABLE=1
+CMD ["npx", "tsx", "prisma/seed.ts"]
