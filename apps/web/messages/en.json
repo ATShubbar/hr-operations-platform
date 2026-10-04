@@ -62,7 +62,6 @@
     "requests": "Requests",
     "vacancies": "Vacancies",
     "calendar": "Calendar",
-    "integrations": "Google Calendar",
     "portalCompany": "My company",
     "portalEmployees": "My employees",
     "portalDocuments": "My documents",
@@ -89,7 +88,6 @@
     "hiring": "Hiring",
     "rolesAndPermissions": "Roles and permissions",
     "auditTrail": "Audit trail",
-    "otherTools": "Other tools",
     "savedViews": "Saved views",
     "myLeave": "My leave"
   },
@@ -174,7 +172,8 @@
     "tab": {
       "access": "Access",
       "prefs": "Preferences",
-      "system": "System"
+      "system": "System",
+      "integrations": "Integrations"
     },
     "scanTitle": "Document expiry",
     "scanSubtitle": "The scan runs every day at 06:00 (Riyadh). Run it now to raise any alerts that are due — a document is never alerted twice at the same threshold. What is expiring is on the Overview."

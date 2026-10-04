@@ -4,7 +4,6 @@ import { useState, type ElementType } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   Building2,
-  CalendarCheck,
   CalendarDays,
   ChartColumn,
   FileText,
@@ -135,7 +134,6 @@ export function AppNav({
   const canTasks = useCan('task.read');
   const canVacancies = useCan('vacancy.read');
   const canCalendar = useCan('calendar.read');
-  const canIntegrations = useCan('integration.google-calendar');
   const canReports = useCan('report.read');
   const canAudit = useCan('audit.read');
   const canStaffUsers = useCan('staff-user.read');
@@ -172,12 +170,14 @@ export function AppNav({
         ]
       : [
           // The prototype's "Workspace" list, in its order, labels and icons
-          // (DS-04, ADR-012). Where a prototype screen is not built yet, its row
-          // opens the closest existing screen until that screen's card lands:
-          // Overview → Today, Work queue → Tasks, People → Employees, Hiring →
-          // Vacancies, Roles and permissions → Staff users. Leaves opens a
-          // "coming soon" page. Gates are still today's permissions — the
-          // prototype's role filters arrive with the 5-role model (ROLE-01).
+          // (DS-04, ADR-012) — every row now opens the prototype's own screen
+          // (DS-05..21); Leaves opens a "coming soon" page until its feature.
+          // Gated by each screen's read permission (the v1.7 roles, ADR-013).
+          //
+          // DS-22 retired the temporary "Other tools" group: Documents and
+          // Expiry went into the person and Client records and the Overview,
+          // GRO and Task history into the Work queue's Finished view, and
+          // Google Calendar into Settings → System → Integrations.
           {
             heading: t('nav.workspace'),
             items: [
@@ -224,24 +224,6 @@ export function AppNav({
                 ? [{ href: '/reports', label: t('nav.reports'), icon: ChartColumn }]
                 : []),
               ...(canAudit ? [{ href: '/audit', label: t('nav.auditTrail'), icon: History }] : []),
-            ],
-          },
-          // TEMPORARY (DS-04): today's screens the prototype has no nav entry for,
-          // kept reachable until a redesigned screen absorbs each one — documents
-          // into the person record, expiry into Overview's runway, GRO into the
-          // work queue, Google Calendar into Calendar. (Candidates went into Hiring
-          // in DS-09; Tasks moved here in DS-12, until DS-13's work-item dialog
-          // takes over editing.)
-          // A row leaves this group when its absorbing screen's card lands.
-          // DS-22a: Documents (→ person record + Client record → Records) and
-          // Expiry (→ Overview runway; Run scan → Settings → System) have left.
-          // DS-22b: GRO and Task history (→ the Work queue's Finished view) too.
-          {
-            heading: t('nav.otherTools'),
-            items: [
-              ...(canIntegrations
-                ? [{ href: '/integrations', label: t('nav.integrations'), icon: CalendarCheck }]
-                : []),
             ],
           },
         ].filter((g) => g.items.length > 0);

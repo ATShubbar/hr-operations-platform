@@ -16,6 +16,7 @@ import { useCan } from '@/lib/session';
 import { NotificationPreferences } from '@/components/notification-preferences';
 import { AccessTable } from './access-table';
 import { ExpiryScanSection } from './expiry-scan';
+import { GoogleCalendarSection } from './google-calendar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LoadError } from '@/components/ui/load-state';
@@ -62,8 +63,18 @@ export default function SettingsPage() {
   // System (Administrator — system settings, feature switches, per-client).
   // DS-22a: the expiry scan trigger (expiry.run) lives here too.
   const canRunScan = useCan('expiry.run');
-  const showSystem = canWriteSystem || canWriteClient || canRunScan;
+  // DS-22c: Google Calendar invitations live here too. Someone who holds only
+  // that (the HR and GRO officers) sees the tab as "Integrations", with only it.
+  const canIntegrations = useCan('integration.google-calendar');
+  const systemSettings = canWriteSystem || canWriteClient || canRunScan;
+  const showSystem = systemSettings || canIntegrations;
   const [tab, setTab] = useState<SettingsTab>('access');
+  // `?tab=` arrives from old links (/integrations → ?tab=system). Read from
+  // window.location, not useSearchParams (no Suspense boundary here).
+  useEffect(() => {
+    const want = new URLSearchParams(window.location.search).get('tab');
+    if (want === 'prefs' || (want === 'system' && showSystem)) setTab(want);
+  }, [showSystem]);
 
   const [me, setMe] = useState<Record<string, unknown> | null>(null);
   const [system, setSystem] = useState<Record<string, unknown> | null>(null);
@@ -253,7 +264,11 @@ export default function SettingsPage() {
         <TabsList aria-label={t('title')}>
           <TabsTab value="access">{t('tab.access')}</TabsTab>
           <TabsTab value="prefs">{t('tab.prefs')}</TabsTab>
-          {showSystem && <TabsTab value="system">{t('tab.system')}</TabsTab>}
+          {showSystem && (
+            <TabsTab value="system">
+              {systemSettings ? t('tab.system') : t('tab.integrations')}
+            </TabsTab>
+          )}
         </TabsList>
 
         <TabsPanel value="access">
@@ -500,6 +515,7 @@ export default function SettingsPage() {
                 </CardContent>
               </Card>
             )}
+            {canIntegrations && <GoogleCalendarSection />}
           </TabsPanel>
         )}
       </Tabs>

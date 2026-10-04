@@ -1156,6 +1156,12 @@ update) + an Open/Finished switch, month groups, `queue/finished-row.tsx` (read-
 work-item dialog is READ-ONLY for finished items (it had shown "19d over" on completed work and
 offered Snooze / the task editor — caught in verification). `/gro` → `/queue?view=finished&kind=
 procedure`, `/tasks` → `…&kind=task`. Only Google Calendar is left in "Other tools". No API change.
+**DS-22c done — the "Other tools" nav group is GONE; the DS epic's screens are complete.** Google
+Calendar invitations moved (`git mv`) to `settings/google-calendar.tsx`, shown in the System tab —
+labelled **"Integrations"** for someone who holds only `integration.google-calendar` (HR/GRO
+officers), "System" for the Administrator; `?tab=system|prefs` presets. `/integrations` → `/settings
+?tab=system`. The staff nav is exactly the prototype's Workspace + Saved views. Found (GCAL-04,
+pre-existing): invitation times convert in the BROWSER's timezone, not the chosen one. No API change.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

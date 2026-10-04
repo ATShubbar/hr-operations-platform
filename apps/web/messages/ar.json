@@ -62,7 +62,6 @@
     "requests": "الطلبات",
     "vacancies": "الشواغر",
     "calendar": "التقويم",
-    "integrations": "تقويم Google",
     "portalCompany": "شركتي",
     "portalEmployees": "موظفيّ",
     "portalDocuments": "مستنداتي",
@@ -89,7 +88,6 @@
     "hiring": "التوظيف",
     "rolesAndPermissions": "الأدوار والصلاحيات",
     "auditTrail": "سجل التدقيق",
-    "otherTools": "أدوات أخرى",
     "savedViews": "العروض المحفوظة",
     "myLeave": "إجازاتي"
   },
@@ -174,7 +172,8 @@
     "tab": {
       "access": "الوصول",
       "prefs": "التفضيلات",
-      "system": "النظام"
+      "system": "النظام",
+      "integrations": "التكاملات"
     },
     "scanTitle": "انتهاء الوثائق",
     "scanSubtitle": "يعمل الفحص يوميًا الساعة 06:00 (الرياض). شغّله الآن لإصدار التنبيهات المستحقة — لا تُنبَّه وثيقة مرتين عند الحد نفسه. ما سينتهي يظهر في النظرة العامة."
