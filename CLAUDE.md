@@ -1228,6 +1228,13 @@ authenticator enrolment too — `smoke-only` just checks). `apps/api/scripts/uat
 refused + a bucket round-trip + a worker-sent email — **25/25 on UAT**; the worker logged the email 2 s later. The
 owner signed in as Administrator and enrolled their own authenticator. Next: feature work (FEAT-*) or GCP-07
 (production region).
+**UAT-01 done (owner decision, ADR-013 rev. 2) — UAT logins are simple and need NO authenticator.**
+`admin@` / `hr@` / `gro@` / `auditor@` / `client@` / `employee@peopleandgro.com` (+ `admin2@`, `hr2@`, `hr3@`,
+`client2@`), one shared password from the owner's `uat-seed-password` secret (never in code). The owner accepted the
+stated risk (anyone guessing it is Administrator on UAT; sample data only, no outbound email). Containment is in code:
+`auth/domain/uat-mfa.ts` honours `UAT_DISABLE_MFA=true` ONLY when `APP_WEB_ORIGIN` is the UAT address, so production
+cannot lose MFA by a copied variable. Local dev/CI/e2e unchanged (`@seed.hr.local`, Administrator/Auditor enrol).
+Smoke 33/33 on UAT, all six roles.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

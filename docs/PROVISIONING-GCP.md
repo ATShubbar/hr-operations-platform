@@ -186,8 +186,10 @@ SDK (ADR-010 clauses 5 and 6). Cloud Run injects secret values at deploy time.
   employee through the public address; one allowed + one refused route each; a document round-trip through the
   bucket; and a request whose notification the **worker** must email (find `email → client_manager-a@…` in the
   `uat-worker` log).
-- **[owner]** Administrator and Auditor need an authenticator — the owner signs in and enrols their own; no
-  script enrols one.
+- **UAT-01 (owner decision):** UAT accounts are `admin@` / `hr@` / `gro@` / `auditor@` / `client@` /
+  `employee@peopleandgro.com` (+ `admin2@`, `hr2@`, `hr3@`, `client2@`), all with the secret's password, and **no
+  authenticator** — `UAT_DISABLE_MFA=true` in `uat-env.yaml`, honoured only on the UAT origin (ADR-013 rev. 2). The
+  smoke check (`SMOKE_ACCOUNTS=uat`) therefore covers all six roles.
 
 ---
 
@@ -257,3 +259,4 @@ Prices read from Google's **Cloud Billing Catalog** (official SKUs, `me-central1
 | 2026-10-04 | GCP-05 check: `https://uat.peopleandgro.com` — Google Trust Services WR3 cert, valid to 2027-01-02, health/ready/login 200 | verified |
 | 2026-10-04 | GCP-06: owner created `uat-seed-password` (me-central1, never displayed); service account `uat-seed` | created |
 | 2026-10-04 | GCP-06: Seed UAT run — seed 5 clients / 39 employees / 20 documents / 10 accounts (6/6 roles); smoke **25/25**; worker emailed `client_manager-a` 2 s after the request moved | verified |
+| 2026-10-04 | UAT-01: owner set `uat-seed-password` v2; `3354ed0` deployed (`UAT_DISABLE_MFA=true` on api + worker); re-seeded → @peopleandgro.com accounts; smoke **33/33** incl. Administrator + Auditor without an authenticator | verified |
