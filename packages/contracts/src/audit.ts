@@ -9,6 +9,22 @@ export const auditQuerySchema = z.object({
   clientId: z.uuid().optional(),
   from: z.coerce.date().optional(),
   to: z.coerce.date().optional(),
+  // DS-15: several record types at once (an Audit-trail category is a set of
+  // them), comma-separated; and a case-insensitive text search over the action
+  // and the record type, applied on the SERVER so it reaches every page.
+  resources: z
+    .string()
+    .min(1)
+    .max(1000)
+    .transform((v) =>
+      v
+        .split(',')
+        .map((x) => x.trim())
+        .filter(Boolean),
+    )
+    .pipe(z.array(z.string().min(1).max(100)).min(1).max(50))
+    .optional(),
+  q: z.string().trim().min(1).max(100).optional(),
   limit: z.coerce.number().int().min(1).max(200).default(50),
   // Cursor: return entries with id < beforeId. String because the id is a
   // BigInt (see auditEntrySchema.id) that must not lose precision.
@@ -22,6 +38,9 @@ export const auditEntrySchema = z.object({
   actorRole: z.string().nullable(),
   clientId: z.uuid().nullable(),
   resource: z.string(),
+  // The record the entry is about (AUDIT-06; null for older entries and for
+  // resources that do not record it). DS-15 shows it as the entry's target.
+  resourceId: z.uuid().nullable(),
   action: z.string(),
   before: z.unknown(),
   after: z.unknown(),
@@ -35,6 +54,17 @@ export const auditListResponseSchema = z.object({
   nextCursor: z.string().nullable(),
 });
 
+// DS-15: the Audit trail's header figures. `from` is the start of "today" in the
+// viewer's own time zone (defaults to UTC midnight).
+export const auditSummaryQuerySchema = z.object({
+  from: z.coerce.date().optional(),
+});
+export const auditSummaryResponseSchema = z.object({
+  eventsToday: z.number().int(),
+  actors: z.number().int(),
+});
+
 export type AuditQuery = z.infer<typeof auditQuerySchema>;
+export type AuditSummaryResponse = z.infer<typeof auditSummaryResponseSchema>;
 export type AuditEntry = z.infer<typeof auditEntrySchema>;
 export type AuditListResponse = z.infer<typeof auditListResponseSchema>;

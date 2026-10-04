@@ -72,6 +72,7 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'POST /auth/mfa/verify': 'session',
   'POST /auth/mfa/challenge': 'session',
   'GET /audit': 'staff',
+  'GET /audit/summary': 'staff',
   // Configuration (CONF-01): system settings are deployment-wide (not client-
   // owned), so these are staff endpoints — cross-client by permission, not
   // client-scoped. config.read for the reads; config.write (Administrator) writes.

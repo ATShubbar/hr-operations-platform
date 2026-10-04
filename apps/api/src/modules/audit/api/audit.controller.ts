@@ -1,5 +1,10 @@
 import { BadRequestException, Controller, Get, Query } from '@nestjs/common';
-import { auditQuerySchema, type AuditListResponse } from '@hr/contracts';
+import {
+  auditQuerySchema,
+  auditSummaryQuerySchema,
+  type AuditListResponse,
+  type AuditSummaryResponse,
+} from '@hr/contracts';
 import { RequirePermission } from '../../../auth/permissions.decorator';
 import { AuditQueryService } from '../application/audit-query.service';
 
@@ -9,6 +14,16 @@ import { AuditQueryService } from '../application/audit-query.service';
 @Controller('audit')
 export class AuditController {
   constructor(private readonly auditQuery: AuditQueryService) {}
+
+  // DS-15: the Audit trail's header figures. Declared before any `:param` route
+  // could shadow it.
+  @RequirePermission('audit.read')
+  @Get('summary')
+  async summary(@Query() query: unknown): Promise<AuditSummaryResponse> {
+    const parsed = auditSummaryQuerySchema.safeParse(query);
+    if (!parsed.success) throw new BadRequestException('Invalid audit summary query');
+    return this.auditQuery.summary(parsed.data.from);
+  }
 
   @RequirePermission('audit.read')
   @Get()

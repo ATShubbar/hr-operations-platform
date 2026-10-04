@@ -1079,6 +1079,13 @@ view` items carry `ownerUserId`** (event owner / deadline assignee / null), test
 deadlines on their UTC date, timed events on the viewer's LOCAL day. Event form extracted to
 `calendar/event-dialog.tsx`. Counts matched SQL (24 = 6+6+10+2). Found: calendar treats a
 REJECTED procedure as finished while the queue doesn't (CAL-04 follow-up). Next: DS-15 (Audit).
+**DS-15 done — the Audit trail.** `/audit` = tiles (Events today / Actors on record from the new
+**`GET /audit/summary`**; Flagged critical "soon"), filters that ALL run server-side (search →
+**`q`** ILIKE over action+resource; actor; category → **`resources=`**; window → `from`), day
+groups with Hijri, server paging kept ("N+ events so far" on the last loaded day), and an entry
+dialog listing changed fields before → after. Category is a fixed map in `lib/audit-category.ts`
+(Payroll maps to nothing yet → disabled "soon"); severity and Export "soon" (AUDIT-07). Entries
+now carry `resourceId`. Matched SQL (112 procedure rows, 33 for Omar, 1 for "archive"). Next: DS-16.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

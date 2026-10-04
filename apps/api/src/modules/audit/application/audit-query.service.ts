@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { AuditListResponse, AuditQuery } from '@hr/contracts';
+import type { AuditListResponse, AuditQuery, AuditSummaryResponse } from '@hr/contracts';
 import { PrismaService } from '../../../prisma/prisma.service';
 import type { Prisma } from '../../../generated/prisma/client';
 
@@ -29,6 +29,14 @@ export class AuditQueryService {
   async list(query: AuditQuery): Promise<AuditListResponse> {
     const where: Prisma.AuditEntryWhereInput = {};
     if (query.resource) where.resource = query.resource;
+    // DS-15: several record types (a category) — combined with `resource` by AND.
+    if (query.resources) where.AND = [{ resource: { in: query.resources } }];
+    if (query.q) {
+      where.OR = [
+        { action: { contains: query.q, mode: 'insensitive' } },
+        { resource: { contains: query.q, mode: 'insensitive' } },
+      ];
+    }
     if (query.action) where.action = query.action;
     if (query.actorId) where.actorId = query.actorId;
     if (query.clientId) where.clientId = query.clientId;
@@ -57,6 +65,7 @@ export class AuditQueryService {
         actorRole: r.actorRole,
         clientId: r.clientId,
         resource: r.resource,
+        resourceId: r.resourceId,
         action: r.action,
         before: r.before,
         after: r.after,
@@ -65,6 +74,26 @@ export class AuditQueryService {
       })),
       nextCursor: hasMore ? (page[page.length - 1]?.id.toString() ?? null) : null,
     };
+  }
+
+  /**
+   * DS-15: the Audit trail's header figures — entries written since `from` (the
+   * start of the viewer's day; UTC midnight by default) and how many distinct
+   * actors the log has ever recorded (system writes, with no actor, excluded).
+   */
+  async summary(from?: Date): Promise<AuditSummaryResponse> {
+    const now = new Date();
+    const since =
+      from ?? new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    const [eventsToday, actors] = await Promise.all([
+      this.prisma.auditEntry.count({ where: { createdAt: { gte: since } } }),
+      this.prisma.auditEntry.findMany({
+        where: { actorId: { not: null } },
+        distinct: ['actorId'],
+        select: { actorId: true },
+      }),
+    ]);
+    return { eventsToday, actors: actors.length };
   }
 
   /**

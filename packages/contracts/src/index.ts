@@ -92,9 +92,12 @@ export {
   auditQuerySchema,
   auditEntrySchema,
   auditListResponseSchema,
+  auditSummaryQuerySchema,
+  auditSummaryResponseSchema,
   type AuditQuery,
   type AuditEntry,
   type AuditListResponse,
+  type AuditSummaryResponse,
 } from './audit.js';
 export {
   settingLevelSchema,
