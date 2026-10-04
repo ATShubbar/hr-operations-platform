@@ -15,6 +15,7 @@ import { apiFetch, ApiError } from '@/lib/api';
 import { useCan } from '@/lib/session';
 import { NotificationPreferences } from '@/components/notification-preferences';
 import { AccessTable } from './access-table';
+import { ExpiryScanSection } from './expiry-scan';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LoadError } from '@/components/ui/load-state';
@@ -59,7 +60,9 @@ export default function SettingsPage() {
   const canWriteClient = useCan('config.write-client');
   // DS-21: Access (everyone who reaches Settings) · Preferences (everyone) ·
   // System (Administrator — system settings, feature switches, per-client).
-  const showSystem = canWriteSystem || canWriteClient;
+  // DS-22a: the expiry scan trigger (expiry.run) lives here too.
+  const canRunScan = useCan('expiry.run');
+  const showSystem = canWriteSystem || canWriteClient || canRunScan;
   const [tab, setTab] = useState<SettingsTab>('access');
 
   const [me, setMe] = useState<Record<string, unknown> | null>(null);
@@ -305,6 +308,7 @@ export default function SettingsPage() {
 
         {showSystem && (
           <TabsPanel value="system" className="space-y-6">
+            {canRunScan && <ExpiryScanSection />}
             {/* ---- System settings (Administrator only) ---- */}
             {canWriteSystem && system && (
               <>

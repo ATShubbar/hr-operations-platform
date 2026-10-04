@@ -3,7 +3,6 @@
 import { useState, type ElementType } from 'react';
 import { useTranslations } from 'next-intl';
 import {
-  Activity,
   Building2,
   CalendarCheck,
   CalendarDays,
@@ -134,7 +133,6 @@ export function AppNav({
   // groups are assembled from the results.
   const canClients = useCan('client.read');
   const canEmployees = useCan('employee.read');
-  const canDocuments = useCan('document.read');
   const canRequests = useCan('request.read');
   const canTasks = useCan('task.read');
   const canVacancies = useCan('vacancy.read');
@@ -238,15 +236,11 @@ export function AppNav({
           // in DS-09; Tasks moved here in DS-12, until DS-13's work-item dialog
           // takes over editing.)
           // A row leaves this group when its absorbing screen's card lands.
+          // DS-22a: Documents (→ person record + Client record → Records) and
+          // Expiry (→ Overview runway; Run scan → Settings → System) have left.
           {
             heading: t('nav.otherTools'),
             items: [
-              ...(canDocuments
-                ? [{ href: '/documents', label: t('nav.documents'), icon: FileText }]
-                : []),
-              ...(canDocuments
-                ? [{ href: '/expiry', label: t('nav.expiry'), icon: Activity }]
-                : []),
               ...(canGro ? [{ href: '/gro', label: t('nav.gro'), icon: Landmark }] : []),
               ...(canTasks ? [{ href: '/tasks', label: t('nav.tasks'), icon: ClipboardList }] : []),
               ...(canIntegrations

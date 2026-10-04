@@ -31,6 +31,7 @@ import { StartProcedureDialog } from '../../employees/[id]/start-procedure-dialo
 import { ClientFormDialog } from '../client-form-dialog';
 import { figuresFor } from '../client-figures';
 import { PortalUsersDialog } from '../portal-users-dialog';
+import { RecordsTab } from './records-tab';
 import { HiringTab } from './hiring-tab';
 import { OpenWorkTab } from './open-work-tab';
 import { OverviewTab } from './overview-tab';
@@ -41,10 +42,11 @@ import { RequestsTab } from './requests-tab';
 // link, a header card (both names, status, View register, Start a procedure),
 // and eight tabs.
 //
-// Built: Overview and People (DS-10); Requests, Open work and Hiring (DS-11).
-// Records, Fees and Commercial need data a client does not store yet (contacts,
-// signatories, registrations, service tier, billing) — the client profile and
-// billing feature epics — so they are shown "coming soon" (owner rule).
+// Built: Overview and People (DS-10); Requests, Open work and Hiring (DS-11);
+// Records' company documents (DS-22a). Fees, Commercial and the rest of Records
+// need data a client does not store yet (contacts, signatories, registrations,
+// service tier, billing) — the client profile and billing feature epics — so
+// they are shown "coming soon" (owner rule).
 //
 // Kept although the prototype's header lacks them: Edit, Archive / Restore and
 // Portal users, which lived in the old list's rows (CLIENT-04, ROLE-02). They sit
@@ -61,7 +63,7 @@ const TABS = [
   'commercial',
 ] as const;
 type Tab = (typeof TABS)[number];
-const BUILT = new Set<Tab>(['overview', 'people', 'requests', 'work', 'hiring']);
+const BUILT = new Set<Tab>(['overview', 'people', 'requests', 'work', 'hiring', 'records']);
 
 export default function ClientRecordPage() {
   const t = useTranslations('clients');
@@ -335,6 +337,10 @@ export default function ClientRecordPage() {
           ) : (
             <NoAccess capability="candidate.read" />
           )}
+        </TabsPanel>
+
+        <TabsPanel value="records">
+          <RecordsTab clientId={client.id} />
         </TabsPanel>
 
         {TABS.filter((k) => !BUILT.has(k)).map((k) => (

@@ -1143,6 +1143,13 @@ to-you, notification emails) · **System** (system settings, feature switches, p
 rules, which now live in ONE place: `staffVisibility(can)` + `PORTAL_EMPLOYEE_VISIBILITY` in
 `employee-view.ts` (the employees + portal controllers enforce with them). Its spec cross-checks the
 table against real `GET /employees/:id` responses. API **515/515** ×2.
+**DS-22a done — Documents + Expiry folded into prototype screens.** Client record → **Records** =
+company documents (`clients/[id]/records-tab.tsx`: docs with NO employee for the client, via the
+existing `?clientId=` list; DOC-02 upload with no employee; download; delete w/ confirm, none on
+legal hold) + the prototype's records content still "soon". `/documents` → `/clients`, `/expiry` →
+`/overview` (redirect pages). **Run scan now → Settings → System** (`settings/expiry-scan.tsx`,
+`expiry.run`; System tab now also shows for it). Running the scan CHANGES data (alerts,
+notifications, GRO-05 auto-spawn) — snapshot counts first. No API change.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

@@ -57,10 +57,8 @@
     "console": "Console",
     "clients": "Clients",
     "employees": "Employees",
-    "documents": "Documents",
     "auditLog": "Audit log",
     "settings": "Settings",
-    "expiry": "Expiry",
     "requests": "Requests",
     "tasks": "Task history",
     "vacancies": "Vacancies",
@@ -98,38 +96,6 @@
     "myLeave": "My leave"
   },
   "documents": {
-    "title": "Documents",
-    "subtitle": "Employee and company documents, with expiry tracking.",
-    "new": "Upload document",
-    "colTitle": "Title",
-    "colCategory": "Category",
-    "colStatus": "Status",
-    "colExpiry": "Expiry",
-    "colActions": "Actions",
-    "download": "Download",
-    "delete": "Delete",
-    "confirmDelete": "Delete this document? The file will be removed.",
-    "empty": "No documents.",
-    "loading": "Loading…",
-    "error": "Could not load documents.",
-    "filterClient": "Client",
-    "filterCategory": "Category",
-    "filterExpiring": "Expiring before",
-    "filterAll": "All",
-    "apply": "Apply",
-    "clear": "Clear",
-    "uploadTitle": "Upload document",
-    "fieldClient": "Client company",
-    "selectClient": "Select a client",
-    "fieldCategory": "Category",
-    "fieldTitle": "Title",
-    "fieldFile": "File",
-    "fieldExpiry": "Expiry date",
-    "save": "Upload",
-    "saving": "Uploading…",
-    "cancel": "Cancel",
-    "saveError": "Could not upload — you may not have permission for this category.",
-    "none": "—",
     "category": {
       "iqama": "Iqama",
       "passport": "Passport",
@@ -139,14 +105,7 @@
       "national_id": "National ID",
       "cv": "CV",
       "other": "Other"
-    },
-    "status": {
-      "pending": "Pending",
-      "available": "Available",
-      "quarantined": "Quarantined",
-      "deleted": "Deleted"
-    },
-    "searchPlaceholder": "Search title or category…"
+    }
   },
   "settings": {
     "title": "Settings",
@@ -218,7 +177,9 @@
       "access": "Access",
       "prefs": "Preferences",
       "system": "System"
-    }
+    },
+    "scanTitle": "Document expiry",
+    "scanSubtitle": "The scan runs every day at 06:00 (Riyadh). Run it now to raise any alerts that are due — a document is never alerted twice at the same threshold. What is expiring is on the Overview."
   },
   "employees": {
     "loading": "Loading…",
@@ -411,7 +372,41 @@
     "candidatesEmpty": "No open pipeline for this company.",
     "hiringError": "Could not load this company's candidates.",
     "requestsHint": "Everything this company has asked for, and where each one stands.",
-    "workHint": "Government procedures and internal tasks running against this company's staff — requests have their own tab."
+    "workHint": "Government procedures and internal tasks running against this company's staff — requests have their own tab.",
+    "records": {
+      "title": "Company documents",
+      "subtitle": "The company's own documents — commercial registration, contracts, GOSI and the like. A person's documents are on their record.",
+      "add": "Add document",
+      "empty": "No company documents yet.",
+      "loadError": "Couldn't load the company's documents.",
+      "fileError": "Couldn't open that file. Try again.",
+      "download": "Download",
+      "remove": "Delete",
+      "removeTitle": "Delete this document?",
+      "removeDescription": "“{title}” will be removed from the company's documents.",
+      "removed": "{title} deleted.",
+      "removeError": "Couldn't delete that document.",
+      "added": "{title} added.",
+      "addError": "Couldn't upload the document. Try again.",
+      "addTitle": "Add a company document",
+      "addDescription": "It is attached to the company, not to a person.",
+      "category": "Category",
+      "docTitle": "Title",
+      "expiry": "Expiry date (optional)",
+      "file": "File",
+      "upload": "Upload",
+      "uploading": "Uploading…",
+      "cancel": "Cancel",
+      "noExpiry": "No expiry",
+      "legalHold": "On legal hold",
+      "profileTitle": "Company profile",
+      "status": {
+        "pending": "Being scanned",
+        "quarantined": "Quarantined",
+        "deleted": "Deleted",
+        "available": "Available"
+      }
+    }
   },
   "audit": {
     "title": "Audit trail",
@@ -512,44 +507,10 @@
     "eventsMore": "{count}+ events so far"
   },
   "expiry": {
-    "title": "Document Expiry",
-    "subtitle": "Documents approaching or past their expiry date.",
     "runScan": "Run scan now",
     "running": "Scanning…",
     "scanDone": "Scan complete — {scanned} scanned, {alerts} alerts raised, {notifications} notifications sent.",
-    "scanError": "Could not run the scan.",
-    "filterClient": "Client",
-    "filterCategory": "Category",
-    "filterAll": "All",
-    "apply": "Apply",
-    "clear": "Clear",
-    "empty": "Nothing expiring in the next 60 days.",
-    "error": "Could not load expiring documents.",
-    "loading": "Loading…",
-    "colTitle": "Title",
-    "colCategory": "Category",
-    "colClient": "Client",
-    "colExpiry": "Expiry",
-    "colDays": "Days left",
-    "daysOverdue": "{n}d overdue",
-    "daysLeft": "{n}d left",
-    "dueToday": "Due today",
-    "bucket": {
-      "expired": "Expired",
-      "d7": "Next 7 days",
-      "d30": "Next 30 days",
-      "d60": "Next 60 days"
-    },
-    "category": {
-      "iqama": "Iqama",
-      "passport": "Passport",
-      "visa": "Visa",
-      "contract": "Contract",
-      "gosi": "GOSI",
-      "national_id": "National ID",
-      "cv": "CV",
-      "other": "Other"
-    }
+    "scanError": "Could not run the scan."
   },
   "notifications": {
     "title": "Notifications",
