@@ -17,6 +17,7 @@ import {
   updateVacancyRequestSchema,
   vacancyQuerySchema,
   type VacancyListResponse,
+  type VacancyPipeline,
   type VacancyResponse,
 } from '@hr/contracts';
 import { RequirePermission } from '../../../auth/permissions.decorator';
@@ -63,7 +64,7 @@ export class VacanciesController {
       headcount: req.headcount,
       openedByUserId: actorId ?? null,
     });
-    return toResponse(row);
+    return (await this.respond([row]))[0]!;
   }
 
   @RequirePermission('vacancy.read')
@@ -72,12 +73,12 @@ export class VacanciesController {
     const scope = scopeOf(requestContext.get());
     if (scope.kind === 'client') {
       const rows = await this.vacancies.listForClient(scope.clientId);
-      return { vacancies: rows.map(toResponse) };
+      return { vacancies: await this.respond(rows) };
     }
     const q = vacancyQuerySchema.safeParse(query);
     const clientId = q.success ? q.data.clientId : undefined;
     const rows = await this.vacancies.list(clientId);
-    return { vacancies: rows.map(toResponse) };
+    return { vacancies: await this.respond(rows) };
   }
 
   @RequirePermission('vacancy.read')
@@ -90,7 +91,7 @@ export class VacanciesController {
         ? await this.vacancies.findForClient(scope.clientId, id)
         : await this.vacancies.getById(id);
     if (!row) throw new NotFoundException('Vacancy not found');
-    return toResponse(row);
+    return (await this.respond([row]))[0]!;
   }
 
   @RequirePermission('vacancy.update')
@@ -108,7 +109,7 @@ export class VacanciesController {
     };
     const row = await this.vacancies.update(id, data);
     if (!row) throw new NotFoundException('Vacancy not found');
-    return toResponse(row);
+    return (await this.respond([row]))[0]!;
   }
 
   // Advance the lifecycle (REC-02) — STAFF only (client reps lack vacancy.approve).
@@ -122,7 +123,7 @@ export class VacanciesController {
     if (!parsed.success) throw new BadRequestException('Invalid status payload');
     const row = await this.vacancies.changeStatus(id, parsed.data.status);
     if (!row) throw new NotFoundException('Vacancy not found');
-    return toResponse(row);
+    return (await this.respond([row]))[0]!;
   }
 
   @RequirePermission('vacancy.delete')
@@ -131,11 +132,18 @@ export class VacanciesController {
     if (!UUID_RE.test(id)) throw new NotFoundException('Vacancy not found');
     const row = await this.vacancies.remove(id);
     if (!row) throw new NotFoundException('Vacancy not found');
-    return toResponse(row);
+    return (await this.respond([row]))[0]!;
+  }
+
+  // Every response carries its pipeline counts (DS-18). The ids are the rows this
+  // request already read on its own path, so the counts follow the same scope.
+  private async respond(rows: readonly VacancyRecord[]): Promise<VacancyResponse[]> {
+    const pipelines = await this.vacancies.pipelines(rows.map((r) => r.id));
+    return rows.map((r) => toResponse(r, pipelines.get(r.id)!));
   }
 }
 
-function toResponse(v: VacancyRecord): VacancyResponse {
+function toResponse(v: VacancyRecord, pipeline: VacancyPipeline): VacancyResponse {
   return {
     id: v.id,
     clientId: v.clientId,
@@ -145,6 +153,7 @@ function toResponse(v: VacancyRecord): VacancyResponse {
     headcount: v.headcount,
     status: v.status,
     openedByUserId: v.openedByUserId,
+    pipeline,
     createdAt: v.createdAt.toISOString(),
     updatedAt: v.updatedAt.toISOString(),
   };

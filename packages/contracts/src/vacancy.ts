@@ -6,6 +6,18 @@ import { z } from 'zod';
 // (POST /vacancies/:id/status, gated by vacancy.approve).
 export const vacancyStatusSchema = z.enum(['draft', 'open', 'filled', 'closed', 'cancelled']);
 
+// The hiring pipeline of one vacancy (DS-18): how many candidates sit at each
+// stage still on the board. COUNTS ONLY — a client manager reads these for their
+// own roles but never a candidate (REC-03). Rejected / withdrawn candidates have
+// left the board and are not counted.
+export const vacancyPipelineSchema = z.object({
+  applied: z.number().int(),
+  screening: z.number().int(),
+  interview: z.number().int(),
+  offer: z.number().int(),
+  hired: z.number().int(),
+});
+
 export const vacancyResponseSchema = z.object({
   id: z.uuid(),
   clientId: z.uuid(),
@@ -15,6 +27,7 @@ export const vacancyResponseSchema = z.object({
   headcount: z.number().int(),
   status: vacancyStatusSchema,
   openedByUserId: z.uuid().nullable(),
+  pipeline: vacancyPipelineSchema,
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -54,6 +67,7 @@ export const vacancyQuerySchema = z.object({
 });
 
 export type VacancyStatus = z.infer<typeof vacancyStatusSchema>;
+export type VacancyPipeline = z.infer<typeof vacancyPipelineSchema>;
 export type VacancyResponse = z.infer<typeof vacancyResponseSchema>;
 export type CreateVacancyRequest = z.infer<typeof createVacancyRequestSchema>;
 export type UpdateVacancyRequest = z.infer<typeof updateVacancyRequestSchema>;

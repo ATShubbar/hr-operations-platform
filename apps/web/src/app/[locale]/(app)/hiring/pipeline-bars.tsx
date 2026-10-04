@@ -1,14 +1,16 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import type { CandidateResponse } from '@hr/contracts';
+import type { CandidateResponse, VacancyPipeline } from '@hr/contracts';
 import { cn } from '@/lib/utils';
 import { COLUMNS, type Column } from './stages';
 
 // The hiring pipeline as bars, one per board column (DS-11; shared with the
-// Overview in DS-17). Each bar is that column's share of the candidates given —
-// pass the ACTIVE ones (rejected and withdrawn have left the board). The Visa &
-// mobilisation column is the board's "coming soon" one and counts nothing yet.
+// Overview in DS-17). It takes COUNTS per stage, so a client manager's Overview
+// can draw it from their vacancies' pipeline counts (DS-18) without ever reading
+// a candidate; staff screens build the counts with `countsOf`. Each bar is that
+// stage's share of the total. The Visa & mobilisation column is the board's
+// "coming soon" one and counts nothing yet.
 
 // The board's ramp: the pipeline in ink, the visa stage amber, onboarded green.
 const FILL: Record<Column, string> = {
@@ -20,13 +22,21 @@ const FILL: Record<Column, string> = {
   hired: 'bg-status-ok',
 };
 
-export function PipelineBars({ candidates }: { candidates: readonly CandidateResponse[] }) {
+/** Per-stage counts of candidates still on the board (rejected / withdrawn left it). */
+export function countsOf(candidates: readonly CandidateResponse[]): VacancyPipeline {
+  const out: VacancyPipeline = { applied: 0, screening: 0, interview: 0, offer: 0, hired: 0 };
+  for (const c of candidates) if (c.stage in out) out[c.stage as keyof VacancyPipeline] += 1;
+  return out;
+}
+
+export function PipelineBars({ counts }: { counts: VacancyPipeline }) {
   const th = useTranslations('hiring');
+  const total = Object.values(counts).reduce((a, b) => a + b, 0);
   return (
     <ul className="flex flex-col gap-3">
       {COLUMNS.map((col) => {
-        const n = col === 'visa' ? 0 : candidates.filter((c) => c.stage === col).length;
-        const pct = candidates.length ? Math.round((n / candidates.length) * 100) : 0;
+        const n = col === 'visa' ? 0 : counts[col];
+        const pct = total ? Math.round((n / total) * 100) : 0;
         return (
           <li key={col} className="flex items-center gap-3">
             <span className="w-[118px] shrink-0 text-xs leading-4 text-neutral-700">

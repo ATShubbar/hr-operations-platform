@@ -43,14 +43,10 @@ export default function LoginPage() {
     try {
       const me = await apiFetch<MeResponse>('/auth/me');
       // Staff land on the Overview (DS-17; UX-04's Today before it) rather than on
-      // a list of clients or the audit log. Client reps still land on the portal, which is
-      // their only surface.
+      // a list of clients or the audit log; client managers on their own Overview
+      // (DS-18).
       // SS-07: employees land on their own file — their only surface.
-      const target = me.permissions.includes('self-service.read')
-        ? '/me'
-        : me.permissions.includes('portal.read')
-          ? '/portal/company'
-          : '/overview';
+      const target = me.permissions.includes('self-service.read') ? '/me' : '/overview';
       let preferred: 'ar' | 'en' | undefined;
       try {
         const cfg = await apiFetch<ConfigEffectiveResponse>('/config/me');

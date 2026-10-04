@@ -14,7 +14,7 @@ import { useNationalityName } from '@/lib/nationality';
 import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { PipelineBars } from '../../hiring/pipeline-bars';
+import { countsOf, PipelineBars } from '../../hiring/pipeline-bars';
 import { COLUMNS, isActive, type Column } from '../../hiring/stages';
 
 // The Client record's Hiring tab (DS-11): this company's slice of the hiring
@@ -80,7 +80,7 @@ export function HiringTab({ clientId }: { clientId: string }) {
             {t('pipelineSummary', { count: pool.length })}
           </p>
         </div>
-        <PipelineBars candidates={pool} />
+        <PipelineBars counts={countsOf(pool)} />
         <div className="flex pt-2">
           <Button variant="outline" size="sm" nativeButton={false} render={<Link href="/hiring" />}>
             {t('openBoard')}

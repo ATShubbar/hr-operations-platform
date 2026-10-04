@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import type { ClientResponse } from '@hr/contracts';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
+import { useSession } from '@/lib/session';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -27,6 +28,11 @@ import {
 // "New request" (REQ-04's create form, moved out of the page in DS-08 unchanged
 // in behaviour). The prototype offers this only on the client view; staff could
 // raise requests before the redesign, so the capability is kept.
+//
+// A client manager raises requests for their OWN company, which the API takes
+// from the session (any body clientId is ignored). They cannot read /clients, so
+// the company picker had nothing to offer and Create could never enable — found
+// in DS-18. For them the picker is gone and no clientId is sent.
 
 const TYPES = ['letter', 'certificate', 'document', 'gro_service', 'general'] as const;
 const PRIORITIES = ['low', 'normal', 'high'] as const;
@@ -65,6 +71,7 @@ export function NewRequestDialog({
   const [form, setForm] = useState<CreateForm>(EMPTY);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState('');
+  const ownCompany = useSession().principalType === 'client_rep';
   const active = clients.filter((c) => c.status === 'active');
   const clientName = (id: string) => {
     const c = clients.find((x) => x.id === id);
@@ -92,7 +99,7 @@ export function NewRequestDialog({
       const created = await apiFetch<{ id: string }>('/requests', {
         method: 'POST',
         body: JSON.stringify({
-          clientId: form.clientId,
+          ...(ownCompany ? {} : { clientId: form.clientId }),
           type: form.type,
           title: form.title,
           ...(form.description ? { description: form.description } : {}),
@@ -117,26 +124,28 @@ export function NewRequestDialog({
           <DialogTitle>{t('createTitle')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={create} className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="nr-client">{t('fieldClient')}</Label>
-            <Select
-              value={form.clientId}
-              onValueChange={(v) => setForm({ ...form, clientId: v ?? '' })}
-            >
-              <SelectTrigger id="nr-client" className="w-full">
-                <SelectValue placeholder={t('selectClient')}>
-                  {(v) => (v ? clientName(String(v)) : t('selectClient'))}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {active.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {locale === 'ar' ? c.name.ar : c.name.en}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {!ownCompany && (
+            <div className="space-y-1.5">
+              <Label htmlFor="nr-client">{t('fieldClient')}</Label>
+              <Select
+                value={form.clientId}
+                onValueChange={(v) => setForm({ ...form, clientId: v ?? '' })}
+              >
+                <SelectTrigger id="nr-client" className="w-full">
+                  <SelectValue placeholder={t('selectClient')}>
+                    {(v) => (v ? clientName(String(v)) : t('selectClient'))}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {active.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {locale === 'ar' ? c.name.ar : c.name.en}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
               <Label htmlFor="nr-type">{t('fieldType')}</Label>
@@ -208,7 +217,10 @@ export function NewRequestDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               {t('cancel')}
             </Button>
-            <Button type="submit" disabled={saving || !form.clientId || !form.title}>
+            <Button
+              type="submit"
+              disabled={saving || (!ownCompany && !form.clientId) || !form.title}
+            >
               {saving ? t('saving') : t('save')}
             </Button>
           </DialogFooter>

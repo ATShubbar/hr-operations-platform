@@ -3,6 +3,7 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import { ScopedPrismaService } from '../../../prisma/scoped-prisma.service';
 import type { VacancyModel as VacancyRecord } from '../../../generated/prisma/models';
 import type { Prisma, VacancyStatus } from '../../../generated/prisma/client';
+import type { VacancyPipeline } from '@hr/contracts';
 import { AuditService } from '../../audit/public-api';
 import type { CreateVacancyInput, UpdateVacancyInput } from '../domain/vacancy';
 import { canTransition } from '../domain/vacancy-status-workflow';
@@ -104,6 +105,27 @@ export class VacanciesService {
     });
   }
 
+  // The hiring pipeline per vacancy (DS-18): candidate counts by board stage, for
+  // the vacancies GIVEN — never a query by client. The caller passes ids it has
+  // already read on its own path (a client rep's come from the RLS-scoped read),
+  // so counting through the staff connection can only describe vacancies the
+  // caller may see; app_client itself keeps no grant on rec_candidates. Counts
+  // only — no candidate row leaves this method.
+  async pipelines(vacancyIds: readonly string[]): Promise<Map<string, VacancyPipeline>> {
+    const out = new Map<string, VacancyPipeline>(vacancyIds.map((id) => [id, emptyPipeline()]));
+    if (vacancyIds.length === 0) return out;
+    const groups = await this.prisma.candidate.groupBy({
+      by: ['vacancyId', 'stage'],
+      where: { vacancyId: { in: [...vacancyIds] }, stage: { in: [...PIPELINE_STAGES] } },
+      _count: { _all: true },
+    });
+    for (const g of groups) {
+      const p = out.get(g.vacancyId);
+      if (p) p[g.stage as keyof VacancyPipeline] = g._count._all;
+    }
+    return out;
+  }
+
   // ---- client-representative path (own-client, RLS-enforced, READ ONLY) ----
 
   listForClient(clientId: string): Promise<VacancyRecord[]> {
@@ -115,6 +137,15 @@ export class VacanciesService {
     return this.scoped.forClient(clientId).vacancy.findUnique({ where: { id } });
   }
 }
+
+const PIPELINE_STAGES = ['applied', 'screening', 'interview', 'offer', 'hired'] as const;
+const emptyPipeline = (): VacancyPipeline => ({
+  applied: 0,
+  screening: 0,
+  interview: 0,
+  offer: 0,
+  hired: 0,
+});
 
 function toCreateData(input: CreateVacancyInput): Prisma.VacancyUncheckedCreateInput {
   return {

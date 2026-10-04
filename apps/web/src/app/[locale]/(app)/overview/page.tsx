@@ -23,7 +23,6 @@ import { Link, useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { datedDocs, daysTo, type DocKey } from '@/lib/employee-docs';
 import { useCan, useSession } from '@/lib/session';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { LoadError } from '@/components/ui/load-state';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -33,11 +32,12 @@ import { ClientFormDialog } from '../clients/client-form-dialog';
 import { figuresFor, underManagement, type RunwayBand } from '../clients/client-figures';
 import { RunwayTable } from '../clients/runway-table';
 import { StartProcedureDialog } from '../employees/[id]/start-procedure-dialog';
-import { PipelineBars } from '../hiring/pipeline-bars';
-import { isActive } from '../hiring/stages';
+import { countsOf, PipelineBars } from '../hiring/pipeline-bars';
 import { useQueueItems } from '../queue/queue-items';
 import { WorkItemDialog } from '../queue/work-item-dialog';
+import { ClientOverview } from './client-overview';
 import { NeedsRow } from './needs-row';
+import { PortfolioTable } from './portfolio-table';
 
 // The Overview (DS-17) — the prototype's home screen (ADR-012), for staff. It
 // replaces UX-04's "Today" work list, whose job the Work queue (DS-12) now does
@@ -61,8 +61,8 @@ import { NeedsRow } from './needs-row';
 // and was last updated today, among what the viewer can see. Close, not exact — an
 // edit to an already-finished item would count it again.
 //
-// Client managers get their own Overview in DS-18; until then they keep landing
-// on the portal, and anyone who arrives here is sent there.
+// Client managers get their own version (client-overview.tsx, DS-18) — the page
+// picks by principal. Employees never reach it (AppShell confines them to /me).
 
 const ASSIGNABLE = new Set(['administrator', 'hr_officer', 'gro_officer']);
 const FINISHED = {
@@ -107,17 +107,22 @@ const EMPTY: Data = {
 const isToday = (iso: string) => new Date(iso).toDateString() === new Date().toDateString();
 
 export default function OverviewPage() {
+  const principal = useSession().principalType;
+  if (principal === 'client_rep') return <ClientOverview />;
+  if (principal === 'staff') return <StaffOverview />;
+  return null;
+}
+
+function StaffOverview() {
   const t = useTranslations('overview');
   const tq = useTranslations('queue');
   const ts = useTranslations('states');
   const locale = useLocale() as 'ar' | 'en';
   const router = useRouter();
-  const me = useSession();
   const canReadAllTasks = useCan('task.read-all');
   const canCandidates = useCan('candidate.read');
   const canStartProcedure = useCan('gro.process');
   const canAddClient = useCan('client.create');
-  const isStaff = me.principalType === 'staff';
 
   const [data, setData] = useState<Data>(EMPTY);
   const [loaded, setLoaded] = useState(false);
@@ -164,7 +169,6 @@ export default function OverviewPage() {
   }
 
   useEffect(() => {
-    if (!isStaff) return void router.replace('/portal/company');
     void load();
   }, []);
 
@@ -185,8 +189,6 @@ export default function OverviewPage() {
         ),
     [data.clients, locale],
   );
-
-  if (!isStaff) return null;
 
   // The tiles.
   const docDays = people.flatMap((e) => datedDocs(e).map((d) => d.days));
@@ -213,8 +215,6 @@ export default function OverviewPage() {
   ].join(' · ');
 
   const clientName = (c: ClientResponse) => (locale === 'ar' ? c.name.ar : c.name.en);
-  const expiringTone = (n: number) =>
-    n > 3 ? 'text-status-critical' : n > 1 ? 'text-status-warning' : 'text-neutral-500';
 
   return (
     <div className="flex max-w-[1360px] flex-col gap-4">
@@ -357,7 +357,7 @@ export default function OverviewPage() {
                     {t('board')}
                   </Button>
                 </div>
-                <PipelineBars candidates={data.candidates.filter((c) => isActive(c.stage))} />
+                <PipelineBars counts={countsOf(data.candidates)} />
               </section>
             )}
           </div>
@@ -392,88 +392,12 @@ export default function OverviewPage() {
                 </Button>
               )}
             </div>
-            <div
-              role="region"
-              aria-labelledby="ov-portfolio"
-              tabIndex={0}
-              className="overflow-x-auto focus-visible:outline-2 focus-visible:outline-ring"
-            >
-              <table className="w-full min-w-[680px] border-separate border-spacing-0 text-[13px] leading-[18px]">
-                <colgroup>
-                  <col style={{ width: '25%' }} />
-                  <col style={{ width: '12.5%' }} />
-                  <col style={{ width: '16.25%' }} />
-                  <col style={{ width: '12.5%' }} />
-                  <col style={{ width: '12.5%' }} />
-                  <col style={{ width: '12.5%' }} />
-                </colgroup>
-                <thead>
-                  <tr className="bg-neutral-100 text-xs leading-4 text-muted-foreground">
-                    <th scope="col" className="px-4 py-2 text-start font-medium">
-                      {t('col.client')}
-                    </th>
-                    <th scope="col" className="px-4 py-2 text-end font-medium">
-                      {t('col.headcount')}
-                    </th>
-                    <th scope="col" className="px-4 py-2 text-start font-medium">
-                      {t('col.band')}
-                    </th>
-                    <th scope="col" className="px-4 py-2 text-end font-medium">
-                      {t('col.saudi')}
-                    </th>
-                    <th scope="col" className="px-4 py-2 text-end font-medium">
-                      {t('col.expiring')}
-                    </th>
-                    <th scope="col" className="px-4 py-2 text-end font-medium">
-                      {t('col.open')}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {activeClients.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="border-t px-4 py-8 text-center text-neutral-400">
-                        {t('portfolioEmpty')}
-                      </td>
-                    </tr>
-                  ) : (
-                    activeClients.map((c) => {
-                      const f = figuresFor(c.id, data.employees, data.processes, data.requests);
-                      return (
-                        <tr key={c.id} className="h-14 [&>td]:border-t [&>td]:px-4">
-                          <th scope="row" className="border-t px-4 py-2 text-start font-normal">
-                            <Link
-                              href={`/clients/${c.id}`}
-                              className="flex flex-col gap-px outline-none hover:underline focus-visible:underline"
-                            >
-                              <span className="text-sm leading-5 font-medium">{clientName(c)}</span>
-                              {locale === 'en' && (
-                                <span
-                                  dir="rtl"
-                                  className="text-start text-xs leading-4 text-muted-foreground"
-                                >
-                                  {c.name.ar}
-                                </span>
-                              )}
-                            </Link>
-                          </th>
-                          <td className="text-end font-mono">{f.headcount}</td>
-                          <td className="text-xs text-neutral-400">{ts('soon')}</td>
-                          <td className="text-end font-mono">{f.saudiPct}%</td>
-                          <td className={cn('text-end font-mono', expiringTone(f.expiring30))}>
-                            {f.expiring30}
-                          </td>
-                          <td className="text-end font-mono">{f.openItems}</td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
-            <p className="border-t px-4 py-2.5 text-xs leading-4 text-muted-foreground">
-              {t('portfolioNote')}
-            </p>
+            <PortfolioTable
+              labelledBy="ov-portfolio"
+              clients={activeClients}
+              figuresOf={(c) => figuresFor(c.id, data.employees, data.processes, data.requests)}
+              linkToRecord
+            />
           </section>
 
           <section

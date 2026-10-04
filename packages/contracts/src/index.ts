@@ -223,6 +223,7 @@ export {
 } from './gro.js';
 export {
   vacancyStatusSchema,
+  vacancyPipelineSchema,
   vacancyResponseSchema,
   createVacancyRequestSchema,
   updateVacancyRequestSchema,
@@ -230,6 +231,7 @@ export {
   vacancyListResponseSchema,
   vacancyQuerySchema,
   type VacancyStatus,
+  type VacancyPipeline,
   type VacancyResponse,
   type CreateVacancyRequest,
   type UpdateVacancyRequest,

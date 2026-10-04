@@ -1121,7 +1121,23 @@
     "portfolioNote": "Saudisation here is the share of Saudi nationals on the register, not the Nitaqat-weighted figure. Open items are active government procedures.",
     "mob": "Mobilisations and exits",
     "mobHint": "Sequenced files in flight. Each step waits on the one before it.",
-    "mobSoon": "Mobilisation and exit tracking is coming soon."
+    "mobSoon": "Mobilisation and exit tracking is coming soon.",
+    "client": {
+      "raise": "Raise a request",
+      "raised": "Request sent to the team.",
+      "withTeam": "Requests with the team",
+      "withTeamSub": "{count} awaiting a decision",
+      "nothingOutstanding": "nothing outstanding",
+      "candidates": "Candidates in progress",
+      "candidatesSub": "{count, plural, one {across # open role} other {across # open roles}}",
+      "notEnabledShort": "Self-service not enabled",
+      "yourRequests": "Your requests",
+      "yourRequestsHint": "Everything you have asked the team for, and where each one stands.",
+      "openAll": "Open all",
+      "requestsEmpty": "Nothing yet. Raise a request when you need something.",
+      "roles": "Roles",
+      "runwayHint": "Every document we hold for {company}, by how much time is left."
+    }
   },
   "states": {
     "retry": "Try again",

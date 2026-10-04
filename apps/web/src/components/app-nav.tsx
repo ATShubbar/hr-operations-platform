@@ -165,6 +165,8 @@ export function AppNav({
       ? [
           {
             items: [
+              // DS-18: the client manager's Overview is their home, as in the prototype.
+              { href: '/overview', label: t('nav.overview'), icon: LayoutGrid },
               { href: '/portal/company', label: t('nav.portalCompany'), icon: Building2 },
               { href: '/portal/employees', label: t('nav.portalEmployees'), icon: UsersRound },
               { href: '/portal/documents', label: t('nav.portalDocuments'), icon: FileText },

@@ -1105,6 +1105,18 @@ extracted: `queue/queue-items.ts` (`useQueueItems` — open work + order, ties �
 at an ACTIVE client** (`underManagement` in client-figures.ts, owner decision) — the Reports
 dashboard now uses it too (36 → 35, 53% → 51%). Client managers → portal until **DS-18** (their
 Overview). The DS-16 follow-up is **REP-06** (REP-05 was already reserved). No API change.
+**DS-18 done — the client manager's Overview.** `/overview` picks by principal: staff →
+`StaffOverview`, client rep → `overview/client-overview.tsx` (tiles: expiring 30d · requests with
+the team · candidates in progress · headcount; Your requests (6 newest → `/requests?r=`); pipeline;
+own runway + own portfolio row via the extracted `overview/portfolio-table.tsx`). Portal OFF
+(`flag.client-self-service`, default off) → requests + pipeline still work, register figures show
+the portal's "not enabled". Client managers land on `/overview`, first in their nav. **API: every
+vacancy response carries `pipeline`** (counts per board stage, `VacanciesService.pipelines(ids)` —
+counts by the ids the request ALREADY read on its own path, so a client's counts follow RLS;
+`app_client` still has no grant on `rec_candidates`); `PipelineBars` now takes counts (`countsOf`
+for staff). **Found + fixed:** a client manager could never raise a request — New request's company
+picker reads `/clients` (403 for them), so Create never enabled; for client reps the picker is gone
+and no clientId is sent (the API takes it from the session). API **507/507** ×2.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
