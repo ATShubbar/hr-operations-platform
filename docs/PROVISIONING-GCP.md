@@ -263,3 +263,4 @@ Prices read from Google's **Cloud Billing Catalog** (official SKUs, `me-central1
 | 2026-10-04 | GCP-06: Seed UAT run — seed 5 clients / 39 employees / 20 documents / 10 accounts (6/6 roles); smoke **25/25**; worker emailed `client_manager-a` 2 s after the request moved | verified |
 | 2026-10-04 | UAT-01: owner set `uat-seed-password` v2; `3354ed0` deployed (`UAT_DISABLE_MFA=true` on api + worker); re-seeded → @peopleandgro.com accounts; smoke **33/33** incl. Administrator + Auditor without an authenticator | verified |
 | 2026-10-04 | SEED-01 (owner-approved): `uat-seed` granted `roles/secretmanager.secretAccessor` on `uat-storage-access-key` and `uat-storage-secret-key` — two bindings, nothing created, no cost | done |
+| 2026-10-04 | SEED-01: Seed UAT run — 20 documents with files + 2 request files written to `peoplegro-uat-documents`; smoke **46/46** incl. a seeded document and attachment downloading as PDFs | verified |

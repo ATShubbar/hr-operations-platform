@@ -1,7 +1,7 @@
 # SEED-01 — Seeded documents (and sample request files) have real files — Evidence
 
 - Date: 2026-10-04
-- Card: `BACKLOG.md` → SEED-01 (found in DS-20; widened in THREAD-02). Status: **done locally and in CI**. UAT is proven by the next **Seed UAT** run (owner).
+- Card: `BACKLOG.md` → SEED-01 (found in DS-20; widened in THREAD-02). Status: **done** — locally, in CI, and on UAT.
 
 ## Owner decisions
 
@@ -56,3 +56,13 @@ Data cleaned: the smoke run's requests removed and the DB re-seeded.
 ## For UAT
 
 The next **Seed UAT** (`seed-and-smoke`) writes the files to `peoplegro-uat-documents`. Its smoke step checks that a seeded document and the seeded attachment download as PDFs. The bucket check the seed performs is the same one the app already performs on every UAT upload with this key.
+
+## UAT result (owner ran Seed UAT, run 37223654069, 2026-10-04 18:14 UTC)
+
+- `7b4f72a` deployed first: CI green with MinIO started before the seed.
+- **Seed:** "20 documents (with files); 9 requests; 2 request files; …". The objects are listed in `gs://peoplegro-uat-documents/clients/<client>/documents/<id>/`.
+- **Smoke: 46/46**, 0 failed, including:
+  - `PASS seed: a seeded document downloads as a PDF (%PDF-)`
+  - `PASS seed: a seeded request attachment downloads as a PDF (%PDF-)`
+
+Read from Cloud Logging (`uat-seed` / `uat-smoke` jobs) and `gcloud storage ls`, both read-only.
