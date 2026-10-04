@@ -13,11 +13,18 @@ import { DISPATCH_QUEUE, EXPIRY_QUEUE } from './queue.constants';
 // in every spec (which otherwise emits benign "Connection is closed" noise).
 // The split alone did not end that noise for the PRODUCER queues — see
 // QueueShutdownGuard below.
-function redisConnection() {
+// Every part of REDIS_URL must survive: GCP-04's first deploy kept only host +
+// port, and the worker was refused ("NOAUTH") by the password-protected UAT
+// Redis while the session store, which takes the URL whole, connected fine.
+export function redisConnection() {
   const url = new URL(process.env.REDIS_URL ?? 'redis://localhost:6380');
+  const db = Number(url.pathname.slice(1));
   return {
     host: url.hostname,
     port: Number(url.port) || 6379,
+    ...(url.username && { username: decodeURIComponent(url.username) }),
+    ...(url.password && { password: decodeURIComponent(url.password) }),
+    ...(db > 0 && { db }),
     // BullMQ workers issue blocking commands; the per-request retry cap MUST be
     // disabled or the worker throws on startup.
     maxRetriesPerRequest: null,
