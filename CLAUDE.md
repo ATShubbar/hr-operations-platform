@@ -1214,6 +1214,20 @@ storage), **MinIO's images are gone** (CI uses `bitnamilegacy/minio` pinned by d
 still names `minio/minio` — follow-up), and the **worker could not authenticate to Redis**
 (`redisConnection()` dropped the URL's password; local Redis has none). Worker job processing is
 proven in GCP-06. Next: **GCP-05** (uat.peopleandgro.com; the owner adds the Hostinger record).
+**GCP-05 done — https://uat.peopleandgro.com.** Doha REFUSES Cloud Run domain mappings (dry run: `501 Creating
+domain mappings is not allowed in me-central1`), so UAT sits behind a global HTTPS load balancer (owner-approved
+≈ $18.25/mo; IP 34.117.197.43; `uat-web-*` resources; HTTP 301 → HTTPS; Google-managed cert). Owner verified
+`peopleandgro.com` in Search Console (TXT at `@`, kept — production reuses it). **Hostinger served a DELETED CNAME
+for ~1.5 h** (its nameservers disagreed on the zone version); support purged it; the third certificate went ACTIVE.
+UAT ≈ $75/mo.
+**GCP-06 done — UAT IS LIVE with sample data.** The repo is PUBLIC, so the dev seed password is public: on UAT the
+seed takes `SEED_PASSWORD` from the owner-generated secret `uat-seed-password`, and `prisma/seed-guard.ts` refuses
+production mode without `SEED_TARGET=uat` + that password (production never gets either). Run it from GitHub →
+Actions → **Seed UAT** (manual only; `seed-and-smoke` RESETS the data AND the seed accounts — the owner's
+authenticator enrolment too — `smoke-only` just checks). `apps/api/scripts/uat-smoke.mjs`: 4 roles × allowed/
+refused + a bucket round-trip + a worker-sent email — **25/25 on UAT**; the worker logged the email 2 s later. The
+owner signed in as Administrator and enrolled their own authenticator. Next: feature work (FEAT-*) or GCP-07
+(production region).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
@@ -1285,6 +1299,14 @@ proven in GCP-06. Next: **GCP-05** (uat.peopleandgro.com; the owner adds the Hos
 - Closing a dialog inside a `<Link>`'s onClick CANCELS the navigation — `next/link` runs
   `startTransition(() => router.push())` and the close unmounts the subtree owning that
   transition. Close on pathname change instead (UX-05).
+- Cloud Run domain mappings: `me-central2` refuses even listing, `me-central1` lists but REFUSES creating (501).
+  Use a global HTTPS load balancer; never pass `--protocol=HTTPS` to its backend service — gcloud then sets port
+  name `https`, which a serverless NEG rejects (GCP-05).
+- Hostinger's panel can stop showing a record its nameservers still serve. Verify DNS with `dig +norec` against
+  `pixel/byte.dns-parking.com` (compare the SOA serials), not the panel. A managed cert that hit
+  `FAILED_NOT_VISIBLE` meanwhile needs REPLACING (new cert → swap on the proxy → delete the old) (GCP-05).
+- The repository is PUBLIC: anything in it (the dev seed password included) is public. Never seed an
+  internet-facing environment with it — `seed-guard.ts` enforces this (GCP-06).
 - `minio/minio` no longer exists on Docker Hub ("repository does not exist") or Quay (401) —
   it only runs where it is cached. CI uses `bitnamilegacy/minio@sha256:451fe68…` (GCP-04).
 - Build a Redis connection from the WHOLE `REDIS_URL` — the queue's host+port copy dropped the
