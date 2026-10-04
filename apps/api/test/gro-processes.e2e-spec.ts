@@ -22,7 +22,7 @@ describe('GRO — GroProcessesService (GRO-01)', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = moduleRef.createNestApplication();
-    await app.init();
+    await app.listen(0, '127.0.0.1');
     gro = app.get(GroProcessesService);
     owner = new PrismaClient({
       adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL ?? '' }),

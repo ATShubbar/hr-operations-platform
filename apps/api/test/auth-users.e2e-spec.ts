@@ -17,7 +17,7 @@ describe('Auth users (AUTH-01, e2e)', () => {
       imports: [AppModule],
     }).compile();
     app = moduleRef.createNestApplication();
-    await app.init();
+    await app.listen(0, '127.0.0.1');
     users = app.get(UsersService);
     prisma = app.get(PrismaService);
     await prisma.authUser.deleteMany({ where: { email: { startsWith: 'auth01-' } } });

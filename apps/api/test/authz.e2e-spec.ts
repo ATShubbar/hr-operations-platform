@@ -27,7 +27,7 @@ describe('Deny-by-default authorization guard (e2e)', () => {
       imports: [AppModule, ForgotGuardModule],
     }).compile();
     app = moduleRef.createNestApplication();
-    await app.init();
+    await app.listen(0, '127.0.0.1');
     staff = await loginAsStaff(app);
   });
 

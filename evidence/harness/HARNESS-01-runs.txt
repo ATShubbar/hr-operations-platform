@@ -1,0 +1,36 @@
+== before
+run 1 exit=0 60s :: Tests  515 passed (515) :: 
+run 2 exit=1 61s :: Tests  515 passed (515) ::    2  Unhandled Rejection ;   1  Unhandled Errors ;
+run 3 exit=0 59s :: Tests  515 passed (515) :: 
+run 4 exit=0 61s :: Tests  515 passed (515) :: 
+run 5 exit=0 61s :: Tests  515 passed (515) :: 
+run 6 exit=0 61s :: Tests  515 passed (515) :: 
+run 7 exit=0 61s :: Tests  515 passed (515) :: 
+run 8 exit=1 60s :: Tests  515 passed (515) ::    2  Unhandled Rejection ;   1  Unhandled Errors ;
+run 9 exit=1 61s :: Tests  515 passed (515) ::    2  Unhandled Rejection ;   1  Unhandled Errors ;
+run 10 exit=0 59s :: Tests  515 passed (515) :: 
+DONE
+== after
+run 1 exit=1 58s :: Tests  1 failed | 514 passed (515) ::    1      → Parse Error: Expected HTTP/, RTSP/ or ICE/;   1 Error: Parse Error: Expected HTTP/, RTSP/ or ICE/;
+run 2 exit=0 59s :: Tests  515 passed (515) :: 
+run 3 exit=0 59s :: Tests  515 passed (515) :: 
+run 4 exit=0 59s :: Tests  515 passed (515) :: 
+run 5 exit=0 59s :: Tests  515 passed (515) :: 
+run 6 exit=1 59s :: Tests  1 failed | 514 passed (515) ::    1      → Parse Error: Expected HTTP/, RTSP/ or ICE/;   1 Error: Parse Error: Expected HTTP/, RTSP/ or ICE/;
+run 7 exit=0 59s :: Tests  515 passed (515) :: 
+run 8 exit=0 59s :: Tests  515 passed (515) :: 
+run 9 exit=1 59s :: Tests  515 passed (515) ::    1  Unhandled Rejection ;   1  Unhandled Errors ;
+run 10 exit=0 59s :: Tests  515 passed (515) :: 
+DONE
+== after2
+run 1 exit=0 59s :: Tests  517 passed (517) :: 
+run 2 exit=0 59s :: Tests  517 passed (517) :: 
+run 3 exit=0 59s :: Tests  517 passed (517) :: 
+run 4 exit=0 60s :: Tests  517 passed (517) :: 
+run 5 exit=0 59s :: Tests  517 passed (517) :: 
+run 6 exit=0 59s :: Tests  517 passed (517) :: 
+run 7 exit=0 59s :: Tests  517 passed (517) :: 
+run 8 exit=0 59s :: Tests  517 passed (517) :: 
+run 9 exit=0 59s :: Tests  517 passed (517) :: 
+run 10 exit=0 59s :: Tests  517 passed (517) :: 
+DONE

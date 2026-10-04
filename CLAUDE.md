@@ -1162,6 +1162,18 @@ labelled **"Integrations"** for someone who holds only `integration.google-calen
 officers), "System" for the Administrator; `?tab=system|prefs` presets. `/integrations` → `/settings
 ?tab=system`. The staff nav is exactly the prototype's Workspace + Saved views. Found (GCAL-04,
 pre-existing): invitation times convert in the BROWSER's timezone, not the chosen one. No API change.
+**HARNESS-01 done — the API suite no longer lies.** Two flakes, both measured (3/10 runs red → 0/10,
+517/517). (1) **The test HTTP client was answered by OTHER PROGRAMS**: with `app.init()` supertest
+re-binds the app on port 0 with NO host (IPv6 wildcard) per request; macOS allows that while another
+process holds `127.0.0.1:<port>`, and the connect to 127.0.0.1 goes to THAT process — a test captured
+an SSH banner (`SSH-2.0-OpenSSH…`) as its "HTTP response". This was REP-04's 200-to-anonymous and SS-07's
+false fence failure; REP-04's "63 workers" theory was wrong (files run one at a time). Fix: every spec
+does `await app.listen(0, '127.0.0.1')`; `test/harness-listen.e2e-spec.ts` enforces it. (2) **BullMQ
+5.80 crashes when a queue is closed while connecting** (init's `.catch(emit('error'))` fires after
+close() removed all listeners → unhandled "Connection is closed."): `QueueShutdownGuard` in QueueModule
+waits in `beforeApplicationShutdown` for EVERY queue (via DiscoveryService — NotificationsModule has its
+own `dispatch` instance) to finish connecting. Red-guard proof: an unsafe employee grant still fails
+the fence + matrix specs.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
@@ -1233,7 +1245,10 @@ pre-existing): invitation times convert in the BROWSER's timezone, not the chose
 - Closing a dialog inside a `<Link>`'s onClick CANCELS the navigation — `next/link` runs
   `startTransition(() => router.push())` and the close unmounts the subtree owning that
   transition. Close on pathname change instead (UX-05).
-- BullMQ (NOTIF-01): the connection needs `maxRetriesPerRequest: null`. A Worker holds a blocking Redis connection whose teardown emits a benign "Connection is closed" unhandled rejection in EVERY app-creating spec → suite exit 1. Fix in place: producer (`QueueModule` in `AppModule`) is split from the worker (`DispatchWorkerModule`), which runs only in `MainModule` (main.ts) + the queue e2e. Keep workers out of `AppModule`.
+- e2e apps MUST `await app.listen(0, '127.0.0.1')`, never `app.init()` — supertest otherwise re-binds per
+  request on the IPv6 wildcard and can be answered by ANOTHER program holding that port on 127.0.0.1
+  (HARNESS-01: an SSH banner came back as an HTTP response). A scan spec enforces it.
+- BullMQ (NOTIF-01): the connection needs `maxRetriesPerRequest: null`. A Worker holds a blocking Redis connection whose teardown emits a benign "Connection is closed" unhandled rejection in EVERY app-creating spec → suite exit 1. Fix in place: producer (`QueueModule` in `AppModule`) is split from the worker (`DispatchWorkerModule`), which runs only in `MainModule` (main.ts) + the queue e2e. Keep workers out of `AppModule`. Producer queues closed mid-connect ALSO crashed (HARNESS-01) — `QueueShutdownGuard` covers it; keep it.
 
 ## Commands
 

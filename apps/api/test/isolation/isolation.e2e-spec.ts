@@ -54,7 +54,7 @@ describe('Cross-client isolation harness (e2e)', () => {
       imports: [AppModule],
     }).compile();
     app = moduleRef.createNestApplication();
-    await app.init();
+    await app.listen(0, '127.0.0.1');
     prisma = app.get(PrismaService);
     repA = await loginAsClientRep(app, CLIENT_A);
     repB = await loginAsClientRep(app, CLIENT_B);

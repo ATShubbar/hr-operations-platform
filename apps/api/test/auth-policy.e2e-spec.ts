@@ -25,7 +25,7 @@ describe('Policy service + permission catalog (AUTH-04, e2e)', () => {
       imports: [AppModule],
     }).compile();
     app = moduleRef.createNestApplication();
-    await app.init();
+    await app.listen(0, '127.0.0.1');
     staff = await loginAsStaff(app, 'hr_officer');
     rep = await loginAsClientRep(app, CLIENT_A, 'client_manager');
   });

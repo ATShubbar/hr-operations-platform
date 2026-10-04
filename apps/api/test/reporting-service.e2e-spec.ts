@@ -51,7 +51,7 @@ describe('Reporting — ReportingService (REP-01)', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = moduleRef.createNestApplication();
-    await app.init();
+    await app.listen(0, '127.0.0.1');
     reporting = app.get(ReportingService);
     db = new PrismaClient({
       adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL ?? '' }),

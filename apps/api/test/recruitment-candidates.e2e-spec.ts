@@ -23,7 +23,7 @@ describe('Recruitment — CandidatesService (REC-03)', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = moduleRef.createNestApplication();
-    await app.init();
+    await app.listen(0, '127.0.0.1');
     candidates = app.get(CandidatesService);
     vacancies = app.get(VacanciesService);
     owner = new PrismaClient({

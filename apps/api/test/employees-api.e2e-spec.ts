@@ -56,7 +56,7 @@ describe('Employees API — field-level authorization (EMP-02, e2e)', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = moduleRef.createNestApplication();
-    await app.init();
+    await app.listen(0, '127.0.0.1');
     owner = new PrismaClient({
       adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL ?? '' }),
     });

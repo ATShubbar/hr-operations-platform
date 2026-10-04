@@ -23,7 +23,7 @@ describe('BullMQ dispatch infra (NOTIF-01, e2e)', () => {
     }).compile();
     app = moduleRef.createNestApplication();
     app.enableShutdownHooks();
-    await app.init();
+    await app.listen(0, '127.0.0.1');
     queue = app.get<Queue>(getQueueToken(DISPATCH_QUEUE));
     await queue.drain(); // clear any stale jobs from prior runs
   });

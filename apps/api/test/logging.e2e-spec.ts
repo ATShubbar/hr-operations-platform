@@ -30,7 +30,7 @@ describe('Request context + structured logging (e2e)', () => {
     }).compile();
     app = moduleRef.createNestApplication({ logger: new JsonLogger() });
     app.useLogger(new JsonLogger());
-    await app.init();
+    await app.listen(0, '127.0.0.1');
     staff = await loginAsStaff(app);
   });
 

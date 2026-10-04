@@ -49,7 +49,7 @@ describe('My requests — employee self-service (SS-05, e2e)', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = moduleRef.createNestApplication();
-    await app.init();
+    await app.listen(0, '127.0.0.1');
     prisma = app.get(PrismaService);
     empDb = new PrismaClient({
       adapter: new PrismaPg({ connectionString: process.env.EMPLOYEE_DATABASE_URL ?? '' }),

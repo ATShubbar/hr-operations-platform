@@ -69,7 +69,7 @@ describe('Document-expiry schedule + trigger (EXP-02, e2e)', () => {
     }).compile();
     app = moduleRef.createNestApplication();
     app.enableShutdownHooks();
-    await app.init();
+    await app.listen(0, '127.0.0.1');
     owner = new PrismaClient({
       adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL ?? '' }),
     });

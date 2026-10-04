@@ -36,7 +36,7 @@ describe('Recruitment — CandidateHired → Employees (REC-05, e2e)', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
     app = moduleRef.createNestApplication();
-    await app.init();
+    await app.listen(0, '127.0.0.1');
     http = app.getHttpServer();
     candidates = app.get(CandidatesService);
     vacancies = app.get(VacanciesService);

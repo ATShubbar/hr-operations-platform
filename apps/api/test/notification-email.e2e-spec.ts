@@ -44,7 +44,7 @@ describe('Notification email dispatch (NOTIF-03, e2e)', () => {
       imports: [AppModule, NotificationsWorkerModule],
     }).compile();
     app = moduleRef.createNestApplication();
-    await app.init();
+    await app.listen(0, '127.0.0.1');
     owner = new PrismaClient({
       adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL ?? '' }),
     });
