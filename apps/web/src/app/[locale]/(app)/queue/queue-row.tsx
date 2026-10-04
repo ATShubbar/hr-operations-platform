@@ -10,7 +10,7 @@ import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { DueCell, GroResolve } from '@/components/gro-work-list';
-import { useQueueActions, type QueueItem } from './queue-actions';
+import { REQUEST_ASSIGNEE_ROLES, useQueueActions, type QueueItem } from './queue-actions';
 
 // One Work queue row (DS-12): icon, title + reference, "who · client · status",
 // due (with Hijri), the assignee, Snooze and Resolve — the prototype's row. The
@@ -39,7 +39,7 @@ export function QueueRow({
   const t = useTranslations('queue');
   const tr = useTranslations('roles');
   const [assignOpen, setAssignOpen] = useState(false);
-  const { busy, error, canAssign, canSnooze, canTask, patch, snooze } = useQueueActions(
+  const { busy, error, canAssign, canSnooze, canTask, patch, assign, snooze } = useQueueActions(
     item,
     onChanged,
   );
@@ -117,40 +117,40 @@ export function QueueRow({
                 {t('assignHeading')}
               </p>
               <ul className="flex flex-col">
-                {staff.map((s) => {
-                  const on = s.id === item.assigneeUserId;
-                  return (
-                    <li key={s.id}>
-                      <button
-                        type="button"
-                        aria-pressed={on}
-                        onClick={() => {
-                          setAssignOpen(false);
-                          if (!on)
-                            void patch(
-                              { assigneeUserId: s.id },
-                              t('reassigned', { name: s.displayName ?? '' }),
-                            );
-                        }}
-                        className={cn(
-                          'flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-start hover:bg-muted focus-visible:bg-muted focus-visible:outline-none',
-                          on && 'bg-neutral-100',
-                        )}
-                      >
-                        <Avatar name={s.displayName} size="md" />
-                        <span className="flex min-w-0 grow flex-col gap-px">
-                          <span className="truncate text-[13px] leading-[17px] font-medium">
-                            {s.displayName ?? s.id.slice(0, 8)}
+                {staff
+                  // REQ-05: a request goes only to the roles that work on requests.
+                  .filter((s) => item.kind !== 'request' || REQUEST_ASSIGNEE_ROLES.has(s.role))
+                  .map((s) => {
+                    const on = s.id === item.assigneeUserId;
+                    return (
+                      <li key={s.id}>
+                        <button
+                          type="button"
+                          aria-pressed={on}
+                          onClick={() => {
+                            setAssignOpen(false);
+                            if (!on)
+                              void assign(s.id, t('reassigned', { name: s.displayName ?? '' }));
+                          }}
+                          className={cn(
+                            'flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-start hover:bg-muted focus-visible:bg-muted focus-visible:outline-none',
+                            on && 'bg-neutral-100',
+                          )}
+                        >
+                          <Avatar name={s.displayName} size="md" />
+                          <span className="flex min-w-0 grow flex-col gap-px">
+                            <span className="truncate text-[13px] leading-[17px] font-medium">
+                              {s.displayName ?? s.id.slice(0, 8)}
+                            </span>
+                            <span className="truncate text-[11px] leading-[15px] text-muted-foreground">
+                              {tr(s.role)}
+                            </span>
                           </span>
-                          <span className="truncate text-[11px] leading-[15px] text-muted-foreground">
-                            {tr(s.role)}
-                          </span>
-                        </span>
-                        {on && <Check className="size-3.5 shrink-0" aria-hidden />}
-                      </button>
-                    </li>
-                  );
-                })}
+                          {on && <Check className="size-3.5 shrink-0" aria-hidden />}
+                        </button>
+                      </li>
+                    );
+                  })}
               </ul>
             </PopoverContent>
           </Popover>

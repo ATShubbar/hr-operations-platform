@@ -617,7 +617,8 @@
       "update": "Details edited",
       "process": "Status or assignment changed",
       "ask-info": "Asked for more detail",
-      "info-returned": "Returned by the requester's reply"
+      "info-returned": "Returned by the requester's reply",
+      "assign": "Reassigned"
     },
     "trailBy": "{name} · {role}",
     "askTitle": "Ask for more detail",
@@ -635,7 +636,10 @@
     "sla": "{count, plural, one {Service level # working day} other {Service level # working days}}",
     "slaPaused": "Service level paused while waiting on the requester",
     "withTeam": "Being handled by PEOPLE&GRO",
-    "withTeamSub": "The team has it in hand. Updates and questions appear on this page."
+    "withTeamSub": "The team has it in hand. Updates and questions appear on this page.",
+    "reassign": "Reassign",
+    "reassignMenu": "Hand it to",
+    "reassigned": "Reassigned to {name}."
   },
   "tasks": {
     "saveError": "Could not save — check your permissions.",

@@ -67,3 +67,15 @@ export function buildRequestAttachmentContent(args: { title: string }): RequestC
     },
   };
 }
+
+// REQ-05: a request was handed to the reader (approve-and-assign or a
+// reassignment). The title is shown verbatim, as everywhere else.
+export function buildRequestAssignedContent(args: { title: string }): RequestContent {
+  return {
+    title: { ar: 'أُسند إليك طلب', en: 'A request was assigned to you' },
+    body: {
+      ar: `أصبح الطلب «${args.title}» مُسندًا إليك.`,
+      en: `"${args.title}" is now yours.`,
+    },
+  };
+}

@@ -82,6 +82,10 @@ export const processRequestRequestSchema = z
     path: ['note'],
   });
 
+// REQ-05: hand an approved request to someone else without moving its status.
+// Always a person — never "nobody".
+export const assignRequestRequestSchema = z.object({ assigneeUserId: z.uuid() }).strict();
+
 export const requestListResponseSchema = z.object({
   requests: z.array(requestResponseSchema),
 });

@@ -150,6 +150,8 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   // Processing (REQ-03) is STAFF-only (request.process; client reps lack it) and
   // cross-client — so 'staff', not a client-scoped class.
   'POST /requests/:id/process': 'staff',
+  // REQ-05: reassignment is staff-only and cross-client, like processing.
+  'POST /requests/:id/assign': 'staff',
   // Tasks (TASK-02): internal, STAFF-only (clients have no task access). The
   // matrix own/assigned scope is enforced in-handler (task.read-all), so 'staff'.
   'POST /tasks': 'staff',

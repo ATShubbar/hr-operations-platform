@@ -12,6 +12,7 @@ import {
   Query,
 } from '@nestjs/common';
 import {
+  assignRequestRequestSchema,
   createRequestCommentSchema,
   createRequestRequestSchema,
   processRequestRequestSchema,
@@ -187,6 +188,22 @@ export class RequestsController {
   // Advance the workflow (REQ-03) — STAFF only (client reps lack request.process),
   // cross-client. Validates the transition (illegal → 400) and notifies the
   // creator via a domain event. Not a client-rep path.
+  // REQ-05: hand an approved request to someone else without moving its status.
+  // Staff only (request.process; client managers lack it, and scopeOf refuses
+  // anyone but staff first).
+  @RequirePermission('request.process')
+  @Post(':id/assign')
+  @HttpCode(200)
+  async assign(@Param('id') id: string, @Body() body: unknown): Promise<RequestResponse> {
+    if (scopeOf(requestContext.get()).kind !== 'staff') throw new ForbiddenException('Staff only');
+    if (!UUID_RE.test(id)) throw new NotFoundException('Request not found');
+    const parsed = assignRequestRequestSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException('Choose who the request is assigned to');
+    const row = await this.requests.assign(id, parsed.data.assigneeUserId);
+    if (!row) throw new NotFoundException('Request not found');
+    return this.respondOne(row);
+  }
+
   @RequirePermission('request.process')
   @Post(':id/process')
   @HttpCode(200)

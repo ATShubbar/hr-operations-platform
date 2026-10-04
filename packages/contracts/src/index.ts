@@ -177,6 +177,7 @@ export {
   createRequestRequestSchema,
   updateRequestRequestSchema,
   processRequestRequestSchema,
+  assignRequestRequestSchema,
   requestListResponseSchema,
   requestQuerySchema,
   type RequestType,

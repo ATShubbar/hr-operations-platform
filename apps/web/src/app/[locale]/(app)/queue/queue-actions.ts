@@ -12,9 +12,10 @@ import { toastSuccess } from '@/components/ui/toast';
 // by the row and the work-item dialog (DS-13), so the two can't disagree about
 // who may do what.
 //
-// - Assign: procedures (gro.process) and tasks (task.update). A request's
-//   assignee only moves together with its status (REQ-03 `process`; REQ-05 is
-//   the follow-up), so requests are not reassigned here.
+// - Assign: procedures (gro.process), tasks (task.update) and — REQ-05 —
+//   APPROVED requests (request.process; in progress or info needed), through
+//   their own route (POST /requests/:id/assign), only to the roles that work on
+//   requests. Never to nobody.
 // - Snooze (owner decision, DS-12): moves the REAL due date seven days later,
 //   through each kind's own update — audited, never a view-only hide.
 
@@ -44,6 +45,14 @@ export interface QueueItem {
   searchText: string[];
 }
 
+// REQ-05: who a request can be handed to — the roles holding request.process
+// (the server checks the same rule and refuses anyone else).
+export const REQUEST_ASSIGNEE_ROLES: ReadonlySet<string> = new Set([
+  'administrator',
+  'hr_officer',
+  'gro_officer',
+]);
+
 const ENDPOINT: Record<QueueKind, string> = {
   procedure: '/gro-processes',
   request: '/requests',
@@ -64,10 +73,16 @@ export function useQueueActions(item: QueueItem, onChanged: () => Promise<void> 
   const canGro = useCan('gro.process');
   const canTask = useCan('task.update');
   const canRequestUpdate = useCan('request.update');
+  const canRequestProcess = useCan('request.process');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
-  const canAssign = (item.kind === 'procedure' && canGro) || (item.kind === 'task' && canTask);
+  const requestApproved =
+    item.request?.status === 'in_progress' || item.request?.status === 'info_needed';
+  const canAssign =
+    (item.kind === 'procedure' && canGro) ||
+    (item.kind === 'task' && canTask) ||
+    (item.kind === 'request' && canRequestProcess && requestApproved);
   const canSnooze =
     item.due !== null &&
     ((item.kind === 'procedure' && canGro) ||
@@ -88,14 +103,28 @@ export function useQueueActions(item: QueueItem, onChanged: () => Promise<void> 
     return `${d.getUTCDate()} ${month} ${d.getUTCFullYear()}`;
   };
 
-  async function patch(body: Record<string, unknown>, toast: string): Promise<boolean> {
+  function patch(body: Record<string, unknown>, toast: string): Promise<boolean> {
+    return send('PATCH', `${ENDPOINT[item.kind]}/${item.id}`, body, toast);
+  }
+
+  // Hand the item to someone: a request through its own route (REQ-05 — its
+  // status stays), procedures and tasks through their update.
+  function assign(userId: string, toast: string): Promise<boolean> {
+    return item.kind === 'request'
+      ? send('POST', `/requests/${item.id}/assign`, { assigneeUserId: userId }, toast)
+      : patch({ assigneeUserId: userId }, toast);
+  }
+
+  async function send(
+    method: 'PATCH' | 'POST',
+    path: string,
+    body: Record<string, unknown>,
+    toast: string,
+  ): Promise<boolean> {
     setBusy(true);
     setError('');
     try {
-      await apiFetch(`${ENDPOINT[item.kind]}/${item.id}`, {
-        method: 'PATCH',
-        body: JSON.stringify(body),
-      });
+      await apiFetch(path, { method, body: JSON.stringify(body) });
       await onChanged();
       toastSuccess(toast);
       return true;
@@ -117,5 +146,5 @@ export function useQueueActions(item: QueueItem, onChanged: () => Promise<void> 
     return patch({ dueDate: next }, t('snoozed', { date: day(next) }));
   };
 
-  return { busy, error, canAssign, canSnooze, canTask, patch, snooze, day };
+  return { busy, error, canAssign, canSnooze, canTask, patch, assign, snooze, day };
 }

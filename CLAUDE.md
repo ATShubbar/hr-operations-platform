@@ -1340,6 +1340,12 @@ rule as `StorageService`); two sample request attachments too. `seedStorageFor(e
 default, but on UAT every `STORAGE_*` must be supplied or the seed refuses. CI now starts MinIO BEFORE seeding.
 `uat-seed.yml` passes the bucket settings from `uat-env.yaml` + the two storage secrets — owner-approved grant:
 `uat-seed` may read `uat-storage-access-key`/`-secret-key`. Smoke checks a seeded document + attachment download.
+**REQ-05 done — reassign an approved request without moving its status.** `POST /requests/:id/assign` (`request.process`,
+staff; in_progress/info_needed only; never null; audited `assign`, trail "Reassigned"). The assignee must be an ACTIVE
+STAFF account whose role holds `request.process` — checked on `assign` AND `process` (which used to take any id).
+`RequestAssignedEvent` tells the new assignee (also on Approve and assign), never when you take it yourself. Web: the
+queue row's picker covers approved requests (eligible roles only), the request detail has Reassign. API **654/654**.
+Follow-up ASSIGN-01: tasks/procedures don't validate assignees either.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

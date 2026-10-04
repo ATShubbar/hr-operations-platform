@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { PolicyService, UsersService } from '../../auth/public-api';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { EmployeeScopedPrismaService } from '../../../prisma/employee-scoped-prisma.service';
 import { ScopedPrismaService } from '../../../prisma/scoped-prisma.service';
@@ -12,6 +13,7 @@ import type {
   ProcessRequestInput,
   UpdateRequestInput,
 } from '../domain/request';
+import { RequestAssignedEvent } from '../domain/request-assigned.event';
 import { RequestCreatedEvent } from '../domain/request-created.event';
 import { RequestStatusChangedEvent } from '../domain/request-status-changed.event';
 import { canTransition } from '../domain/status-workflow';
@@ -34,7 +36,70 @@ export class RequestsService {
     private readonly events: EventBus,
     private readonly employeeDb: EmployeeScopedPrismaService,
     private readonly sla: ServiceLevelService,
+    private readonly users: UsersService,
+    private readonly policy: PolicyService,
   ) {}
+
+  // REQ-05: a request is handed only to a person who works on requests — an
+  // ACTIVE STAFF account whose role holds request.process (today Administrator,
+  // HR officer, GRO officer). Not a client manager, an employee, the Auditor, a
+  // disabled account or an unknown id. Used by `process` and `assign` alike.
+  private async assertAssignable(userId: string): Promise<void> {
+    const user = await this.users.findById(userId);
+    const ok =
+      !!user &&
+      user.principalType === 'staff' &&
+      user.status === 'active' &&
+      this.policy.can(user.role, 'request.process');
+    if (!ok) throw new BadRequestException('A request can only be assigned to someone who works on requests');
+  }
+
+  /**
+   * REQ-05: hand an APPROVED request (in progress / info needed) to someone else
+   * without moving its status. null when the request doesn't exist; 400 for an
+   * open or finished request, or an assignee who doesn't work on requests.
+   */
+  async assign(id: string, assigneeUserId: string): Promise<RequestRecord | null> {
+    await this.assertAssignable(assigneeUserId);
+    const result = await this.prisma.$transaction(async (tx) => {
+      const before = await tx.request.findUnique({ where: { id } });
+      if (!before) return null;
+      if (before.status !== 'in_progress' && before.status !== 'info_needed') {
+        throw new BadRequestException(
+          before.status === 'open'
+            ? 'An open request is assigned when it is approved'
+            : `A ${before.status} request is not reassigned`,
+        );
+      }
+      const row = await tx.request.update({ where: { id }, data: { assigneeUserId } });
+      await this.audit.record(tx, {
+        resource: 'request',
+        resourceId: row.id,
+        action: 'assign',
+        clientId: row.clientId,
+        before: { assigneeUserId: before.assigneeUserId ?? null },
+        after: { assigneeUserId },
+      });
+      return { before, row };
+    });
+    if (!result) return null;
+    if (result.before.assigneeUserId !== assigneeUserId) await this.publishAssigned(result.row);
+    return result.row;
+  }
+
+  private async publishAssigned(row: RequestRecord): Promise<void> {
+    if (!row.assigneeUserId) return;
+    await this.events.publish(
+      new RequestAssignedEvent(
+        row.id,
+        row.clientId,
+        row.title,
+        row.assigneeUserId,
+        requestContext.get()?.actorId ?? null,
+        requestContext.get()?.requestId ?? null,
+      ),
+    );
+  }
 
   // ---- Employee self-service path (SS-05, ADR-011) --------------------------
   // A THIRD data path: app_employee, fenced to one employee by RLS. The request
@@ -166,6 +231,8 @@ export class RequestsService {
   // stays decoupled from Notifications, ADR-004). Returns null if not found;
   // throws 400 on an illegal transition.
   async process(id: string, input: ProcessRequestInput): Promise<RequestRecord | null> {
+    // REQ-05: the assignee must be someone who works on requests (it used to be any id).
+    if (input.assigneeUserId) await this.assertAssignable(input.assigneeUserId);
     const result = await this.prisma.$transaction(async (tx) => {
       const before = await tx.request.findUnique({ where: { id } });
       if (!before) return null;
@@ -241,6 +308,10 @@ export class RequestsService {
         requestContext.get()?.requestId ?? null,
       ),
     );
+    // REQ-05: "Approve and assign" hands it to someone too — tell them.
+    if (result.row.assigneeUserId && result.row.assigneeUserId !== result.before.assigneeUserId) {
+      await this.publishAssigned(result.row);
+    }
     return result.row;
   }
 

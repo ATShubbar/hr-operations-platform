@@ -170,11 +170,33 @@ export default function RequestsPage() {
   // ---- decisions ----
   const [approveOpen, setApproveOpen] = useState(false);
   const [askOpen, setAskOpen] = useState(false);
+  const [reassignOpen, setReassignOpen] = useState(false);
   const [deciding, setDeciding] = useState(false);
   const [decideError, setDecideError] = useState('');
   const [trailKey, setTrailKey] = useState(0);
   // Re-mounts the thread after asking — the note was posted to it server-side.
   const [threadKey, setThreadKey] = useState(0);
+
+  // REQ-05: hand an approved request to someone else — its status stays.
+  async function reassign(r: RequestResponse, assigneeUserId: string, name: string) {
+    setDeciding(true);
+    setDecideError('');
+    setReassignOpen(false);
+    try {
+      await apiFetch(`/requests/${r.id}/assign`, {
+        method: 'POST',
+        body: JSON.stringify({ assigneeUserId }),
+      });
+      await load(r.id);
+      setTrailKey((k) => k + 1);
+      toastSuccess(t('reassigned', { name }));
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
+      setDecideError(t('decideError'));
+    } finally {
+      setDeciding(false);
+    }
+  }
 
   async function process(
     r: RequestResponse,
@@ -500,6 +522,46 @@ export default function RequestsPage() {
                         })}
                       </span>
                     </span>
+                    {canProcess &&
+                      (req.status === 'in_progress' || req.status === 'info_needed') && (
+                        <Popover open={reassignOpen} onOpenChange={setReassignOpen}>
+                          <PopoverTrigger
+                            render={<Button variant="outline" size="sm" disabled={deciding} />}
+                          >
+                            {t('reassign')}
+                          </PopoverTrigger>
+                          <PopoverContent align="end" className="w-[292px] p-1">
+                            <p className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
+                              {t('reassignMenu')}
+                            </p>
+                            <ul>
+                              {staff
+                                .filter(
+                                  (u) => ASSIGNABLE.has(u.role) && u.id !== req.assigneeUserId,
+                                )
+                                .map((u) => (
+                                  <li key={u.id}>
+                                    <button
+                                      type="button"
+                                      onClick={() => void reassign(req, u.id, u.displayName ?? '')}
+                                      className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-start outline-none hover:bg-accent focus-visible:bg-accent"
+                                    >
+                                      <Avatar name={u.displayName} size="md" />
+                                      <span className="flex min-w-0 grow flex-col gap-px">
+                                        <span className="truncate text-[13px] leading-[17px] font-medium">
+                                          {u.displayName ?? u.id.slice(0, 8)}
+                                        </span>
+                                        <span className="truncate text-[11px] leading-[15px] text-muted-foreground">
+                                          {tr(u.role)}
+                                        </span>
+                                      </span>
+                                    </button>
+                                  </li>
+                                ))}
+                            </ul>
+                          </PopoverContent>
+                        </Popover>
+                      )}
                     <Button variant="outline" size="sm" onClick={() => router.push('/queue')}>
                       {t('openQueue')}
                     </Button>

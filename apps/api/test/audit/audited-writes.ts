@@ -67,6 +67,8 @@ export const AUDITED_WRITES: Record<string, string> = {
   'POST /requests/:id/comments': 'request-comment.create',
   'POST /me/requests/:id/comments': 'request-comment.create',
   // THREAD-02: files on the thread — create (pending), confirm (the check's verdict), remove (soft).
+  // REQ-05: reassign an approved request (staff; status unchanged).
+  'POST /requests/:id/assign': 'request.assign',
   'POST /requests/:id/attachments': 'request-attachment.create',
   'POST /requests/:id/attachments/:fileId/confirm': 'request-attachment.confirm',
   'DELETE /requests/:id/attachments/:fileId': 'request-attachment.remove',
