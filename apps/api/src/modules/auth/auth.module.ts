@@ -8,6 +8,7 @@ import { SessionMiddleware } from './api/session.middleware';
 import { PolicyService } from './application/policy.service';
 import { MfaService } from './application/mfa.service';
 import { StaffUsersService } from './application/staff-users.service';
+import { RolesController } from './api/roles.controller';
 import { StaffUsersController } from './api/staff-users.controller';
 import { AuditModule } from '../audit/public-api';
 
@@ -15,7 +16,7 @@ import { AuditModule } from '../audit/public-api';
   // AuditModule: staff-user mutations write their audit entry in the same
   // transaction (AUDIT-03), exactly as client-user management does.
   imports: [AuditModule],
-  controllers: [AuthController, StaffUsersController],
+  controllers: [AuthController, StaffUsersController, RolesController],
   providers: [
     UsersService,
     PasswordService,

@@ -98,7 +98,10 @@ export class UsersService {
   }
 
   updateEmail(id: string, email: string, tx?: Prisma.TransactionClient): Promise<AuthUser> {
-    return (tx ?? this.prisma).authUser.update({ where: { id }, data: { email: email.toLowerCase() } });
+    return (tx ?? this.prisma).authUser.update({
+      where: { id },
+      data: { email: email.toLowerCase() },
+    });
   }
 
   /**
@@ -187,6 +190,17 @@ export class UsersService {
     // scan forbids that shape — it is how data paths failed open).
     const KIND = { staff: 'staff', client_rep: 'client', employee: 'employee' } as const;
     return new Map(rows.map((r) => [r.id, { name: r.displayName, kind: KIND[r.principalType] }]));
+  }
+
+  // How many ACTIVE accounts hold each role (DS-19, the Roles and permissions
+  // screen). Invited and disabled accounts cannot sign in, so they do not count.
+  async activeCountsByRole(): Promise<Map<string, number>> {
+    const rows = await this.prisma.authUser.groupBy({
+      by: ['role'],
+      where: { status: 'active' },
+      _count: { _all: true },
+    });
+    return new Map(rows.map((r) => [r.role, r._count._all]));
   }
 
   findById(id: string): Promise<AuthUser | null> {

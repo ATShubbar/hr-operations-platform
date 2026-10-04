@@ -233,6 +233,7 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'POST /scope-check': 'client-write',
   // Staff users (UX-10b). NOT client-scoped — staff have no client_id, so there
   // is no scope key to isolate on; the permission is the whole gate.
+  'GET /roles': 'staff',
   'GET /staff-users': 'staff',
   'GET /staff-users/directory': 'staff',
   'GET /staff-users/:id': 'staff',

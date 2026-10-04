@@ -47,6 +47,16 @@ export {
   type StaffDirectoryResponse,
 } from './staff-user.js';
 export {
+  roleIdSchema,
+  roleKindSchema,
+  roleResponseSchema,
+  roleListResponseSchema,
+  type RoleId,
+  type RoleKind,
+  type RoleResponse,
+  type RoleListResponse,
+} from './role.js';
+export {
   genderSchema,
   employmentStatusSchema,
   contractTypeSchema,

@@ -1117,6 +1117,17 @@ counts by the ids the request ALREADY read on its own path, so a client's counts
 for staff). **Found + fixed:** a client manager could never raise a request — New request's company
 picker reads `/clients` (403 for them), so Create never enabled; for client reps the picker is gone
 and no clientId is sent (the API takes it from the session). API **507/507** ×2.
+**DS-19 done — Roles and permissions.** `/staff-users` is the prototype's screen: six role cards
+(accounts · Read/Write/Create/Delete/Granted counted from the REAL bundles; Edit/Delete/Add a role
+"soon" — editable roles stay LAST), tiles (6 roles · 24 resources · 186 granted), and the REAL
+read-only matrix (`staff-users/permission-matrix.tsx`: every action a resource has, dark when
+granted; the walking-skeleton `example`/`scope-check` capabilities hidden), then STAFF accounts
+(`accounts-table.tsx`: role menu with notes, ⋯ Edit name / Deactivate·Reactivate, own row locked,
+Add a user; client + employee accounts linked to where they're managed). **API: `GET /roles`**
+(`modules/auth/api/roles.controller.ts`, behind `staff-user.read`) returns `PERMISSIONS` +
+`ROLE_PERMISSIONS` as-is + ACTIVE account counts — no second copy of the matrix anywhere. Test
+imports must go through `modules/auth/public-api` (the boundary lint caught a deep import). API
+**511/511** ×2.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

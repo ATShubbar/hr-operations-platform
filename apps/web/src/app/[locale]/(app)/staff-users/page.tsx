@@ -1,22 +1,18 @@
 'use client';
 
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
+import { Ellipsis } from 'lucide-react';
 import type {
+  RoleListResponse,
   StaffUserListResponse,
   StaffUserResponse,
   StaffUserRole,
-  StaffUserStatus,
 } from '@hr/contracts';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useCan } from '@/lib/session';
-import { dualDate, type Locale } from '@/lib/employee-format';
-import { toneFor } from '@/lib/status-tone';
 import { Button } from '@/components/ui/button';
-import { DataTable } from '@/components/ui/data-table';
-import { LoadError, NoAccess } from '@/components/ui/load-state';
-import { StatusPill } from '@/components/ui/status-pill';
 import {
   Dialog,
   DialogContent,
@@ -26,6 +22,8 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { LoadError, NoAccess } from '@/components/ui/load-state';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -33,19 +31,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
+import { StatTile } from '@/components/ui/stat-tile';
+import { toastSuccess } from '@/components/ui/toast';
+import { AccountsTable, STAFF_ROLES } from './accounts-table';
+import { HIDDEN_RESOURCES, PermissionMatrix, resourcesOf } from './permission-matrix';
 
-// Staff directory (UX-10b). The management view — Administrator CRUD, Auditor
-// read-only, per the matrix row "System config & staff users" (v1.7).
+// Roles and permissions (DS-19) — the prototype's screen (ADR-012), replacing
+// UX-10b's staff directory at the same URL. Administrator manages, Auditor reads
+// (staff-user.read); everyone else gets the 403 state.
 //
-// The narrow `/staff-users/directory` endpoint is what Tasks and Audit use to
-// turn an id into a name; this screen is the other half, and it is gated on
-// `staff-user.read` so the Auditor sees the roster while an HR officer does
-// not. Write controls are gated separately, so the Auditor gets a directory
-// rather than a set of buttons that 403.
+// The roles and the matrix come from GET /roles, which is the API's own
+// ROLE_PERMISSIONS — no second copy here to drift. Editing roles (Add / Edit /
+// Delete role, toggling a square) is shown and marked "coming soon": the owner
+// put editable roles LAST, with safeguards. The accounts below are staff
+// accounts (owner decision); client and employee accounts are managed where
+// their rules live, and the note links there.
 
-// The four staff roles (ADR-013), in the prototype's order.
-const ROLES: readonly StaffUserRole[] = ['administrator', 'hr_officer', 'gro_officer', 'auditor'];
-const STATUSES: readonly StaffUserStatus[] = ['active', 'disabled'];
+// The four actions the role cards count, as the prototype does. `write` is the
+// config resource's name for update.
+const COUNTED = [
+  { key: 'read', actions: ['read'] },
+  { key: 'update', actions: ['update', 'write'] },
+  { key: 'create', actions: ['create'] },
+  { key: 'delete', actions: ['delete'] },
+] as const;
 
 interface CreateForm {
   email: string;
@@ -53,54 +63,51 @@ interface CreateForm {
   displayName: string;
   role: StaffUserRole;
 }
-
 const EMPTY: CreateForm = { email: '', password: '', displayName: '', role: 'hr_officer' };
 
-export default function StaffUsersPage() {
+const shown = (permission: string) => !HIDDEN_RESOURCES.has(permission.split('.')[0] ?? '');
+
+export default function RolesAndPermissionsPage() {
   const t = useTranslations('staffUsers');
-  const locale = useLocale() as Locale;
+  const tr = useTranslations('roles');
+  const ts = useTranslations('states');
   const router = useRouter();
   const canRead = useCan('staff-user.read');
   const canCreate = useCan('staff-user.create');
   const canUpdate = useCan('staff-user.update');
 
+  const [roles, setRoles] = useState<RoleListResponse | null>(null);
   const [users, setUsers] = useState<StaffUserResponse[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [forbidden, setForbidden] = useState(false);
+  const [menu, setMenu] = useState<string | null>(null);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [form, setForm] = useState<CreateForm>(EMPTY);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState('');
-
-  const [editTarget, setEditTarget] = useState<StaffUserResponse | null>(null);
-  const [editRole, setEditRole] = useState<StaffUserRole>('hr_officer');
-  const [editStatus, setEditStatus] = useState<StaffUserStatus>('active');
-  const [editName, setEditName] = useState('');
-  const [editError, setEditError] = useState('');
+  const [renameTarget, setRenameTarget] = useState<StaffUserResponse | null>(null);
+  const [renameValue, setRenameValue] = useState('');
 
   const load = useCallback(async () => {
-    setLoading(true);
     setError('');
     try {
-      const res = await apiFetch<StaffUserListResponse>('/staff-users');
-      setUsers(res.users);
+      const [r, u] = await Promise.all([
+        apiFetch<RoleListResponse>('/roles'),
+        apiFetch<StaffUserListResponse>('/staff-users'),
+      ]);
+      setRoles(r);
+      setUsers(u.users);
     } catch (err) {
-      if (err instanceof ApiError && err.status === 401) {
-        router.replace('/login');
-        return;
-      }
+      if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
       if (err instanceof ApiError && err.status === 403) setForbidden(true);
       else setError(t('error'));
-    } finally {
-      setLoading(false);
     }
   }, [router, t]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    if (canRead) void load();
+  }, [canRead, load]);
 
   async function submitCreate(e: FormEvent) {
     e.preventDefault();
@@ -127,141 +134,201 @@ export default function StaffUsersPage() {
     }
   }
 
-  function openEdit(u: StaffUserResponse) {
-    setEditTarget(u);
-    setEditRole(u.role);
-    setEditStatus(u.status);
-    setEditName(u.displayName ?? '');
-    setEditError('');
-  }
-
-  async function submitEdit(e: FormEvent) {
+  async function submitRename(e: FormEvent) {
     e.preventDefault();
-    if (!editTarget) return;
+    if (!renameTarget || !renameValue.trim()) return;
     setSaving(true);
-    setEditError('');
+    setFormError('');
     try {
-      await apiFetch(`/staff-users/${editTarget.id}`, {
+      await apiFetch(`/staff-users/${renameTarget.id}`, {
         method: 'PATCH',
-        body: JSON.stringify({
-          role: editRole,
-          status: editStatus,
-          ...(editName ? { displayName: editName } : {}),
-        }),
+        body: JSON.stringify({ displayName: renameValue.trim() }),
       });
-      setEditTarget(null);
+      setRenameTarget(null);
       await load();
+      toastSuccess(t('renamed'));
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
-      // The server refuses self-demotion and self-disabling (UX-10b); that 400
-      // belongs next to the control, not in the page banner.
-      setEditError(t('saveError'));
+      setFormError(t('actionError'));
     } finally {
       setSaving(false);
     }
   }
 
+  const header = (
+    <div className="flex flex-col gap-1">
+      <h1 className="text-2xl font-semibold">{t('title')}</h1>
+      <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
+    </div>
+  );
+
   if (forbidden || !canRead) {
     return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-semibold">{t('title')}</h1>
-          <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
-        </div>
+      <div className="flex max-w-[1360px] flex-col gap-4">
+        {header}
         <NoAccess capability="staff-user.read" />
       </div>
     );
   }
 
+  if (!roles) {
+    return (
+      <div className="flex max-w-[1360px] flex-col gap-4">
+        {header}
+        {error ? (
+          <LoadError message={error} onRetry={() => void load()} />
+        ) : (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-busy="true">
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <Skeleton key={i} className="h-[132px] rounded-xl" />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  const resources = resourcesOf(roles.permissions);
+  const grantedOf = (perms: readonly string[]) => perms.filter(shown).length;
+  const countOf = (perms: readonly string[], actions: readonly string[]) =>
+    perms.filter((p) => shown(p) && actions.includes(p.split('.')[1] ?? '')).length;
+  const totalGranted = roles.roles.reduce((n, r) => n + grantedOf(r.permissions), 0);
+  const disabled = users.filter((u) => u.status === 'disabled').length;
+
+  const soonItem = (label: string) => (
+    <li>
+      <button
+        type="button"
+        disabled
+        className="flex w-full items-center justify-between gap-2 rounded-md px-2.5 py-1.5 text-start text-[13px] leading-[18px] text-neutral-400"
+      >
+        {label}
+        <span className="text-[11px]">{ts('soon')}</span>
+      </button>
+    </li>
+  );
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">{t('title')}</h1>
-          <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
-        </div>
-        {canCreate && <Button onClick={() => setCreateOpen(true)}>{t('new')}</Button>}
+    <div className="flex max-w-[1360px] flex-col gap-4">
+      {header}
+
+      {error && <LoadError message={error} onRetry={() => void load()} hasContent />}
+
+      <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {roles.roles.map((r) => (
+          <li
+            key={r.id}
+            className="flex flex-col gap-3 rounded-xl bg-card p-4 ring-1 ring-foreground/10"
+          >
+            <div className="flex items-start gap-2">
+              <span className="flex min-w-0 grow flex-col gap-0.5">
+                <span className="font-heading text-lg leading-6 font-semibold">{tr(r.id)}</span>
+                <span className="text-[13px] leading-[18px] text-muted-foreground">
+                  {t('accountsCount', { count: r.accounts })} · {t(`note.${r.id}`)}
+                </span>
+              </span>
+              <Popover open={menu === r.id} onOpenChange={(o) => setMenu(o ? r.id : null)}>
+                <PopoverTrigger
+                  render={
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label={t('roleMenu', { role: tr(r.id) })}
+                    />
+                  }
+                >
+                  <Ellipsis />
+                </PopoverTrigger>
+                <PopoverContent className="w-56 p-1">
+                  <ul className="flex flex-col">
+                    {soonItem(t('editRole'))}
+                    {soonItem(t('deleteRole'))}
+                  </ul>
+                  <p className="px-2.5 pt-1 pb-1.5 text-[11px] leading-4 text-muted-foreground">
+                    {t('editingSoon')}
+                  </p>
+                </PopoverContent>
+              </Popover>
+            </div>
+            <dl className="grid grid-cols-5 gap-2 border-t pt-3">
+              {COUNTED.map((c) => (
+                <div key={c.key} className="flex flex-col gap-px">
+                  <dd className="order-1 font-mono text-[15px] leading-5 font-medium">
+                    {countOf(r.permissions, c.actions)}
+                  </dd>
+                  <dt className="order-2 text-[11px] leading-4 text-muted-foreground">
+                    {t(`count.${c.key}`)}
+                  </dt>
+                </div>
+              ))}
+              <div className="flex flex-col gap-px">
+                <dd className="order-1 font-mono text-[15px] leading-5 font-medium">
+                  {grantedOf(r.permissions)}
+                </dd>
+                <dt className="order-2 text-[11px] leading-4 text-muted-foreground">
+                  {t('granted')}
+                </dt>
+              </div>
+            </dl>
+          </li>
+        ))}
+        <li className="flex flex-col items-start justify-center gap-2 rounded-xl border border-dashed border-neutral-300 p-4">
+          <span className="text-[15px] leading-5 font-medium">{t('addRole')}</span>
+          <span className="text-[13px] leading-[18px] text-muted-foreground">
+            {t('addRoleHint')}
+          </span>
+          <Button variant="outline" size="sm" disabled aria-describedby="rp-add-soon">
+            {t('addRole')}
+            <span id="rp-add-soon" className="text-[11px] font-normal text-muted-foreground">
+              {ts('soon')}
+            </span>
+          </Button>
+        </li>
+      </ul>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <StatTile label={t('tile.roles')} value={roles.roles.length} />
+        <StatTile label={t('tile.resources')} value={resources.length} />
+        <StatTile label={t('tile.granted')} value={totalGranted} />
       </div>
 
-      {error && (
-        <LoadError message={error} onRetry={() => void load()} hasContent={users.length > 0} />
-      )}
+      <PermissionMatrix permissions={roles.permissions} roles={roles.roles} />
 
-      <DataTable
-        rows={users}
-        loading={loading}
-        rowKey={(u) => u.id}
-        searchPlaceholder={t('searchPlaceholder')}
-        initialSort={{ key: 'name', dir: 'asc' }}
-        emptyTitle={t('empty')}
-        columns={[
-          {
-            key: 'name',
-            header: t('colName'),
-            sortValue: (u) => u.displayName ?? u.email,
-            searchValues: (u) => [u.displayName, u.email],
-            cell: (u) => <span className="font-medium">{u.displayName ?? '—'}</span>,
-          },
-          {
-            key: 'email',
-            header: t('colEmail'),
-            sortValue: (u) => u.email,
-            // Latin address inside an RTL page (UX-08).
-            cell: (u) => (
-              <bdi dir="ltr" className="inline-block text-start text-sm text-muted-foreground">
-                {u.email}
-              </bdi>
-            ),
-          },
-          {
-            key: 'role',
-            header: t('colRole'),
-            sortValue: (u) => u.role,
-            cell: (u) => t(`role.${u.role}`),
-          },
-          {
-            key: 'status',
-            header: t('colStatus'),
-            sortValue: (u) => u.status,
-            cell: (u) => (
-              <StatusPill tone={toneFor('user', u.status)}>{t(`status.${u.status}`)}</StatusPill>
-            ),
-          },
-          {
-            key: 'mfa',
-            header: t('colMfa'),
-            sortValue: (u) => String(u.mfaEnrolled),
-            // Whether MFA is enrolled is operationally useful (admin roles are
-            // required to enrol) and carries no secret.
-            cell: (u) => (
-              <span className="text-sm text-muted-foreground">
-                {u.mfaEnrolled ? t('mfaOn') : t('mfaOff')}
-              </span>
-            ),
-          },
-          {
-            key: 'created',
-            header: t('colCreated'),
-            sortValue: (u) => u.createdAt,
-            cell: (u) => (
-              <span className="whitespace-nowrap text-sm text-muted-foreground">
-                {dualDate(u.createdAt, locale)}
-              </span>
-            ),
-          },
-        ]}
-        actions={
-          canUpdate
-            ? (u) => (
-                <div className="flex justify-end">
-                  <Button variant="outline" size="sm" onClick={() => openEdit(u)}>
-                    {t('edit')}
-                  </Button>
-                </div>
-              )
-            : undefined
-        }
-      />
+      <section aria-labelledby="rp-accounts" className="flex flex-col gap-3 pt-2">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
+          <div className="flex min-w-0 grow flex-col gap-0.5">
+            <h2 id="rp-accounts" className="text-base leading-6 font-medium">
+              {t('accounts')}
+            </h2>
+            <p className="text-[13px] leading-[18px] text-muted-foreground">
+              {t('accountsSummary', { total: users.length, disabled })}
+            </p>
+          </div>
+          {canCreate && (
+            <Button
+              size="sm"
+              className="self-start sm:self-auto"
+              onClick={() => {
+                setForm(EMPTY);
+                setFormError('');
+                setCreateOpen(true);
+              }}
+            >
+              {t('addUser')}
+            </Button>
+          )}
+        </div>
+        <AccountsTable
+          users={users}
+          canUpdate={canUpdate}
+          onChanged={load}
+          onRename={(u) => {
+            setRenameTarget(u);
+            setRenameValue(u.displayName ?? '');
+            setFormError('');
+          }}
+        />
+      </section>
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent>
@@ -304,20 +371,20 @@ export default function StaffUsersPage() {
               <p className="text-xs text-muted-foreground">{t('initialPasswordHint')}</p>
             </div>
             <div className="space-y-1.5">
-              <Label>{t('colRole')}</Label>
+              <Label htmlFor="su-role">{t('colRole')}</Label>
               <Select
                 value={form.role}
                 onValueChange={(v) =>
                   setForm({ ...form, role: (v as StaffUserRole) ?? 'hr_officer' })
                 }
               >
-                <SelectTrigger className="w-full">
-                  <SelectValue>{(v) => (v ? t(`role.${String(v)}`) : '')}</SelectValue>
+                <SelectTrigger id="su-role" className="w-full">
+                  <SelectValue>{(v) => (v ? tr(String(v)) : '')}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  {ROLES.map((r) => (
+                  {STAFF_ROLES.map((r) => (
                     <SelectItem key={r} value={r}>
-                      {t(`role.${r}`)}
+                      {tr(r)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -329,75 +396,38 @@ export default function StaffUsersPage() {
                 {t('cancel')}
               </Button>
               <Button type="submit" disabled={saving}>
-                {saving ? t('saving') : t('new')}
+                {saving ? t('saving') : t('addUser')}
               </Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
 
-      <Dialog open={editTarget !== null} onOpenChange={(o) => !o && setEditTarget(null)}>
+      <Dialog open={renameTarget !== null} onOpenChange={(o) => !o && setRenameTarget(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('editTitle')}</DialogTitle>
+            <DialogTitle>{t('renameTitle')}</DialogTitle>
           </DialogHeader>
-          {editTarget && (
-            <form onSubmit={submitEdit} className="space-y-4">
-              <div className="rounded-lg border bg-muted/30 px-3 py-2 text-sm">
-                <bdi dir="ltr" className="inline-block text-start">
-                  {editTarget.email}
-                </bdi>
-              </div>
+          {renameTarget && (
+            <form onSubmit={submitRename} className="space-y-4">
+              <bdi dir="ltr" className="block text-start text-sm text-muted-foreground">
+                {renameTarget.email}
+              </bdi>
               <div className="space-y-1.5">
-                <Label htmlFor="su-edit-name">{t('colName')}</Label>
+                <Label htmlFor="su-rename">{t('colName')}</Label>
                 <Input
-                  id="su-edit-name"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
+                  id="su-rename"
+                  value={renameValue}
+                  onChange={(e) => setRenameValue(e.target.value)}
+                  required
                 />
               </div>
-              <div className="space-y-1.5">
-                <Label>{t('colRole')}</Label>
-                <Select
-                  value={editRole}
-                  onValueChange={(v) => setEditRole((v as StaffUserRole) ?? 'hr_officer')}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue>{(v) => (v ? t(`role.${String(v)}`) : '')}</SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ROLES.map((r) => (
-                      <SelectItem key={r} value={r}>
-                        {t(`role.${r}`)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label>{t('colStatus')}</Label>
-                <Select
-                  value={editStatus}
-                  onValueChange={(v) => setEditStatus((v as StaffUserStatus) ?? 'active')}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue>{(v) => (v ? t(`status.${String(v)}`) : '')}</SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {STATUSES.map((st) => (
-                      <SelectItem key={st} value={st}>
-                        {t(`status.${st}`)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              {editError && <p className="text-sm text-destructive">{editError}</p>}
+              {formError && <p className="text-sm text-destructive">{formError}</p>}
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setEditTarget(null)}>
+                <Button type="button" variant="outline" onClick={() => setRenameTarget(null)}>
                   {t('cancel')}
                 </Button>
-                <Button type="submit" disabled={saving}>
+                <Button type="submit" disabled={saving || !renameValue.trim()}>
                   {saving ? t('saving') : t('save')}
                 </Button>
               </DialogFooter>
