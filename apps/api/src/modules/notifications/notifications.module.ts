@@ -9,6 +9,7 @@ import { DocumentExpiringHandler } from './application/document-expiring.handler
 import { RequestStatusHandler } from './application/request-status.handler';
 import { LeaveStatusHandler } from './application/leave-status.handler';
 import { RequestAssignedHandler } from './application/request-assigned.handler';
+import { TaskAssignedHandler } from './application/task-assigned.handler';
 import { RequestCommentHandler } from './application/request-comment.handler';
 import { AccountEmailService } from './application/account-email.service';
 import { captureEmailTransportProvider } from './infra/capture-email-transport';
@@ -30,6 +31,7 @@ import { captureEmailTransportProvider } from './infra/capture-email-transport';
     LeaveStatusHandler,
     RequestCommentHandler,
     RequestAssignedHandler,
+    TaskAssignedHandler,
     AccountEmailService,
     // ONE email transport for the process (SS-06a): the API path (account mail)
     // and the dispatch worker (notification mail) share this instance, so dev

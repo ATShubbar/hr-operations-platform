@@ -4,11 +4,13 @@ import { ScopedPrismaService } from '../../../prisma/scoped-prisma.service';
 import type { GroProcessModel as GroProcessRecord } from '../../../generated/prisma/models';
 import type { GroProcessStatus, Prisma } from '../../../generated/prisma/client';
 import { AuditService } from '../../audit/public-api';
+import { UsersService } from '../../auth/public-api';
+import { requestContext } from '../../../context/request-context';
 import { EmployeesService } from '../../employees/public-api';
 import { NotificationsService } from '../../notifications/public-api';
 import type { CreateGroProcessInput, UpdateGroProcessInput } from '../domain/gro-process';
 import { canTransition } from '../domain/gro-status-workflow';
-import { buildGroStatusContent, expiryFieldFor } from '../domain/gro-effects';
+import { buildGroAssignedContent, buildGroStatusContent, expiryFieldFor } from '../domain/gro-effects';
 
 // GRO government-process registry access (GRO-01/02). TWO data paths, both owned
 // here:
@@ -28,10 +30,34 @@ export class GroProcessesService {
     private readonly audit: AuditService,
     private readonly employees: EmployeesService,
     private readonly notifications: NotificationsService,
+    private readonly users: UsersService,
   ) {}
 
+  // ASSIGN-01: a procedure goes only to someone who can work procedures — Auth's
+  // shared rule (an active staff account holding gro.process). Clearing is fine.
+  private async assertAssignable(userId: string | null | undefined): Promise<void> {
+    if (userId && !(await this.users.isActiveStaffWith(userId, 'gro.process'))) {
+      throw new BadRequestException('A procedure can only be assigned to someone who works on procedures');
+    }
+  }
+
+  // Tell the new assignee (ASSIGN-01) — never when they took it themselves.
+  // Category `general`, like the procedure status notifications (GRO-03).
+  private async notifyAssigned(row: GroProcessRecord): Promise<void> {
+    if (!row.assigneeUserId || row.assigneeUserId === requestContext.get()?.actorId) return;
+    const content = buildGroAssignedContent(row.type);
+    await this.notifications.notify({
+      recipientUserId: row.assigneeUserId,
+      category: 'general',
+      title: content.title,
+      body: content.body,
+      data: { groProcessId: row.id, kind: 'assigned' },
+    });
+  }
+
   async create(input: CreateGroProcessInput): Promise<GroProcessRecord> {
-    return this.prisma.$transaction(async (tx) => {
+    await this.assertAssignable(input.assigneeUserId);
+    const created = await this.prisma.$transaction(async (tx) => {
       const row = await tx.groProcess.create({ data: toCreateData(input) });
       await this.audit.record(tx, {
         resource: 'gro-process',
@@ -42,6 +68,8 @@ export class GroProcessesService {
       });
       return row;
     });
+    await this.notifyAssigned(created);
+    return created;
   }
 
   list(filters?: { clientId?: string; employeeId?: string }): Promise<GroProcessRecord[]> {
@@ -66,7 +94,8 @@ export class GroProcessesService {
   }
 
   async update(id: string, data: UpdateGroProcessInput): Promise<GroProcessRecord | null> {
-    return this.prisma.$transaction(async (tx) => {
+    await this.assertAssignable(data.assigneeUserId);
+    const result = await this.prisma.$transaction(async (tx) => {
       const before = await tx.groProcess.findUnique({ where: { id } });
       if (!before) return null;
       const row = await tx.groProcess.update({ where: { id }, data: toUpdateData(data) });
@@ -78,8 +107,11 @@ export class GroProcessesService {
         before: snapshot(before),
         after: snapshot(row),
       });
-      return row;
+      return { before, row };
     });
+    if (!result) return null;
+    if (result.row.assigneeUserId !== result.before.assigneeUserId) await this.notifyAssigned(result.row);
+    return result.row;
   }
 
   // Advance a process's status (GRO-02), staff path. Validates the transition

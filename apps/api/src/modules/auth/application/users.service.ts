@@ -2,7 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import type { AuthUserModel as AuthUser } from '../../../generated/prisma/models';
 import type { Prisma } from '../../../generated/prisma/client';
-import type { ClientRole, StaffRole } from '../domain/permissions';
+import type { ClientRole, Permission, StaffRole } from '../domain/permissions';
+import { PolicyService } from './policy.service';
 import type {
   CreateClientRepUserInput,
   CreateEmployeeUserInput,
@@ -15,7 +16,27 @@ export type ClientRepStatus = 'active' | 'disabled';
 // system table with no app_client grants (see the auth_users migration).
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly policy: PolicyService,
+  ) {}
+
+  /**
+   * REQ-05 / ASSIGN-01 — who work can be handed to: an ACTIVE STAFF account whose
+   * role holds `permission` (request.process, task.update, gro.process — read
+   * from the catalog, never a second list). Not a client manager, an employee,
+   * the Auditor, a disabled account or an unknown id. One rule for every kind of
+   * work item, so they cannot drift.
+   */
+  async isActiveStaffWith(userId: string, permission: Permission): Promise<boolean> {
+    const user = await this.prisma.authUser.findUnique({ where: { id: userId } });
+    return (
+      !!user &&
+      user.principalType === 'staff' &&
+      user.status === 'active' &&
+      this.policy.can(user.role, permission)
+    );
+  }
 
   createStaffUser(input: CreateStaffUserInput): Promise<AuthUser> {
     return this.prisma.authUser.create({

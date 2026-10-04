@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { PolicyService, UsersService } from '../../auth/public-api';
+import { UsersService } from '../../auth/public-api';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { EmployeeScopedPrismaService } from '../../../prisma/employee-scoped-prisma.service';
 import { ScopedPrismaService } from '../../../prisma/scoped-prisma.service';
@@ -37,21 +37,14 @@ export class RequestsService {
     private readonly employeeDb: EmployeeScopedPrismaService,
     private readonly sla: ServiceLevelService,
     private readonly users: UsersService,
-    private readonly policy: PolicyService,
   ) {}
 
-  // REQ-05: a request is handed only to a person who works on requests — an
-  // ACTIVE STAFF account whose role holds request.process (today Administrator,
-  // HR officer, GRO officer). Not a client manager, an employee, the Auditor, a
-  // disabled account or an unknown id. Used by `process` and `assign` alike.
+  // REQ-05: a request is handed only to a person who works on requests (Auth's
+  // shared rule, `request.process`). Used by `process` and `assign` alike.
   private async assertAssignable(userId: string): Promise<void> {
-    const user = await this.users.findById(userId);
-    const ok =
-      !!user &&
-      user.principalType === 'staff' &&
-      user.status === 'active' &&
-      this.policy.can(user.role, 'request.process');
-    if (!ok) throw new BadRequestException('A request can only be assigned to someone who works on requests');
+    if (!(await this.users.isActiveStaffWith(userId, 'request.process'))) {
+      throw new BadRequestException('A request can only be assigned to someone who works on requests');
+    }
   }
 
   /**

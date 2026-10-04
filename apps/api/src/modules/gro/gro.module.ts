@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuditModule } from '../audit/public-api';
+import { AuthModule } from '../auth/public-api';
 import { EmployeesModule } from '../employees/public-api';
 import { NotificationsModule } from '../notifications/public-api';
 import { GroProcessesController } from './api/gro-processes.controller';
@@ -16,7 +17,7 @@ import { GroProcessesService } from './application/gro-processes.service';
 // to the document-expiry engine's event and auto-spawns a renewal process (5th
 // ADR-004 flow) — one-way (GRO imports only the event type; the bus is @Global).
 @Module({
-  imports: [AuditModule, EmployeesModule, NotificationsModule],
+  imports: [AuditModule, AuthModule, EmployeesModule, NotificationsModule],
   controllers: [GroProcessesController],
   providers: [GroProcessesService, DocumentExpiringHandler],
   exports: [GroProcessesService],

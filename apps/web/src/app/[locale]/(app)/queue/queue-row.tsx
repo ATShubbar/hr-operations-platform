@@ -10,7 +10,7 @@ import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { DueCell, GroResolve } from '@/components/gro-work-list';
-import { REQUEST_ASSIGNEE_ROLES, useQueueActions, type QueueItem } from './queue-actions';
+import { ASSIGNEE_ROLES, useQueueActions, type QueueItem } from './queue-actions';
 
 // One Work queue row (DS-12): icon, title + reference, "who · client · status",
 // due (with Hijri), the assignee, Snooze and Resolve — the prototype's row. The
@@ -118,8 +118,8 @@ export function QueueRow({
               </p>
               <ul className="flex flex-col">
                 {staff
-                  // REQ-05: a request goes only to the roles that work on requests.
-                  .filter((s) => item.kind !== 'request' || REQUEST_ASSIGNEE_ROLES.has(s.role))
+                  // REQ-05 / ASSIGN-01: only the roles that work this kind of item.
+                  .filter((s) => ASSIGNEE_ROLES.has(s.role))
                   .map((s) => {
                     const on = s.id === item.assigneeUserId;
                     return (

@@ -1345,7 +1345,13 @@ staff; in_progress/info_needed only; never null; audited `assign`, trail "Reassi
 STAFF account whose role holds `request.process` — checked on `assign` AND `process` (which used to take any id).
 `RequestAssignedEvent` tells the new assignee (also on Approve and assign), never when you take it yourself. Web: the
 queue row's picker covers approved requests (eligible roles only), the request detail has Reassign. API **654/654**.
-Follow-up ASSIGN-01: tasks/procedures don't validate assignees either.
+**ASSIGN-01 done — one assignee rule for every work item.** Auth `UsersService.isActiveStaffWith(userId, permission)`:
+an ACTIVE STAFF account whose role holds the kind's permission (request.process / task.update / gro.process — all three
+held by Administrator, HR officer, GRO officer today). Requests, tasks and procedures all call it (create + update;
+clearing to null still allowed for tasks/procedures). The person handed a task (`TaskAssignedEvent` → Notifications,
+category `task`) or a procedure (GRO notifies directly, category `general`) is told, never self, never on a re-save with
+the same assignee. The queue picker offers only `ASSIGNEE_ROLES`. API **658/658**. Follow-up TASK-05: a spawned task's
+due date is still a hard-coded 3 Sun–Thu working days (ignores the request's service level and `working.week`).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

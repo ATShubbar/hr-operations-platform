@@ -1,8 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { requestContext } from '../../../context/request-context';
 import { PrismaService } from '../../../prisma/prisma.service';
 import type { TaskModel as TaskRecord } from '../../../generated/prisma/models';
 import type { Prisma } from '../../../generated/prisma/client';
 import { AuditService } from '../../audit/public-api';
+import { UsersService } from '../../auth/public-api';
+import { EventBus } from '../../events/public-api';
+import { TaskAssignedEvent } from '../domain/task-assigned.event';
 import type { CreateTaskInput, UpdateTaskInput } from '../domain/task';
 
 // Tasks registry access (TASK-01). Staff path only (app_staff) — tasks are
@@ -15,10 +19,35 @@ export class TasksService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly users: UsersService,
+    private readonly events: EventBus,
   ) {}
 
-  create(input: CreateTaskInput): Promise<TaskRecord> {
-    return this.prisma.$transaction(async (tx) => {
+  // ASSIGN-01: a task goes only to someone who can work tasks — Auth's shared
+  // rule (an active staff account holding task.update). Clearing it is fine.
+  private async assertAssignable(userId: string | null | undefined): Promise<void> {
+    if (userId && !(await this.users.isActiveStaffWith(userId, 'task.update'))) {
+      throw new BadRequestException('A task can only be assigned to someone who works on tasks');
+    }
+  }
+
+  // Tell the new assignee (ASSIGN-01) — Notifications decides, and skips self.
+  private async publishAssigned(row: TaskRecord): Promise<void> {
+    if (!row.assigneeUserId) return;
+    await this.events.publish(
+      new TaskAssignedEvent(
+        row.id,
+        row.title,
+        row.assigneeUserId,
+        requestContext.get()?.actorId ?? null,
+        requestContext.get()?.requestId ?? null,
+      ),
+    );
+  }
+
+  async create(input: CreateTaskInput): Promise<TaskRecord> {
+    await this.assertAssignable(input.assigneeUserId);
+    const created = await this.prisma.$transaction(async (tx) => {
       const row = await tx.task.create({ data: toCreateData(input) });
       await this.audit.record(tx, {
         resource: 'task',
@@ -28,6 +57,8 @@ export class TasksService {
       });
       return row;
     });
+    await this.publishAssigned(created);
+    return created;
   }
 
   list(filters?: {
@@ -55,7 +86,8 @@ export class TasksService {
   }
 
   async update(id: string, data: UpdateTaskInput): Promise<TaskRecord | null> {
-    return this.prisma.$transaction(async (tx) => {
+    await this.assertAssignable(data.assigneeUserId);
+    const result = await this.prisma.$transaction(async (tx) => {
       const before = await tx.task.findUnique({ where: { id } });
       if (!before) return null;
       const row = await tx.task.update({ where: { id }, data: toUpdateData(data) });
@@ -66,8 +98,11 @@ export class TasksService {
         before: snapshot(before),
         after: snapshot(row),
       });
-      return row;
+      return { before, row };
     });
+    if (!result) return null;
+    if (result.row.assigneeUserId !== result.before.assigneeUserId) await this.publishAssigned(result.row);
+    return result.row;
   }
 
   async remove(id: string): Promise<TaskRecord | null> {

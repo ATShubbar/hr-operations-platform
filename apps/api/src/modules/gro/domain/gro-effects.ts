@@ -65,3 +65,17 @@ export function buildGroStatusContent(
     },
   };
 }
+
+// ASSIGN-01: a procedure was handed to the reader.
+export function buildGroAssignedContent(
+  type: GroProcessType,
+): { title: { ar: string; en: string }; body: { ar: string; en: string } } {
+  const tl = TYPE_LABEL[type];
+  return {
+    title: { ar: 'أُسندت إليك معاملة حكومية', en: 'A procedure was assigned to you' },
+    body: {
+      ar: `أصبحت معاملة «${tl.ar}» مُسندة إليك.`,
+      en: `The "${tl.en}" procedure is now yours.`,
+    },
+  };
+}

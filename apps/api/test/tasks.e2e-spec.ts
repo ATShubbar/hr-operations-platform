@@ -6,6 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AppModule } from '../src/app.module';
 import { PrismaClient } from '../src/generated/prisma/client';
 import { addWorkingDays, isWorkingDay, TasksService } from '../src/modules/tasks/public-api';
+import { cleanupHelperUsers, loginAsStaff } from './helpers/login';
 
 // TASK-01: the Tasks registry + service (staff path). Service-level (HTTP + the
 // own/assigned scope land in TASK-02) — proves create (audited, defaults), list
@@ -17,7 +18,9 @@ describe('Tasks service (TASK-01, e2e)', () => {
   let tasks: TasksService;
   const clientId = randomUUID();
   const alice = randomUUID();
-  const bob = randomUUID();
+  // ASSIGN-01: an assignee must be a real person who works tasks — bob is a
+  // real (helper) GRO officer, set up below; alice only creates, so any id does.
+  let bob = '';
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
@@ -27,11 +30,14 @@ describe('Tasks service (TASK-01, e2e)', () => {
       adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL ?? '' }),
     });
     tasks = app.get(TasksService);
+    bob = (await loginAsStaff(app, 'gro_officer')).userId;
   });
 
   afterAll(async () => {
     await owner.auditEntry.deleteMany({ where: { clientId, resource: 'task' } });
     await owner.task.deleteMany({ where: { clientId } });
+    await owner.notification.deleteMany({ where: { recipientUserId: bob } });
+    await cleanupHelperUsers(app);
     await owner.$disconnect();
     await app.close();
   });

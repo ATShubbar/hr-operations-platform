@@ -15,7 +15,7 @@ import { toastSuccess } from '@/components/ui/toast';
 // - Assign: procedures (gro.process), tasks (task.update) and — REQ-05 —
 //   APPROVED requests (request.process; in progress or info needed), through
 //   their own route (POST /requests/:id/assign), only to the roles that work on
-//   requests. Never to nobody.
+//   requests. Never to nobody. Every kind offers only ASSIGNEE_ROLES (ASSIGN-01).
 // - Snooze (owner decision, DS-12): moves the REAL due date seven days later,
 //   through each kind's own update — audited, never a view-only hide.
 
@@ -45,9 +45,11 @@ export interface QueueItem {
   searchText: string[];
 }
 
-// REQ-05: who a request can be handed to — the roles holding request.process
-// (the server checks the same rule and refuses anyone else).
-export const REQUEST_ASSIGNEE_ROLES: ReadonlySet<string> = new Set([
+// Who work can be handed to — the roles that work it: request.process,
+// task.update and gro.process are held by exactly these three today (REQ-05,
+// ASSIGN-01). The server checks each kind's own permission and refuses anyone
+// else; this only keeps the picker from offering people it would refuse.
+export const ASSIGNEE_ROLES: ReadonlySet<string> = new Set([
   'administrator',
   'hr_officer',
   'gro_officer',
