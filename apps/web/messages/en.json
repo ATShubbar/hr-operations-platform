@@ -60,9 +60,7 @@
     "auditLog": "Audit log",
     "settings": "Settings",
     "requests": "Requests",
-    "tasks": "Task history",
     "vacancies": "Vacancies",
-    "gro": "GRO",
     "calendar": "Calendar",
     "integrations": "Google Calendar",
     "portalCompany": "My company",
@@ -617,32 +615,8 @@
     "trailBy": "{name} · {role}"
   },
   "tasks": {
-    "title": "Task history",
-    "subtitle": "Finished and cancelled tasks. Open work is handled in the Work queue.",
-    "new": "New task",
-    "empty": "No tasks.",
-    "loading": "Loading…",
-    "error": "Could not load tasks.",
     "saveError": "Could not save — check your permissions.",
-    "colTitle": "Title",
-    "colClient": "Client",
-    "colStatus": "Status",
-    "colPriority": "Priority",
-    "colAssignee": "Assignee",
-    "colDue": "Due",
-    "colActions": "Actions",
-    "filterStatus": "Status",
-    "filterClient": "Client",
-    "filterAll": "All",
-    "apply": "Apply",
-    "clear": "Clear",
-    "edit": "Edit",
-    "editTitle": "Edit task",
-    "assignToMe": "Assign to me",
-    "assigned": "Assigned",
     "unassigned": "Unassigned",
-    "none": "—",
-    "fromRequest": "From request",
     "createTitle": "New task",
     "fieldClient": "Client (optional)",
     "selectClient": "No client",
@@ -653,7 +627,6 @@
     "fieldDue": "Due date",
     "save": "Create",
     "saving": "Saving…",
-    "submit": "Update",
     "cancel": "Cancel",
     "status": {
       "open": "Open",
@@ -665,9 +638,7 @@
       "low": "Low",
       "normal": "Normal",
       "high": "High"
-    },
-    "searchPlaceholder": "Search task or client…",
-    "filterFinished": "Finished"
+    }
   },
   "integrations": {
     "title": "Google Calendar invitations",
@@ -776,39 +747,6 @@
     }
   },
   "gro": {
-    "title": "GRO processes",
-    "subtitle": "Government procedures for employees, with Hijri deadlines.",
-    "new": "New process",
-    "filterClient": "Client",
-    "filterStatus": "Status",
-    "filterAll": "All",
-    "colEmployee": "Employee",
-    "colType": "Type",
-    "colStatus": "Status",
-    "colDue": "Due date",
-    "colReference": "Reference",
-    "colResultingExpiry": "Resulting expiry",
-    "colActions": "Actions",
-    "changeStatus": "Change status",
-    "terminal": "—",
-    "none": "—",
-    "empty": "No GRO processes to show.",
-    "error": "Something went wrong. Please try again.",
-    "saveError": "Could not save. Please try again.",
-    "createTitle": "New GRO process",
-    "fieldEmployee": "Employee",
-    "selectEmployee": "Select an employee",
-    "fieldType": "Type",
-    "fieldDue": "Due date",
-    "fieldReference": "Reference number",
-    "statusTitle": "Change status",
-    "fieldNextStatus": "New status",
-    "fieldResultingExpiry": "Resulting expiry",
-    "resultingExpiryHint": "On completion, this new expiry is written to the employee's government data.",
-    "cancel": "Cancel",
-    "save": "Create",
-    "saving": "Saving…",
-    "apply": "Apply",
     "type": {
       "iqama_issue": "Iqama issue",
       "iqama_renewal": "Iqama renewal",
@@ -827,8 +765,7 @@
       "rejected": "Rejected",
       "completed": "Completed",
       "cancelled": "Cancelled"
-    },
-    "searchPlaceholder": "Search employee, reference or type…"
+    }
   },
   "portal": {
     "loading": "Loading…",
@@ -1841,6 +1778,15 @@
       "procedure": "Government procedure",
       "request": "Request",
       "task": "Internal task"
-    }
+    },
+    "viewLabel": "Show",
+    "view": {
+      "open": "Open",
+      "finished": "Finished"
+    },
+    "summaryFinished": "{shown} of {total, plural, one {# finished item} other {# finished items}} · newest first",
+    "emptyFinishedTitle": "Nothing finished yet",
+    "emptyFinished": "Completed procedures, closed requests and done tasks will appear here.",
+    "factFinished": "Finished"
   }
 }

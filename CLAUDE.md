@@ -1150,6 +1150,12 @@ legal hold) + the prototype's records content still "soon". `/documents` → `/c
 `/overview` (redirect pages). **Run scan now → Settings → System** (`settings/expiry-scan.tsx`,
 `expiry.run`; System tab now also shows for it). Running the scan CHANGES data (alerts,
 notifications, GRO-05 auto-spawn) — snapshot counts first. No API change.
+**DS-22b done — the Work queue's Finished view.** `useQueueItems(sources, 'finished')` (procedures
+completed/cancelled, requests resolved/closed/cancelled, tasks done/cancelled; `finishedAt` = last
+update) + an Open/Finished switch, month groups, `queue/finished-row.tsx` (read-only). The
+work-item dialog is READ-ONLY for finished items (it had shown "19d over" on completed work and
+offered Snooze / the task editor — caught in verification). `/gro` → `/queue?view=finished&kind=
+procedure`, `/tasks` → `…&kind=task`. Only Google Calendar is left in "Other tools". No API change.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

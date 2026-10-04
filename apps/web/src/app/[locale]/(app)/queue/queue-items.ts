@@ -19,8 +19,21 @@ import type { QueueItem } from './queue-actions';
 // requests open or in progress, tasks open or in progress. Order: soonest due
 // first, no due date last; ties go to whichever was opened first — the
 // prototype's "by statutory deadline, then by how long the file has been open".
+//
+// Finished (DS-22b, the queue's history view, absorbing the GRO and Task
+// history screens): procedures completed / cancelled, requests resolved /
+// closed / cancelled, tasks done / cancelled — newest-finished first. Nothing
+// records WHEN work finished, so `finishedAt` is the last update (the DS-17
+// "cleared today" approximation).
+
+export type QueueView = 'open' | 'finished';
 
 const OPEN = new Set(['open', 'in_progress']);
+const DONE = {
+  procedure: new Set(['completed', 'cancelled']),
+  request: new Set(['resolved', 'closed', 'cancelled']),
+  task: new Set(['done', 'cancelled']),
+};
 
 export interface WorkSources {
   processes: readonly GroProcessResponse[];
@@ -30,13 +43,10 @@ export interface WorkSources {
   clients: readonly ClientResponse[];
 }
 
-export function useQueueItems({
-  processes,
-  requests,
-  tasks,
-  employees,
-  clients,
-}: WorkSources): QueueItem[] {
+export function useQueueItems(
+  { processes, requests, tasks, employees, clients }: WorkSources,
+  view: QueueView = 'open',
+): QueueItem[] {
   const tg = useTranslations('gro');
   const tr = useTranslations('requests');
   const tt = useTranslations('tasks');
@@ -54,7 +64,9 @@ export function useQueueItems({
     };
 
     const items: QueueItem[] = [];
-    for (const p of processes.filter((x) => GRO_ACTIVE.has(x.status))) {
+    for (const p of processes.filter((x) =>
+      view === 'open' ? GRO_ACTIVE.has(x.status) : DONE.procedure.has(x.status),
+    )) {
       const person = personOf(p.employeeId);
       items.push({
         kind: 'procedure',
@@ -69,13 +81,16 @@ export function useQueueItems({
         person,
         due: p.dueDate,
         createdAt: p.createdAt,
+        finishedAt: view === 'finished' ? p.updatedAt : null,
         assigneeUserId: p.assigneeUserId,
         recordHref: `/employees/${p.employeeId}`,
         gro: p,
         searchText: [tg(`type.${p.type}`), p.referenceNumber ?? '', person?.name ?? ''],
       });
     }
-    for (const q of requests.filter((x) => OPEN.has(x.status))) {
+    for (const q of requests.filter((x) =>
+      view === 'open' ? OPEN.has(x.status) : DONE.request.has(x.status),
+    )) {
       items.push({
         kind: 'request',
         id: q.id,
@@ -94,13 +109,16 @@ export function useQueueItems({
         person: q.requester?.name ? { name: q.requester.name, ar: null } : null,
         due: q.dueDate,
         createdAt: q.createdAt,
+        finishedAt: view === 'finished' ? q.updatedAt : null,
         assigneeUserId: q.assigneeUserId,
         recordHref: `/requests?r=${q.id}`,
         request: q,
         searchText: [q.title, q.requester?.name ?? '', q.id],
       });
     }
-    for (const k of tasks.filter((x) => OPEN.has(x.status))) {
+    for (const k of tasks.filter((x) =>
+      view === 'open' ? OPEN.has(x.status) : DONE.task.has(x.status),
+    )) {
       items.push({
         kind: 'task',
         id: k.id,
@@ -114,16 +132,20 @@ export function useQueueItems({
         person: null,
         due: k.dueDate,
         createdAt: k.createdAt,
+        finishedAt: view === 'finished' ? k.updatedAt : null,
         assigneeUserId: k.assigneeUserId,
         recordHref: null,
         task: k,
         searchText: [k.title],
       });
     }
+    if (view === 'finished') {
+      return items.sort((a, b) => (b.finishedAt ?? '').localeCompare(a.finishedAt ?? ''));
+    }
     return items.sort(
       (a, b) =>
         (a.due ?? '9999').localeCompare(b.due ?? '9999') || a.createdAt.localeCompare(b.createdAt),
     );
     // tg/tr/tt change with the locale, which is listed.
-  }, [processes, requests, tasks, employees, clients, locale]);
+  }, [processes, requests, tasks, employees, clients, locale, view]);
 }

@@ -37,8 +37,6 @@ const SCREENS: { href: string; key: string }[] = [
   { href: '/employees', key: 'people' },
   { href: '/requests', key: 'requests' },
   { href: '/queue', key: 'workQueue' },
-  { href: '/tasks', key: 'tasks' },
-  { href: '/gro', key: 'gro' },
   { href: '/calendar', key: 'calendar' },
   { href: '/integrations', key: 'integrations' },
   { href: '/hiring', key: 'hiring' },

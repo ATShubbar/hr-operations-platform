@@ -101,6 +101,9 @@ function Body({
   const tr = useTranslations('roles');
   const locale = useLocale() as Locale;
   const { busy, error, canSnooze, canTask, patch, snooze, day } = useQueueActions(item, onChanged);
+  // DS-22b: an item from the queue's Finished view is read-only here — no
+  // Snooze, no Resolve / Mark done, no task editor; it says when it finished.
+  const finished = item.finishedAt !== null;
   const who = staff.find((s) => s.id === item.assigneeUserId);
   const [status, setStatus] = useState(item.task?.status ?? 'open');
   const [priority, setPriority] = useState(item.task?.priority ?? 'normal');
@@ -160,14 +163,17 @@ function Body({
               <span className="flex flex-col gap-0.5">
                 <span className="flex flex-wrap items-center gap-1.5">
                   <span className="text-[13px] leading-[18px]">{day(item.due)}</span>
-                  <span
-                    className={cn(
-                      'inline-flex h-5 items-center rounded-full px-2 font-mono text-[11px] leading-5 whitespace-nowrap',
-                      chipClass(n),
-                    )}
-                  >
-                    {n < 0 ? tp('over', { n: Math.abs(n) }) : tp('left', { n })}
-                  </span>
+                  {/* A finished item is not overdue (DS-22b). */}
+                  {!finished && (
+                    <span
+                      className={cn(
+                        'inline-flex h-5 items-center rounded-full px-2 font-mono text-[11px] leading-5 whitespace-nowrap',
+                        chipClass(n),
+                      )}
+                    >
+                      {n < 0 ? tp('over', { n: Math.abs(n) }) : tp('left', { n })}
+                    </span>
+                  )}
                 </span>
                 <span className="text-[10px] leading-[14px] text-neutral-400">
                   {formatHijri(new Date(item.due), locale)}
@@ -177,6 +183,12 @@ function Body({
               <span className="text-[13px] leading-[18px] text-neutral-400">{t('noDue')}</span>
             ),
           )}
+          {finished &&
+            item.finishedAt &&
+            fact(
+              t('factFinished'),
+              <span className="text-[13px] leading-[18px]">{day(item.finishedAt)}</span>,
+            )}
         </div>
 
         <section aria-labelledby="wi-detail" className="flex flex-col gap-2">
@@ -217,7 +229,7 @@ function Body({
           </p>
         </section>
 
-        {item.task && canTask && (
+        {item.task && canTask && !finished && (
           <section aria-labelledby="wi-task" className="flex flex-col gap-2">
             <h3 id="wi-task" className="text-[13px] leading-[18px] font-medium">
               {t('editTask')}
@@ -302,7 +314,7 @@ function Body({
       </div>
 
       <DialogFooter className="items-center sm:justify-start">
-        {canSnooze && (
+        {canSnooze && !finished && (
           <Button variant="ghost" size="sm" disabled={busy} onClick={() => void snooze()}>
             {t('snoozeSeven')}
           </Button>
@@ -311,7 +323,13 @@ function Body({
         <Button variant="outline" size="sm" onClick={onClose}>
           {t('close')}
         </Button>
-        {item.kind === 'procedure' && g ? (
+        {finished ? (
+          item.kind === 'request' && item.recordHref ? (
+            <Button size="sm" nativeButton={false} render={<Link href={item.recordHref} />}>
+              {t('openRequest')}
+            </Button>
+          ) : null
+        ) : item.kind === 'procedure' && g ? (
           <GroResolve process={g} onChanged={onChanged} className="h-7 w-36 text-xs" />
         ) : item.kind === 'task' && canTask ? (
           <Button

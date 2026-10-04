@@ -7,12 +7,10 @@ import {
   CalendarCheck,
   CalendarDays,
   ChartColumn,
-  ClipboardList,
   FileText,
   History,
   IdCard,
   Inbox,
-  Landmark,
   LayoutGrid,
   LogOut,
   MessageSquare,
@@ -136,7 +134,6 @@ export function AppNav({
   const canRequests = useCan('request.read');
   const canTasks = useCan('task.read');
   const canVacancies = useCan('vacancy.read');
-  const canGro = useCan('gro.read');
   const canCalendar = useCan('calendar.read');
   const canIntegrations = useCan('integration.google-calendar');
   const canReports = useCan('report.read');
@@ -238,11 +235,10 @@ export function AppNav({
           // A row leaves this group when its absorbing screen's card lands.
           // DS-22a: Documents (→ person record + Client record → Records) and
           // Expiry (→ Overview runway; Run scan → Settings → System) have left.
+          // DS-22b: GRO and Task history (→ the Work queue's Finished view) too.
           {
             heading: t('nav.otherTools'),
             items: [
-              ...(canGro ? [{ href: '/gro', label: t('nav.gro'), icon: Landmark }] : []),
-              ...(canTasks ? [{ href: '/tasks', label: t('nav.tasks'), icon: ClipboardList }] : []),
               ...(canIntegrations
                 ? [{ href: '/integrations', label: t('nav.integrations'), icon: CalendarCheck }]
                 : []),

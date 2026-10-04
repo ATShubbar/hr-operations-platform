@@ -60,9 +60,7 @@
     "auditLog": "سجل التدقيق",
     "settings": "الإعدادات",
     "requests": "الطلبات",
-    "tasks": "سجل المهام",
     "vacancies": "الشواغر",
-    "gro": "الجوازات",
     "calendar": "التقويم",
     "integrations": "تقويم Google",
     "portalCompany": "شركتي",
@@ -617,32 +615,8 @@
     "trailBy": "{name} · {role}"
   },
   "tasks": {
-    "title": "سجل المهام",
-    "subtitle": "المهام المنجزة والملغاة. يُتابَع العمل المفتوح في قائمة العمل.",
-    "new": "مهمة جديدة",
-    "empty": "لا توجد مهام.",
-    "loading": "جارٍ التحميل…",
-    "error": "تعذّر تحميل المهام.",
     "saveError": "تعذّر الحفظ — تحقّق من صلاحياتك.",
-    "colTitle": "العنوان",
-    "colClient": "العميل",
-    "colStatus": "الحالة",
-    "colPriority": "الأولوية",
-    "colAssignee": "المكلَّف",
-    "colDue": "الاستحقاق",
-    "colActions": "إجراءات",
-    "filterStatus": "الحالة",
-    "filterClient": "العميل",
-    "filterAll": "الكل",
-    "apply": "تطبيق",
-    "clear": "مسح",
-    "edit": "تعديل",
-    "editTitle": "تعديل المهمة",
-    "assignToMe": "إسناد إليّ",
-    "assigned": "مُسنَدة",
     "unassigned": "غير مُسنَدة",
-    "none": "—",
-    "fromRequest": "من طلب",
     "createTitle": "مهمة جديدة",
     "fieldClient": "العميل (اختياري)",
     "selectClient": "بدون عميل",
@@ -653,7 +627,6 @@
     "fieldDue": "تاريخ الاستحقاق",
     "save": "إنشاء",
     "saving": "جارٍ الحفظ…",
-    "submit": "تحديث",
     "cancel": "إلغاء",
     "status": {
       "open": "مفتوحة",
@@ -665,9 +638,7 @@
       "low": "منخفضة",
       "normal": "عادية",
       "high": "عالية"
-    },
-    "searchPlaceholder": "ابحث بالمهمة أو العميل…",
-    "filterFinished": "المنتهية"
+    }
   },
   "integrations": {
     "title": "دعوات تقويم Google",
@@ -776,39 +747,6 @@
     }
   },
   "gro": {
-    "title": "المعاملات الحكومية",
-    "subtitle": "الإجراءات الحكومية للموظفين، بمواعيد هجرية.",
-    "new": "معاملة جديدة",
-    "filterClient": "العميل",
-    "filterStatus": "الحالة",
-    "filterAll": "الكل",
-    "colEmployee": "الموظف",
-    "colType": "النوع",
-    "colStatus": "الحالة",
-    "colDue": "تاريخ الاستحقاق",
-    "colReference": "المرجع",
-    "colResultingExpiry": "الانتهاء الناتج",
-    "colActions": "الإجراءات",
-    "changeStatus": "تغيير الحالة",
-    "terminal": "—",
-    "none": "—",
-    "empty": "لا توجد معاملات لعرضها.",
-    "error": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
-    "saveError": "تعذّر الحفظ. يرجى المحاولة مرة أخرى.",
-    "createTitle": "معاملة حكومية جديدة",
-    "fieldEmployee": "الموظف",
-    "selectEmployee": "اختر موظفاً",
-    "fieldType": "النوع",
-    "fieldDue": "تاريخ الاستحقاق",
-    "fieldReference": "رقم المرجع",
-    "statusTitle": "تغيير الحالة",
-    "fieldNextStatus": "الحالة الجديدة",
-    "fieldResultingExpiry": "الانتهاء الناتج",
-    "resultingExpiryHint": "عند الإكمال، يُكتب هذا الانتهاء الجديد في البيانات الحكومية للموظف.",
-    "cancel": "إلغاء",
-    "save": "إنشاء",
-    "saving": "جارٍ الحفظ…",
-    "apply": "تطبيق",
     "type": {
       "iqama_issue": "إصدار إقامة",
       "iqama_renewal": "تجديد إقامة",
@@ -827,8 +765,7 @@
       "rejected": "مرفوضة",
       "completed": "مكتملة",
       "cancelled": "ملغاة"
-    },
-    "searchPlaceholder": "ابحث بالموظف أو المرجع أو النوع…"
+    }
   },
   "portal": {
     "loading": "جارٍ التحميل…",
@@ -1841,6 +1778,15 @@
       "procedure": "إجراء حكومي",
       "request": "طلب",
       "task": "مهمة داخلية"
-    }
+    },
+    "viewLabel": "عرض",
+    "view": {
+      "open": "المفتوحة",
+      "finished": "المنتهية"
+    },
+    "summaryFinished": "{shown} من {total, plural, zero {لا عناصر منتهية} one {عنصر منتهٍ واحد} two {عنصرين منتهيين} few {# عناصر منتهية} many {# عنصرًا منتهيًا} other {# عنصر منتهٍ}} · الأحدث أولًا",
+    "emptyFinishedTitle": "لا شيء منتهٍ بعد",
+    "emptyFinished": "ستظهر هنا الإجراءات المكتملة والطلبات المغلقة والمهام المنجزة.",
+    "factFinished": "انتهى في"
   }
 }
