@@ -649,12 +649,38 @@
   },
   "calendar": {
     "title": "Calendar",
-    "subtitle": "Your events and upcoming deadlines from tasks, requests, and GRO.",
+    "subtitle": "Statutory deadlines arrive here on their own. Everything else you book.",
     "new": "New event",
-    "prev": "‹ Previous",
-    "next": "Next ›",
-    "due": "Due",
-    "empty": "Nothing scheduled this month.",
+    "today": "Today",
+    "prevMonth": "Previous month",
+    "nextMonth": "Next month",
+    "prevWeek": "Previous week",
+    "nextWeek": "Next week",
+    "weekOf": "Week of",
+    "peopleFilter": "Whose calendar",
+    "everyone": "Everyone",
+    "viewLabel": "View",
+    "view": {
+      "month": "Month",
+      "week": "Week",
+      "agenda": "Agenda"
+    },
+    "monthGrid": "Month",
+    "weekGrid": "Week",
+    "itemsCount": "{count, plural, one {# item} other {# items}}",
+    "more": "+{count} more",
+    "nothingBooked": "Nothing booked",
+    "agendaEmpty": "Nothing scheduled in this month for the selected people.",
+    "scheduleOnDay": "Schedule on this day",
+    "dayEmpty": "Nothing on this day. Select another date in the grid, or schedule something.",
+    "allDay": "Due",
+    "legend": {
+      "gro": "Procedure deadline",
+      "request": "Request due",
+      "task": "Internal task",
+      "event": "Event"
+    },
+    "legendSoon": "Meetings, interviews and portal appointments as separate types — coming soon",
     "error": "Something went wrong. Please try again.",
     "saveError": "Could not save. Please try again.",
     "createTitle": "New event",
@@ -667,11 +693,14 @@
     "save": "Save",
     "saving": "Saving…",
     "delete": "Delete",
+    "created": "“{title}” scheduled.",
+    "saved": "Event saved.",
+    "deleted": "Event deleted.",
     "kind": {
       "event": "Event",
       "task": "Task",
       "request": "Request",
-      "gro": "GRO"
+      "gro": "Procedure"
     }
   },
   "gro": {

@@ -133,7 +133,9 @@ export class CalendarController {
       const tasks = await this.tasks.list({ scopeUserId: unrestricted ? undefined : me });
       for (const t of tasks) {
         if (dueInRange(t.dueDate, from, to) && isActiveDeadline('task', t.status)) {
-          items.push(deadlineItem('task', t.id, t.title, t.dueDate!, t.status, t.clientId));
+          items.push(
+            deadlineItem('task', t.id, t.title, t.dueDate!, t.status, t.clientId, t.assigneeUserId),
+          );
         }
       }
     }
@@ -143,7 +145,17 @@ export class CalendarController {
       const reqs = await this.requests.list();
       for (const r of reqs) {
         if (dueInRange(r.dueDate, from, to) && isActiveDeadline('request', r.status)) {
-          items.push(deadlineItem('request', r.id, r.title, r.dueDate!, r.status, r.clientId));
+          items.push(
+            deadlineItem(
+              'request',
+              r.id,
+              r.title,
+              r.dueDate!,
+              r.status,
+              r.clientId,
+              r.assigneeUserId,
+            ),
+          );
         }
       }
     }
@@ -153,7 +165,9 @@ export class CalendarController {
       const procs = await this.gro.list();
       for (const p of procs) {
         if (dueInRange(p.dueDate, from, to) && isActiveDeadline('gro', p.status)) {
-          items.push(deadlineItem('gro', p.id, p.type, p.dueDate!, p.status, p.clientId));
+          items.push(
+            deadlineItem('gro', p.id, p.type, p.dueDate!, p.status, p.clientId, p.assigneeUserId),
+          );
         }
       }
     }

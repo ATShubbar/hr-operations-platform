@@ -1,106 +1,101 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type {
   CalendarEventResponse,
   CalendarItem,
   CalendarViewResponse,
+  ClientListResponse,
+  ClientResponse,
+  StaffDirectoryEntry,
+  StaffDirectoryResponse,
 } from '@hr/contracts';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useCan } from '@/lib/session';
-import { dualDate, type Locale } from '@/lib/employee-format';
-import { Badge } from '@/components/ui/badge';
+import { useViewItemLabels, type ViewItemKind } from '@/lib/view-item-labels';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { LoadError, NoAccess } from '@/components/ui/load-state';
-import { useViewItemLabels, type ViewItemKind } from '@/lib/view-item-labels';
-import { EmptyState } from '@/components/ui/empty-state';
-import { Skeleton, SkeletonRegion } from '@/components/ui/skeleton';
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  KIND_CHIP,
+  addDays,
+  hijriSpan,
+  monthGrid,
+  monthTitle,
+  shiftMonth,
+  todayIso,
+  weekOf,
+  type Iso,
+} from './cal-utils';
+import { EventDialog, type EventTarget } from './event-dialog';
+import { AgendaView, DayPanel, MonthView, WeekView } from './views';
 
-const KIND_VARIANT: Record<string, 'default' | 'secondary' | 'outline'> = {
-  event: 'default',
-  task: 'secondary',
-  request: 'outline',
-  gro: 'secondary',
-};
+// The Calendar (DS-14) — the prototype's calendar (ADR-012): Month (grid + the
+// selected day's panel), Week and Agenda over /calendar/view, which merges booked
+// events with the live deadlines of procedures, requests and tasks (CAL-02), each
+// source gated by its own read permission.
+//
+// The person chips filter by whose item it is — /calendar/view now names each
+// item's owner (DS-14 API addition: an event's owner, a deadline's assignee).
+// The prototype's event TYPES (meeting / interview / portal appointment) need a
+// stored type nothing has yet: events share one style and the legend says so.
+//
+// Opening an item: an event opens its editor (calendar.update holders); a deadline
+// goes to where it is worked — procedures and tasks to the Work queue, a request
+// to the Requests screen.
 
-interface EventForm {
-  title: string;
-  location: string;
-  startAt: string; // datetime-local value
-  endAt: string;
-}
-const EMPTY_EVENT: EventForm = { title: '', location: '', startAt: '', endAt: '' };
+type View = 'month' | 'week' | 'agenda';
+const VIEWS: readonly View[] = ['month', 'week', 'agenda'];
+const ALL = 'all';
+const ASSIGNABLE = new Set(['administrator', 'hr_officer', 'gro_officer']);
+const LEGEND = ['gro', 'request', 'task', 'event'] as const;
 
-// ISO → the value a <input type="datetime-local"> expects (local, no seconds/TZ).
-function toLocalInput(iso: string): string {
-  const d = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-function timeLabel(iso: string, allDay: boolean): string {
-  if (allDay) return '';
-  const d = new Date(iso);
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-}
-
-// Calendar console (CAL-03) over /calendar/view (CAL-02). An agenda grouped by day
-// with dual-calendar headers: own events + read-only Task/Request/GRO deadlines,
-// colour-coded by kind. Create/edit own events (calendar.create/update); delete is
-// Company-Admin-only (calendar.delete).
 export default function CalendarPage() {
   const t = useTranslations('calendar');
-  // Skeleton and error-state copy lives in one shared namespace: a per-screen
-  // `loading` key silently announced "calendar.loading" to screen readers when
-  // the namespace happened not to define one (UX-06).
-  const tStates = useTranslations('states');
-  const { statusLabel, titleFor } = useViewItemLabels();
-  const locale = useLocale() as Locale;
+  const locale = useLocale();
   const router = useRouter();
+  const { statusLabel, titleFor } = useViewItemLabels();
   const canCreate = useCan('calendar.create');
   const canUpdate = useCan('calendar.update');
-  const canDelete = useCan('calendar.delete');
 
-  // The visible month (first of month). Navigation shifts it.
-  const [month, setMonth] = useState(() => {
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), 1);
-  });
+  const today = todayIso();
+  const [view, setView] = useState<View>('month');
+  const [selected, setSelected] = useState<Iso>(today);
+  const [owner, setOwner] = useState(ALL);
   const [items, setItems] = useState<CalendarItem[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [staff, setStaff] = useState<StaffDirectoryEntry[]>([]);
+  const [clients, setClients] = useState<ClientResponse[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState('');
   const [forbidden, setForbidden] = useState(false);
+  const [target, setTarget] = useState<EventTarget | null>(null);
 
-  const [open, setOpen] = useState(false);
-  const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState<EventForm>(EMPTY_EVENT);
-  const [saving, setSaving] = useState(false);
-  const [formError, setFormError] = useState('');
-
-  // UTC-anchored month bounds — building the ISO range from local-midnight dates
-  // would shift the boundary a day under a non-zero UTC offset (and mislabel the
-  // month). Item dates are UTC, so anchor the window in UTC too.
+  // The window each view shows.
+  const days = useMemo<Iso[]>(
+    () => (view === 'week' ? weekOf(selected) : monthGrid(selected)),
+    [view, selected],
+  );
   const range = useMemo(() => {
-    const from = new Date(Date.UTC(month.getFullYear(), month.getMonth(), 1));
-    const to = new Date(Date.UTC(month.getFullYear(), month.getMonth() + 1, 0, 23, 59, 59));
-    return { from: from.toISOString(), to: to.toISOString() };
-  }, [month]);
+    const first = view === 'agenda' ? `${selected.slice(0, 7)}-01` : days[0]!;
+    const last = view === 'agenda' ? addDays(shiftMonth(selected, 1), -1) : days[days.length - 1]!;
+    return { first, last };
+  }, [view, selected, days]);
 
   const load = useCallback(async () => {
-    setLoading(true);
     setError('');
     try {
-      const qs = `?from=${encodeURIComponent(range.from)}&to=${encodeURIComponent(range.to)}`;
+      const qs = `?from=${range.first}T00:00:00.000Z&to=${range.last}T23:59:59.999Z`;
       const res = await apiFetch<CalendarViewResponse>(`/calendar/view${qs}`);
       setItems([...res.items].sort((a, b) => a.startAt.localeCompare(b.startAt)));
     } catch (err) {
@@ -108,263 +103,216 @@ export default function CalendarPage() {
       if (err instanceof ApiError && err.status === 403) setForbidden(true);
       else setError(t('error'));
     } finally {
-      setLoading(false);
+      setLoaded(true);
     }
   }, [range, router, t]);
 
   useEffect(() => {
     void load();
   }, [load]);
+  useEffect(() => {
+    apiFetch<StaffDirectoryResponse>('/staff-users/directory')
+      .then((r) => setStaff(r.users.filter((u) => ASSIGNABLE.has(u.role))))
+      .catch(() => setStaff([]));
+    apiFetch<ClientListResponse>('/clients')
+      .then((r) => setClients(r.clients))
+      .catch(() => setClients([]));
+  }, []);
 
-  // Group items by calendar day (YYYY-MM-DD of startAt).
-  const days = useMemo(() => {
-    const map = new Map<string, CalendarItem[]>();
-    for (const it of items) {
-      const key = it.startAt.slice(0, 10);
-      const arr = map.get(key) ?? [];
-      arr.push(it);
-      map.set(key, arr);
-    }
-    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]));
-  }, [items]);
+  const shown = owner === ALL ? items : items.filter((i) => i.ownerUserId === owner);
 
-  const monthLabel = dualDate(range.from, locale) ?? '';
+  const title = (it: CalendarItem) => titleFor(it.kind as ViewItemKind, it.title);
+  const ownerName = (it: CalendarItem) =>
+    staff.find((s) => s.id === it.ownerUserId)?.displayName ?? null;
+  const where = (it: CalendarItem) => {
+    const c = clients.find((x) => x.id === it.clientId);
+    const client = c ? (locale === 'ar' ? c.name.ar : c.name.en) : null;
+    if (it.kind === 'event') return client;
+    return [statusLabel(it.kind as ViewItemKind, it.status), client].filter(Boolean).join(' · ');
+  };
 
-  function openCreate() {
-    setEditId(null);
-    setForm(EMPTY_EVENT);
-    setFormError('');
-    setOpen(true);
-  }
-
-  async function openEdit(item: CalendarItem) {
-    if (item.kind !== 'event' || !canUpdate) return;
+  async function open(it: CalendarItem) {
+    if (it.kind === 'request') return void router.push(`/requests?r=${it.id}`);
+    if (it.kind === 'task' || it.kind === 'gro') return void router.push('/queue');
+    if (!canUpdate) return;
     try {
-      const ev = await apiFetch<CalendarEventResponse>(`/calendar/events/${item.id}`);
-      setEditId(ev.id);
-      setForm({
-        title: ev.title,
-        location: ev.location ?? '',
-        startAt: toLocalInput(ev.startAt),
-        endAt: toLocalInput(ev.endAt),
-      });
-      setFormError('');
-      setOpen(true);
+      const ev = await apiFetch<CalendarEventResponse>(`/calendar/events/${it.id}`);
+      setTarget({ mode: 'edit', event: ev });
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) router.replace('/login');
       else setError(t('error'));
     }
   }
 
-  async function save(e: FormEvent) {
-    e.preventDefault();
-    setSaving(true);
-    setFormError('');
-    const body = {
-      title: form.title,
-      ...(form.location ? { location: form.location } : {}),
-      startAt: new Date(form.startAt).toISOString(),
-      endAt: new Date(form.endAt).toISOString(),
-    };
-    try {
-      if (editId) {
-        await apiFetch(`/calendar/events/${editId}`, { method: 'PATCH', body: JSON.stringify(body) });
-      } else {
-        await apiFetch('/calendar/events', { method: 'POST', body: JSON.stringify(body) });
-      }
-      setOpen(false);
-      await load();
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
-      setFormError(t('saveError'));
-    } finally {
-      setSaving(false);
-    }
-  }
+  const step = (dir: -1 | 1) =>
+    setSelected((s) =>
+      view === 'week' ? addDays(s, 7 * dir) : `${shiftMonth(s, dir).slice(0, 7)}-01`,
+    );
 
-  async function remove() {
-    if (!editId) return;
-    setSaving(true);
-    try {
-      await apiFetch(`/calendar/events/${editId}`, { method: 'DELETE' });
-      setOpen(false);
-      await load();
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
-      setFormError(t('saveError'));
-    } finally {
-      setSaving(false);
-    }
-  }
+  const heading =
+    view === 'week'
+      ? `${t('weekOf')} ${new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-US', { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${days[0]}T12:00:00Z`))}`
+      : monthTitle(selected, locale);
+  const hijri =
+    view === 'week'
+      ? hijriSpan(days[0]!, days[6]!, locale)
+      : hijriSpan(`${selected.slice(0, 7)}-01`, addDays(shiftMonth(selected, 1), -1), locale);
 
-  const shiftMonth = (delta: number) =>
-    setMonth((m) => new Date(m.getFullYear(), m.getMonth() + delta, 1));
+  const viewProps = {
+    items: shown,
+    title,
+    ownerName,
+    where,
+    onOpen: (i: CalendarItem) => void open(i),
+  };
 
-  // Deep-linked without the capability: the nav hides the link, a pasted URL does
-  // not. A refusal is not a failure, so it replaces the screen and offers no retry.
   if (forbidden) {
     return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-semibold">{t('title')}</h1>
-          <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
-        </div>
+      <div className="flex flex-col gap-4">
+        <h1 className="text-2xl font-semibold">{t('title')}</h1>
         <NoAccess capability="calendar.read" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
+    <div className="flex max-w-[1360px] flex-col gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
+        <div className="flex min-w-0 grow flex-col gap-1">
           <h1 className="text-2xl font-semibold">{t('title')}</h1>
           <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
         </div>
-        {canCreate && <Button onClick={openCreate}>{t('new')}</Button>}
-      </div>
-
-      <div className="flex items-center gap-3">
-        <Button variant="outline" size="sm" onClick={() => shiftMonth(-1)}>
-          {t('prev')}
-        </Button>
-        {/* `min-w-64` reserved a fixed 256px so the buttons stop moving as the
-            month label changes width — which at 375px made this row 413px wide
-            inside a 343px column and pushed the whole page 54px sideways.
-            Measured on the unmodified screen, so it pre-dates this card and the
-            UX-05 sweep missed it. The reservation is kept from sm up, where
-            there is room for it. */}
-        <span className="min-w-0 flex-1 text-center text-sm font-medium sm:min-w-64 sm:flex-none sm:text-start">
-          {monthLabel}
-        </span>
-        <Button variant="outline" size="sm" onClick={() => shiftMonth(1)}>
-          {t('next')}
-        </Button>
+        {canCreate && (
+          <Button
+            size="sm"
+            className="shrink-0 self-start sm:self-auto"
+            onClick={() => setTarget({ mode: 'new', day: selected })}
+          >
+            {t('new')}
+          </Button>
+        )}
       </div>
 
       {error && (
         <LoadError message={error} onRetry={() => void load()} hasContent={items.length > 0} />
       )}
 
-      <div className="space-y-4">
-        {days.map(([day, dayItems]) => (
-          <div key={day} className="rounded-lg border">
-            {/* A real heading, so the agenda is navigable by heading and each day
-                names the list beneath it (UX-11). */}
-            <h2
-              id={`day-${day}`}
-              className="border-b bg-muted/30 px-4 py-2 text-sm font-medium"
+      <div className="overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10">
+        <div className="flex flex-wrap items-center gap-3 px-4 py-3.5">
+          <Button variant="outline" size="sm" onClick={() => setSelected(today)}>
+            {t('today')}
+          </Button>
+          <span className="hidden grow lg:block" />
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => step(-1)}
+              aria-label={view === 'week' ? t('prevWeek') : t('prevMonth')}
+              className="inline-flex size-7 items-center justify-center rounded-md text-neutral-700 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-ring"
             >
-              {dualDate(`${day}T00:00:00.000Z`, locale)}
-            </h2>
-            <ul className="divide-y" aria-labelledby={`day-${day}`}>
-              {dayItems.map((it) => {
-                // /calendar/view returns raw enums, and uses the GRO process TYPE
-                // as the title — so this row used to read "iqama_renewal … · open"
-                // in Arabic (UX-09).
-                const content = (
-                  <>
-                    <Badge variant={KIND_VARIANT[it.kind] ?? 'secondary'}>
-                      {t(`kind.${it.kind}`)}
-                    </Badge>
-                    {/* `min-w-0` + truncate: a flex item defaults to
-                        `min-width: auto`, so without this the longest title
-                        holds the row open and the agenda pushed the page 54px
-                        wide at 375px — measured, and pre-dating this card. */}
-                    <span className="min-w-0 flex-1 truncate font-medium">
-                      {titleFor(it.kind as ViewItemKind, it.title)}
-                    </span>
-                    <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
-                      {it.allDay ? t('due') : timeLabel(it.startAt, it.allDay)}
-                      {statusLabel(it.kind as ViewItemKind, it.status)
-                        ? ` · ${statusLabel(it.kind as ViewItemKind, it.status)}`
-                        : ''}
-                    </span>
-                  </>
-                );
-                // Only own events open an editor. The rest are read-only
-                // projections of Tasks/Requests/GRO deadlines, so they stay plain
-                // markup rather than becoming focus stops that do nothing — the
-                // usual way a keyboard fix makes a page worse.
-                const editable = it.kind === 'event' && canUpdate;
-                return (
-                  <li key={`${it.kind}-${it.id}`}>
-                    {editable ? (
-                      // Was `<li onClick>` — clickable with a mouse and by nothing
-                      // else (WCAG 2.1.1, Level A). A real button brings Enter,
-                      // Space, the focus ring and the announced role with it.
-                      // `w-full`/`text-start` because a button is neither by default.
-                      <button
-                        type="button"
-                        onClick={() => void openEdit(it)}
-                        className="flex w-full items-center gap-3 px-4 py-2 text-start text-sm hover:bg-muted/40 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
-                      >
-                        {content}
-                      </button>
-                    ) : (
-                      <div className="flex items-center gap-3 px-4 py-2 text-sm">{content}</div>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
+              <ChevronLeft className="size-4" aria-hidden />
+            </button>
+            <div className="flex min-w-0 flex-col items-center sm:min-w-[200px]">
+              <span
+                className="text-lg leading-6 font-semibold tracking-[-0.01em]"
+                aria-live="polite"
+              >
+                {heading}
+              </span>
+              <span className="text-[11px] leading-[15px] text-neutral-400">{hijri}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => step(1)}
+              aria-label={view === 'week' ? t('nextWeek') : t('nextMonth')}
+              className="inline-flex size-7 items-center justify-center rounded-md text-neutral-700 hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-ring"
+            >
+              <ChevronRight className="size-4" aria-hidden />
+            </button>
           </div>
-        ))}
-        {loading && days.length === 0 && (
-          <SkeletonRegion label={tStates('loading')} className="space-y-3">
-            {[0, 1].map((i) => (
-              <div key={i} className="rounded-lg border bg-card p-4">
-                <Skeleton className="mb-3 h-3 w-40" />
-                <Skeleton className="mb-2 h-4 w-2/3" />
-                <Skeleton className="h-4 w-1/2" />
-              </div>
+          <span className="hidden grow lg:block" />
+          <div
+            role="group"
+            aria-label={t('peopleFilter')}
+            className="flex max-w-full shrink-0 gap-0.5 overflow-x-auto rounded-md bg-neutral-100 p-0.5"
+          >
+            {[
+              { id: ALL, label: t('everyone') },
+              ...staff.map((s) => ({
+                id: s.id,
+                label: (s.displayName ?? '').split(' ')[0] || s.id.slice(0, 8),
+              })),
+            ].map((o) => (
+              <button
+                key={o.id}
+                type="button"
+                aria-pressed={owner === o.id}
+                onClick={() => setOwner(o.id)}
+                className={cn(
+                  'inline-flex h-6 shrink-0 items-center rounded-[6px] px-2.5 text-xs font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  owner === o.id
+                    ? 'bg-neutral-900 text-neutral-50'
+                    : 'text-neutral-700 hover:text-foreground',
+                )}
+              >
+                {o.label}
+              </button>
             ))}
-          </SkeletonRegion>
+          </div>
+          <Select value={view} onValueChange={(v) => setView((v as View) ?? 'month')}>
+            <SelectTrigger size="sm" className="w-[120px]" aria-label={t('viewLabel')}>
+              <SelectValue>{(v) => t(`view.${String(v)}`)}</SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {VIEWS.map((v) => (
+                <SelectItem key={v} value={v}>
+                  {t(`view.${v}`)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {!loaded ? (
+          <div className="border-t p-4" aria-busy="true">
+            <Skeleton className="h-[420px] w-full rounded-lg" />
+          </div>
+        ) : view === 'month' ? (
+          <MonthView
+            {...viewProps}
+            days={days}
+            anchor={selected}
+            today={today}
+            selected={selected}
+            onSelect={setSelected}
+          />
+        ) : view === 'week' ? (
+          <WeekView {...viewProps} days={days} today={today} />
+        ) : (
+          <AgendaView {...viewProps} today={today} />
         )}
-        {days.length === 0 && !loading && <EmptyState variant="first-run" title={t('empty')} />}
+
+        <div className="flex flex-wrap items-center gap-3.5 border-t px-4 py-3">
+          {LEGEND.map((k) => (
+            <span key={k} className="inline-flex items-center gap-1.5">
+              <span aria-hidden className={cn('size-3 rounded', KIND_CHIP[k])} />
+              <span className="text-xs leading-4 text-muted-foreground">{t(`legend.${k}`)}</span>
+            </span>
+          ))}
+          <span className="text-xs leading-4 text-neutral-400">{t('legendSoon')}</span>
+        </div>
       </div>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{editId ? t('editTitle') : t('createTitle')}</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={save} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="c-title">{t('fieldTitle')}</Label>
-              <Input id="c-title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
-            </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="c-start">{t('fieldStart')}</Label>
-                <Input id="c-start" type="datetime-local" value={form.startAt} onChange={(e) => setForm({ ...form, startAt: e.target.value })} required />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="c-end">{t('fieldEnd')}</Label>
-                <Input id="c-end" type="datetime-local" value={form.endAt} onChange={(e) => setForm({ ...form, endAt: e.target.value })} required />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="c-loc">{t('fieldLocation')}</Label>
-              <Input id="c-loc" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
-            </div>
-            {formError && <p className="text-sm text-destructive">{formError}</p>}
-            <DialogFooter className="items-center">
-              {editId && canDelete && (
-                <Button type="button" variant="ghost" onClick={() => void remove()} disabled={saving}>
-                  {t('delete')}
-                </Button>
-              )}
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                {t('cancel')}
-              </Button>
-              <Button type="submit" disabled={saving || !form.title || !form.startAt || !form.endAt}>
-                {saving ? t('saving') : t('save')}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      {view === 'month' && (
+        <DayPanel
+          {...viewProps}
+          day={selected}
+          canCreate={canCreate}
+          onSchedule={() => setTarget({ mode: 'new', day: selected })}
+        />
+      )}
+
+      <EventDialog target={target} onClose={() => setTarget(null)} onSaved={() => void load()} />
     </div>
   );
 }

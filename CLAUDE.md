@@ -1071,6 +1071,14 @@ a task status/priority editor, Snooze, and the per-kind primary. Row + dialog sh
 reused `queue.kindLabel` (the pills' aria-label) as an object → `INSUFFICIENT_PATH`; and the
 dialog overflowed 351px-in-343px on a phone because DialogContent's grid items default to
 `min-width:auto` (fixed with `[&>*]:min-w-0`). No API change. Next: DS-14 (Calendar).
+**DS-14 done — the Calendar.** `/calendar` = the prototype's Month (Sunday-first grid, Hijri day
+numbers, chips + "+N more", coloured DOTS below `sm`, selected-day panel with "Schedule on this
+day") / Week / Agenda, a person filter, and a legend (procedure deadline · request due · task ·
+event; meeting/interview/portal types "coming soon" — no stored event type). **API: `/calendar/
+view` items carry `ownerUserId`** (event owner / deadline assignee / null), test proven red. Days:
+deadlines on their UTC date, timed events on the viewer's LOCAL day. Event form extracted to
+`calendar/event-dialog.tsx`. Counts matched SQL (24 = 6+6+10+2). Found: calendar treats a
+REJECTED procedure as finished while the queue doesn't (CAL-04 follow-up). Next: DS-15 (Audit).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

@@ -12,7 +12,10 @@ const TERMINAL: Record<Exclude<CalendarItemKind, 'event'>, ReadonlySet<string>> 
   gro: new Set(['completed', 'rejected', 'cancelled']),
 };
 
-export function isActiveDeadline(kind: Exclude<CalendarItemKind, 'event'>, status: string): boolean {
+export function isActiveDeadline(
+  kind: Exclude<CalendarItemKind, 'event'>,
+  status: string,
+): boolean {
   return !TERMINAL[kind].has(status);
 }
 
@@ -21,7 +24,8 @@ export function dueInRange(due: Date | null, from: Date, to: Date): boolean {
   return due != null && due >= from && due <= to;
 }
 
-// A derived deadline → an all-day calendar item on its due date.
+// A derived deadline → an all-day calendar item on its due date, owned by its
+// assignee (DS-14).
 export function deadlineItem(
   kind: Exclude<CalendarItemKind, 'event'>,
   id: string,
@@ -29,9 +33,20 @@ export function deadlineItem(
   due: Date,
   status: string,
   clientId: string | null,
+  assigneeUserId: string | null,
 ): CalendarItem {
   const iso = `${due.toISOString().slice(0, 10)}T00:00:00.000Z`;
-  return { kind, id, title, startAt: iso, endAt: iso, allDay: true, status, clientId };
+  return {
+    kind,
+    id,
+    title,
+    startAt: iso,
+    endAt: iso,
+    allDay: true,
+    status,
+    clientId,
+    ownerUserId: assigneeUserId,
+  };
 }
 
 // An own calendar event → a calendar item (carries its real start/end).
@@ -45,5 +60,6 @@ export function eventItem(e: CalendarEventRecord): CalendarItem {
     allDay: e.allDay,
     status: null,
     clientId: e.clientId,
+    ownerUserId: e.ownerUserId,
   };
 }

@@ -166,6 +166,64 @@ describe('Calendar API (CAL-02, e2e)', () => {
     expect(kinds.has('request')).toBe(true);
   });
 
+  // DS-14: the calendar's person filter needs to know whose each item is — an
+  // event's owner, a deadline's assignee, null when unassigned.
+  it('each view item names its owner: event owner, deadline assignee, or null', async () => {
+    await request(http)
+      .post('/calendar/events')
+      .set('Cookie', gro.cookie)
+      .send({
+        clientId,
+        title: 'CAL owner probe',
+        startAt: '2026-08-11T09:00:00Z',
+        endAt: '2026-08-11T10:00:00Z',
+      })
+      .expect(201);
+    await owner.task.updateMany({
+      where: { clientId, title: 'CAL active task' },
+      data: { assigneeUserId: hr.userId },
+    });
+    await owner.task.create({
+      data: {
+        clientId,
+        title: 'CAL unassigned task',
+        status: 'open',
+        dueDate: new Date('2026-08-14'),
+      },
+    });
+    await owner.request.updateMany({
+      where: { clientId, title: 'CAL request' },
+      data: { assigneeUserId: gro.userId },
+    });
+    await owner.groProcess.updateMany({
+      where: { clientId },
+      data: { assigneeUserId: admin.userId },
+    });
+
+    const res = await request(http)
+      .get(`/calendar/view${RANGE}`)
+      .set('Cookie', admin.cookie)
+      .expect(200);
+    type Item = {
+      kind: string;
+      title: string;
+      clientId: string | null;
+      ownerUserId: string | null;
+    };
+    const items = res.body.items as Item[];
+    const byTitle = (t: string) => items.find((i) => i.title === t);
+    expect(byTitle('CAL owner probe')?.ownerUserId).toBe(gro.userId);
+    expect(byTitle('CAL active task')?.ownerUserId).toBe(hr.userId);
+    expect(byTitle('CAL request')?.ownerUserId).toBe(gro.userId);
+    expect(items.find((i) => i.kind === 'gro' && i.clientId === clientId)?.ownerUserId).toBe(
+      admin.userId,
+    );
+    // unassigned work belongs to no one — null, not absent
+    const unassigned = byTitle('CAL unassigned task');
+    expect(unassigned).toBeDefined();
+    expect(unassigned).toHaveProperty('ownerUserId', null);
+  });
+
   it('the view requires from and to (400)', async () => {
     await request(http).get('/calendar/view').set('Cookie', admin.cookie).expect(400);
   });

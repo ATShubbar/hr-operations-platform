@@ -68,6 +68,9 @@ export const calendarItemSchema = z.object({
   allDay: z.boolean(),
   status: z.string().nullable(), // event → null; task/request/gro → its status
   clientId: z.uuid().nullable(),
+  // Whose item it is (DS-14): an event's owner, a deadline's assignee; null when
+  // unassigned. Drives the calendar's person filter.
+  ownerUserId: z.uuid().nullable(),
 });
 export const calendarViewResponseSchema = z.object({
   items: z.array(calendarItemSchema),
