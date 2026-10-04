@@ -22,7 +22,7 @@ import { datedDocs, daysTo, isSaudi } from '@/lib/employee-docs';
 import { Avatar } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { GRO_ACTIVE } from '@/components/gro-work-list';
-import { figuresFor } from '../clients/client-figures';
+import { figuresFor, underManagement } from '../clients/client-figures';
 
 // The Reports dashboard (DS-16) — the prototype's analytics panels, computed on
 // the page from the list endpoints the screen can already read (owner decision;
@@ -84,7 +84,8 @@ export function ReportsDashboard() {
 
   const m = useMemo(() => {
     if (!data) return null;
-    const staffRows = data.employees.filter((e) => e.employmentStatus !== 'terminated');
+    // Everyone under management — not terminated, at an active client (DS-17).
+    const staffRows = underManagement(data.employees, data.clients);
     const saudis = staffRows.filter(isSaudi).length;
     const docs = staffRows.flatMap(datedDocs);
     const procs = data.processes.filter((p) => GRO_ACTIVE.has(p.status));

@@ -56,6 +56,7 @@ export function StartProcedureDialog({
   employeeName,
   choices,
   context,
+  description,
   onStarted,
 }: {
   open: boolean;
@@ -64,6 +65,8 @@ export function StartProcedureDialog({
   employeeName?: string;
   choices?: ReadonlyArray<{ id: string; name: string }>;
   context?: string;
+  /** Replaces the description — the Overview's picker spans every client (DS-17). */
+  description?: string;
   /** Called after the procedure is opened (the Client record recounts its open items). */
   onStarted?: () => void;
 }) {
@@ -106,9 +109,11 @@ export function StartProcedureDialog({
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>
-            {choices
-              ? t('descriptionFor', { context: context ?? '' })
-              : t('description', { name: employeeName ?? '' })}
+            {description
+              ? description
+              : choices
+                ? t('descriptionFor', { context: context ?? '' })
+                : t('description', { name: employeeName ?? '' })}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="flex flex-col gap-3.5">

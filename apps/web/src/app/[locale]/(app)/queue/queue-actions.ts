@@ -31,6 +31,8 @@ export interface QueueItem {
   /** The employee a procedure is for, or whoever raised a request. */
   person: { name: string; ar: string | null } | null;
   due: string | null;
+  /** When the item was opened — the tie-break between equal due dates. */
+  createdAt: string;
   assigneeUserId: string | null;
   /** Where the item lives outside the queue (the person, the request), if anywhere. */
   recordHref: string | null;

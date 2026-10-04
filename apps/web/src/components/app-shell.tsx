@@ -24,9 +24,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   // An employee's whole surface is their own file (SS-07). Anywhere else — the
-  // root URL redirects to /today, a stale bookmark, a typed staff URL — goes to
+  // root URL redirects to /overview, a stale bookmark, a typed staff URL — goes to
   // /me. The page is NOT rendered meanwhile: a child's effects run before this
-  // one, so rendering /today first would fire its staff requests (403s) before
+  // one, so rendering /overview first would fire its staff requests (403s) before
   // the redirect landed.
   const misplacedEmployee =
     me.principalType === 'employee' && pathname !== '/me' && !pathname.startsWith('/me/');

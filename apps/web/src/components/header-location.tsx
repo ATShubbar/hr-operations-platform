@@ -31,7 +31,7 @@ const SCREENS: { href: string; key: string }[] = [
   { href: '/me/leave', key: 'myLeave' },
   { href: '/me', key: 'myFile' },
   // DS-04: the prototype's names for the screens that stand in for its rows.
-  { href: '/today', key: 'overview' },
+  { href: '/overview', key: 'overview' },
   { href: '/leaves', key: 'leaves' },
   { href: '/clients', key: 'clients' },
   { href: '/employees', key: 'people' },

@@ -11,10 +11,10 @@ import type {
 import { Link, useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useNationalityName } from '@/lib/nationality';
-import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { PipelineBars } from '../../hiring/pipeline-bars';
 import { COLUMNS, isActive, type Column } from '../../hiring/stages';
 
 // The Client record's Hiring tab (DS-11): this company's slice of the hiring
@@ -25,16 +25,6 @@ import { COLUMNS, isActive, type Column } from '../../hiring/stages';
 //
 // The parent renders this only for candidate.read holders; a client manager
 // never sees candidates (REC-03, kept in DS-09).
-
-// The board's ramp: the pipeline in ink, the visa stage amber, onboarded green.
-const FILL: Record<Column, string> = {
-  applied: 'bg-neutral-900',
-  screening: 'bg-neutral-900',
-  interview: 'bg-neutral-900',
-  offer: 'bg-neutral-900',
-  visa: 'bg-status-warning',
-  hired: 'bg-status-ok',
-};
 
 export function HiringTab({ clientId }: { clientId: string }) {
   const t = useTranslations('clients');
@@ -90,34 +80,7 @@ export function HiringTab({ clientId }: { clientId: string }) {
             {t('pipelineSummary', { count: pool.length })}
           </p>
         </div>
-        <ul className="flex flex-col gap-3">
-          {COLUMNS.map((col) => {
-            const n = col === 'visa' ? 0 : pool.filter((c) => c.stage === col).length;
-            const pct = pool.length ? Math.round((n / pool.length) * 100) : 0;
-            return (
-              <li key={col} className="flex items-center gap-3">
-                <span className="w-[118px] shrink-0 text-xs leading-4 text-neutral-700">
-                  {th(`column.${col}`)}
-                </span>
-                {col === 'visa' ? (
-                  // The board's "coming soon" column: no bar to draw, so say so.
-                  <span className="grow text-[11px] leading-4 text-neutral-400">{th('soon')}</span>
-                ) : (
-                  <span
-                    aria-hidden
-                    className="block h-2 grow overflow-hidden rounded-full bg-neutral-100"
-                  >
-                    <span
-                      className={cn('block h-2 rounded-full', FILL[col])}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </span>
-                )}
-                <span className="w-6 shrink-0 text-end font-mono text-xs">{n}</span>
-              </li>
-            );
-          })}
-        </ul>
+        <PipelineBars candidates={pool} />
         <div className="flex pt-2">
           <Button variant="outline" size="sm" nativeButton={false} render={<Link href="/hiring" />}>
             {t('openBoard')}

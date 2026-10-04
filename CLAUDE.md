@@ -1092,8 +1092,19 @@ the band "soon"; 6-month expiry forecast; officer workload incl. Unassigned; ser
 each request's OWN due date; open procedures by TYPE — no portal stored) computed on the page from
 the list endpoints (reusing `lib/employee-docs` + `clients/client-figures`), then **Detailed
 reports** (REP-04 catalog; header Export report = the selected one, still audited). Every figure
-matched SQL. Found: REP-01's Workforce counts archived clients + leavers (39 vs 36) — REP-05
+matched SQL. Found: REP-01's Workforce counts archived clients + leavers (39 vs 36) — REP-06
 follow-up. No API change. Next: DS-17 (Overview).
+**DS-17 done — the Overview.** `/overview` = the prototype's home for STAFF (`/today` and the root
+redirect there; `/today-preview` deleted): 4 tiles (expiring 30d · past due in queue · employee
+requests · headcount), **Needs you first** (top 5 of the queue, title → work-item dialog, per-kind
+Resolve), hiring pipeline, expiry runway whose cells open the cohort on People (`?doc=&band=`, plus
+a new **Expired** band), client portfolio; Export register / Nitaqat band / dependants /
+mobilisations "soon". "Cleared today" is DERIVED (finished + updated today, per viewer). Shared,
+extracted: `queue/queue-items.ts` (`useQueueItems` — open work + order, ties → oldest first),
+`clients/runway-table.tsx`, `hiring/pipeline-bars.tsx`. **"Under management" = not terminated AND
+at an ACTIVE client** (`underManagement` in client-figures.ts, owner decision) — the Reports
+dashboard now uses it too (36 → 35, 53% → 51%). Client managers → portal until **DS-18** (their
+Overview). The DS-16 follow-up is **REP-06** (REP-05 was already reserved). No API change.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

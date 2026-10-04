@@ -42,15 +42,15 @@ export default function LoginPage() {
   async function goToApp() {
     try {
       const me = await apiFetch<MeResponse>('/auth/me');
-      // UX-04: staff land on Today — their work queue — rather than on a list of
-      // clients or the audit log. Client reps still land on the portal, which is
+      // Staff land on the Overview (DS-17; UX-04's Today before it) rather than on
+      // a list of clients or the audit log. Client reps still land on the portal, which is
       // their only surface.
       // SS-07: employees land on their own file — their only surface.
       const target = me.permissions.includes('self-service.read')
         ? '/me'
         : me.permissions.includes('portal.read')
           ? '/portal/company'
-          : '/today';
+          : '/overview';
       let preferred: 'ar' | 'en' | undefined;
       try {
         const cfg = await apiFetch<ConfigEffectiveResponse>('/config/me');
@@ -61,7 +61,7 @@ export default function LoginPage() {
       }
       router.replace(target, preferred ? { locale: preferred } : undefined);
     } catch {
-      router.replace('/today');
+      router.replace('/overview');
     }
   }
 

@@ -184,7 +184,7 @@ export function AppNav({
           {
             heading: t('nav.workspace'),
             items: [
-              { href: '/today', label: t('nav.overview'), icon: LayoutGrid },
+              { href: '/overview', label: t('nav.overview'), icon: LayoutGrid },
               ...(canCalendar
                 ? [{ href: '/calendar', label: t('nav.calendar'), icon: CalendarDays }]
                 : []),

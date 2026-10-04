@@ -350,6 +350,11 @@
       "d90": "61–90 days"
     },
     "tracked": "Tracked",
+    "dependantDoc": {
+      "iqama": "Dependant iqama",
+      "insurance": "Dependant insurance",
+      "passport": "Dependant passport"
+    },
     "notStoredYet": "Not stored yet — coming soon",
     "register": "Register",
     "registerCount": "{count, plural, =0 {No one on the register} one {# on the register} other {# on the register}}",
@@ -1075,40 +1080,48 @@
     "pageOf": "Page {page} of {pages}",
     "regionLabel": "Data table"
   },
-  "today": {
-    "title": "Today",
-    "refresh": "Refresh",
-    "loading": "Loading your work…",
-    "error": "Couldn't load your work",
-    "retry": "Try again",
-    "allClear": "Nothing needs you right now",
-    "allClearHint": "No overdue deadlines and nothing due in the next 30 days.",
-    "overdueBy": "{days}d overdue",
-    "dueToday": "Due today",
-    "inDays": "in {days}d",
-    "scopeNote": "{count} items across your deadlines, requests and expiring documents.",
-    "section": {
-      "overdue": "Overdue",
-      "today": "Due today",
-      "week": "This week",
-      "later": "Coming up"
+  "overview": {
+    "title": "Overview",
+    "cleared": "{count, plural, =0 {nothing cleared yet today} other {# cleared today}}",
+    "exportRegister": "Export register",
+    "startProcedure": "Start a procedure",
+    "procDescription": "Opens a government procedure for anyone under management. It starts as Not started and can be assigned from the Work queue.",
+    "loadError": "Couldn't load the overview.",
+    "tile": {
+      "expiring": "Documents expiring · 30 days",
+      "expiringSub": "{count} inside seven days",
+      "pastDue": "Past due in queue",
+      "pastDueSub": "{days, plural, one {oldest # day past due} other {oldest # days past due}}",
+      "queueCurrent": "queue is current",
+      "requests": "Employee requests",
+      "requestsSub": "{count} waiting on a decision",
+      "headcount": "Headcount under management",
+      "headcountSub": "{count, plural, one {across # client company} other {across # client companies}}"
     },
-    "kind": {
-      "task": "Task",
-      "request": "Request",
-      "gro": "Government process",
-      "event": "Calendar event",
-      "document": "Document expiry"
+    "needs": "Needs you first",
+    "needsHint": "Ranked by deadline, then by how long the file has been open.",
+    "needsEmpty": "Nothing open — the queue is clear.",
+    "fullQueue": "Full queue",
+    "pipeline": "Hiring pipeline",
+    "board": "Board",
+    "runwayHint": "Every document under management, by how much time is left. Select a cell to open that group on People.",
+    "portfolio": "Client portfolio",
+    "allClients": "All clients",
+    "addClient": "Add a client",
+    "clientAdded": "{name} added.",
+    "col": {
+      "client": "Client",
+      "headcount": "Headcount",
+      "band": "Nitaqat band",
+      "saudi": "Saudisation",
+      "expiring": "Expiring 30d",
+      "open": "Open items"
     },
-    "role": {
-      "administrator": "Administrator",
-      "hr_officer": "HR officer",
-      "gro_officer": "GRO officer",
-      "auditor": "Auditor",
-      "client_manager": "Client manager",
-      "employee": "Employee"
-    },
-    "greeting": "Hello, {name}"
+    "portfolioEmpty": "No active client companies yet.",
+    "portfolioNote": "Saudisation here is the share of Saudi nationals on the register, not the Nitaqat-weighted figure. Open items are active government procedures.",
+    "mob": "Mobilisations and exits",
+    "mobHint": "Sequenced files in flight. Each step waits on the one before it.",
+    "mobSoon": "Mobilisation and exit tracking is coming soon."
   },
   "states": {
     "retry": "Try again",
@@ -1272,6 +1285,7 @@
     "summaryCount": "{count, plural, one {# employee} other {# employees}}",
     "summarySorted": "sorted by the document that expires first",
     "summaryBand": "expiring in {range} days",
+    "summaryOverdue": "already expired",
     "exportRegister": "Export register",
     "addPerson": "Add person",
     "searchPlaceholder": "Search name, position or nationality",
@@ -1279,6 +1293,7 @@
     "anyDocument": "Any document",
     "anyTime": "Any time left",
     "band": {
+      "overdue": "Expired",
       "0-7": "0–7 days",
       "8-14": "8–14 days",
       "15-30": "15–30 days",

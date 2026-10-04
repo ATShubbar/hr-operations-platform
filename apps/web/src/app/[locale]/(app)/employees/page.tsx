@@ -64,7 +64,7 @@ import {
 // person stays — last, with "—" — because hiding a real employee (a Saudi on an
 // open-ended contract, say) from the People screen would be a silent loss.
 
-const BANDS = ['0-7', '8-14', '15-30', '31-60', '61-90'] as const;
+const BANDS = ['overdue', '0-7', '8-14', '15-30', '31-60', '61-90'] as const;
 const PAGE = 50;
 const ALL = 'all';
 
@@ -115,11 +115,17 @@ export default function PeoplePage() {
 
   useEffect(() => {
     void load();
-    // `?client=<id>` arrives from a Client record's "View register" (DS-10). Read
-    // from window.location, not useSearchParams, which would need a Suspense
-    // boundary on this prerendered page.
-    const c = new URLSearchParams(window.location.search).get('client');
+    // `?client=<id>` arrives from a Client record's "View register" (DS-10);
+    // `?doc=` and `?band=` from an Overview runway cell (DS-17). Read from
+    // window.location, not useSearchParams, which would need a Suspense boundary
+    // on this prerendered page. Unknown values are ignored.
+    const q = new URLSearchParams(window.location.search);
+    const c = q.get('client');
     if (c) setFClient(c);
+    const d = q.get('doc');
+    if (d && DOC_TYPES.some((x) => x.key === d && x.date)) setFDoc(d as DocKey);
+    const b = q.get('band');
+    if (b && (BANDS as readonly string[]).includes(b)) setFBand(b as (typeof BANDS)[number]);
   }, []);
 
   const clientName = (id: string) => {
@@ -162,6 +168,7 @@ export default function PeoplePage() {
   };
   const inBand = (days: number) => {
     if (fBand === ALL) return true;
+    if (fBand === 'overdue') return days < 0;
     const [lo, hi] = fBand.split('-').map(Number) as [number, number];
     return days >= lo && days <= hi;
   };
@@ -208,7 +215,11 @@ export default function PeoplePage() {
     const count = t('summaryCount', { count: rows.length });
     const doc = fDoc === ALL ? '' : ` · ${docLabel(fDoc)}`;
     const band =
-      fBand === ALL ? '' : ` ${t('summaryBand', { range: fBand.replace('-', '\u2013') })}`;
+      fBand === ALL
+        ? ''
+        : fBand === 'overdue'
+          ? ` ${t('summaryOverdue')}`
+          : ` ${t('summaryBand', { range: fBand.replace('-', '\u2013') })}`;
     return doc || band ? `${count}${doc}${band}` : `${count} · ${t('summarySorted')}`;
   })();
 

@@ -9,11 +9,11 @@ import { redirect } from '@/i18n/navigation';
 // to login and no way into the app. It was the first thing anyone saw at the root
 // URL for the entire build.
 //
-// Now it sends people to "Today". The (app) layout guard bounces unauthenticated
+// Now it sends people to the Overview (DS-17; "Today" before it). The (app) layout guard bounces unauthenticated
 // visitors to /login, so this needs no session check of its own: one destination,
 // and the guard that already exists decides whether they reach it.
 export default async function RootPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (hasLocale(['ar', 'en'], locale)) setRequestLocale(locale);
-  redirect({ href: '/today', locale });
+  redirect({ href: '/overview', locale });
 }

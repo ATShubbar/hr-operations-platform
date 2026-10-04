@@ -1,4 +1,9 @@
-import type { EmployeeResponse, GroProcessResponse, RequestResponse } from '@hr/contracts';
+import type {
+  ClientResponse,
+  EmployeeResponse,
+  GroProcessResponse,
+  RequestResponse,
+} from '@hr/contracts';
 import { DOC_TYPES, datedDocs, isSaudi, type DocKey } from '@/lib/employee-docs';
 
 // A client company's figures (DS-10), computed from data the screens already read:
@@ -14,6 +19,20 @@ import { DOC_TYPES, datedDocs, isSaudi, type DocKey } from '@/lib/employee-docs'
 // - Requests waiting = open requests not yet decided.
 
 const GRO_DONE = new Set(['completed', 'cancelled']);
+
+/**
+ * The people under management (DS-17, owner decision): not terminated, AND at a
+ * client that is still active. Someone left on an archived client's register is
+ * not under management, so they count in no headcount, Saudi share or expiry
+ * figure on the Overview or the Reports dashboard.
+ */
+export function underManagement(
+  employees: readonly EmployeeResponse[],
+  clients: readonly ClientResponse[],
+): EmployeeResponse[] {
+  const active = new Set(clients.filter((c) => c.status === 'active').map((c) => c.id));
+  return employees.filter((e) => e.employmentStatus !== 'terminated' && active.has(e.clientId));
+}
 
 export interface ClientFigures {
   headcount: number;

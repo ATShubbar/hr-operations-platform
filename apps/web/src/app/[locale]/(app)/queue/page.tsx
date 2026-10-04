@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import type {
   ClientListResponse,
@@ -33,18 +33,17 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import { GRO_ACTIVE } from '@/components/gro-work-list';
 import { NewTaskDialog } from '../tasks/new-task-dialog';
 import { QueueRow } from './queue-row';
-import type { QueueItem } from './queue-actions';
+import { useQueueItems } from './queue-items';
 import { WorkItemDialog } from './work-item-dialog';
 
 // The Work queue (DS-12) — the prototype's queue (ADR-012): every open piece of
 // work in one list, grouped by how urgent it is — government procedures, requests
 // and internal tasks, each read from its own API (no new endpoint).
 //
-// Open means: procedures not completed / cancelled (the GRO screen's rule),
-// requests open or in progress, tasks open or in progress. Tasks are listed as
+// What counts as open, and the order, live in queue-items.ts (shared with the
+// Overview, DS-17). Tasks are listed as
 // the viewer can see them (task.read-all → all, else own or assigned — the rule
 // DS-11 set for the Client record) and the screen says so.
 //
@@ -60,7 +59,6 @@ const KINDS = ['all', 'procedure', 'request', 'task'] as const;
 type KindFilter = (typeof KINDS)[number];
 const ALL = 'all';
 const ASSIGNABLE = new Set(['administrator', 'hr_officer', 'gro_officer']);
-const OPEN = new Set(['open', 'in_progress']);
 
 const BAND_HEAD: Record<Band, { bg: string; dot: string; text: string }> = {
   over: { bg: 'bg-status-critical/10', dot: 'bg-status-critical', text: 'text-status-critical' },
@@ -81,9 +79,6 @@ function bandOf(due: string | null): Band {
 
 export default function WorkQueuePage() {
   const t = useTranslations('queue');
-  const tg = useTranslations('gro');
-  const tr = useTranslations('requests');
-  const tt = useTranslations('tasks');
   const locale = useLocale();
   const router = useRouter();
   const me = useSession().userId;
@@ -146,79 +141,8 @@ export default function WorkQueuePage() {
     const c = clients.find((x) => x.id === id);
     return c ? (locale === 'ar' ? c.name.ar : c.name.en) : null;
   };
-  const personOf = (id: string) => {
-    const e = employees.find((x) => x.id === id);
-    return e ? { name: locale === 'ar' ? e.name.ar : e.name.en, ar: e.name.ar } : null;
-  };
 
-  // The three kinds as one shape.
-  const all: QueueItem[] = useMemo(() => {
-    const items: QueueItem[] = [];
-    for (const p of processes.filter((x) => GRO_ACTIVE.has(x.status))) {
-      const person = personOf(p.employeeId);
-      items.push({
-        kind: 'procedure',
-        id: p.id,
-        title: tg(`type.${p.type}`),
-        ref: p.referenceNumber,
-        meta: [person?.name, clientName(p.clientId), tg(`status.${p.status}`)]
-          .filter(Boolean)
-          .join(' · '),
-        clientId: p.clientId,
-        clientName: clientName(p.clientId),
-        person,
-        due: p.dueDate,
-        assigneeUserId: p.assigneeUserId,
-        recordHref: `/employees/${p.employeeId}`,
-        gro: p,
-        searchText: [tg(`type.${p.type}`), p.referenceNumber ?? '', person?.name ?? ''],
-      });
-    }
-    for (const q of requests.filter((x) => OPEN.has(x.status))) {
-      items.push({
-        kind: 'request',
-        id: q.id,
-        title: q.title,
-        ref: `#${q.id.slice(0, 8).toUpperCase()}`,
-        meta: [
-          q.requester?.name,
-          clientName(q.clientId),
-          tr(`type.${q.type}`),
-          tr(`status.${q.status}`),
-        ]
-          .filter(Boolean)
-          .join(' · '),
-        clientId: q.clientId,
-        clientName: clientName(q.clientId),
-        person: q.requester?.name ? { name: q.requester.name, ar: null } : null,
-        due: q.dueDate,
-        assigneeUserId: q.assigneeUserId,
-        recordHref: `/requests?r=${q.id}`,
-        request: q,
-        searchText: [q.title, q.requester?.name ?? '', q.id],
-      });
-    }
-    for (const k of tasks.filter((x) => OPEN.has(x.status))) {
-      items.push({
-        kind: 'task',
-        id: k.id,
-        title: k.title,
-        ref: null,
-        meta: [clientName(k.clientId), tt(`priority.${k.priority}`), tt(`status.${k.status}`)]
-          .filter(Boolean)
-          .join(' · '),
-        clientId: k.clientId,
-        clientName: clientName(k.clientId),
-        person: null,
-        due: k.dueDate,
-        assigneeUserId: k.assigneeUserId,
-        recordHref: null,
-        task: k,
-        searchText: [k.title],
-      });
-    }
-    return items.sort((a, b) => (a.due ?? '9999').localeCompare(b.due ?? '9999'));
-  }, [processes, requests, tasks, employees, clients, locale]);
+  const all = useQueueItems({ processes, requests, tasks, employees, clients });
 
   const shown = all.filter(
     (i) =>
