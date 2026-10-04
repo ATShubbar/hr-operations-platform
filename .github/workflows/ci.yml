@@ -12,6 +12,12 @@ env:
   EMPLOYEE_DATABASE_URL: postgresql://app_employee:app_employee_dev_pw@localhost:5432/hr_platform
   REDIS_URL: redis://localhost:6379
   APP_WEB_ORIGIN: http://localhost:3000
+  # Throwaway MinIO credentials — the same dev values docker-compose.yml publishes.
+  STORAGE_ENDPOINT: http://localhost:9000
+  STORAGE_REGION: us-east-1
+  STORAGE_BUCKET: hr-documents
+  STORAGE_ACCESS_KEY: hr_minio
+  STORAGE_SECRET_KEY: hr_minio_dev_pw
 
 jobs:
   ci:
@@ -70,6 +76,19 @@ jobs:
       # under the same conditions as every local run.
       - name: Seed the test database
         run: pnpm --filter @hr/api db:seed
+
+      # Document e2e specs upload to object storage. A service container can't
+      # pass MinIO its `server /data` command, so it starts here instead.
+      - name: Start MinIO (object storage for the document specs)
+        run: |
+          docker run -d --name minio -p 9000:9000 \
+            -e MINIO_ROOT_USER="$STORAGE_ACCESS_KEY" -e MINIO_ROOT_PASSWORD="$STORAGE_SECRET_KEY" \
+            minio/minio server /data
+          for i in $(seq 1 30); do
+            curl -fsS http://localhost:9000/minio/health/live && exit 0
+            sleep 2
+          done
+          docker logs minio; exit 1
 
       - name: Lint, typecheck, test, build
         run: pnpm turbo run lint typecheck test build
