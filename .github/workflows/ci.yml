@@ -58,6 +58,11 @@ jobs:
       - name: Apply database migrations (includes RLS roles + policies)
         run: pnpm --filter @hr/api db:deploy
 
+      # The seed loads API modules, which import @hr/contracts/@hr/dates — those
+      # resolve to dist/, which nothing has built yet at this point.
+      - name: Build the API's workspace packages
+        run: pnpm turbo run build --filter='@hr/api^...'
+
       # Several e2e specs read the seed's fixed fixtures (client A, its
       # employees). Locally the database is always seeded; CI never was, so those
       # specs had failed on every push since they were written — unseen, because
