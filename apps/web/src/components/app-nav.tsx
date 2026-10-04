@@ -138,6 +138,8 @@ export function AppNav({
   const canAudit = useCan('audit.read');
   const canStaffUsers = useCan('staff-user.read');
   const canPortal = useCan('portal.read');
+  // Leaves (LEAVE-04): staff and client managers hold leave.read (ADR-014).
+  const canLeave = useCan('leave.read');
   // Employee self-service (SS-07): only the employee role holds this.
   const canSelfService = useCan('self-service.read');
 
@@ -160,6 +162,9 @@ export function AppNav({
             items: [
               // DS-18: the client manager's Overview is their home, as in the prototype.
               { href: '/overview', label: t('nav.overview'), icon: LayoutGrid },
+              // LEAVE-04: the prototype gives client managers Leaves (approving
+              // their own people's requests is theirs to do).
+              ...(canLeave ? [{ href: '/leaves', label: t('nav.leaves'), icon: Plane }] : []),
               { href: '/portal/company', label: t('nav.portalCompany'), icon: Building2 },
               { href: '/portal/employees', label: t('nav.portalEmployees'), icon: UsersRound },
               { href: '/portal/documents', label: t('nav.portalDocuments'), icon: FileText },
@@ -170,8 +175,8 @@ export function AppNav({
         ]
       : [
           // The prototype's "Workspace" list, in its order, labels and icons
-          // (DS-04, ADR-012) — every row now opens the prototype's own screen
-          // (DS-05..21); Leaves opens a "coming soon" page until its feature.
+          // (DS-04, ADR-012) — every row opens the prototype's own screen
+          // (DS-05..21; Leaves since LEAVE-04).
           // Gated by each screen's read permission (the v1.7 roles, ADR-013).
           //
           // DS-22 retired the temporary "Other tools" group: Documents and
@@ -207,7 +212,7 @@ export function AppNav({
                     },
                   ]
                 : []),
-              { href: '/leaves', label: t('nav.leaves'), icon: Plane },
+              ...(canLeave ? [{ href: '/leaves', label: t('nav.leaves'), icon: Plane }] : []),
               ...(canEmployees
                 ? [{ href: '/employees', label: t('nav.people'), icon: Users }]
                 : []),

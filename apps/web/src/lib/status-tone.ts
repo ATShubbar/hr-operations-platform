@@ -102,6 +102,17 @@ const USER: Record<string, StatusTone> = {
   invited: 'info',
 };
 
+// Leave (ADR-014, LEAVE-04): waiting on the employer is the one state that asks
+// someone to act now; approved-awaiting-filing is in progress; filed is done; a
+// withdrawn request is neither a fault nor a success — someone simply stopped it.
+const LEAVE: Record<string, StatusTone> = {
+  pending: 'warning',
+  approved: 'info',
+  filed: 'ok',
+  declined: 'critical',
+  withdrawn: 'neutral',
+};
+
 const DOMAINS = {
   vacancy: VACANCY,
   client: CLIENT,
@@ -113,6 +124,7 @@ const DOMAINS = {
   document: DOCUMENT,
   employee: EMPLOYEE,
   candidate: CANDIDATE,
+  leave: LEAVE,
 } as const;
 
 export type StatusDomain = keyof typeof DOMAINS;

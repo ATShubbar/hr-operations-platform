@@ -1263,7 +1263,13 @@ filing writes **one ledger entry per leave year** (leave crossing 31 Dec split b
 `GET /me/leave/balance`, `POST /leave/carry-over` (`leave.carry-over`, Administrator; optional `clientId`). The
 **1 January 00:10 Riyadh carry-over job** runs on the worker (`LEAVE_QUEUE`, `LeaveWorkerModule` in MainModule only),
 idempotent via a partial unique index. **Go-live caveat:** load real opening balances before production's first 1 Jan, or
-everyone is credited the full cap. API **580/580**. Next: **LEAVE-04** (the Leaves screen).
+everyone is credited the full cap. API **580/580**.
+**LEAVE-04 done — the Leaves screen.** `(app)/leaves` = the prototype's: summary, one-card 4-cell tile strip, Requests
+(list + detail: Hijri dates, wait line per role/state, basis, annual-balance block, same-company clash list, Approve/
+Decline/File/Withdraw by permission) + Balances "next release"; Request leave dialog (date picker + Hijri echo — owner
+chose it over the 16-week list; server refusals mapped to translations). Client managers' nav gains Leaves. `lib/leave.ts`,
+`toneFor('leave')`. Verified live per role, en+ar, 0px overflow at 375. Fixed: filter squeezing tabs at 375; first-word
+split turning «عبد الله» into «عبد». No API change. Next: **LEAVE-05** (Balances tab + Person Leave tab + Run carry-over).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
