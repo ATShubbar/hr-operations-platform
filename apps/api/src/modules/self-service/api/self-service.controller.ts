@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   ForbiddenException,
   Get,
   HttpCode,
@@ -10,11 +11,15 @@ import {
   Post,
 } from '@nestjs/common';
 import {
+  createRequestAttachmentSchema,
   createRequestCommentSchema,
   createSelfLeaveRequestSchema,
   createSelfRequestRequestSchema,
   type EmployeeLeaveResponse,
   type LeaveListResponse,
+  type RequestAttachment,
+  type RequestAttachmentListResponse,
+  type RequestAttachmentUploadResponse,
   type RequestComment,
   type RequestCommentListResponse,
   type LeaveResponse,
@@ -33,6 +38,9 @@ import { DocumentsService, toSelfDocumentResponse } from '../../documents/public
 import { EmployeesService, toSelfProfileResponse } from '../../employees/public-api';
 import { LeaveBalanceService, LeavePresenter, LeaveService } from '../../leave/public-api';
 import {
+  ATTACHMENT_DOWNLOAD_TTL_SECONDS,
+  INVALID_ATTACHMENT,
+  RequestAttachmentsService,
   RequestThreadService,
   RequestsService,
   toSelfRequestResponse,
@@ -69,6 +77,7 @@ export class SelfServiceController {
     private readonly presentLeave: LeavePresenter,
     private readonly leaveBalances: LeaveBalanceService,
     private readonly thread: RequestThreadService,
+    private readonly attachments: RequestAttachmentsService,
   ) {}
 
   @RequirePermission('self-service.read')
@@ -171,6 +180,70 @@ export class SelfServiceController {
     return row;
   }
 
+  // Files on a request I raised (ADR-016, THREAD-02): the same service and
+  // rules as the staff/client routes, on my own fenced connection. A request or
+  // file that isn't mine to see is the same 404.
+  @RequirePermission('self-service.read')
+  @Get('requests/:id/attachments')
+  async myRequestAttachments(@Param('id') id: string): Promise<RequestAttachmentListResponse> {
+    const path = await this.myPath();
+    const rows = UUID_RE.test(id) ? await this.attachments.list(path, id) : null;
+    if (!rows) throw new NotFoundException('Request not found');
+    return { attachments: rows };
+  }
+
+  @RequirePermission('self-service.create')
+  @Post('requests/:id/attachments')
+  @HttpCode(201)
+  async addMyRequestAttachment(
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ): Promise<RequestAttachmentUploadResponse> {
+    const path = await this.myPath();
+    const parsed = createRequestAttachmentSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException(INVALID_ATTACHMENT);
+    const issued = UUID_RE.test(id) ? await this.attachments.create(path, id, parsed.data) : null;
+    if (!issued) throw new NotFoundException('Request not found');
+    return issued;
+  }
+
+  @RequirePermission('self-service.create')
+  @Post('requests/:id/attachments/:fileId/confirm')
+  @HttpCode(200)
+  async confirmMyRequestAttachment(
+    @Param('id') id: string,
+    @Param('fileId') fileId: string,
+  ): Promise<RequestAttachment> {
+    const path = await this.myPath();
+    const row = UUID_RE.test(id) && UUID_RE.test(fileId) ? await this.attachments.confirm(path, id, fileId) : null;
+    if (!row) throw new NotFoundException('File not found');
+    return row;
+  }
+
+  @RequirePermission('self-service.read')
+  @Get('requests/:id/attachments/:fileId/download')
+  async downloadMyRequestAttachment(
+    @Param('id') id: string,
+    @Param('fileId') fileId: string,
+  ): Promise<DownloadResponse> {
+    const path = await this.myPath();
+    const url = UUID_RE.test(id) && UUID_RE.test(fileId) ? await this.attachments.download(path, id, fileId) : null;
+    if (!url) throw new NotFoundException('File not found');
+    return { url, method: 'GET', expiresInSeconds: ATTACHMENT_DOWNLOAD_TTL_SECONDS };
+  }
+
+  @RequirePermission('self-service.create')
+  @Delete('requests/:id/attachments/:fileId')
+  async removeMyRequestAttachment(
+    @Param('id') id: string,
+    @Param('fileId') fileId: string,
+  ): Promise<RequestAttachment> {
+    const path = await this.myPath();
+    const row = UUID_RE.test(id) && UUID_RE.test(fileId) ? await this.attachments.remove(path, id, fileId) : null;
+    if (!row) throw new NotFoundException('File not found');
+    return row;
+  }
+
   // My leave (ADR-014, LEAVE-02): every leave request ABOUT me — mine and those
   // my manager or PEOPLE&GRO raised for me — newest first. The database returns
   // only my rows (employee_self).
@@ -220,6 +293,11 @@ export class SelfServiceController {
 
   // The caller's own record, after every access rule. Shared by every /me route
   // (SS-04 documents, SS-05 requests) so none of them can skip a fence.
+  // My own fenced path — the employee id comes from my record (the session), never input.
+  private async myPath(): Promise<{ kind: 'employee'; employeeId: string }> {
+    return { kind: 'employee', employeeId: (await this.ownRecord()).id };
+  }
+
   private async ownRecord(): Promise<EmployeeRecord> {
     const ctx = requestContext.get();
     // Defence in depth: the guard already requires self-service.read, which only

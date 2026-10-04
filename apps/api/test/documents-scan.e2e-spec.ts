@@ -5,7 +5,7 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AppModule } from '../src/app.module';
 import { PrismaClient } from '../src/generated/prisma/client';
-import { EICAR_TEST_SIGNATURE } from '../src/modules/documents/public-api';
+import { EICAR_TEST_SIGNATURE } from '../src/modules/storage/public-api';
 import { cleanupHelperUsers, loginAsStaff, type TestPrincipal } from './helpers/login';
 
 // DOC-04: virus-scan hook (dev pass-through flags EICAR) + legal-hold retention.

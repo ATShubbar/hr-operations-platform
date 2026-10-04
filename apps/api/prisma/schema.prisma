@@ -461,6 +461,7 @@ model Request {
   requesterEmployeeId String?          @map("requester_employee_id") @db.Uuid
   createdAt           DateTime         @default(now()) @map("created_at")
   comments            RequestComment[]
+  attachments         RequestAttachment[]
   updatedAt           DateTime         @updatedAt @map("updated_at")
 
   @@index([clientId])
@@ -489,6 +490,44 @@ model RequestComment {
   @@index([requestId, createdAt])
   @@index([clientId])
   @@map("req_comments")
+}
+
+// THREAD-02 (ADR-016): files on a request's thread — the request's own
+// correspondence, not the employee's document record. Like comments, the
+// request's client_id and requester_employee_id are COPIED on so database
+// isolation never needs a join. Uploaded browser → storage (presigned), then
+// confirmed: scanned before it can be downloaded (`quarantined` if infected,
+// `rejected` if it isn't the PDF/JPG/PNG ≤ 10 MB it claimed to be). Only the
+// uploader removes their own file, and removal is soft (the row stays as
+// "removed by …").
+model RequestAttachment {
+  id                  String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  requestId           String                  @map("request_id") @db.Uuid
+  clientId            String                  @map("client_id") @db.Uuid
+  requesterEmployeeId String?                 @map("requester_employee_id") @db.Uuid
+  uploadedByUserId    String                  @map("uploaded_by_user_id") @db.Uuid
+  fileName            String                  @map("file_name")
+  contentType         String                  @map("content_type")
+  sizeBytes           Int                     @map("size_bytes")
+  storageKey          String                  @unique @map("storage_key")
+  status              RequestAttachmentStatus @default(pending)
+  createdAt           DateTime                @default(now()) @map("created_at")
+  confirmedAt         DateTime?               @map("confirmed_at")
+  removedAt           DateTime?               @map("removed_at")
+
+  request Request @relation(fields: [requestId], references: [id], onDelete: Restrict)
+
+  @@index([requestId, createdAt])
+  @@index([clientId])
+  @@map("req_attachments")
+}
+
+enum RequestAttachmentStatus {
+  pending
+  available
+  quarantined
+  rejected
+  removed
 }
 
 enum RequestType {

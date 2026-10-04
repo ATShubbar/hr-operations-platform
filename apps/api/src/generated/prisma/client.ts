@@ -115,6 +115,11 @@ export type Request = Prisma.RequestModel
  */
 export type RequestComment = Prisma.RequestCommentModel
 /**
+ * Model RequestAttachment
+ * 
+ */
+export type RequestAttachment = Prisma.RequestAttachmentModel
+/**
  * Model Task
  * 
  */

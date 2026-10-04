@@ -43,3 +43,15 @@ export function buildRequestCommentContent(args: { title: string }): RequestCont
     },
   };
 }
+
+// THREAD-02: a file became available on the thread. The file name is NOT
+// copied (free text the uploader chose); the reader opens it in the thread.
+export function buildRequestAttachmentContent(args: { title: string }): RequestContent {
+  return {
+    title: { ar: 'ملف جديد على طلب', en: 'New file on a request' },
+    body: {
+      ar: `أُرفق ملف جديد بطلبك «${args.title}».`,
+      en: `A new file was added to "${args.title}".`,
+    },
+  };
+}

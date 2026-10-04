@@ -3,3 +3,4 @@
 // private.
 export { StorageModule } from './storage.module';
 export { StorageService } from './application/storage.service';
+export { EICAR_TEST_SIGNATURE, FILE_SCANNER, type FileScanner, type ScanResult } from './domain/file-scanner';

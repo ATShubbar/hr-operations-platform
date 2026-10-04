@@ -155,6 +155,17 @@ export const NotificationCategory = {
 export type NotificationCategory = (typeof NotificationCategory)[keyof typeof NotificationCategory]
 
 
+export const RequestAttachmentStatus = {
+  pending: 'pending',
+  available: 'available',
+  quarantined: 'quarantined',
+  rejected: 'rejected',
+  removed: 'removed'
+} as const
+
+export type RequestAttachmentStatus = (typeof RequestAttachmentStatus)[keyof typeof RequestAttachmentStatus]
+
+
 export const RequestType = {
   letter: 'letter',
   certificate: 'certificate',

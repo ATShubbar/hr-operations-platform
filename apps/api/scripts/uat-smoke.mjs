@@ -8,7 +8,8 @@
 // allowed screen and one refused one; then a real document round-trip through
 // the bucket; then a request whose status change notifies its client manager —
 // that notification is emailed by the BullMQ WORKER, so its log line
-// `email → client_manager-a@seed.hr.local` proves the worker processes jobs.
+// `email → client_manager-a@seed.hr.local` proves the worker processes jobs —
+// with a PDF attached to its thread and removed again (THREAD-02).
 //
 // Administrator and Auditor are checked only on UAT (SMOKE_ACCOUNTS=uat), where
 // UAT-01 removed the authenticator; elsewhere both must enrol one, and a script
@@ -156,6 +157,29 @@ async function main() {
         body: { status: 'in_progress' },
       });
       check(moved.json?.status === 'in_progress', 'request: taken up by HR', `HTTP ${moved.status}`);
+      // THREAD-02: a file on that request's thread — the client manager attaches
+      // a PDF (presigned PUT → confirm runs the virus + type check), HR downloads
+      // the same bytes, and the uploader removes it again (soft: a "removed" line).
+      const pdf = `%PDF-1.4\n% uat smoke ${new Date().toISOString()}\n%%EOF\n`;
+      const files = `/requests/${raised.json.id}/attachments`;
+      const issuedFile = await call(files, {
+        cookie: cm,
+        method: 'POST',
+        body: { fileName: 'uat-smoke.pdf', contentType: 'application/pdf', sizeBytes: Buffer.byteLength(pdf) },
+      });
+      check(issuedFile.status === 201, 'attachment: upload issued to the client manager', `HTTP ${issuedFile.status}`);
+      if (issuedFile.status === 201) {
+        const { attachment, upload } = issuedFile.json;
+        const put = await fetch(upload.url, { method: 'PUT', headers: upload.headers, body: pdf });
+        check(put.ok, 'attachment: bytes stored in the bucket', `HTTP ${put.status}`);
+        const ok = await call(`${files}/${attachment.id}/confirm`, { cookie: cm, method: 'POST' });
+        check(ok.json?.status === 'available', 'attachment: checked and available', `${ok.json?.status}`);
+        const dl = await call(`${files}/${attachment.id}/download`, { cookie: hr });
+        const got = dl.json?.url ? await (await fetch(dl.json.url)).text() : null;
+        check(got === pdf, 'attachment: HR downloads the same bytes');
+        const gone = await call(`${files}/${attachment.id}`, { cookie: cm, method: 'DELETE' });
+        check(gone.json?.status === 'removed', 'attachment: removed by its uploader', `HTTP ${gone.status}`);
+      }
       process.stdout.write(
         `INFO  worker proof: look for "email → ${emailOf('client_manager-a')}" in the uat-worker log after ${new Date().toISOString()} (request ${raised.json.id})\n`,
       );

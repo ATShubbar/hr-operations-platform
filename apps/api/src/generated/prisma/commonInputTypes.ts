@@ -731,6 +731,23 @@ export type EnumRequestPriorityWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumRequestPriorityFilter<$PrismaModel>
 }
 
+export type EnumRequestAttachmentStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.RequestAttachmentStatus | Prisma.EnumRequestAttachmentStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.RequestAttachmentStatus[] | Prisma.ListEnumRequestAttachmentStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.RequestAttachmentStatus[] | Prisma.ListEnumRequestAttachmentStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumRequestAttachmentStatusFilter<$PrismaModel> | $Enums.RequestAttachmentStatus
+}
+
+export type EnumRequestAttachmentStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.RequestAttachmentStatus | Prisma.EnumRequestAttachmentStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.RequestAttachmentStatus[] | Prisma.ListEnumRequestAttachmentStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.RequestAttachmentStatus[] | Prisma.ListEnumRequestAttachmentStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumRequestAttachmentStatusWithAggregatesFilter<$PrismaModel> | $Enums.RequestAttachmentStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumRequestAttachmentStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumRequestAttachmentStatusFilter<$PrismaModel>
+}
+
 export type EnumTaskStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.TaskStatus | Prisma.EnumTaskStatusFieldRefInput<$PrismaModel>
   in?: $Enums.TaskStatus[] | Prisma.ListEnumTaskStatusFieldRefInput<$PrismaModel>
@@ -1588,6 +1605,23 @@ export type NestedEnumRequestPriorityWithAggregatesFilter<$PrismaModel = never> 
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumRequestPriorityFilter<$PrismaModel>
   _max?: Prisma.NestedEnumRequestPriorityFilter<$PrismaModel>
+}
+
+export type NestedEnumRequestAttachmentStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.RequestAttachmentStatus | Prisma.EnumRequestAttachmentStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.RequestAttachmentStatus[] | Prisma.ListEnumRequestAttachmentStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.RequestAttachmentStatus[] | Prisma.ListEnumRequestAttachmentStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumRequestAttachmentStatusFilter<$PrismaModel> | $Enums.RequestAttachmentStatus
+}
+
+export type NestedEnumRequestAttachmentStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.RequestAttachmentStatus | Prisma.EnumRequestAttachmentStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.RequestAttachmentStatus[] | Prisma.ListEnumRequestAttachmentStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.RequestAttachmentStatus[] | Prisma.ListEnumRequestAttachmentStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumRequestAttachmentStatusWithAggregatesFilter<$PrismaModel> | $Enums.RequestAttachmentStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumRequestAttachmentStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumRequestAttachmentStatusFilter<$PrismaModel>
 }
 
 export type NestedEnumTaskStatusFilter<$PrismaModel = never> = {

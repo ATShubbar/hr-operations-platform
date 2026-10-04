@@ -5,4 +5,3 @@ export { toDocumentResponse, toSelfDocumentResponse } from './domain/document-vi
 export type { CreateDocumentInput } from './domain/document';
 // The scanner seam: the DI token + interface (so production can bind a real
 // scanner) and the EICAR test signature (for exercising the quarantine path).
-export { DOCUMENT_SCANNER, EICAR_TEST_SIGNATURE, type DocumentScanner } from './domain/scanner';

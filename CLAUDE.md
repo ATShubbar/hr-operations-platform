@@ -1299,8 +1299,16 @@ Client manager, NOT the Auditor (reads, can't post); employees post via `POST /m
 `request-comment` (length, not text), publishes `RequestCommentAddedEvent` → a staff comment notifies the creator, a
 client/employee comment the assignee, never the author. Web: `requests/request-thread.tsx` (staff, client, employee) and
 `/me/requests` is now list + detail (`?r=`). Comment bodies sit in `<bdi>`: under ADR-012's LTR layout an Arabic comment
-otherwise printed its full stop at the start (`dir="auto"`/`plaintext` right-align it instead). API **601/601** ×3. Next:
-**THREAD-02** (attachments).
+otherwise printed its full stop at the start (`dir="auto"`/`plaintext` right-align it instead). API **601/601** ×3.
+**THREAD-02 done — files on a request's thread (ADR-016 rev. 1).** `req_attachments` (PDF/JPG/PNG ≤10MB, ≤20 per request
+— pending uploads hold a slot 15 min; client_id/requester copied; NO delete grant, UPDATE column-limited) + a **trigger**
+`req_attachments_guard` for the only legal moves (pending→available|quarantined|**rejected**, available→removed), binding
+staff too + RESTRICTIVE `attachment_starts_pending`/`client_attach`, `employee_attach`. `RequestAttachmentsService` (one
+service, `AttachmentPath` staff·client·employee): create → presigned PUT → **confirm** (uploader only: missing 400, >10MB
+rejected, virus scan quarantined, first bytes ≠ declared type rejected) → 300s download named `inline; filename*=` →
+remove (uploader only, soft: "File removed by …" line). Non-uploaders get 404 on pending/refused files. The scanner seam
+is now Storage's **`FILE_SCANNER`** (moved from Documents). UAT smoke gains an attachment round-trip (a seeded file needs
+IAM for the seed account → SEED-01). API **617/617**. Next: **THREAD-03** (Ask for more detail).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
@@ -1308,6 +1316,12 @@ otherwise printed its full stop at the start (`dir="auto"`/`plaintext` right-ali
 - QUALIFY the policy table's columns inside an RLS subquery (`req_comments.client_id`, not `client_id`): an unqualified
   name resolves to the SUBQUERY's table first, so `r.client_id = client_id` compares a column with itself and the policy
   is a tautology that passes every row (THREAD-01 — caught only because a fence test wrote onto another company).
+- RLS can't compare a row's OLD and NEW values, so a status life cycle that must bind EVERY role (staff included) is a
+  `BEFORE UPDATE` trigger; column grants still limit which columns the app roles may touch (THREAD-02).
+- `<bdi>` as a FLEX CHILD is blockified, so its `dir=auto` also flips its ALIGNMENT (an Arabic file name sat right-aligned
+  in the LTR layout). Wrap it: `<span class="truncate"><bdi>…</bdi></span>`. And never put a user's free text (a file
+  name) inside a translated SENTENCE: Unicode isolates (FSI…PDI) in an LTR paragraph split an Arabic sentence into runs
+  laid out left to right, so the verb lands at the wrong end — worse than no isolate (THREAD-02).
 - A WITH CHECK red proof can be MASKED by the read policy: an INSERT … RETURNING row the caller can't SELECT fails anyway,
   so loosening the write policy changes nothing for that forgery. Test a forgery the read policy WOULD let back out
   (THREAD-01: a colleague's request labelled with my own employee id).

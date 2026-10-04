@@ -139,6 +139,13 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   // request-comments.e2e + its RLS checks).
   'GET /requests/:id/comments': 'client-read',
   'POST /requests/:id/comments': 'client-write',
+  // THREAD-02: files on the thread (own company for client managers; proven in
+  // request-attachments.e2e + its RLS checks).
+  'GET /requests/:id/attachments': 'client-read',
+  'POST /requests/:id/attachments': 'client-write',
+  'POST /requests/:id/attachments/:fileId/confirm': 'client-write',
+  'GET /requests/:id/attachments/:fileId/download': 'client-read',
+  'DELETE /requests/:id/attachments/:fileId': 'client-write',
   'PATCH /requests/:id': 'client-write',
   // Processing (REQ-03) is STAFF-only (request.process; client reps lack it) and
   // cross-client — so 'staff', not a client-scoped class.
@@ -222,6 +229,12 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'GET /me/requests/:id': 'employee-read',
   'GET /me/requests/:id/comments': 'employee-read',
   'POST /me/requests/:id/comments': 'employee-write',
+  // THREAD-02: files on a request I raised (scoping proven in request-attachments.e2e).
+  'GET /me/requests/:id/attachments': 'employee-read',
+  'POST /me/requests/:id/attachments': 'employee-write',
+  'POST /me/requests/:id/attachments/:fileId/confirm': 'employee-write',
+  'GET /me/requests/:id/attachments/:fileId/download': 'employee-read',
+  'DELETE /me/requests/:id/attachments/:fileId': 'employee-write',
   // My leave (ADR-014, LEAVE-02): the list carries each row's employee id, so
   // the colleague loop probes it directly; raising and withdrawing are writes
   // (scoping proven in leave-api.e2e + the LEAVE-01 RLS spec).

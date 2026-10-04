@@ -80,6 +80,18 @@ read receipts, holiday calendars.
 - `info_needed` joins the status workflow: list filters, labels, tones, the decision trail and the
   calendar/queue projections must all know it (they treat it as active, not finished).
 
+## Revisions
+- **rev. 1 (THREAD-02, 2026-10-04) — attachments, two owner decisions and one state.**
+  ★ A removed file **stays in the thread** as "File removed by <name> · date" (no name, no
+  download) — a thread is a record. ★ A request carries **at most 20 files** (an upload still in
+  progress holds its slot for the 15 minutes its link lives). A new terminal state **`rejected`**
+  sits beside `quarantined`: confirm refuses a file over 10 MB or one whose first bytes aren't the
+  PDF/JPG/PNG it claimed (the browser PUTs whatever it likes, so the declared type is checked
+  against the file's signature after the virus scan). The legal moves (pending → available |
+  quarantined | rejected, available → removed) are a database trigger that binds staff too. The
+  virus-scan seam moved from Documents to **Storage** (architecture.md already lists scanning
+  under Storage), so Requests doesn't depend on Documents. No matrix or catalog change.
+
 ## Links
 - architecture.md v1.10; ADR-004 (events), ADR-011 (self-service), ADR-012 (prototype fidelity),
   ADR-013 (roles); DOC-04 (scan hook)

@@ -56,11 +56,21 @@ export class StorageService {
     );
   }
 
-  // A short-lived URL the client downloads the blob FROM (HTTP GET).
-  async presignDownload(key: string, expiresInSeconds = 900): Promise<string> {
-    return getSignedUrl(this.client, new GetObjectCommand({ Bucket: this.bucket, Key: key }), {
-      expiresIn: expiresInSeconds,
-    });
+  // A short-lived URL the client downloads the blob FROM (HTTP GET). With a
+  // `fileName`, the response names the file (Content-Disposition, inline so a
+  // PDF or image opens in the browser) — keys are ids, not names (THREAD-02).
+  async presignDownload(key: string, expiresInSeconds = 900, fileName?: string): Promise<string> {
+    return getSignedUrl(
+      this.client,
+      new GetObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+        ...(fileName
+          ? { ResponseContentDisposition: `inline; filename*=UTF-8''${encodeURIComponent(fileName)}` }
+          : {}),
+      }),
+      { expiresIn: expiresInSeconds },
+    );
   }
 
   async deleteObject(key: string): Promise<void> {

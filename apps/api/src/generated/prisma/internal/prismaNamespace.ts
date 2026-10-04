@@ -399,6 +399,7 @@ export const ModelName = {
   NotificationPreference: 'NotificationPreference',
   Request: 'Request',
   RequestComment: 'RequestComment',
+  RequestAttachment: 'RequestAttachment',
   Task: 'Task',
   Vacancy: 'Vacancy',
   Candidate: 'Candidate',
@@ -422,7 +423,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "authUser" | "authAccountToken" | "coreScopeCheck" | "auditEntry" | "systemSetting" | "clientSetting" | "userSetting" | "client" | "employee" | "document" | "notification" | "expiryAlert" | "notificationPreference" | "request" | "requestComment" | "task" | "vacancy" | "candidate" | "groProcess" | "gcalInvitation" | "calendarEvent" | "leaveRequest" | "leaveEntry"
+    modelProps: "authUser" | "authAccountToken" | "coreScopeCheck" | "auditEntry" | "systemSetting" | "clientSetting" | "userSetting" | "client" | "employee" | "document" | "notification" | "expiryAlert" | "notificationPreference" | "request" | "requestComment" | "requestAttachment" | "task" | "vacancy" | "candidate" | "groProcess" | "gcalInvitation" | "calendarEvent" | "leaveRequest" | "leaveEntry"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1536,6 +1537,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    RequestAttachment: {
+      payload: Prisma.$RequestAttachmentPayload<ExtArgs>
+      fields: Prisma.RequestAttachmentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.RequestAttachmentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RequestAttachmentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.RequestAttachmentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RequestAttachmentPayload>
+        }
+        findFirst: {
+          args: Prisma.RequestAttachmentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RequestAttachmentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.RequestAttachmentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RequestAttachmentPayload>
+        }
+        findMany: {
+          args: Prisma.RequestAttachmentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RequestAttachmentPayload>[]
+        }
+        create: {
+          args: Prisma.RequestAttachmentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RequestAttachmentPayload>
+        }
+        createMany: {
+          args: Prisma.RequestAttachmentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.RequestAttachmentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RequestAttachmentPayload>[]
+        }
+        delete: {
+          args: Prisma.RequestAttachmentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RequestAttachmentPayload>
+        }
+        update: {
+          args: Prisma.RequestAttachmentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RequestAttachmentPayload>
+        }
+        deleteMany: {
+          args: Prisma.RequestAttachmentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.RequestAttachmentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.RequestAttachmentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RequestAttachmentPayload>[]
+        }
+        upsert: {
+          args: Prisma.RequestAttachmentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RequestAttachmentPayload>
+        }
+        aggregate: {
+          args: Prisma.RequestAttachmentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateRequestAttachment>
+        }
+        groupBy: {
+          args: Prisma.RequestAttachmentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RequestAttachmentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.RequestAttachmentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RequestAttachmentCountAggregateOutputType> | number
+        }
+      }
+    }
     Task: {
       payload: Prisma.$TaskPayload<ExtArgs>
       fields: Prisma.TaskFieldRefs
@@ -2402,6 +2477,25 @@ export const RequestCommentScalarFieldEnum = {
 export type RequestCommentScalarFieldEnum = (typeof RequestCommentScalarFieldEnum)[keyof typeof RequestCommentScalarFieldEnum]
 
 
+export const RequestAttachmentScalarFieldEnum = {
+  id: 'id',
+  requestId: 'requestId',
+  clientId: 'clientId',
+  requesterEmployeeId: 'requesterEmployeeId',
+  uploadedByUserId: 'uploadedByUserId',
+  fileName: 'fileName',
+  contentType: 'contentType',
+  sizeBytes: 'sizeBytes',
+  storageKey: 'storageKey',
+  status: 'status',
+  createdAt: 'createdAt',
+  confirmedAt: 'confirmedAt',
+  removedAt: 'removedAt'
+} as const
+
+export type RequestAttachmentScalarFieldEnum = (typeof RequestAttachmentScalarFieldEnum)[keyof typeof RequestAttachmentScalarFieldEnum]
+
+
 export const TaskScalarFieldEnum = {
   id: 'id',
   clientId: 'clientId',
@@ -2955,6 +3049,20 @@ export type ListEnumRequestPriorityFieldRefInput<$PrismaModel> = FieldRefInputTy
 
 
 /**
+ * Reference to a field of type 'RequestAttachmentStatus'
+ */
+export type EnumRequestAttachmentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RequestAttachmentStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'RequestAttachmentStatus[]'
+ */
+export type ListEnumRequestAttachmentStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RequestAttachmentStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'TaskStatus'
  */
 export type EnumTaskStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TaskStatus'>
@@ -3246,6 +3354,7 @@ export type GlobalOmitConfig = {
   notificationPreference?: Prisma.NotificationPreferenceOmit
   request?: Prisma.RequestOmit
   requestComment?: Prisma.RequestCommentOmit
+  requestAttachment?: Prisma.RequestAttachmentOmit
   task?: Prisma.TaskOmit
   vacancy?: Prisma.VacancyOmit
   candidate?: Prisma.CandidateOmit

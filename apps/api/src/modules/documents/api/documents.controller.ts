@@ -26,10 +26,9 @@ import { RequirePermission } from '../../../auth/permissions.decorator';
 import { requestContext } from '../../../context/request-context';
 import type { DocumentModel as DocumentRecord } from '../../../generated/prisma/models';
 import { ClientsService } from '../../clients/public-api';
-import { StorageService } from '../../storage/public-api';
+import { FILE_SCANNER, StorageService, type FileScanner } from '../../storage/public-api';
 import { DocumentsService } from '../application/documents.service';
 import { canWriteCategory } from '../domain/document-policy';
-import { DOCUMENT_SCANNER, type DocumentScanner } from '../domain/scanner';
 import { toDocumentResponse as toResponse } from '../domain/document-view';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -47,7 +46,7 @@ export class DocumentsController {
     private readonly documents: DocumentsService,
     private readonly clients: ClientsService,
     private readonly storage: StorageService,
-    @Inject(DOCUMENT_SCANNER) private readonly scanner: DocumentScanner,
+    @Inject(FILE_SCANNER) private readonly scanner: FileScanner,
   ) {}
 
   @RequirePermission('document.upload')

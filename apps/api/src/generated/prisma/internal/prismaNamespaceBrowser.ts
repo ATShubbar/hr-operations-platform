@@ -66,6 +66,7 @@ export const ModelName = {
   NotificationPreference: 'NotificationPreference',
   Request: 'Request',
   RequestComment: 'RequestComment',
+  RequestAttachment: 'RequestAttachment',
   Task: 'Task',
   Vacancy: 'Vacancy',
   Candidate: 'Candidate',
@@ -325,6 +326,25 @@ export const RequestCommentScalarFieldEnum = {
 } as const
 
 export type RequestCommentScalarFieldEnum = (typeof RequestCommentScalarFieldEnum)[keyof typeof RequestCommentScalarFieldEnum]
+
+
+export const RequestAttachmentScalarFieldEnum = {
+  id: 'id',
+  requestId: 'requestId',
+  clientId: 'clientId',
+  requesterEmployeeId: 'requesterEmployeeId',
+  uploadedByUserId: 'uploadedByUserId',
+  fileName: 'fileName',
+  contentType: 'contentType',
+  sizeBytes: 'sizeBytes',
+  storageKey: 'storageKey',
+  status: 'status',
+  createdAt: 'createdAt',
+  confirmedAt: 'confirmedAt',
+  removedAt: 'removedAt'
+} as const
+
+export type RequestAttachmentScalarFieldEnum = (typeof RequestAttachmentScalarFieldEnum)[keyof typeof RequestAttachmentScalarFieldEnum]
 
 
 export const TaskScalarFieldEnum = {

@@ -10,10 +10,11 @@ import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { RequestAttachments } from './request-attachments';
 
 // A request's thread (ADR-016) — the prototype's Attachments + Comments blocks
-// under the request detail. THREAD-01: comments (attachments arrive in
-// THREAD-02 and are said so). Everything here is visible to everyone on the
+// under the request detail. THREAD-01: comments; THREAD-02: files
+// (request-attachments.tsx). Everything here is visible to everyone on the
 // request; who may ADD is the caller's permission (`canPost` — the Auditor reads
 // only). `base` is the request's own path: /requests/:id for staff and client
 // managers, /me/requests/:id for the employee who raised it.
@@ -73,14 +74,9 @@ export function RequestThread({ base, canPost }: { base: string; canPost: boolea
 
   return (
     <div className="flex flex-col gap-4">
-      <section className="flex flex-col gap-2">
-        <h3 className="text-[13px] leading-[18px] font-medium">{t('attachments')}</h3>
-        <p className="rounded-md bg-neutral-50 px-3.5 py-3 text-[13px] leading-[18px] text-muted-foreground ring-1 ring-foreground/10">
-          {t('attachmentsSoon')}
-        </p>
-      </section>
+      <RequestAttachments base={base} canPost={canPost} />
 
-      <section className="flex flex-col gap-2">
+      <section className="flex flex-col gap-2 border-t pt-4">
         <h3 className="flex items-baseline gap-1.5 text-[13px] leading-[18px] font-medium">
           {t('comments')}
           {comments && comments.length > 0 && (

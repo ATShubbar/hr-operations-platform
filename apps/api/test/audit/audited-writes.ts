@@ -66,6 +66,13 @@ export const AUDITED_WRITES: Record<string, string> = {
   // ADR-016: a comment on a request's thread, on every path.
   'POST /requests/:id/comments': 'request-comment.create',
   'POST /me/requests/:id/comments': 'request-comment.create',
+  // THREAD-02: files on the thread — create (pending), confirm (the check's verdict), remove (soft).
+  'POST /requests/:id/attachments': 'request-attachment.create',
+  'POST /requests/:id/attachments/:fileId/confirm': 'request-attachment.confirm',
+  'DELETE /requests/:id/attachments/:fileId': 'request-attachment.remove',
+  'POST /me/requests/:id/attachments': 'request-attachment.create',
+  'POST /me/requests/:id/attachments/:fileId/confirm': 'request-attachment.confirm',
+  'DELETE /me/requests/:id/attachments/:fileId': 'request-attachment.remove',
   'POST /tasks': 'task.create',
   'PATCH /tasks/:id': 'task.update',
   'DELETE /tasks/:id': 'task.delete',
