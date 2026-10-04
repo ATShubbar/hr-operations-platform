@@ -17,7 +17,7 @@ One decision per file, numbered in creation order. A record is never edited to c
 | [ADR-003](ADR-003-module-structure-and-boundaries.md) | Module structure and boundary enforcement | Accepted |
 | [ADR-004](ADR-004-inter-module-communication.md) | Inter-module communication — domain events | Accepted |
 | [ADR-005](ADR-005-localization.md) | Localization — configurable with Saudi defaults | Accepted |
-| [ADR-006](ADR-006-ksa-cloud-provider.md) | KSA cloud provider selection | **Accepted rev. 6** (Google Cloud `me-central2` Dammam, project `peoplegro-prod`; Cloud Run with a bounded ADR-010 clause-1 exception; UAT at uat.peopleandgro.com, production at app.peopleandgro.com) |
+| [ADR-006](ADR-006-ksa-cloud-provider.md) | KSA cloud provider selection | **Accepted rev. 7** (Google Cloud `peoplegro-prod`, Cloud Run; UAT in `me-central1` Doha with sample data only; production in-Kingdom, path open — Cloud Run in `me-central2` is gated) |
 | [ADR-007](ADR-007-api-conventions.md) | API conventions | Proposed |
 | [ADR-008](ADR-008-modular-monolith-and-stack.md) | Modular monolith, single deployment, tech stack | Accepted |
 | [ADR-009](ADR-009-google-calendar-data-minimization.md) | Google Calendar integration with data minimization | Accepted |

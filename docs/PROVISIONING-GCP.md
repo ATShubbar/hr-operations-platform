@@ -1,7 +1,12 @@
 # Google Cloud provisioning runbook — UAT first, then production
 
-Per **ADR-006 rev. 6** (Google Cloud `me-central2` Dammam, project `peoplegro-prod`,
-Cloud Run) and **ADR-010** (portability; clause 1 excepted, clauses 2–6 in force).
+Per **ADR-006 rev. 7** (Google Cloud, project `peoplegro-prod`, Cloud Run; **UAT in
+`me-central1` Doha with sample data only**; production in the Kingdom, path open —
+GCP-07) and **ADR-010** (portability; clause 1 excepted, clauses 2–6 in force).
+
+> **Region:** UAT resources go in **`me-central1` (Doha)**. Cloud Run in `me-central2`
+> (Dammam) is refused for this project ("Access to the region is unavailable") — see
+> the status log and ADR-006 rev. 7.
 
 **Who does what.** Steps marked **[owner]** need your Google login, a payment
 decision or your DNS panel. You run them; I give the exact commands. Steps marked
@@ -23,6 +28,7 @@ One project, two environments, kept apart by **prefix** and **service account**:
 | Thing | UAT (now) | Production (later) |
 |---|---|---|
 | Address | `https://uat.peopleandgro.com` | `https://app.peopleandgro.com` |
+| Region | **`me-central1` (Doha)** | in the Kingdom — **open (GCP-07)** |
 | Data | **sample (seed) data only, never real people** | real data, after the PROD gates |
 | Cloud Run services | `uat-api`, `uat-worker`, `uat-web` | `prod-api`, `prod-worker`, `prod-web` |
 | Cloud Run job | `uat-migrate` | `prod-migrate` |
@@ -68,8 +74,11 @@ gcloud config set project peoplegro-prod
 ```
 
 ```bash
-gcloud config set run/region me-central2
+gcloud config set run/region me-central1
 ```
+
+(Updated after GCP-02: UAT runs in `me-central1`. If you already set `me-central2`, run
+this once more — it just changes the default.)
 
 ### 3. Enable the services we will use [owner]
 
@@ -104,7 +113,7 @@ I then run **read-only** commands only, and record the results in the status log
 Before each **paid** resource I show its monthly price from your console
 (Pricing / the creation page in `me-central2`) and wait for your yes.
 
-1. **Artifact Registry**: Docker repository `peoplegro` in `me-central2`.
+1. **Artifact Registry**: Docker repository `peoplegro` in `me-central1`.
 2. **Cloud SQL `uat-pg`**: PostgreSQL **16**, smallest tier, no HA (UAT), automatic backups on, database `hr_platform`.
    - **Migrations run as a user that can create roles.** They create `app_staff`, `app_client` and `app_employee`, so the migrator is a Cloud SQL built-in user (member of `cloudsqlsuperuser`).
    - **Rotate the role passwords immediately after the first migration.** Those roles are created with development passwords (`app_*_dev_pw`), so each gets a new password with `ALTER ROLE … PASSWORD …`. **You type the new passwords into your terminal; they are never pasted into chat.**
@@ -116,7 +125,7 @@ Before each **paid** resource I show its monthly price from your console
 5. **Secrets** (Secret Manager, `uat-*`): `DATABASE_URL`, `STAFF_DATABASE_URL`, `CLIENT_DATABASE_URL`, `EMPLOYEE_DATABASE_URL`, `REDIS_URL`, `STORAGE_ACCESS_KEY`, `STORAGE_SECRET_KEY`.
 6. **Plain environment variables** (not secret):
    - `STORAGE_ENDPOINT=https://storage.googleapis.com`
-   - `STORAGE_REGION=me-central2`
+   - `STORAGE_REGION=me-central1`
    - `STORAGE_BUCKET=peoplegro-uat-documents`
    - `APP_WEB_ORIGIN=https://uat.peopleandgro.com`
    - `NODE_ENV=production`
@@ -196,3 +205,10 @@ These gates are not optional before real people's data goes in:
 |---|---|---|
 | 2026-09 | Owner created `peoplegro-prod`; saw Cloud SQL (PG 16/18), GKE, Memorystore, buckets + HMAC, Artifact Registry, WIF in `me-central2` | recorded in ADR-006 rev. 6 |
 | 2026-10-04 | GCP-01: ADR-006 rev. 6 + this runbook | written |
+| 2026-10-04 | GCP-02 [owner]: gcloud 587.0.0 installed (Homebrew), signed in as the project owner, project + region set, 9 APIs enabled, budget created | done |
+| 2026-10-04 | GCP-02 [me] read-only: config OK; APIs enabled; billing enabled; project ACTIVE under an organization; org policy `gcp.resourceLocations` = allow all | OK |
+| 2026-10-04 | `me-central2`: Compute zones UP, CPU quota 72; Cloud SQL tiers incl. db-f1-micro listed; PG16 recognised; Memorystore + Artifact Registry list | listed (creation untested) |
+| 2026-10-04 | **`me-central2`: Cloud Run services / jobs / domain mappings → "Access to the region is unavailable. Please contact our sales team"** | **BLOCKED** |
+| 2026-10-04 | Cloud Run in `me-central1` (Doha) and `europe-west1` | open |
+| 2026-10-04 | Owner decision: UAT in `me-central1`, sample data only (ADR-006 rev. 7) | decided |
+| 2026-10-04 | Note: `gcloud` needs Python ≥ 3.10. macOS's built-in 3.9 fails; Homebrew's `python3.14` works (`CLOUDSDK_PYTHON=/opt/homebrew/bin/python3.14`) | — |

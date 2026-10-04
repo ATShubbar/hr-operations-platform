@@ -1187,6 +1187,13 @@ it out of `MainModule` is GCP-04. **Migrations create `app_*` roles with DEV pas
 any cloud DB.** No service-account key files ever (GitHub deploys via Workload Identity Federation).
 Runbook: docs/PROVISIONING-GCP.md. Next: **GCP-02 [owner]** — install gcloud, sign in, enable APIs,
 budget alert.
+**GCP-02 done — and Dammam is gated (ADR-006 rev. 7).** Read-only checks: config/APIs/billing OK,
+org policy allows all locations, but **Cloud Run in `me-central2` is refused by Google** ("Access to the
+region is unavailable. Please contact our sales team") — the console LISTS Dammam, use is gated (rev. 3's
+CNTXT lesson again). Compute in me-central2 has quota (72 CPUs); Cloud SQL/Memorystore creation there is
+UNPROVEN. Owner: **UAT in `me-central1` (Doha)**, sample data only (no personal data → residency not
+engaged). Production stays in-Kingdom, path open: **GCP-07**. Landmine: **gcloud needs Python ≥ 3.10** —
+macOS's 3.9 fails; use `CLOUDSDK_PYTHON=/opt/homebrew/bin/python3.14` in this shell.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

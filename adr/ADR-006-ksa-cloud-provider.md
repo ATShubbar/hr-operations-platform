@@ -1,6 +1,29 @@
 # ADR-006 — KSA cloud provider selection
 
-- Status: **Accepted, rev. 6** (2026-10-04 — **Google Cloud, region `me-central2` (Dammam, KSA)**, project `peoplegro-prod`; runtime **Cloud Run**, with an explicit, bounded **exception to ADR-010 clause 1**; UAT first, production later. Every service line is still an unchecked box until seen in the project's own console — see the checklist in docs/PROVISIONING-GCP.md.)
+- Status: **Accepted, rev. 7** (2026-10-04 — **Google Cloud**, project `peoplegro-prod`, runtime **Cloud Run** with a bounded **exception to ADR-010 clause 1**. **UAT in `me-central1` (Doha), sample data only**; **production stays in the Kingdom — `me-central2` access for Cloud Run is gated, so the production path is open (GCP-07)**. Every service line is still an unchecked box until seen in the project's own console — see the checklist in docs/PROVISIONING-GCP.md.)
+
+> **Revision note 7 (2026-10-04, same day):** GCP-02's read-only checks found
+> that this project **cannot use Cloud Run in `me-central2`**: every Cloud Run
+> call there (services, jobs, domain mappings) is refused with *"Access to the
+> region is unavailable. Please contact our sales team"*
+> (`LOCATION_POLICY_VIOLATED`). The organization's own location policy allows
+> everything (`gcp.resourceLocations` → `allValues: ALLOW`), so the gate is
+> Google's: the console LISTS Dammam, but use of it is gated (as rev. 3 found,
+> KSA customers reach Dammam through Google's sales channel / CNTXT). Compute
+> Engine in `me-central2` shows a real quota (72 CPUs, 24 instances); Cloud SQL
+> and Memorystore creation there is UNPROVEN (listing works; nothing was created
+> to test it). Cloud Run in `me-central1` (Doha) and `europe-west1` is open.
+>
+> **Owner decision:** **UAT runs in `me-central1` (Doha, Qatar)** — Cloud Run,
+> Cloud SQL, Memorystore, bucket and registry all there — under a hard rule:
+> **sample (seed) data only; no real client, employee or candidate data may ever
+> enter UAT.** UAT holds no personal data, so the KSA-residency principle (which
+> governs real data) is not engaged — the same reasoning as rev. 4's interim
+> environment. **Production stays in the Kingdom**; HOW is an open card
+> (GCP-07): get Cloud Run opened in `me-central2` via Google sales / CNTXT, or
+> run production in `me-central2` on GKE / VMs if Cloud SQL and Memorystore can
+> be created there (one tiny test instance, owner-approved, settles it), or an
+> in-Kingdom alternative provider. Moving UAT later is repoint-and-redeploy.
 
 > **Revision note 6 (2026-10-04):** Owner decision: **Google Cloud, Dammam
 > (`me-central2`)**, replacing OCI (rev. 5). The owner created project
