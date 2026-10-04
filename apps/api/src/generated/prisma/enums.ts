@@ -269,3 +269,37 @@ export const GcalInvitationStatus = {
 } as const
 
 export type GcalInvitationStatus = (typeof GcalInvitationStatus)[keyof typeof GcalInvitationStatus]
+
+
+export const LeaveType = {
+  annual: 'annual',
+  sick: 'sick',
+  maternity: 'maternity',
+  paternity: 'paternity',
+  marriage: 'marriage',
+  bereavement: 'bereavement',
+  hajj: 'hajj',
+  emergency: 'emergency',
+  unpaid: 'unpaid'
+} as const
+
+export type LeaveType = (typeof LeaveType)[keyof typeof LeaveType]
+
+
+export const LeaveStatus = {
+  pending: 'pending',
+  approved: 'approved',
+  declined: 'declined',
+  withdrawn: 'withdrawn',
+  filed: 'filed'
+} as const
+
+export type LeaveStatus = (typeof LeaveStatus)[keyof typeof LeaveStatus]
+
+
+export const LeaveEntryKind = {
+  taken: 'taken',
+  carried: 'carried'
+} as const
+
+export type LeaveEntryKind = (typeof LeaveEntryKind)[keyof typeof LeaveEntryKind]

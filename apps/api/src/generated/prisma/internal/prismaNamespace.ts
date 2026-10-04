@@ -403,7 +403,9 @@ export const ModelName = {
   Candidate: 'Candidate',
   GroProcess: 'GroProcess',
   GcalInvitation: 'GcalInvitation',
-  CalendarEvent: 'CalendarEvent'
+  CalendarEvent: 'CalendarEvent',
+  LeaveRequest: 'LeaveRequest',
+  LeaveEntry: 'LeaveEntry'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -419,7 +421,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "authUser" | "authAccountToken" | "coreScopeCheck" | "auditEntry" | "systemSetting" | "clientSetting" | "userSetting" | "client" | "employee" | "document" | "notification" | "expiryAlert" | "notificationPreference" | "request" | "task" | "vacancy" | "candidate" | "groProcess" | "gcalInvitation" | "calendarEvent"
+    modelProps: "authUser" | "authAccountToken" | "coreScopeCheck" | "auditEntry" | "systemSetting" | "clientSetting" | "userSetting" | "client" | "employee" | "document" | "notification" | "expiryAlert" | "notificationPreference" | "request" | "task" | "vacancy" | "candidate" | "groProcess" | "gcalInvitation" | "calendarEvent" | "leaveRequest" | "leaveEntry"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1903,6 +1905,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    LeaveRequest: {
+      payload: Prisma.$LeaveRequestPayload<ExtArgs>
+      fields: Prisma.LeaveRequestFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.LeaveRequestFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeaveRequestPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.LeaveRequestFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeaveRequestPayload>
+        }
+        findFirst: {
+          args: Prisma.LeaveRequestFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeaveRequestPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.LeaveRequestFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeaveRequestPayload>
+        }
+        findMany: {
+          args: Prisma.LeaveRequestFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeaveRequestPayload>[]
+        }
+        create: {
+          args: Prisma.LeaveRequestCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeaveRequestPayload>
+        }
+        createMany: {
+          args: Prisma.LeaveRequestCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.LeaveRequestCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeaveRequestPayload>[]
+        }
+        delete: {
+          args: Prisma.LeaveRequestDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeaveRequestPayload>
+        }
+        update: {
+          args: Prisma.LeaveRequestUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeaveRequestPayload>
+        }
+        deleteMany: {
+          args: Prisma.LeaveRequestDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.LeaveRequestUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.LeaveRequestUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeaveRequestPayload>[]
+        }
+        upsert: {
+          args: Prisma.LeaveRequestUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeaveRequestPayload>
+        }
+        aggregate: {
+          args: Prisma.LeaveRequestAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateLeaveRequest>
+        }
+        groupBy: {
+          args: Prisma.LeaveRequestGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LeaveRequestGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.LeaveRequestCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LeaveRequestCountAggregateOutputType> | number
+        }
+      }
+    }
+    LeaveEntry: {
+      payload: Prisma.$LeaveEntryPayload<ExtArgs>
+      fields: Prisma.LeaveEntryFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.LeaveEntryFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeaveEntryPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.LeaveEntryFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeaveEntryPayload>
+        }
+        findFirst: {
+          args: Prisma.LeaveEntryFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeaveEntryPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.LeaveEntryFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeaveEntryPayload>
+        }
+        findMany: {
+          args: Prisma.LeaveEntryFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeaveEntryPayload>[]
+        }
+        create: {
+          args: Prisma.LeaveEntryCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeaveEntryPayload>
+        }
+        createMany: {
+          args: Prisma.LeaveEntryCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.LeaveEntryCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeaveEntryPayload>[]
+        }
+        delete: {
+          args: Prisma.LeaveEntryDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeaveEntryPayload>
+        }
+        update: {
+          args: Prisma.LeaveEntryUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeaveEntryPayload>
+        }
+        deleteMany: {
+          args: Prisma.LeaveEntryDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.LeaveEntryUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.LeaveEntryUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeaveEntryPayload>[]
+        }
+        upsert: {
+          args: Prisma.LeaveEntryUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$LeaveEntryPayload>
+        }
+        aggregate: {
+          args: Prisma.LeaveEntryAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateLeaveEntry>
+        }
+        groupBy: {
+          args: Prisma.LeaveEntryGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LeaveEntryGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.LeaveEntryCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.LeaveEntryCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2273,6 +2423,50 @@ export const CalendarEventScalarFieldEnum = {
 } as const
 
 export type CalendarEventScalarFieldEnum = (typeof CalendarEventScalarFieldEnum)[keyof typeof CalendarEventScalarFieldEnum]
+
+
+export const LeaveRequestScalarFieldEnum = {
+  id: 'id',
+  ref: 'ref',
+  clientId: 'clientId',
+  employeeId: 'employeeId',
+  type: 'type',
+  startDate: 'startDate',
+  days: 'days',
+  endDate: 'endDate',
+  details: 'details',
+  status: 'status',
+  raisedByUserId: 'raisedByUserId',
+  raisedByEmployeeId: 'raisedByEmployeeId',
+  decidedByUserId: 'decidedByUserId',
+  decidedAt: 'decidedAt',
+  decidedOnBehalf: 'decidedOnBehalf',
+  filedByUserId: 'filedByUserId',
+  filedAt: 'filedAt',
+  withdrawnAt: 'withdrawnAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type LeaveRequestScalarFieldEnum = (typeof LeaveRequestScalarFieldEnum)[keyof typeof LeaveRequestScalarFieldEnum]
+
+
+export const LeaveEntryScalarFieldEnum = {
+  id: 'id',
+  clientId: 'clientId',
+  employeeId: 'employeeId',
+  requestId: 'requestId',
+  kind: 'kind',
+  type: 'type',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  days: 'days',
+  leaveYear: 'leaveYear',
+  createdByUserId: 'createdByUserId',
+  createdAt: 'createdAt'
+} as const
+
+export type LeaveEntryScalarFieldEnum = (typeof LeaveEntryScalarFieldEnum)[keyof typeof LeaveEntryScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -2785,6 +2979,48 @@ export type ListEnumGcalInvitationStatusFieldRefInput<$PrismaModel> = FieldRefIn
 
 
 /**
+ * Reference to a field of type 'LeaveType'
+ */
+export type EnumLeaveTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LeaveType'>
+    
+
+
+/**
+ * Reference to a field of type 'LeaveType[]'
+ */
+export type ListEnumLeaveTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LeaveType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'LeaveStatus'
+ */
+export type EnumLeaveStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LeaveStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'LeaveStatus[]'
+ */
+export type ListEnumLeaveStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LeaveStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'LeaveEntryKind'
+ */
+export type EnumLeaveEntryKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LeaveEntryKind'>
+    
+
+
+/**
+ * Reference to a field of type 'LeaveEntryKind[]'
+ */
+export type ListEnumLeaveEntryKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'LeaveEntryKind[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -2927,6 +3163,8 @@ export type GlobalOmitConfig = {
   groProcess?: Prisma.GroProcessOmit
   gcalInvitation?: Prisma.GcalInvitationOmit
   calendarEvent?: Prisma.CalendarEventOmit
+  leaveRequest?: Prisma.LeaveRequestOmit
+  leaveEntry?: Prisma.LeaveEntryOmit
 }
 
 /* Types for Logging */

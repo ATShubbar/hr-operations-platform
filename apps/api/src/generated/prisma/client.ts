@@ -139,3 +139,13 @@ export type GcalInvitation = Prisma.GcalInvitationModel
  * 
  */
 export type CalendarEvent = Prisma.CalendarEventModel
+/**
+ * Model LeaveRequest
+ * 
+ */
+export type LeaveRequest = Prisma.LeaveRequestModel
+/**
+ * Model LeaveEntry
+ * 
+ */
+export type LeaveEntry = Prisma.LeaveEntryModel

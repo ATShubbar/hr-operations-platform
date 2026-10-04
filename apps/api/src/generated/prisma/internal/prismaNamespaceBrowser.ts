@@ -70,7 +70,9 @@ export const ModelName = {
   Candidate: 'Candidate',
   GroProcess: 'GroProcess',
   GcalInvitation: 'GcalInvitation',
-  CalendarEvent: 'CalendarEvent'
+  CalendarEvent: 'CalendarEvent',
+  LeaveRequest: 'LeaveRequest',
+  LeaveEntry: 'LeaveEntry'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -420,6 +422,50 @@ export const CalendarEventScalarFieldEnum = {
 } as const
 
 export type CalendarEventScalarFieldEnum = (typeof CalendarEventScalarFieldEnum)[keyof typeof CalendarEventScalarFieldEnum]
+
+
+export const LeaveRequestScalarFieldEnum = {
+  id: 'id',
+  ref: 'ref',
+  clientId: 'clientId',
+  employeeId: 'employeeId',
+  type: 'type',
+  startDate: 'startDate',
+  days: 'days',
+  endDate: 'endDate',
+  details: 'details',
+  status: 'status',
+  raisedByUserId: 'raisedByUserId',
+  raisedByEmployeeId: 'raisedByEmployeeId',
+  decidedByUserId: 'decidedByUserId',
+  decidedAt: 'decidedAt',
+  decidedOnBehalf: 'decidedOnBehalf',
+  filedByUserId: 'filedByUserId',
+  filedAt: 'filedAt',
+  withdrawnAt: 'withdrawnAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type LeaveRequestScalarFieldEnum = (typeof LeaveRequestScalarFieldEnum)[keyof typeof LeaveRequestScalarFieldEnum]
+
+
+export const LeaveEntryScalarFieldEnum = {
+  id: 'id',
+  clientId: 'clientId',
+  employeeId: 'employeeId',
+  requestId: 'requestId',
+  kind: 'kind',
+  type: 'type',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  days: 'days',
+  leaveYear: 'leaveYear',
+  createdByUserId: 'createdByUserId',
+  createdAt: 'createdAt'
+} as const
+
+export type LeaveEntryScalarFieldEnum = (typeof LeaveEntryScalarFieldEnum)[keyof typeof LeaveEntryScalarFieldEnum]
 
 
 export const SortOrder = {
