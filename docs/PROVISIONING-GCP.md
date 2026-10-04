@@ -156,25 +156,38 @@ SDK (ADR-010 clauses 5 and 6). Cloud Run injects secret values at deploy time.
 
 ---
 
-## GCP-05 — `uat.peopleandgro.com` [me + owner]
+## GCP-05 — `uat.peopleandgro.com` [me + owner] — DONE
 
-- If Cloud Run **domain mapping** exists in `me-central2` (checked in GCP-02): map `uat.peopleandgro.com` to `uat-web`. Google issues the HTTPS certificate.
-- Otherwise: a small **global external HTTPS load balancer** with a serverless NEG in front of `uat-web`, plus a Google-managed certificate.
-- **DNS at Hostinger [owner]:** hPanel → **Domains** → `peopleandgro.com` → **DNS / Nameservers** → **DNS records** → add the record I give you. For a domain mapping that's a `CNAME` with name `uat` pointing to `ghs.googlehosted.com.`; for a load balancer it's an `A` record with name `uat` and the load balancer's IP. The certificate becomes active once DNS resolves, which can take up to a few hours.
-- The session cookie is `secure` in production, so sign-in **only** works over HTTPS. That's why the domain must exist before UAT is usable.
+- **Cloud Run domain mapping is refused in Doha**: the API lists mappings in `me-central1`, but creating one
+  answers `501 Creating domain mappings is not allowed in me-central1` (a dry run, so nothing was made). So UAT uses
+  a **global external HTTPS load balancer** (≈ $18.25/mo, owner-approved): static IP `uat-web-ip` (34.117.197.43),
+  serverless NEG `uat-web-neg` → `uat-web`, backend `uat-web-backend`, URL map `uat-web-map`, Google-managed
+  certificate, HTTPS proxy + forwarding rule on 443, and a redirect-only URL map + proxy + rule on 80.
+- **Do not pass `--protocol=HTTPS` to the backend service** — gcloud then sets port name `https`, which a serverless
+  NEG rejects (`Port name is not supported`). The default (port name `http`) is what Google's own example uses.
+- **DNS at Hostinger [owner]:** an `A` record `uat` → the load balancer's IP, plus a `TXT` `google-site-verification`
+  at `@` (Search Console; it stays, and covers `app.` later). **Hostinger kept serving a deleted record** for about
+  1.5 hours after the panel no longer showed it — its nameservers disagreed about the zone version (`…04` vs `…06`).
+  Support purged it. A Google-managed certificate fails (`FAILED_NOT_VISIBLE`) while that happens; replacing the
+  certificate (free: create new → swap on the proxy → delete old) starts a fresh attempt.
+- The session cookie is `secure` in production, so sign-in **only** works over HTTPS.
 
 ---
 
-## GCP-06 — Sample data and smoke test [me]
+## GCP-06 — Sample data and smoke test [me + owner]
 
-- Load the **seed** (`pnpm --filter @hr/api db:seed` against `uat-pg`, through the migrate job's image).
-- Smoke-test at `https://uat.peopleandgro.com`, signing in as **each role** with the seed accounts (password from the seed file):
-  - Overview, People, a person record, Requests, Work queue, Calendar, Clients, Reports, Audit, Settings;
-  - the client-manager Overview;
-  - the employee's My file;
-  - a document upload and download (proves the bucket CORS and HMAC setup).
-- Confirm the worker runs: queue a notification and see it delivered in-app.
-- Evidence file, then UAT is **live**.
+- **Never with the repository's dev password** — the repository is public. The seed reads `SEED_PASSWORD` from the
+  owner-generated secret `uat-seed-password`, and `prisma/seed-guard.ts` refuses production mode without
+  `SEED_TARGET=uat` and that password. The real production never gets either.
+- **Run it:** GitHub → Actions → **Seed UAT** → Run workflow (`main`; `seed-and-smoke` resets UAT to the scenario,
+  `smoke-only` just checks). Jobs `uat-seed` and `uat-smoke` run as service account `uat-seed` (Cloud SQL `uat-*`
+  only; reads `uat-database-url` + `uat-seed-password`; registry reader).
+- **The smoke check** (`apps/api/scripts/uat-smoke.mjs`) signs in as HR officer, GRO officer, client manager and
+  employee through the public address; one allowed + one refused route each; a document round-trip through the
+  bucket; and a request whose notification the **worker** must email (find `email → client_manager-a@…` in the
+  `uat-worker` log).
+- **[owner]** Administrator and Auditor need an authenticator — the owner signs in and enrols their own; no
+  script enrols one.
 
 ---
 
@@ -206,7 +219,9 @@ Prices read from Google's **Cloud Billing Catalog** (official SKUs, `me-central1
 | 2026-10-04 | Secret Manager (2 secrets so far) | — | $0.06/secret-mo | ≈ $0.12 | owner, 2026-10-04 |
 | (GCP-04) | Cloud Run **worker pool** `uat-worker` | 1 vCPU, 512 MiB, always on | $0.000013/vCPU-s | ≈ $36 | running |
 | (GCP-04) | Cloud Run `uat-api`, `uat-web` | scale to zero | per request | pennies | running |
-| | **UAT total** | | | **≈ $57** | |
+| (GCP-05) | Global HTTPS load balancer (forwarding-rule minimum, global) | 2 rules (443 + 80 redirect) | $0.025/h minimum covers up to 5 rules; data processing ~$0.01/GB | ≈ $18.25 | running |
+| (GCP-06) | Cloud Run jobs `uat-seed`, `uat-smoke` | run on demand, ~30 s each | per second | pennies | on demand |
+| | **UAT total** | | | **≈ $75** | |
 
 ## Status log
 
@@ -235,3 +250,10 @@ Prices read from Google's **Cloud Billing Catalog** (official SKUs, `me-central1
 | 2026-10-04 | GCP-04: `deploy-uat` (WIF, no key files) built + pushed `api`/`migrate`/`web-uat`, ran `uat-migrate` (role passwords set), deployed `uat-api` (internal), worker pool `uat-worker`, `uat-web` (public) | running |
 | 2026-10-04 | GCP-04 check: `https://uat-web-1048926106506.me-central1.run.app/api/health` 200 with the commit, `/api/ready` 200; `uat-api` direct → 404 | verified |
 | 2026-10-04 | GCP-04: worker `NOAUTH` from Redis (queue connection dropped the URL's password) → fixed in `2049886`; 0 worker log lines after the switchover | fixed |
+| 2026-10-04 | GCP-05: owner verified `peopleandgro.com` in Search Console (TXT at `@`) | verified |
+| 2026-10-04 | GCP-05: domain mapping dry run in `me-central1` → **501 not allowed** | blocked |
+| 2026-10-04 | GCP-05: global HTTPS load balancer for `uat-web` (owner-approved ≈ $18.25/mo), IP 34.117.197.43; HTTP → 301 HTTPS | running |
+| 2026-10-04 | GCP-05: Hostinger served a deleted `uat` CNAME for ~1.5 h (zone `…04` vs `…06` across its nameservers); support purged it; two certificates failed `FAILED_NOT_VISIBLE`, the third went ACTIVE at 15:55 (+04) | done |
+| 2026-10-04 | GCP-05 check: `https://uat.peopleandgro.com` — Google Trust Services WR3 cert, valid to 2027-01-02, health/ready/login 200 | verified |
+| 2026-10-04 | GCP-06: owner created `uat-seed-password` (me-central1, never displayed); service account `uat-seed` | created |
+| 2026-10-04 | GCP-06: Seed UAT run — seed 5 clients / 39 employees / 20 documents / 10 accounts (6/6 roles); smoke **25/25**; worker emailed `client_manager-a` 2 s after the request moved | verified |

@@ -89,8 +89,16 @@ describe('Notification email dispatch (NOTIF-03, e2e)', () => {
   });
 
   it('a missing notification is a no-op (no throw, no email)', async () => {
-    const before = mail.sent.length;
+    // Count only mail this spec could cause. The worker module above also
+    // consumes dispatch jobs OTHER specs left in the shared Redis, and those
+    // land at random moments — a global count failed CI as "expected 42 to be
+    // 41" (GCP-06) with nothing wrong in dispatch.
+    const ours = () =>
+      mail.sent.filter(
+        (m) => m.subject.includes(MARK) || m.to === arUser.email || m.to === enUser.email,
+      ).length;
+    const before = ours();
     await dispatchSvc.dispatch('33333333-3333-4333-8333-333333333333');
-    expect(mail.sent.length).toBe(before);
+    expect(ours()).toBe(before);
   });
 });
