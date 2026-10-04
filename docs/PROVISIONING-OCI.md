@@ -1,3 +1,5 @@
+> ⛔ **HISTORICAL — superseded by ADR-006 rev. 6 (2026-10-04, Google Cloud `me-central2`).** Nothing below was ever created. Active runbook: [PROVISIONING-GCP.md](PROVISIONING-GCP.md).
+
 # OCI Riyadh — ACTIVE provisioning guide (ADR-006 rev. 5 · ADR-010)
 
 Per **ADR-006 rev. 5**: Oracle Cloud, home region **Saudi Arabia Central

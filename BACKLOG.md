@@ -1675,11 +1675,18 @@ dissolve the residency compromise the AWS UAE interim was living with.
 | Task | Objective | Deps | Status |
 |---|---|---|---|
 | OCI-01 | ADR-006 rev. 5 (OCI Riyadh + OKE) + **ADR-010 cloud-portability contract** + `docs/PROVISIONING-OCI.md` runbook; supersede the AWS/GCP guides | — | done ([evidence](evidence/infra/OCI-01.md)) |
-| OCI-02 | **Owner-run** account signup + provisioning-day **service verification** (console, create nothing) + CLI profile | OCI-01 | todo — owner |
-| OCI-03 | Terraform: compartment, VCN, managed PostgreSQL 16, bucket, OKE cluster, OCIR | OCI-02 | todo |
-| OCI-04 | `infra/k8s/` manifests + GitHub Actions deploy (build → push → migrate → apply → health gate) + deliberate rollback | OCI-03 | todo — **closes WS-20** |
-| OCI-05 | Backups + restore test executed as the **ADR-010 exit drill** (restore on different infrastructure, boot the app with only env changes); measured RPO/RTO | OCI-04 | todo — **closes WS-21** |
+| OCI-02 | **Owner-run** account signup + provisioning-day **service verification** (console, create nothing) + CLI profile | OCI-01 | superseded (ADR-006 rev. 6 — Google Cloud; nothing was created on OCI) |
+| OCI-03 | Terraform: compartment, VCN, managed PostgreSQL 16, bucket, OKE cluster, OCIR | OCI-02 | superseded (ADR-006 rev. 6 — Google Cloud; nothing was created on OCI) |
+| OCI-04 | `infra/k8s/` manifests + GitHub Actions deploy (build → push → migrate → apply → health gate) + deliberate rollback | OCI-03 | superseded (ADR-006 rev. 6 — Google Cloud; nothing was created on OCI) |
+| OCI-05 | Backups + restore test executed as the **ADR-010 exit drill** (restore on different infrastructure, boot the app with only env changes); measured RPO/RTO | OCI-04 | superseded (ADR-006 rev. 6 — Google Cloud; nothing was created on OCI) |
 | OCI-06 | AWS UAE teardown (stops the ~$22/mo ALB meter); account may stay dormant at zero cost | — | **done** ([evidence](evidence/infra/OCI-06.md)) — brought forward, owner-approved; AWS spend now zero |
+| GCP-01 | ADR-006 **rev. 6** (Google Cloud `me-central2`, project `peoplegro-prod`, **Cloud Run** with a bounded ADR-010 clause-1 exception, one project with `uat-`/`prod-` isolation, Hostinger DNS, UAT email in capture mode) + `docs/PROVISIONING-GCP.md` runbook | owner decisions | **done** |
+| GCP-02 | **[owner]** install `gcloud`, sign in, set project/region, enable APIs, budget alert; then **[me] read-only** availability checks in `me-central2` (Cloud Run, Cloud SQL PG16 tiers, Memorystore, domain mapping) | GCP-01 | **next** |
+| GCP-03 | UAT infrastructure — Artifact Registry, Cloud SQL `uat-pg` (PG16; rotate the `app_*` dev passwords), Memorystore `uat-redis` (Direct VPC egress), bucket + CORS + HMAC, Secret Manager `uat-*`, service account `uat-run`; **price shown + approved before each paid resource** | GCP-02 | todo |
+| GCP-04 | Split the BullMQ worker from the API (two Cloud Run services, one image; worker min 1 + CPU always allocated) + GitHub Actions deploy via **Workload Identity Federation** (build → push → migrate job → deploy → health); replace the dead AWS job, remove `infra/ecs/` | GCP-03 | todo |
+| GCP-05 | `uat.peopleandgro.com`: domain mapping or HTTPS LB + managed certificate; **[owner]** the Hostinger DNS record | GCP-04 | todo |
+| GCP-06 | Seed sample data on UAT + smoke-test every role over HTTPS (incl. upload/download + worker) → **UAT live** | GCP-05 | todo |
+| PROD-* | Production at `app.peopleandgro.com`: real SMTP + SPF/DKIM, HA + a performed restore (ADR-010 exit drill), no seed, first admin with 2FA, monitoring, `prod-*` isolation | GCP-06 | later |
 
 ### OCI-01 — ADR-006 rev. 5 + ADR-010 (portability contract)
 - **Objective:** record the decision, and turn "must be migratable later" into a

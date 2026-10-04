@@ -1,6 +1,66 @@
 # ADR-006 — KSA cloud provider selection
 
-- Status: **Accepted pending provisioning-day verification, rev. 5** (2026-07-25 — **Oracle Cloud (OCI), home region Saudi Arabia Central (Riyadh)**, Jeddah as the second in-Kingdom region; **OKE (managed Kubernetes)** as the runtime. Nothing below is treated as available until checked in the console — see the verification checklist. Portability is now a contract: **ADR-010**.)
+- Status: **Accepted, rev. 6** (2026-10-04 — **Google Cloud, region `me-central2` (Dammam, KSA)**, project `peoplegro-prod`; runtime **Cloud Run**, with an explicit, bounded **exception to ADR-010 clause 1**; UAT first, production later. Every service line is still an unchecked box until seen in the project's own console — see the checklist in docs/PROVISIONING-GCP.md.)
+
+> **Revision note 6 (2026-10-04):** Owner decision: **Google Cloud, Dammam
+> (`me-central2`)**, replacing OCI (rev. 5). The owner created project
+> **`peoplegro-prod`** and saw, in that project's own console (2026-09): Cloud
+> SQL for PostgreSQL (16 offered — **use 16**, matching local and CI), GKE,
+> Memorystore, Cloud Storage buckets with HMAC interoperability keys, Artifact
+> Registry and Workload Identity Federation — all in `me-central2`. Rev. 3's
+> CNTXT reseller gate no longer blocks: the project exists and is usable.
+> Residency is satisfied by geography (Dammam is in the Kingdom).
+>
+> **Decisions made with this revision (owner, 2026-10-04):**
+>
+> | Topic | Decision |
+> |---|---|
+> | Runtime | **Cloud Run** (cost), NOT GKE — an exception to ADR-010 clause 1, bounded below |
+> | Environments | **UAT** (sample data only) at **`uat.peopleandgro.com`** first; **production** at **`app.peopleandgro.com`** later |
+> | Projects | **One project** (`peoplegro-prod`) for both. Isolation by **name prefix** (`uat-*`, `prod-*`) and **one service account per environment per service**; UAT accounts get NO access to production's database, bucket or secrets. Weaker than separate projects — accepted for simplicity and recorded as such |
+> | DNS | Stays at **Hostinger** (`peopleandgro.com`); the owner adds one record per environment |
+> | UAT email | **None sent.** The capture transport stays on (mail is recorded in logs); real SMTP arrives with production |
+>
+> **The worker must not sleep.** BullMQ consumers (email dispatch, the daily
+> 06:00 Asia/Riyadh expiry scan, EXP-02) need a continuously running process.
+> Cloud Run scales to zero and throttles CPU between requests by default, which
+> would make those jobs silently not run. So the deployment is **two services
+> from ONE image**: `*-api` (request-driven, the HTTP app WITHOUT the worker)
+> and `*-worker` (min instances 1, **CPU always allocated**, no public ingress)
+> — plus `*-web` (Next.js) and a `*-migrate` Cloud Run **job**. Splitting the
+> worker out of the API process is a code change (today `MainModule` runs both
+> in one process) and belongs to GCP-04.
+>
+> **The ADR-010 exception, bounded.** Clause 1 asks for Kubernetes manifests as
+> the deployment contract; Cloud Run is a proprietary runtime. What still holds,
+> and keeps a move cheap:
+>
+> - **The artefacts are plain OCI/Docker images** built from the repo's
+>   Dockerfiles. Nothing in the image is Cloud-Run-specific; the app reads
+>   `PORT` and env vars only.
+> - **Clauses 2–6 hold unchanged:** Cloud SQL is stock Postgres 16 over a URL;
+>   storage via the S3-compatible API (GCS interoperability + HMAC keys); Redis
+>   (Memorystore) over a URL, never source-of-truth; config and secrets as env
+>   vars (Secret Manager values are injected by Cloud Run at deploy time — the
+>   app never calls the Secret Manager SDK); no metadata-server calls in app code.
+> - **The move-away plan** (to GKE, or any Kubernetes): write Deployment /
+>   Service / Ingress / Job manifests for the SAME images (`api`, `worker`, `web`,
+>   `migrate`), reusing the same env-var set; repoint DNS. No code changes. The
+>   service list above IS the topology the manifests would express.
+> - **Detection** stays as ADR-010 defines it (greps for provider SDKs and
+>   metadata endpoints under `apps/`), with one addition: no
+>   `@google-cloud/*` package may appear in `apps/*/package.json`.
+>
+> **What this revision still does NOT claim.** Prices in `me-central2`, Cloud
+> Run custom-domain mapping availability in `me-central2` (if absent, a small
+> global HTTPS load balancer with a serverless NEG fronts the services),
+> Memorystore tiers, and Direct VPC egress support are **checked in the console
+> before each paid resource is created** (GCP-02/03), not assumed here. Cost
+> checks are logged in the runbook.
+>
+> **Supersedes:** rev. 5 (OCI) — no OCI resources were ever created; OCI-02..05
+> are closed as superseded. `docs/PROVISIONING-OCI.md` and
+> `docs/PROVISIONING-GCP-CNTXT.md` become historical.
 
 > **Revision note 5 (2026-07-25):** Owner decision: **move to OCI**, with an
 > explicit condition — *whatever we do must be easily migratable later to AWS,

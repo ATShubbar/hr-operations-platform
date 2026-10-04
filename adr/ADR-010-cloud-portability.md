@@ -4,6 +4,14 @@
 - Date: 2026-07-25
 - Owner: Ahmed Alshubbar
 
+
+> **Exception (2026-10-04, ADR-006 rev. 6):** the runtime is **Cloud Run**, not
+> Kubernetes, by owner decision on cost — **clause 1 is excepted**, clauses 2–6
+> stay in force. The bounds and the move-away plan (Kubernetes manifests for the
+> same four images: api, worker, web, migrate; no code change) are recorded in
+> ADR-006 rev. 6. One detection rule is added: no `@google-cloud/*` package may
+> appear in `apps/*/package.json`.
+
 ## Context
 
 ADR-006 (rev. 5) selects **Oracle Cloud (OCI), Riyadh** as the host. The owner

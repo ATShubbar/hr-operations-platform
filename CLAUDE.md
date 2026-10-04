@@ -32,7 +32,8 @@ build contract. Changes go through ADRs (adr/), never through drift.
 | ACTION-PLAN.md | Phased plan, DoD checklists with evidence rule |
 | evidence/skeleton/ | Per-task proof (WS-01..) |
 | docs/FIELD-MAPPING.md | ACTIVE: reference-system (Qiwa/GOSI/Muqeem/Mudad/Absher) Employee fields, sensitivity-tagged (0.8) — source for the Employees schema |
-| docs/PROVISIONING-OCI.md | ACTIVE: OCI Riyadh provisioning runbook + verification checklist + status log |
+| docs/PROVISIONING-GCP.md | ACTIVE: Google Cloud `me-central2` runbook (ADR-006 rev. 6) — UAT at uat.peopleandgro.com, PROD at app.peopleandgro.com; [owner]/[me] steps, cost checks, status log |
+| docs/PROVISIONING-OCI.md | HISTORICAL — OCI (rev. 5), nothing created |
 | docs/PROVISIONING-AWS.md | SUPERSEDED (ADR-006 rev. 5) — kept for history + the OCI-06 teardown |
 | docs/HANDOFF-WS20.md | HISTORICAL — the AWS resources it describes were torn down (OCI-06) |
 | apps/api/src/modules/README.md | Module layout contract + RLS table checklist |
@@ -1174,6 +1175,18 @@ close() removed all listeners → unhandled "Connection is closed."): `QueueShut
 waits in `beforeApplicationShutdown` for EVERY queue (via DiscoveryService — NotificationsModule has its
 own `dispatch` instance) to finish connecting. Red-guard proof: an unsafe employee grant still fails
 the fence + matrix specs.
+**GCP-01 done — going live is planned (ADR-006 rev. 6).** Google Cloud **`me-central2`**, project
+**`peoplegro-prod`**, runtime **Cloud Run** (owner: cost) — a bounded **ADR-010 clause-1 exception**
+(images stay plain Docker; clauses 2–6 hold; move-away = K8s manifests for the same api/worker/web/
+migrate images; new rule: no `@google-cloud/*` in apps). **One project**, isolation by `uat-`/`prod-`
+prefix + one service account per environment. **UAT** (seed data only) at **uat.peopleandgro.com**
+first, **production** at **app.peopleandgro.com** later; DNS stays at **Hostinger** (owner adds one
+record per environment). UAT email = capture only. The BullMQ **worker must be its own always-on Cloud
+Run service** (min 1, CPU always allocated) or email + the 06:00 expiry scan silently stop — splitting
+it out of `MainModule` is GCP-04. **Migrations create `app_*` roles with DEV passwords — rotate them on
+any cloud DB.** No service-account key files ever (GitHub deploys via Workload Identity Federation).
+Runbook: docs/PROVISIONING-GCP.md. Next: **GCP-02 [owner]** — install gcloud, sign in, enable APIs,
+budget alert.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

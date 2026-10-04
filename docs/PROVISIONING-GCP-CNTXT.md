@@ -1,3 +1,5 @@
+> ⛔ **HISTORICAL — the CNTXT reseller path (rev. 3) is moot: the owner has project `peoplegro-prod` in `me-central2`. Active runbook: [PROVISIONING-GCP.md](PROVISIONING-GCP.md) (ADR-006 rev. 6).**
+
 # ⛔ SUPERSEDED by ADR-006 rev. 5 (2026-07-25) — the active target is OCI Riyadh, see PROVISIONING-OCI.md
 
 > Kept for the reasoning trail. The CNTXT reseller gate (legal documents,
