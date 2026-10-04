@@ -1023,6 +1023,18 @@ not `useSearchParams` — that needs a Suspense boundary or `next build` fails).
 scan caught my display mapping** (`principalType === 'client_rep' ? 'client' : …`) — it forbids
 the shape everywhere, not just on data paths; use an explicit map. API 493/493 (4 runs: one with
 12 skipped = a spec's `beforeAll` flaking). Next: DS-09 (Hiring).
+**DS-09 done — Hiring, as the prototype has it.** `/hiring` = the open-roles strip (draft/
+open/filled vacancies: pipeline note, hired/headcount, Add candidate, Withdraw/Close/Open role)
+over a six-column board (Applied · Screened · Interview · Offer · **Visa & mobilisation "coming
+soon"**, never a drop target · Onboarded = `hired`). Moves by button, dialog or drag; **API: the
+candidate workflow gained ONE step back** (screening→applied, interview→screening,
+offer→interview; terminal stays terminal — `hired` already made the employee), test proven red.
+Onboarding asks first (it creates the employee, REC-05). Open a role = create + open (title in
+both languages); nationality is a picker (`lib/nationality.ts`, now shared with People/Person).
+Health/target/mobilisation NOT on cards (no data; dialog says "Soon"). Client managers: their
+roles, no board (matrix kept). `/vacancies` + `/candidates` redirect here. Found + fixed: DS-08's
+New request dialog never reset (see landmine). API 494/494 (2 of 3 runs; the third hit the
+supertest `Parse Error` flake in an untouched spec). Next: DS-10 (Clients + Client record).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
@@ -1082,6 +1094,12 @@ the shape everywhere, not just on data paths; use an explicit map. API 493/493 (
   Enter/Space on a `<button>` fires `keydown` and NO click, and arrow keys do not scroll
   a focused region. Tab works (the focus manager needs no code). Do not read a
   non-activating button as an app bug; confirm activation by mouse (UX-11).
+- Base UI's `Dialog` `onOpenChange` fires only for the dialog's OWN gestures (Escape, overlay,
+  close button) — never when the parent sets `open`. Resetting a form "on open" inside it never
+  runs; track `open` during render instead (DS-09; DS-08's New request had shipped with this).
+- HTML drag-and-drop: judge drop legality from a REF set in `dragstart`, not React state (the
+  first `dragover` can beat the re-render), and cancel `dragenter` as well as `dragover` — a fast
+  drag can release before any `dragover` reaches the target (DS-09, measured with a real mouse).
 - Closing a dialog inside a `<Link>`'s onClick CANCELS the navigation — `next/link` runs
   `startTransition(() => router.push())` and the close unmounts the subtree owning that
   transition. Close on pathname change instead (UX-05).

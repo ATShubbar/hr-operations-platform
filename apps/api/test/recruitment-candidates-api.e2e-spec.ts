@@ -109,6 +109,35 @@ describe('Candidates API (REC-04, e2e)', () => {
     await stage(recruiter.cookie, candId, 'withdrawn').expect(400);
   });
 
+  // DS-09: the board lets a candidate step BACK one stage (owner decision). One
+  // step only, never from a terminal stage — `hired` already created an employee.
+  it('steps a candidate back one stage; never two, never out of a terminal stage', async () => {
+    const created = await post(recruiter.cookie, {
+      vacancyId,
+      name: { ar: 'رجوع', en: 'Back Step' },
+      nationality: 'IN',
+    }).expect(201);
+    const id = created.body.id as string;
+    // applied has nowhere to go back to
+    await stage(recruiter.cookie, id, 'applied').expect(400);
+    await stage(recruiter.cookie, id, 'screening').expect(200);
+    await stage(recruiter.cookie, id, 'applied').expect(200);
+    await stage(recruiter.cookie, id, 'screening').expect(200);
+    await stage(recruiter.cookie, id, 'interview').expect(200);
+    await stage(recruiter.cookie, id, 'offer').expect(200);
+    // offer → screening skips interview → illegal
+    await stage(recruiter.cookie, id, 'screening').expect(400);
+    // the GRO officer holds candidate.advance, so may step back too
+    const back = await stage(gro.cookie, id, 'interview').expect(200);
+    expect(back.body.stage).toBe('interview');
+    await stage(recruiter.cookie, id, 'screening').expect(200);
+    // terminal stages stay terminal
+    await stage(recruiter.cookie, id, 'rejected').expect(200);
+    await stage(recruiter.cookie, id, 'screening').expect(400);
+    // hired (candId, from the test above) cannot step back to offer
+    await stage(recruiter.cookie, candId, 'offer').expect(400);
+  });
+
   it('filters the list by vacancy and stage', async () => {
     const byVac = await request(http)
       .get(`/candidates?vacancyId=${vacancyId}`)

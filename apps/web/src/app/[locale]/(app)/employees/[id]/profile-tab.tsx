@@ -8,6 +8,7 @@ import { formatHijri } from '@hr/dates';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useCan, useSession } from '@/lib/session';
+import { NATIONALITIES } from '@/lib/nationality';
 import {
   CONTRACT_TYPE_KEY,
   CONTRACT_TYPE_VALUES,
@@ -80,7 +81,6 @@ interface SectionDef {
   fields: FieldDef[];
 }
 
-const NATIONALITIES = ['SA', 'IN', 'PK', 'EG', 'PH', 'BD', 'JO', 'SD', 'NP', 'LK'];
 const ENDPOINT: Record<Group, (id: string) => string> = {
   core: (id) => `/employees/${id}`,
   gov: (id) => `/employees/${id}/govdata`,

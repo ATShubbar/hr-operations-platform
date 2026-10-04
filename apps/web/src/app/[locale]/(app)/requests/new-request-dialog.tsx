@@ -71,14 +71,18 @@ export function NewRequestDialog({
     return c ? (locale === 'ar' ? c.name.ar : c.name.en) : id.slice(0, 8);
   };
 
-  // Reset on OPEN (not on close — that cleared the form mid-fade, SS-07).
-  const change = (o: boolean) => {
-    if (o) {
+  // Reset when the dialog OPENS (not on close — that cleared the form mid-fade,
+  // SS-07). Tracked during render: Base UI's onOpenChange fires only for the
+  // dialog's own open/close gestures, never when the parent sets `open`, so a
+  // reset there never ran (DS-09 found it: no client preselected, stale form).
+  const [wasOpen, setWasOpen] = useState(false);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) {
       setForm({ ...EMPTY, clientId: active[0]?.id ?? '' });
       setFormError('');
     }
-    onOpenChange(o);
-  };
+  }
 
   async function create(e: FormEvent) {
     e.preventDefault();
@@ -107,7 +111,7 @@ export function NewRequestDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={change}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('createTitle')}</DialogTitle>

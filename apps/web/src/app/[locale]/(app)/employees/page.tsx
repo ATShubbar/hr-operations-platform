@@ -14,6 +14,7 @@ import { matchesAnyField } from '@hr/text';
 import { Link, useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useCan } from '@/lib/session';
+import { NATIONALITIES } from '@/lib/nationality';
 import type { Locale } from '@/lib/employee-format';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/avatar';
@@ -70,7 +71,6 @@ const BANDS = ['0-7', '8-14', '15-30', '31-60', '61-90'] as const;
 const PAGE = 50;
 const ALL = 'all';
 // The prototype's nationality list, as the ISO codes the API stores.
-const NATIONALITIES = ['SA', 'IN', 'PK', 'EG', 'PH', 'BD', 'JO', 'SD', 'NP', 'LK'] as const;
 
 // The prototype's 6-column grid (2.2fr 1.5fr 1.4fr 1.3fr 1.5fr 40px), as table
 // columns so the list keeps real table semantics. A <col> ignores calc(), so the

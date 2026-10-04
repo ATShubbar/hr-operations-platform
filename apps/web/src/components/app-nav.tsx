@@ -20,7 +20,6 @@ import {
   Settings,
   ShieldCheck,
   UserPlus,
-  UserRound,
   Users,
   UsersRound,
 } from 'lucide-react';
@@ -138,7 +137,6 @@ export function AppNav({
   const canRequests = useCan('request.read');
   const canTasks = useCan('task.read');
   const canVacancies = useCan('vacancy.read');
-  const canCandidates = useCan('candidate.read');
   const canGro = useCan('gro.read');
   const canCalendar = useCan('calendar.read');
   const canIntegrations = useCan('integration.google-calendar');
@@ -216,7 +214,7 @@ export function AppNav({
                 ? [{ href: '/employees', label: t('nav.people'), icon: Users }]
                 : []),
               ...(canVacancies
-                ? [{ href: '/vacancies', label: t('nav.hiring'), icon: UserPlus }]
+                ? [{ href: '/hiring', label: t('nav.hiring'), icon: UserPlus }]
                 : []),
               ...(canClients
                 ? [{ href: '/clients', label: t('nav.clients'), icon: Building2 }]
@@ -233,7 +231,8 @@ export function AppNav({
           // TEMPORARY (DS-04): today's screens the prototype has no nav entry for,
           // kept reachable until a redesigned screen absorbs each one — documents
           // into the person record, expiry into Overview's runway, GRO into the
-          // work queue, candidates into Hiring, Google Calendar into Calendar.
+          // work queue, Google Calendar into Calendar. (Candidates went into Hiring
+          // in DS-09.)
           // A row leaves this group when its absorbing screen's card lands.
           {
             heading: t('nav.otherTools'),
@@ -245,9 +244,6 @@ export function AppNav({
                 ? [{ href: '/expiry', label: t('nav.expiry'), icon: Activity }]
                 : []),
               ...(canGro ? [{ href: '/gro', label: t('nav.gro'), icon: Landmark }] : []),
-              ...(canCandidates
-                ? [{ href: '/candidates', label: t('nav.candidates'), icon: UserRound }]
-                : []),
               ...(canIntegrations
                 ? [{ href: '/integrations', label: t('nav.integrations'), icon: CalendarCheck }]
                 : []),
