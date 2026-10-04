@@ -61,6 +61,83 @@ jobs:
       - name: Lint, typecheck, test, build
         run: pnpm turbo run lint typecheck test build
 
-  # The GCP deploy job (Cloud Run UAT via Workload Identity Federation) lands in
-  # GCP-04 part B. The AWS job that stood here was a dead path since OCI-06 (its
-  # account was torn down) and was removed in GCP-04 part A.
+  # UAT deploy (GCP-04): Cloud Run in me-central1 (ADR-006 rev. 7), keyless.
+  # GitHub proves who it is to Google through Workload Identity Federation (the
+  # provider accepts ONLY this repository on main); no key is stored anywhere.
+  # Order: images -> migrate job (incl. role passwords) -> API -> worker pool ->
+  # web -> health through the public web address.
+  deploy-uat:
+    needs: ci
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    concurrency:
+      group: deploy-uat
+      cancel-in-progress: false
+    env:
+      REGION: me-central1
+      REPO: me-central1-docker.pkg.dev/peoplegro-prod/peoplegro
+      TAG: ${{ github.sha }}
+      SQL: peoplegro-prod:me-central1:uat-pg
+      API_URL: https://uat-api-1048926106506.me-central1.run.app
+      WEB_URL: https://uat-web-1048926106506.me-central1.run.app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/1048926106506/locations/global/workloadIdentityPools/github/providers/hr-operations-platform
+          service_account: uat-deployer@peoplegro-prod.iam.gserviceaccount.com
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Build and push images
+        run: |
+          gcloud auth configure-docker me-central1-docker.pkg.dev --quiet
+          docker build -f apps/api/Dockerfile --target runtime -t "$REPO/api:$TAG" .
+          docker build -f apps/api/Dockerfile --target migrate -t "$REPO/migrate:$TAG" .
+          docker build -f apps/web/Dockerfile --build-arg API_PROXY_TARGET="$API_URL" -t "$REPO/web-uat:$TAG" .
+          docker push "$REPO/api:$TAG"
+          docker push "$REPO/migrate:$TAG"
+          docker push "$REPO/web-uat:$TAG"
+
+      - name: Migrate (and set the app role passwords)
+        run: |
+          gcloud run jobs deploy uat-migrate --image "$REPO/migrate:$TAG" --region "$REGION" \
+            --service-account uat-migrate@peoplegro-prod.iam.gserviceaccount.com \
+            --set-cloudsql-instances "$SQL" \
+            --set-secrets DATABASE_URL=uat-database-url:latest,APP_STAFF_DB_PASSWORD=uat-db-app-staff-password:latest,APP_CLIENT_DB_PASSWORD=uat-db-app-client-password:latest,APP_EMPLOYEE_DB_PASSWORD=uat-db-app-employee-password:latest \
+            --max-retries 0 --task-timeout 600 --labels env=uat --quiet
+          gcloud run jobs execute uat-migrate --region "$REGION" --wait
+
+      - name: Deploy API (internal only)
+        run: |
+          { cat infra/gcp/uat-env.yaml; echo "BUILD_VERSION: $TAG"; } > /tmp/uat-api-env.yaml
+          gcloud run deploy uat-api --image "$REPO/api:$TAG" --region "$REGION" \
+            --service-account uat-run@peoplegro-prod.iam.gserviceaccount.com \
+            --ingress internal --set-cloudsql-instances "$SQL" \
+            --network default --subnet default --vpc-egress private-ranges-only \
+            --env-vars-file /tmp/uat-api-env.yaml \
+            --set-secrets "$(paste -sd, infra/gcp/uat-runtime-secrets.txt)" \
+            --cpu 1 --memory 1Gi --min-instances 0 --max-instances 2 --labels env=uat --quiet
+
+      - name: Deploy worker pool (always on)
+        run: python3 infra/gcp/deploy-worker-pool.py "$REPO/api:$TAG" "$TAG"
+
+      - name: Deploy web (public)
+        run: |
+          gcloud run deploy uat-web --image "$REPO/web-uat:$TAG" --region "$REGION" \
+            --service-account uat-web@peoplegro-prod.iam.gserviceaccount.com \
+            --ingress all --network default --subnet default --vpc-egress all-traffic \
+            --set-env-vars NODE_ENV=production \
+            --cpu 1 --memory 512Mi --min-instances 0 --max-instances 2 --labels env=uat --quiet
+
+      - name: Health through the public web address
+        run: |
+          for i in 1 2 3 4 5 6; do
+            curl -fsS "$WEB_URL/api/health" && curl -fsS "$WEB_URL/api/ready" && exit 0
+            sleep 10
+          done
+          echo "UAT health check failed" >&2; exit 1

@@ -1,0 +1,8 @@
+# UAT runtime environment — NOT secret (GCP-04). Read by the CI deploy of
+# uat-api (gcloud --env-vars-file) and by deploy-worker-pool.py (uat-worker), so
+# the two can never disagree. Secrets are mapped in uat-runtime-secrets.txt.
+NODE_ENV: production
+STORAGE_ENDPOINT: https://storage.googleapis.com
+STORAGE_REGION: me-central1
+STORAGE_BUCKET: peoplegro-uat-documents
+APP_WEB_ORIGIN: https://uat.peopleandgro.com
