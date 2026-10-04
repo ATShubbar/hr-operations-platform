@@ -18,5 +18,9 @@ WORKDIR /app
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 HOSTNAME=0.0.0.0 PORT=3000
 COPY --from=builder /repo/apps/web/.next/standalone ./
 COPY --from=builder /repo/apps/web/.next/static ./apps/web/.next/static
+# Next's standalone output leaves public/ out on purpose (it expects a CDN or a
+# copy). Without this line every /brand/* image 404'd on UAT — the login skyline
+# and the sidebar wordmark (found after GCP-06).
+COPY --from=builder /repo/apps/web/public ./apps/web/public
 EXPOSE 3000
 CMD ["node", "apps/web/server.js"]
