@@ -125,6 +125,15 @@ export const PERMISSIONS = [
   // only; `gro.process` — create/update/advance. No delete verb (cancel via status).
   'gro.read',
   'gro.process',
+  // Leave (ADR-014, LEAVE-02). Client managers raise + APPROVE their own
+  // company's; PEOPLE&GRO FILES (writes the ledger); `withdraw` = a pending
+  // request the caller raised. Employees never hold these — /me/leave is
+  // self-service.* (ADR-011 rev. 2).
+  'leave.read',
+  'leave.create',
+  'leave.approve',
+  'leave.file',
+  'leave.withdraw',
   // Calendar (CAL-02; permission matrix). STAFF-ONLY. All staff read (own events by
   // default); `calendar.read-all` lifts read/update/delete to ALL events — so a
   // role cannot be "write own, read all" (ROLE-03 found this; the v1.7 matrix
@@ -234,6 +243,11 @@ const CLIENT_MANAGER: readonly Permission[] = [
   'portal.read',
   'vacancy.read',
   'gro.read',
+  // ADR-014: their own company's leave — raise, approve/decline, withdraw own raises.
+  'leave.read',
+  'leave.create',
+  'leave.approve',
+  'leave.withdraw',
 ];
 
 // Each bundle is a column of the v1.7 permission matrix; the matrix spec
@@ -296,6 +310,11 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'integration.google-calendar',
     'report.read',
     'report.export',
+    'leave.read',
+    'leave.create',
+    'leave.approve',
+    'leave.file',
+    'leave.withdraw',
   ],
   // People files end to end — pay, contracts, hiring (prototype `hr`: employees
   // RWC, procedures RWC, documents RWCD, requests RWCD, payroll RW, hiring RWC,
@@ -333,6 +352,10 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'calendar.update',
     'calendar.delete',
     'integration.google-calendar',
+    'leave.read',
+    'leave.create',
+    'leave.file',
+    'leave.withdraw',
   ],
   // Government portals and procedures; no pay (prototype `gro`: employees R,
   // procedures RWCD, documents RWC — government categories only, requests RW,
@@ -357,6 +380,8 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'calendar.update',
     'calendar.delete',
     'integration.google-calendar',
+    'leave.read',
+    'leave.file',
   ],
   // Reads everything, changes nothing (prototype `auditor`: R on all nine
   // resources). Reads reports but does not EXPORT them — a bulk extraction is
@@ -375,6 +400,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'gro.read',
     'calendar.read-all',
     'report.read',
+    'leave.read',
   ],
   client_manager: CLIENT_MANAGER,
   // `session.end` (SS-01 — logout is permission-gated, and an account that

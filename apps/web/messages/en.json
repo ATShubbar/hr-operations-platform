@@ -528,6 +528,7 @@
       "document_expiry": "Document expiry",
       "task": "Tasks",
       "request": "Requests",
+      "leave": "Leave",
       "general": "General",
       "system": "System"
     },

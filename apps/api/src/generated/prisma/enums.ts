@@ -147,6 +147,7 @@ export const NotificationCategory = {
   document_expiry: 'document_expiry',
   task: 'task',
   request: 'request',
+  leave: 'leave',
   general: 'general',
   system: 'system'
 } as const

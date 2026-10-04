@@ -93,6 +93,18 @@ export class EmployeesService {
   getById(id: string): Promise<EmployeeRecord | null> {
     return this.prisma.employee.findUnique({ where: { id } });
   }
+
+  // Names only, for rows another module has ALREADY let the caller see (LEAVE-02:
+  // a leave request names its employee). Never a way to look someone up — the
+  // caller passes ids from records it was allowed to read.
+  async namesOf(ids: readonly string[]): Promise<Map<string, { nameEn: string; nameAr: string }>> {
+    if (ids.length === 0) return new Map();
+    const rows = await this.prisma.employee.findMany({
+      where: { id: { in: [...new Set(ids)] } },
+      select: { id: true, nameEn: true, nameAr: true },
+    });
+    return new Map(rows.map((r) => [r.id, { nameEn: r.nameEn, nameAr: r.nameAr }]));
+  }
 }
 
 function snapshot(e: EmployeeRecord): Prisma.InputJsonValue {

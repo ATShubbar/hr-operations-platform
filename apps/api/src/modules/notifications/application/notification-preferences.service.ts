@@ -8,6 +8,7 @@ const CATEGORIES: readonly NotificationCategory[] = [
   'document_expiry',
   'task',
   'request',
+  'leave',
   'general',
   'system',
 ];

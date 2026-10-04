@@ -4,12 +4,16 @@ import {
   Controller,
   ForbiddenException,
   Get,
+  HttpCode,
   NotFoundException,
   Param,
   Post,
 } from '@nestjs/common';
 import {
+  createSelfLeaveRequestSchema,
   createSelfRequestRequestSchema,
+  type LeaveListResponse,
+  type LeaveResponse,
   type DownloadResponse,
   type SelfDocumentListResponse,
   type SelfProfileResponse,
@@ -23,6 +27,7 @@ import { ClientsService } from '../../clients/public-api';
 import { ConfigService } from '../../configuration/public-api';
 import { DocumentsService, toSelfDocumentResponse } from '../../documents/public-api';
 import { EmployeesService, toSelfProfileResponse } from '../../employees/public-api';
+import { LeavePresenter, LeaveService } from '../../leave/public-api';
 import { RequestsService, toSelfRequestResponse } from '../../requests/public-api';
 import { StorageService } from '../../storage/public-api';
 
@@ -52,6 +57,8 @@ export class SelfServiceController {
     private readonly documents: DocumentsService,
     private readonly storage: StorageService,
     private readonly requests: RequestsService,
+    private readonly leave: LeaveService,
+    private readonly presentLeave: LeavePresenter,
   ) {}
 
   @RequirePermission('self-service.read')
@@ -119,6 +126,43 @@ export class SelfServiceController {
       createdByUserId: actorId,
     });
     return toSelfRequestResponse(row);
+  }
+
+  // My leave (ADR-014, LEAVE-02): every leave request ABOUT me — mine and those
+  // my manager or PEOPLE&GRO raised for me — newest first. The database returns
+  // only my rows (employee_self).
+  @RequirePermission('self-service.read')
+  @Get('leave')
+  async myLeave(): Promise<LeaveListResponse> {
+    const record = await this.ownRecord();
+    return { leave: await this.presentLeave.many(await this.leave.listForEmployee(record.id)) };
+  }
+
+  // Raise leave for myself. The employee id and company come from MY record;
+  // `.strict()` rejects an employee id in the body. The statutory rules (caps,
+  // Hajj once) are the service's; the database refuses anything but a pending,
+  // undecided request for me (employee_raise).
+  @RequirePermission('self-service.create')
+  @Post('leave')
+  @HttpCode(201)
+  async raiseLeave(@Body() body: unknown): Promise<LeaveResponse> {
+    const record = await this.ownRecord();
+    const parsed = createSelfLeaveRequestSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException('Invalid leave request');
+    const row = await this.leave.raiseForEmployee(record.id, record.clientId, parsed.data);
+    return this.presentLeave.one(row);
+  }
+
+  // Withdraw a PENDING request I raised myself (one raised for me is not mine to
+  // withdraw → 403). Anything not mine at all is the same 404.
+  @RequirePermission('self-service.create')
+  @Post('leave/:id/withdraw')
+  @HttpCode(200)
+  async withdrawLeave(@Param('id') id: string): Promise<LeaveResponse> {
+    const record = await this.ownRecord();
+    const row = UUID_RE.test(id) ? await this.leave.withdrawForEmployee(record.id, id) : null;
+    if (!row) throw new NotFoundException('Leave request not found');
+    return this.presentLeave.one(row);
   }
 
   // The caller's own record, after every access rule. Shared by every /me route

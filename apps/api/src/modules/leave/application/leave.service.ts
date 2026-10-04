@@ -12,8 +12,10 @@ import type { Prisma } from '../../../generated/prisma/client';
 import type { LeaveStatus, LeaveType } from '../../../generated/prisma/enums';
 import type { LeaveRequestModel as LeaveRequestRecord } from '../../../generated/prisma/models';
 import { AuditService } from '../../audit/public-api';
+import { EventBus } from '../../events/public-api';
 import { EmployeesService } from '../../employees/public-api';
 import { LIVE_STATUSES, canMove, leaveEndDate, raiseRefusal } from '../domain/leave-rules';
+import { LeaveStatusChangedEvent } from '../domain/leave-status-changed.event';
 
 export interface RaiseLeaveInput {
   employeeId: string;
@@ -47,6 +49,7 @@ export class LeaveService {
     private readonly employeeDb: EmployeeScopedPrismaService,
     private readonly audit: AuditService,
     private readonly employees: EmployeesService,
+    private readonly events: EventBus,
   ) {}
 
   // ---- staff path ------------------------------------------------------------
@@ -77,20 +80,21 @@ export class LeaveService {
   }
 
   // An Administrator decides for the client (ADR-014): recorded as on-behalf.
-  decide(id: string, decision: LeaveDecision): Promise<LeaveRequestRecord | null> {
-    return this.prisma.$transaction((tx) =>
+  async decide(id: string, decision: LeaveDecision): Promise<LeaveRequestRecord | null> {
+    const row = await this.prisma.$transaction((tx) =>
       this.move(tx, id, 'pending', decision, {
         decidedByUserId: actorId(),
         decidedAt: new Date(),
         decidedOnBehalf: true,
       }),
     );
+    return this.published(row);
   }
 
   // PEOPLE&GRO files an approved request: the status AND its ledger entry in one
   // transaction, so a balance never sees one without the other.
-  file(id: string): Promise<LeaveRequestRecord | null> {
-    return this.prisma.$transaction(async (tx) => {
+  async file(id: string): Promise<LeaveRequestRecord | null> {
+    const filed = await this.prisma.$transaction(async (tx) => {
       const row = await this.move(tx, id, 'approved', 'filed', {
         filedByUserId: actorId(),
         filedAt: new Date(),
@@ -112,6 +116,7 @@ export class LeaveService {
       });
       return row;
     });
+    return this.published(filed);
   }
 
   // Staff withdraw only what THEY raised (ADR-014).
@@ -157,17 +162,18 @@ export class LeaveService {
     return this.scoped.forClient(clientId).leaveRequest.findUnique({ where: { id } });
   }
 
-  decideForClient(
+  async decideForClient(
     clientId: string,
     id: string,
     decision: LeaveDecision,
   ): Promise<LeaveRequestRecord | null> {
-    return this.scoped.transaction(clientId, (tx) =>
+    const row = await this.scoped.transaction(clientId, (tx) =>
       this.move(tx, id, 'pending', decision, {
         decidedByUserId: actorId(),
         decidedAt: new Date(),
       }),
     );
+    return this.published(row);
   }
 
   withdrawForClient(clientId: string, id: string): Promise<LeaveRequestRecord | null> {
@@ -224,6 +230,29 @@ export class LeaveService {
   }
 
   // ---- shared ------------------------------------------------------------------
+
+  // After the commit, tell whoever raised the request (Notifications subscribes).
+  // Not when they decided it themselves — an Administrator who raised and then
+  // approved on the client's behalf needs no notification about their own act.
+  private async published(row: LeaveRequestRecord | null): Promise<LeaveRequestRecord | null> {
+    if (!row) return row;
+    if (row.raisedByUserId !== requestContext.get()?.actorId) {
+      await this.events.publish(
+        new LeaveStatusChangedEvent(
+          row.id,
+          row.ref,
+          row.clientId,
+          row.type,
+          row.startDate.toISOString().slice(0, 10),
+          row.days,
+          row.status,
+          row.raisedByUserId,
+          requestContext.get()?.requestId ?? null,
+        ),
+      );
+    }
+    return row;
+  }
 
   private async checkRaise(tx: Tx, input: RaiseLeaveInput, employeeStatus: string): Promise<void> {
     const hajjOnRecord =

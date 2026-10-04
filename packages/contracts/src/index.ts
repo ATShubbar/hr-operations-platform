@@ -337,3 +337,19 @@ export {
   type EmployeeHistoryEntry,
   type EmployeeHistoryResponse,
 } from './employee-history.js';
+export {
+  leaveTypeSchema,
+  leaveStatusSchema,
+  createLeaveRequestSchema,
+  createSelfLeaveRequestSchema,
+  leaveQuerySchema,
+  leaveResponseSchema,
+  leaveListResponseSchema,
+  type LeaveType,
+  type LeaveStatus,
+  type CreateLeaveRequest,
+  type CreateSelfLeaveRequest,
+  type LeaveQuery,
+  type LeaveResponse,
+  type LeaveListResponse,
+} from './leave.js';

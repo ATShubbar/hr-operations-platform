@@ -5,6 +5,7 @@ import { ClientsModule } from '../clients/public-api';
 import { ConfigurationModule } from '../configuration/public-api';
 import { DocumentsModule } from '../documents/public-api';
 import { EmployeesModule } from '../employees/public-api';
+import { LeaveModule } from '../leave/public-api';
 import { NotificationsModule } from '../notifications/public-api';
 import { RequestsModule } from '../requests/public-api';
 import { StorageModule } from '../storage/public-api';
@@ -29,6 +30,7 @@ import { EmployeeTerminatedHandler } from './application/employee-terminated.han
     DocumentsModule,
     StorageModule,
     RequestsModule,
+    LeaveModule,
     NotificationsModule,
   ],
   controllers: [SelfServiceController, EmployeeAccountsController, PasswordResetController],

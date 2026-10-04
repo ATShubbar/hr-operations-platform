@@ -415,6 +415,7 @@ enum NotificationCategory {
   document_expiry
   task
   request
+  leave
   general
   system
 }

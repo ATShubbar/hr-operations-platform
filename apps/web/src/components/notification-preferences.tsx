@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-const CATEGORIES = ['document_expiry', 'task', 'request', 'general', 'system'] as const;
+const CATEGORIES = ['document_expiry', 'task', 'request', 'leave', 'general', 'system'] as const;
 
 // Notification preferences (NOTIF-06) — a settings section over the NOTIF-04
 // GET/PATCH surface. Per-category EMAIL toggles; in-app notifications are always

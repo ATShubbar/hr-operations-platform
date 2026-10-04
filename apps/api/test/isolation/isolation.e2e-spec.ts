@@ -4,6 +4,8 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AppModule } from '../../src/app.module';
 import { PrismaService } from '../../src/prisma/prisma.service';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { PrismaClient } from '../../src/generated/prisma/client';
 import {
   cleanupHelperUsers,
   loginAsClientRep,
@@ -244,6 +246,19 @@ describe('Cross-client isolation harness (e2e)', () => {
           createdByUserId: owner,
         })),
       });
+      // And one leave request each (ADR-014): its response names the employee.
+      await prisma.leaveRequest.createMany({
+        data: [meId, colleagueId].map((owner) => ({
+          clientId: companyId,
+          employeeId: owner,
+          raisedByEmployeeId: owner,
+          raisedByUserId: owner,
+          type: 'annual' as const,
+          startDate: new Date('2026-11-01T00:00:00Z'),
+          days: 1,
+          endDate: new Date('2026-11-01T00:00:00Z'),
+        })),
+      });
       me = await loginAsEmployee(app, meId);
       colleague = await loginAsEmployee(app, colleagueId);
     });
@@ -251,6 +266,13 @@ describe('Cross-client isolation harness (e2e)', () => {
     afterAll(async () => {
       await prisma.document.deleteMany({ where: { clientId: companyId } });
       await prisma.request.deleteMany({ where: { clientId: companyId } });
+      // The staff role has no DELETE on leave (corrections are a later card —
+      // LEAVE-01), so the fixtures go through the owner connection.
+      const owner = new PrismaClient({
+        adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL ?? '' }),
+      });
+      await owner.leaveRequest.deleteMany({ where: { clientId: companyId } });
+      await owner.$disconnect();
       await prisma.employee.deleteMany({ where: { id: { in: created } } });
       await prisma.clientSetting.deleteMany({ where: { clientId: companyId } });
       await prisma.client.delete({ where: { id: companyId } });

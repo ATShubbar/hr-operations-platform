@@ -48,6 +48,14 @@ export const AUDITED_WRITES: Record<string, string> = {
   // SS-05: an employee raising their own request — same audit action as every
   // other create path, written in the same transaction under the employee scope.
   'POST /me/requests': 'request.create',
+  // Leave (ADR-014, LEAVE-02): one resource, the workflow's verbs.
+  'POST /leave': 'leave.create',
+  'POST /leave/:id/approve': 'leave.approve',
+  'POST /leave/:id/decline': 'leave.decline',
+  'POST /leave/:id/file': 'leave.file',
+  'POST /leave/:id/withdraw': 'leave.withdraw',
+  'POST /me/leave': 'leave.create',
+  'POST /me/leave/:id/withdraw': 'leave.withdraw',
   // SS-06a: employee accounts.
   'POST /employee-accounts/:employeeId/invite': 'employee-user.invite',
   'PATCH /employee-accounts/:employeeId': 'employee-user.update',

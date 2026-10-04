@@ -1250,7 +1250,13 @@ status facts CHECKed) + `lv_leave_entries` (ledger: `taken` from filed requests,
 paths (staff · client manager · employee), audited as resource `leave`; filing writes status + ledger in one tx; moves are
 conditional updates (lost race → 409). **The DB fences each audience with COLUMN-LEVEL UPDATE grants + RESTRICTIVE
 policies**: a client manager can never file or touch the ledger, an employee can only withdraw their own raise. Each policy
-proven load-bearing (loosen → red). API **550/550**. Next: **LEAVE-02** (HTTP + `leave.*` bundles).
+proven load-bearing (loosen → red). API **550/550**.
+**LEAVE-02 done — the leave API.** `/leave` (dual path via `scopeOf`: list/get/raise/approve/decline/file/withdraw) +
+`/me/leave` (self-service, `.strict()` body). Responses name the employee + raiser (`EmployeesService.namesOf`,
+`UsersService.principals`) + per-caller `raisedByMe`. Bundles = the ADR-014 row, pinned by `role-matrix`. Filing is
+staff-only twice (bundle + `scopeOf`). `LeaveStatusChangedEvent` → Notifications tells the raiser (never about their own
+act); new notification category **`leave`** (own enum migration). Harness + audited-writes registered; the staff role
+has NO DELETE on leave, so test cleanup uses the owner connection. API **563/563**. Next: **LEAVE-03** (balances).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

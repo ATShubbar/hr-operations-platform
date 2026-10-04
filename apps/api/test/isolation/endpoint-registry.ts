@@ -213,6 +213,21 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   // is the employee's only write (scoping proven in self-service-requests.e2e).
   'GET /me/requests': 'employee',
   'POST /me/requests': 'employee-write',
+  // My leave (ADR-014, LEAVE-02): the list carries each row's employee id, so
+  // the colleague loop probes it directly; raising and withdrawing are writes
+  // (scoping proven in leave-api.e2e + the LEAVE-01 RLS spec).
+  'GET /me/leave': 'employee',
+  'POST /me/leave': 'employee-write',
+  'POST /me/leave/:id/withdraw': 'employee-write',
+  // Leave (LEAVE-02): dual-path like Requests — staff cross-client, client
+  // managers own company (RLS). Filing is PEOPLE&GRO's alone.
+  'GET /leave': 'client-read',
+  'GET /leave/:id': 'client-read',
+  'POST /leave': 'client-write',
+  'POST /leave/:id/approve': 'client-write',
+  'POST /leave/:id/decline': 'client-write',
+  'POST /leave/:id/withdraw': 'client-write',
+  'POST /leave/:id/file': 'staff',
   'GET /portal/company': 'client-read',
   'GET /portal/employees': 'client-read',
   'GET /portal/employees/:id': 'client-read',

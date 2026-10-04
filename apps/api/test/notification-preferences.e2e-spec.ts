@@ -74,6 +74,7 @@ describe('Notification preferences (NOTIF-04, e2e)', () => {
       document_expiry: true,
       task: true,
       request: true,
+      leave: true, // LEAVE-02 (ADR-014)
       general: true,
       system: true,
     });
