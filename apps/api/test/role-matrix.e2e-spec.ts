@@ -158,12 +158,13 @@ const MATRIX: Record<string, Row> = {
     auditor: ['leave.read'],
     client_manager: ['leave.read', 'leave.create', 'leave.approve', 'leave.withdraw'], // own company
   },
+  // ADR-016: everyone who sees requests may post on the thread — except the Auditor.
   Requests: {
-    administrator: ['request.read', 'request.create', 'request.update', 'request.process'],
-    hr_officer: ['request.read', 'request.create', 'request.update', 'request.process'],
-    gro_officer: ['request.read', 'request.process'],
+    administrator: ['request.read', 'request.create', 'request.update', 'request.process', 'request.comment'],
+    hr_officer: ['request.read', 'request.create', 'request.update', 'request.process', 'request.comment'],
+    gro_officer: ['request.read', 'request.process', 'request.comment'],
     auditor: ['request.read'],
-    client_manager: ['request.read', 'request.create'],
+    client_manager: ['request.read', 'request.create', 'request.comment'],
     employee: ['self-service.read', 'self-service.create'], // own file + self-raised
   },
   'Tasks (internal)': {

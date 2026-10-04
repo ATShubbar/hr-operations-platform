@@ -110,6 +110,11 @@ export type NotificationPreference = Prisma.NotificationPreferenceModel
  */
 export type Request = Prisma.RequestModel
 /**
+ * Model RequestComment
+ * 
+ */
+export type RequestComment = Prisma.RequestCommentModel
+/**
  * Model Task
  * 
  */

@@ -246,6 +246,7 @@ export type RequestWhereInput = {
   requesterEmployeeId?: Prisma.UuidNullableFilter<"Request"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Request"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Request"> | Date | string
+  comments?: Prisma.RequestCommentListRelationFilter
 }
 
 export type RequestOrderByWithRelationInput = {
@@ -262,6 +263,7 @@ export type RequestOrderByWithRelationInput = {
   requesterEmployeeId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  comments?: Prisma.RequestCommentOrderByRelationAggregateInput
 }
 
 export type RequestWhereUniqueInput = Prisma.AtLeast<{
@@ -281,6 +283,7 @@ export type RequestWhereUniqueInput = Prisma.AtLeast<{
   requesterEmployeeId?: Prisma.UuidNullableFilter<"Request"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Request"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Request"> | Date | string
+  comments?: Prisma.RequestCommentListRelationFilter
 }, "id">
 
 export type RequestOrderByWithAggregationInput = {
@@ -335,6 +338,7 @@ export type RequestCreateInput = {
   requesterEmployeeId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  comments?: Prisma.RequestCommentCreateNestedManyWithoutRequestInput
 }
 
 export type RequestUncheckedCreateInput = {
@@ -351,6 +355,7 @@ export type RequestUncheckedCreateInput = {
   requesterEmployeeId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  comments?: Prisma.RequestCommentUncheckedCreateNestedManyWithoutRequestInput
 }
 
 export type RequestUpdateInput = {
@@ -367,6 +372,7 @@ export type RequestUpdateInput = {
   requesterEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  comments?: Prisma.RequestCommentUpdateManyWithoutRequestNestedInput
 }
 
 export type RequestUncheckedUpdateInput = {
@@ -383,6 +389,7 @@ export type RequestUncheckedUpdateInput = {
   requesterEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  comments?: Prisma.RequestCommentUncheckedUpdateManyWithoutRequestNestedInput
 }
 
 export type RequestCreateManyInput = {
@@ -481,6 +488,11 @@ export type RequestMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
+export type RequestScalarRelationFilter = {
+  is?: Prisma.RequestWhereInput
+  isNot?: Prisma.RequestWhereInput
+}
+
 export type EnumRequestTypeFieldUpdateOperationsInput = {
   set?: $Enums.RequestType
 }
@@ -493,6 +505,129 @@ export type EnumRequestPriorityFieldUpdateOperationsInput = {
   set?: $Enums.RequestPriority
 }
 
+export type RequestCreateNestedOneWithoutCommentsInput = {
+  create?: Prisma.XOR<Prisma.RequestCreateWithoutCommentsInput, Prisma.RequestUncheckedCreateWithoutCommentsInput>
+  connectOrCreate?: Prisma.RequestCreateOrConnectWithoutCommentsInput
+  connect?: Prisma.RequestWhereUniqueInput
+}
+
+export type RequestUpdateOneRequiredWithoutCommentsNestedInput = {
+  create?: Prisma.XOR<Prisma.RequestCreateWithoutCommentsInput, Prisma.RequestUncheckedCreateWithoutCommentsInput>
+  connectOrCreate?: Prisma.RequestCreateOrConnectWithoutCommentsInput
+  upsert?: Prisma.RequestUpsertWithoutCommentsInput
+  connect?: Prisma.RequestWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.RequestUpdateToOneWithWhereWithoutCommentsInput, Prisma.RequestUpdateWithoutCommentsInput>, Prisma.RequestUncheckedUpdateWithoutCommentsInput>
+}
+
+export type RequestCreateWithoutCommentsInput = {
+  id?: string
+  clientId: string
+  type: $Enums.RequestType
+  title: string
+  description?: string | null
+  status?: $Enums.RequestStatus
+  priority?: $Enums.RequestPriority
+  dueDate?: Date | string | null
+  createdByUserId: string
+  assigneeUserId?: string | null
+  requesterEmployeeId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type RequestUncheckedCreateWithoutCommentsInput = {
+  id?: string
+  clientId: string
+  type: $Enums.RequestType
+  title: string
+  description?: string | null
+  status?: $Enums.RequestStatus
+  priority?: $Enums.RequestPriority
+  dueDate?: Date | string | null
+  createdByUserId: string
+  assigneeUserId?: string | null
+  requesterEmployeeId?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type RequestCreateOrConnectWithoutCommentsInput = {
+  where: Prisma.RequestWhereUniqueInput
+  create: Prisma.XOR<Prisma.RequestCreateWithoutCommentsInput, Prisma.RequestUncheckedCreateWithoutCommentsInput>
+}
+
+export type RequestUpsertWithoutCommentsInput = {
+  update: Prisma.XOR<Prisma.RequestUpdateWithoutCommentsInput, Prisma.RequestUncheckedUpdateWithoutCommentsInput>
+  create: Prisma.XOR<Prisma.RequestCreateWithoutCommentsInput, Prisma.RequestUncheckedCreateWithoutCommentsInput>
+  where?: Prisma.RequestWhereInput
+}
+
+export type RequestUpdateToOneWithWhereWithoutCommentsInput = {
+  where?: Prisma.RequestWhereInput
+  data: Prisma.XOR<Prisma.RequestUpdateWithoutCommentsInput, Prisma.RequestUncheckedUpdateWithoutCommentsInput>
+}
+
+export type RequestUpdateWithoutCommentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  clientId?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumRequestTypeFieldUpdateOperationsInput | $Enums.RequestType
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumRequestStatusFieldUpdateOperationsInput | $Enums.RequestStatus
+  priority?: Prisma.EnumRequestPriorityFieldUpdateOperationsInput | $Enums.RequestPriority
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  assigneeUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requesterEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type RequestUncheckedUpdateWithoutCommentsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  clientId?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumRequestTypeFieldUpdateOperationsInput | $Enums.RequestType
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumRequestStatusFieldUpdateOperationsInput | $Enums.RequestStatus
+  priority?: Prisma.EnumRequestPriorityFieldUpdateOperationsInput | $Enums.RequestPriority
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdByUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  assigneeUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  requesterEmployeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+
+/**
+ * Count Type RequestCountOutputType
+ */
+
+export type RequestCountOutputType = {
+  comments: number
+}
+
+export type RequestCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  comments?: boolean | RequestCountOutputTypeCountCommentsArgs
+}
+
+/**
+ * RequestCountOutputType without action
+ */
+export type RequestCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the RequestCountOutputType
+   */
+  select?: Prisma.RequestCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * RequestCountOutputType without action
+ */
+export type RequestCountOutputTypeCountCommentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.RequestCommentWhereInput
+}
 
 
 export type RequestSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -509,6 +644,8 @@ export type RequestSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   requesterEmployeeId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  comments?: boolean | Prisma.Request$commentsArgs<ExtArgs>
+  _count?: boolean | Prisma.RequestCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["request"]>
 
 export type RequestSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -560,10 +697,18 @@ export type RequestSelectScalar = {
 }
 
 export type RequestOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clientId" | "type" | "title" | "description" | "status" | "priority" | "dueDate" | "createdByUserId" | "assigneeUserId" | "requesterEmployeeId" | "createdAt" | "updatedAt", ExtArgs["result"]["request"]>
+export type RequestInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  comments?: boolean | Prisma.Request$commentsArgs<ExtArgs>
+  _count?: boolean | Prisma.RequestCountOutputTypeDefaultArgs<ExtArgs>
+}
+export type RequestIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type RequestIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
 
 export type $RequestPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Request"
-  objects: {}
+  objects: {
+    comments: Prisma.$RequestCommentPayload<ExtArgs>[]
+  }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     clientId: string
@@ -972,6 +1117,7 @@ readonly fields: RequestFieldRefs;
  */
 export interface Prisma__RequestClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  comments<T extends Prisma.Request$commentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Request$commentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RequestCommentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1031,6 +1177,10 @@ export type RequestFindUniqueArgs<ExtArgs extends runtime.Types.Extensions.Inter
    */
   omit?: Prisma.RequestOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RequestInclude<ExtArgs> | null
+  /**
    * Filter, which Request to fetch.
    */
   where: Prisma.RequestWhereUniqueInput
@@ -1049,6 +1199,10 @@ export type RequestFindUniqueOrThrowArgs<ExtArgs extends runtime.Types.Extension
    */
   omit?: Prisma.RequestOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RequestInclude<ExtArgs> | null
+  /**
    * Filter, which Request to fetch.
    */
   where: Prisma.RequestWhereUniqueInput
@@ -1066,6 +1220,10 @@ export type RequestFindFirstArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Omit specific fields from the Request
    */
   omit?: Prisma.RequestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RequestInclude<ExtArgs> | null
   /**
    * Filter, which Request to fetch.
    */
@@ -1115,6 +1273,10 @@ export type RequestFindFirstOrThrowArgs<ExtArgs extends runtime.Types.Extensions
    */
   omit?: Prisma.RequestOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RequestInclude<ExtArgs> | null
+  /**
    * Filter, which Request to fetch.
    */
   where?: Prisma.RequestWhereInput
@@ -1162,6 +1324,10 @@ export type RequestFindManyArgs<ExtArgs extends runtime.Types.Extensions.Interna
    * Omit specific fields from the Request
    */
   omit?: Prisma.RequestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RequestInclude<ExtArgs> | null
   /**
    * Filter, which Requests to fetch.
    */
@@ -1211,6 +1377,10 @@ export type RequestCreateArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    */
   omit?: Prisma.RequestOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RequestInclude<ExtArgs> | null
+  /**
    * The data needed to create a Request.
    */
   data: Prisma.XOR<Prisma.RequestCreateInput, Prisma.RequestUncheckedCreateInput>
@@ -1258,6 +1428,10 @@ export type RequestUpdateArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    * Omit specific fields from the Request
    */
   omit?: Prisma.RequestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RequestInclude<ExtArgs> | null
   /**
    * The data needed to update a Request.
    */
@@ -1325,6 +1499,10 @@ export type RequestUpsertArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    */
   omit?: Prisma.RequestOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RequestInclude<ExtArgs> | null
+  /**
    * The filter to search for the Request to update in case it exists.
    */
   where: Prisma.RequestWhereUniqueInput
@@ -1351,6 +1529,10 @@ export type RequestDeleteArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    */
   omit?: Prisma.RequestOmit<ExtArgs> | null
   /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RequestInclude<ExtArgs> | null
+  /**
    * Filter which Request to delete.
    */
   where: Prisma.RequestWhereUniqueInput
@@ -1371,6 +1553,30 @@ export type RequestDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
 }
 
 /**
+ * Request.comments
+ */
+export type Request$commentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the RequestComment
+   */
+  select?: Prisma.RequestCommentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the RequestComment
+   */
+  omit?: Prisma.RequestCommentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RequestCommentInclude<ExtArgs> | null
+  where?: Prisma.RequestCommentWhereInput
+  orderBy?: Prisma.RequestCommentOrderByWithRelationInput | Prisma.RequestCommentOrderByWithRelationInput[]
+  cursor?: Prisma.RequestCommentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.RequestCommentScalarFieldEnum | Prisma.RequestCommentScalarFieldEnum[]
+}
+
+/**
  * Request without action
  */
 export type RequestDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1382,4 +1588,8 @@ export type RequestDefaultArgs<ExtArgs extends runtime.Types.Extensions.Internal
    * Omit specific fields from the Request
    */
   omit?: Prisma.RequestOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RequestInclude<ExtArgs> | null
 }

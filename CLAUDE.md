@@ -1291,11 +1291,26 @@ Header box = `components/global-search.tsx` (combobox, phone icon). API **591/59
 visible to everyone on it (NO internal notes); all who see it post except the Auditor (`request.comment`; employees via
 `/me`); comments immutable; attachments (PDF/JPG/PNG ≤10MB) are the request's own `req_attachments`, scanned before
 download; `info_needed` ("Ask for more detail") returns to `open` on the REQUESTER's reply; a per-type working-day
-service level paused while info is needed (THREAD-04). Next: **THREAD-01** (comments).
+service level paused while info is needed (THREAD-04). **THREAD-01 done — comments on a request.** `req_comments` (client_id + requester_employee_id COPIED from the request;
+SELECT+INSERT grants only → nobody, staff included, edits or deletes). RLS: RESTRICTIVE `client_comment` (the request must
+match the row's client AND requester) + `employee_comment` (a request I raised). `request.comment` → Administrator/HR/GRO/
+Client manager, NOT the Auditor (reads, can't post); employees post via `POST /me/requests/:id/comments`
+(`self-service.create`). `RequestThreadService` looks the request up on the CALLER'S path (unseen → 404), audits
+`request-comment` (length, not text), publishes `RequestCommentAddedEvent` → a staff comment notifies the creator, a
+client/employee comment the assignee, never the author. Web: `requests/request-thread.tsx` (staff, client, employee) and
+`/me/requests` is now list + detail (`?r=`). Comment bodies sit in `<bdi>`: under ADR-012's LTR layout an Arabic comment
+otherwise printed its full stop at the start (`dir="auto"`/`plaintext` right-align it instead). API **601/601** ×3. Next:
+**THREAD-02** (attachments).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
 - RLS policies MUST use `NULLIF(current_setting('app.client_id', true), '')::uuid` — pooled connections leave the GUC as '' not NULL (SPIKE-001).
+- QUALIFY the policy table's columns inside an RLS subquery (`req_comments.client_id`, not `client_id`): an unqualified
+  name resolves to the SUBQUERY's table first, so `r.client_id = client_id` compares a column with itself and the policy
+  is a tautology that passes every row (THREAD-01 — caught only because a fence test wrote onto another company).
+- A WITH CHECK red proof can be MASKED by the read policy: an INSERT … RETURNING row the caller can't SELECT fails anyway,
+  so loosening the write policy changes nothing for that forgery. Test a forgery the read policy WOULD let back out
+  (THREAD-01: a colleague's request labelled with my own employee id).
 - A role that INSERTs into `aud_entries` needs `GRANT USAGE ON SEQUENCE aud_entries_id_seq` too —
   without it Postgres fails at `nextval` ("permission denied for sequence") BEFORE RLS runs
   (AUDIT-02 for app_client, SS-05 for app_employee).

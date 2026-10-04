@@ -408,6 +408,24 @@ async function seedRequests(prisma: PrismaClient): Promise<number> {
   for (const { id, ...rest } of requests) {
     await prisma.request.upsert({ where: { id }, create: { id, ...rest }, update: rest });
   }
+
+  // A short conversation on two of them (THREAD-01, ADR-016), so the thread on
+  // the request screens shows something real. Replaced on every run.
+  const hr = await prisma.authUser.findUnique({ where: { email: seedEmail('staff-hr_officer') } });
+  const gro = await prisma.authUser.findUnique({ where: { email: seedEmail('staff-gro_officer') } });
+  await prisma.requestComment.deleteMany({ where: { requestId: { in: requests.map((r) => r.id) } } });
+  if (hr && gro) {
+    const at = (hoursAgo: number) => new Date(Date.now() - hoursAgo * 3_600_000);
+    const salary = 'a0000001-0000-4000-8000-000000000001';
+    const iqama = 'a0000001-0000-4000-8000-000000000002';
+    await prisma.requestComment.createMany({
+      data: [
+        { requestId: salary, clientId: SEED_CLIENT_A, authorUserId: hr.id, createdAt: at(30), body: 'Which bank is this for? Some banks want their own template, stamped by your finance team.' },
+        { requestId: salary, clientId: SEED_CLIENT_A, authorUserId: repA.id, createdAt: at(26), body: 'Al Rajhi. I will upload their template today.' },
+        { requestId: iqama, clientId: SEED_CLIENT_A, authorUserId: gro.id, createdAt: at(5), body: 'Muqeem renewal submitted; waiting for the fee payment to clear.' },
+      ],
+    });
+  }
   return requests.length;
 }
 

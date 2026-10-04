@@ -445,28 +445,50 @@ model NotificationPreference {
 // client_isolation policy enforces own-client on both read and write. title/
 // description are user-entered free text (author's language), not system ar/en.
 model Request {
-  id                  String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  clientId            String          @map("client_id") @db.Uuid
+  id                  String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clientId            String           @map("client_id") @db.Uuid
   type                RequestType
   title               String
   description         String?
-  status              RequestStatus   @default(open)
-  priority            RequestPriority @default(normal)
-  dueDate             DateTime?       @map("due_date") @db.Date
-  createdByUserId     String          @map("created_by_user_id") @db.Uuid
-  assigneeUserId      String?         @map("assignee_user_id") @db.Uuid
+  status              RequestStatus    @default(open)
+  priority            RequestPriority  @default(normal)
+  dueDate             DateTime?        @map("due_date") @db.Date
+  createdByUserId     String           @map("created_by_user_id") @db.Uuid
+  assigneeUserId      String?          @map("assignee_user_id") @db.Uuid
   // SS-05 (ADR-011): the employee who raised it, when an employee did (self-
   // service). NULL for staff- and client-rep-raised requests. A bare id — the
   // employee table belongs to Employees. The app_employee RLS policies key on it.
-  requesterEmployeeId String?         @map("requester_employee_id") @db.Uuid
-  createdAt           DateTime        @default(now()) @map("created_at")
-  updatedAt           DateTime        @updatedAt @map("updated_at")
+  requesterEmployeeId String?          @map("requester_employee_id") @db.Uuid
+  createdAt           DateTime         @default(now()) @map("created_at")
+  comments            RequestComment[]
+  updatedAt           DateTime         @updatedAt @map("updated_at")
 
   @@index([clientId])
   @@index([status])
   @@index([dueDate])
   @@index([requesterEmployeeId])
   @@map("req_requests")
+}
+
+// A comment on a request's thread (ADR-016, THREAD-01). Visible to everyone on
+// the request; written by staff, the client manager and the employee who raised
+// it (never the Auditor). `client_id` and `requester_employee_id` are COPIED from
+// the request so the client and employee RLS policies never need a join. No
+// UPDATE/DELETE is granted to anyone: a thread is a record.
+model RequestComment {
+  id                  String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  requestId           String   @map("request_id") @db.Uuid
+  clientId            String   @map("client_id") @db.Uuid
+  requesterEmployeeId String?  @map("requester_employee_id") @db.Uuid
+  authorUserId        String   @map("author_user_id") @db.Uuid
+  body                String
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  request Request @relation(fields: [requestId], references: [id], onDelete: Restrict)
+
+  @@index([requestId, createdAt])
+  @@index([clientId])
+  @@map("req_comments")
 }
 
 enum RequestType {

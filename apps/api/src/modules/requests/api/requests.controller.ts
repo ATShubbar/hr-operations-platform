@@ -12,10 +12,13 @@ import {
   Query,
 } from '@nestjs/common';
 import {
+  createRequestCommentSchema,
   createRequestRequestSchema,
   processRequestRequestSchema,
   requestQuerySchema,
   updateRequestRequestSchema,
+  type RequestComment,
+  type RequestCommentListResponse,
   type RequestListResponse,
   type RequestResponse,
 } from '@hr/contracts';
@@ -26,6 +29,7 @@ import type { RequestModel as RequestRecord } from '../../../generated/prisma/mo
 import { UsersService } from '../../auth/public-api';
 import { ClientsService } from '../../clients/public-api';
 import { RequestsService } from '../application/requests.service';
+import { RequestThreadService } from '../application/request-thread.service';
 import type { UpdateRequestInput } from '../domain/request';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -41,7 +45,42 @@ export class RequestsController {
     private readonly requests: RequestsService,
     private readonly clients: ClientsService,
     private readonly users: UsersService,
+    private readonly thread: RequestThreadService,
   ) {}
+
+  // ---- The thread (ADR-016, THREAD-01) -----------------------------------------
+  // Read by everyone who can read the request (the Auditor included); written by
+  // request.comment holders. Same paths as the request: staff cross-client, a
+  // client manager their own company through RLS. Unknown/foreign → 404.
+
+  @RequirePermission('request.read')
+  @Get(':id/comments')
+  async comments(@Param('id') id: string): Promise<RequestCommentListResponse> {
+    if (!UUID_RE.test(id)) throw new NotFoundException('Request not found');
+    const scope = scopeOf(requestContext.get());
+    const rows =
+      scope.kind === 'client'
+        ? await this.thread.listForClient(scope.clientId, id)
+        : await this.thread.listForStaff(id);
+    if (!rows) throw new NotFoundException('Request not found');
+    return { comments: rows };
+  }
+
+  @RequirePermission('request.comment')
+  @Post(':id/comments')
+  @HttpCode(201)
+  async addComment(@Param('id') id: string, @Body() body: unknown): Promise<RequestComment> {
+    if (!UUID_RE.test(id)) throw new NotFoundException('Request not found');
+    const parsed = createRequestCommentSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException('A comment needs 1 to 4000 characters');
+    const scope = scopeOf(requestContext.get());
+    const row =
+      scope.kind === 'client'
+        ? await this.thread.addForClient(scope.clientId, id, parsed.data.body)
+        : await this.thread.addForStaff(id, parsed.data.body);
+    if (!row) throw new NotFoundException('Request not found');
+    return row;
+  }
 
   // DS-08: every response names its requester (name + kind, never an email).
   // One lookup per response — a single row or the whole list.

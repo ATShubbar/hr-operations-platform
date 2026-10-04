@@ -96,6 +96,10 @@ export const PERMISSIONS = [
   'request.update',
   // Advancing a request through its status workflow (REQ-03). Staff-only.
   'request.process',
+  // Posting on a request's thread (ADR-016): every role that sees requests
+  // EXCEPT the Auditor (reads the thread, posts nothing). Employees post through
+  // /me under self-service.* — never this.
+  'request.comment',
   // Tasks (TASK-02; permission matrix): internal work items, staff-only. Most
   // staff read/create/update tasks restricted to OWN/ASSIGNED; `task.read-all`
   // lifts that to all tasks.
@@ -259,6 +263,8 @@ const CLIENT_MANAGER: readonly Permission[] = [
   'leave.withdraw',
   // ADR-015: their own requests, leave and (portal on) people.
   'search.read',
+  // ADR-016: post on their company's request threads.
+  'request.comment',
 ];
 
 // Each bundle is a column of the v1.7 permission matrix; the matrix spec
@@ -327,6 +333,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'leave.file',
     'leave.withdraw',
     'leave.carry-over',
+    'request.comment',
   ],
   // People files end to end — pay, contracts, hiring (prototype `hr`: employees
   // RWC, procedures RWC, documents RWCD, requests RWCD, payroll RW, hiring RWC,
@@ -368,6 +375,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'leave.create',
     'leave.file',
     'leave.withdraw',
+    'request.comment',
   ],
   // Government portals and procedures; no pay (prototype `gro`: employees R,
   // procedures RWCD, documents RWC — government categories only, requests RW,
@@ -394,6 +402,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'integration.google-calendar',
     'leave.read',
     'leave.file',
+    'request.comment',
   ],
   // Reads everything, changes nothing (prototype `auditor`: R on all nine
   // resources). Reads reports but does not EXPORT them — a bulk extraction is

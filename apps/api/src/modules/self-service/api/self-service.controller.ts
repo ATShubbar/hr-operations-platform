@@ -10,10 +10,13 @@ import {
   Post,
 } from '@nestjs/common';
 import {
+  createRequestCommentSchema,
   createSelfLeaveRequestSchema,
   createSelfRequestRequestSchema,
   type EmployeeLeaveResponse,
   type LeaveListResponse,
+  type RequestComment,
+  type RequestCommentListResponse,
   type LeaveResponse,
   type DownloadResponse,
   type SelfDocumentListResponse,
@@ -29,7 +32,11 @@ import { ConfigService } from '../../configuration/public-api';
 import { DocumentsService, toSelfDocumentResponse } from '../../documents/public-api';
 import { EmployeesService, toSelfProfileResponse } from '../../employees/public-api';
 import { LeaveBalanceService, LeavePresenter, LeaveService } from '../../leave/public-api';
-import { RequestsService, toSelfRequestResponse } from '../../requests/public-api';
+import {
+  RequestThreadService,
+  RequestsService,
+  toSelfRequestResponse,
+} from '../../requests/public-api';
 import { StorageService } from '../../storage/public-api';
 
 const EMPLOYEE_SELF_SERVICE_FLAG = 'flag.employee-self-service';
@@ -61,6 +68,7 @@ export class SelfServiceController {
     private readonly leave: LeaveService,
     private readonly presentLeave: LeavePresenter,
     private readonly leaveBalances: LeaveBalanceService,
+    private readonly thread: RequestThreadService,
   ) {}
 
   @RequirePermission('self-service.read')
@@ -128,6 +136,39 @@ export class SelfServiceController {
       createdByUserId: actorId,
     });
     return toSelfRequestResponse(row);
+  }
+
+  // One request I raised (THREAD-01): the detail My requests opens. Anything
+  // else — a colleague's, another company's, unknown — is the same 404.
+  @RequirePermission('self-service.read')
+  @Get('requests/:id')
+  async myRequest(@Param('id') id: string): Promise<SelfRequestResponse> {
+    const record = await this.ownRecord();
+    const row = UUID_RE.test(id) ? await this.requests.findForEmployee(record.id, id) : null;
+    if (!row) throw new NotFoundException('Request not found');
+    return toSelfRequestResponse(row);
+  }
+
+  // The thread on a request I raised (ADR-016): read, and add to it.
+  @RequirePermission('self-service.read')
+  @Get('requests/:id/comments')
+  async myRequestComments(@Param('id') id: string): Promise<RequestCommentListResponse> {
+    const record = await this.ownRecord();
+    const rows = UUID_RE.test(id) ? await this.thread.listForEmployee(record.id, id) : null;
+    if (!rows) throw new NotFoundException('Request not found');
+    return { comments: rows };
+  }
+
+  @RequirePermission('self-service.create')
+  @Post('requests/:id/comments')
+  @HttpCode(201)
+  async addMyRequestComment(@Param('id') id: string, @Body() body: unknown): Promise<RequestComment> {
+    const record = await this.ownRecord();
+    const parsed = createRequestCommentSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException('A comment needs 1 to 4000 characters');
+    const row = UUID_RE.test(id) ? await this.thread.addForEmployee(record.id, id, parsed.data.body) : null;
+    if (!row) throw new NotFoundException('Request not found');
+    return row;
   }
 
   // My leave (ADR-014, LEAVE-02): every leave request ABOUT me — mine and those

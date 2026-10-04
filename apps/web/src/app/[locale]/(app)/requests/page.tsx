@@ -37,6 +37,7 @@ import { StatusAction } from '@/components/ui/status-action';
 import { StatusPill } from '@/components/ui/status-pill';
 import { toastSuccess } from '@/components/ui/toast';
 import { NewRequestDialog } from './new-request-dialog';
+import { RequestThread } from './request-thread';
 
 // Requests (DS-08) — the prototype's Requests screen (ADR-012): the list beside
 // the selected request's detail.
@@ -73,6 +74,8 @@ export default function RequestsPage() {
   const router = useRouter();
   const canCreate = useCan('request.create');
   const canProcess = useCan('request.process');
+  // ADR-016: post on the thread (the Auditor reads it only).
+  const canComment = useCan('request.comment');
   // The decision trail is a staff surface (GET /requests/:id/history is staff-only).
   const isStaff = useSession().principalType === 'staff';
 
@@ -353,20 +356,8 @@ export default function RequestsPage() {
                   )}
                 </p>
 
-                {/* The request thread — not built yet: shown, and said so. */}
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-baseline gap-2">
-                    <span className="grow text-[13px] leading-[18px] font-medium">
-                      {t('attachments')}
-                    </span>
-                    <span className="grow text-[13px] leading-[18px] font-medium">
-                      {t('comments')}
-                    </span>
-                  </div>
-                  <p className="rounded-md bg-neutral-50 px-3.5 py-3 text-[13px] leading-[18px] text-muted-foreground ring-1 ring-foreground/10">
-                    {t('threadSoon')}
-                  </p>
-                </div>
+                {/* The request thread (ADR-016, THREAD-01). */}
+                <RequestThread base={`/requests/${req.id}`} canPost={canComment} />
 
                 {decideError && (
                   <p role="alert" className="text-sm text-destructive">

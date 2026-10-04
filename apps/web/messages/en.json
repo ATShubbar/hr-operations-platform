@@ -590,9 +590,6 @@
     "notSet": "Not set",
     "priorityLabel": "Priority",
     "noDescription": "No description given.",
-    "attachments": "Attachments",
-    "comments": "Comments",
-    "threadSoon": "Coming soon — files and comments visible to both sides arrive with the request-thread feature.",
     "approve": "Approve and assign",
     "approveMenu": "Approve, then hand the work to",
     "askInfo": "Ask for more detail",
@@ -2008,5 +2005,25 @@
     "more": "More matches — keep typing to narrow them.",
     "soon": "Dependants and fees aren't searchable yet.",
     "results": "{count, plural, one {# result} other {# results}}"
+  },
+  "thread": {
+    "attachments": "Attachments",
+    "attachmentsSoon": "Files arrive with the next release: signed forms, tickets and stamped copies, PDF or JPG up to 10MB.",
+    "comments": "Comments",
+    "empty": "No comments yet. Anything written here is visible to both sides.",
+    "placeholder": "Add a comment for the other side",
+    "add": "Add comment",
+    "adding": "Adding…",
+    "readOnly": "You can read this thread; comments are added by the team and the requester.",
+    "error": "Couldn't load the comments.",
+    "sendError": "The comment wasn't added. Try again.",
+    "kind": {
+      "staff": "People & Gro",
+      "client": "Client",
+      "employee": "Employee"
+    },
+    "you": "You",
+    "unknown": "Former user",
+    "added": "Comment added."
   }
 }

@@ -175,7 +175,7 @@ function SearchBox({
       case 'task':
         return '/queue?kind=task';
       case 'request':
-        return employee ? '/me/requests' : `/requests?r=${h.id}`;
+        return employee ? `/me/requests?r=${h.id}` : `/requests?r=${h.id}`;
       case 'leave':
         return employee ? `/me/leave?l=${h.id}` : `/leaves?l=${h.id}`;
     }

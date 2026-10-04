@@ -63,6 +63,9 @@ export const AUDITED_WRITES: Record<string, string> = {
   'POST /auth/account/set-password': 'auth-account.activate',
   'PATCH /requests/:id': 'request.update',
   'POST /requests/:id/process': 'request.process',
+  // ADR-016: a comment on a request's thread, on every path.
+  'POST /requests/:id/comments': 'request-comment.create',
+  'POST /me/requests/:id/comments': 'request-comment.create',
   'POST /tasks': 'task.create',
   'PATCH /tasks/:id': 'task.update',
   'DELETE /tasks/:id': 'task.delete',

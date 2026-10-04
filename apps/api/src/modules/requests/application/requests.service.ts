@@ -80,6 +80,11 @@ export class RequestsService {
     return row;
   }
 
+  // One request THIS employee raised, or null (RLS: employee_own_read) — THREAD-01.
+  findForEmployee(employeeId: string, id: string): Promise<RequestRecord | null> {
+    return this.employeeDb.forEmployee(employeeId).request.findUnique({ where: { id } });
+  }
+
   // The requests THIS employee raised (RLS: employee_own_read), newest first.
   listForEmployee(employeeId: string): Promise<RequestRecord[]> {
     return this.employeeDb.forEmployee(employeeId).request.findMany({

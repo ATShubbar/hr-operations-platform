@@ -4,6 +4,7 @@ import { AuthModule } from '../auth/public-api';
 import { ClientsModule } from '../clients/public-api';
 import { RequestsController } from './api/requests.controller';
 import { RequestsService } from './application/requests.service';
+import { RequestThreadService } from './application/request-thread.service';
 
 // Requests module (ACTION-PLAN 4.3; ADR-003 layout). REQ-02 adds the dual-path
 // HTTP API — staff (cross-client) + client reps (own-client, RLS-enforced via
@@ -13,7 +14,7 @@ import { RequestsService } from './application/requests.service';
   // AuthModule: UsersService names each request's requester (DS-08).
   imports: [AuditModule, AuthModule, ClientsModule],
   controllers: [RequestsController],
-  providers: [RequestsService],
-  exports: [RequestsService],
+  providers: [RequestsService, RequestThreadService],
+  exports: [RequestsService, RequestThreadService],
 })
 export class RequestsModule {}

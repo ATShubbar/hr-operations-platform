@@ -65,6 +65,7 @@ export const ModelName = {
   ExpiryAlert: 'ExpiryAlert',
   NotificationPreference: 'NotificationPreference',
   Request: 'Request',
+  RequestComment: 'RequestComment',
   Task: 'Task',
   Vacancy: 'Vacancy',
   Candidate: 'Candidate',
@@ -311,6 +312,19 @@ export const RequestScalarFieldEnum = {
 } as const
 
 export type RequestScalarFieldEnum = (typeof RequestScalarFieldEnum)[keyof typeof RequestScalarFieldEnum]
+
+
+export const RequestCommentScalarFieldEnum = {
+  id: 'id',
+  requestId: 'requestId',
+  clientId: 'clientId',
+  requesterEmployeeId: 'requesterEmployeeId',
+  authorUserId: 'authorUserId',
+  body: 'body',
+  createdAt: 'createdAt'
+} as const
+
+export type RequestCommentScalarFieldEnum = (typeof RequestCommentScalarFieldEnum)[keyof typeof RequestCommentScalarFieldEnum]
 
 
 export const TaskScalarFieldEnum = {

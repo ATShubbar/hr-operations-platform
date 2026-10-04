@@ -372,3 +372,11 @@ export {
   type SearchHit,
   type SearchResponse,
 } from './search.js';
+export {
+  createRequestCommentSchema,
+  requestCommentSchema,
+  requestCommentListResponseSchema,
+  type CreateRequestComment,
+  type RequestComment,
+  type RequestCommentListResponse,
+} from './request-thread.js';

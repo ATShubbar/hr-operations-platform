@@ -398,6 +398,7 @@ export const ModelName = {
   ExpiryAlert: 'ExpiryAlert',
   NotificationPreference: 'NotificationPreference',
   Request: 'Request',
+  RequestComment: 'RequestComment',
   Task: 'Task',
   Vacancy: 'Vacancy',
   Candidate: 'Candidate',
@@ -421,7 +422,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "authUser" | "authAccountToken" | "coreScopeCheck" | "auditEntry" | "systemSetting" | "clientSetting" | "userSetting" | "client" | "employee" | "document" | "notification" | "expiryAlert" | "notificationPreference" | "request" | "task" | "vacancy" | "candidate" | "groProcess" | "gcalInvitation" | "calendarEvent" | "leaveRequest" | "leaveEntry"
+    modelProps: "authUser" | "authAccountToken" | "coreScopeCheck" | "auditEntry" | "systemSetting" | "clientSetting" | "userSetting" | "client" | "employee" | "document" | "notification" | "expiryAlert" | "notificationPreference" | "request" | "requestComment" | "task" | "vacancy" | "candidate" | "groProcess" | "gcalInvitation" | "calendarEvent" | "leaveRequest" | "leaveEntry"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1461,6 +1462,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    RequestComment: {
+      payload: Prisma.$RequestCommentPayload<ExtArgs>
+      fields: Prisma.RequestCommentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.RequestCommentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RequestCommentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.RequestCommentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RequestCommentPayload>
+        }
+        findFirst: {
+          args: Prisma.RequestCommentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RequestCommentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.RequestCommentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RequestCommentPayload>
+        }
+        findMany: {
+          args: Prisma.RequestCommentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RequestCommentPayload>[]
+        }
+        create: {
+          args: Prisma.RequestCommentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RequestCommentPayload>
+        }
+        createMany: {
+          args: Prisma.RequestCommentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.RequestCommentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RequestCommentPayload>[]
+        }
+        delete: {
+          args: Prisma.RequestCommentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RequestCommentPayload>
+        }
+        update: {
+          args: Prisma.RequestCommentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RequestCommentPayload>
+        }
+        deleteMany: {
+          args: Prisma.RequestCommentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.RequestCommentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.RequestCommentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RequestCommentPayload>[]
+        }
+        upsert: {
+          args: Prisma.RequestCommentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$RequestCommentPayload>
+        }
+        aggregate: {
+          args: Prisma.RequestCommentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateRequestComment>
+        }
+        groupBy: {
+          args: Prisma.RequestCommentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RequestCommentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.RequestCommentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.RequestCommentCountAggregateOutputType> | number
+        }
+      }
+    }
     Task: {
       payload: Prisma.$TaskPayload<ExtArgs>
       fields: Prisma.TaskFieldRefs
@@ -2314,6 +2389,19 @@ export const RequestScalarFieldEnum = {
 export type RequestScalarFieldEnum = (typeof RequestScalarFieldEnum)[keyof typeof RequestScalarFieldEnum]
 
 
+export const RequestCommentScalarFieldEnum = {
+  id: 'id',
+  requestId: 'requestId',
+  clientId: 'clientId',
+  requesterEmployeeId: 'requesterEmployeeId',
+  authorUserId: 'authorUserId',
+  body: 'body',
+  createdAt: 'createdAt'
+} as const
+
+export type RequestCommentScalarFieldEnum = (typeof RequestCommentScalarFieldEnum)[keyof typeof RequestCommentScalarFieldEnum]
+
+
 export const TaskScalarFieldEnum = {
   id: 'id',
   clientId: 'clientId',
@@ -3157,6 +3245,7 @@ export type GlobalOmitConfig = {
   expiryAlert?: Prisma.ExpiryAlertOmit
   notificationPreference?: Prisma.NotificationPreferenceOmit
   request?: Prisma.RequestOmit
+  requestComment?: Prisma.RequestCommentOmit
   task?: Prisma.TaskOmit
   vacancy?: Prisma.VacancyOmit
   candidate?: Prisma.CandidateOmit

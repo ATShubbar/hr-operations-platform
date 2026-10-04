@@ -135,6 +135,10 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'POST /requests': 'client-write',
   'GET /requests': 'client-read',
   'GET /requests/:id': 'client-read',
+  // The thread (ADR-016): own company for client managers (proven in
+  // request-comments.e2e + its RLS checks).
+  'GET /requests/:id/comments': 'client-read',
+  'POST /requests/:id/comments': 'client-write',
   'PATCH /requests/:id': 'client-write',
   // Processing (REQ-03) is STAFF-only (request.process; client reps lack it) and
   // cross-client — so 'staff', not a client-scoped class.
@@ -213,6 +217,11 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   // is the employee's only write (scoping proven in self-service-requests.e2e).
   'GET /me/requests': 'employee',
   'POST /me/requests': 'employee-write',
+  // THREAD-01: one request I raised + its thread (path params → employee-read;
+  // scoping proven in request-comments.e2e).
+  'GET /me/requests/:id': 'employee-read',
+  'GET /me/requests/:id/comments': 'employee-read',
+  'POST /me/requests/:id/comments': 'employee-write',
   // My leave (ADR-014, LEAVE-02): the list carries each row's employee id, so
   // the colleague loop probes it directly; raising and withdrawing are writes
   // (scoping proven in leave-api.e2e + the LEAVE-01 RLS spec).

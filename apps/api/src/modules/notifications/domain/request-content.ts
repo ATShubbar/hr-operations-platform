@@ -30,3 +30,16 @@ export function buildRequestStatusContent(args: {
     },
   };
 }
+
+// A new comment on a request's thread (ADR-016, THREAD-01). The comment text is
+// NOT copied into the notification (it is free text the reader opens in the
+// thread itself); the request title is shown verbatim, as for status changes.
+export function buildRequestCommentContent(args: { title: string }): RequestContent {
+  return {
+    title: { ar: 'تعليق جديد على طلب', en: 'New comment on a request' },
+    body: {
+      ar: `أُضيف تعليق جديد على طلبك «${args.title}».`,
+      en: `There's a new comment on "${args.title}".`,
+    },
+  };
+}
