@@ -1330,6 +1330,10 @@ staff/client paths in the insert, the EMPLOYEE path right after the raise commit
 staff connection (the client/employee roles never write a due date) — audited `service-level-paused`. Responses carry
 the type's CURRENT `serviceLevelDays` (SS-05's pinned self whitelist gained it on purpose). New requests only. API
 **645/645**.
+**REQ-06 done (owner: "nothing") — client managers no longer see id fragments on Requests.** The page named companies
+(`/clients`) and assignees (`/staff-users/directory`) from STAFF-only lists and fell back to `id.slice(0, 8)`; now client
+managers get no company (it is always their own) and "Being handled by PEOPLE&GRO" instead of an assignee, and the page
+doesn't request either list unless the viewer is staff. Staff "Open work queue" fixed `/tasks` → `/queue`.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

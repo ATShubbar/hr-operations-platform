@@ -633,7 +633,9 @@
     "infoRequesterTitle": "PEOPLE&GRO needs more detail",
     "infoRequesterSub": "Read the question in the comments below and reply, or attach a file. Your reply sends the request back to the team.",
     "sla": "{count, plural, one {Service level # working day} other {Service level # working days}}",
-    "slaPaused": "Service level paused while waiting on the requester"
+    "slaPaused": "Service level paused while waiting on the requester",
+    "withTeam": "Being handled by PEOPLE&GRO",
+    "withTeamSub": "The team has it in hand. Updates and questions appear on this page."
   },
   "tasks": {
     "saveError": "Could not save — check your permissions.",

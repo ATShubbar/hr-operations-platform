@@ -114,15 +114,22 @@ export default function RequestsPage() {
     // `?r=<id>` opens a specific request (read here, not via useSearchParams,
     // which would force a Suspense boundary on a statically prerendered page).
     void load(new URLSearchParams(window.location.search).get('r') ?? undefined);
+    // Both lists are staff-only (a client manager gets 403) — don't ask (REQ-06).
+    if (!isStaff) return;
     apiFetch<ClientListResponse>('/clients')
       .then((r) => setClients(r.clients))
       .catch(() => setClients([]));
     apiFetch<StaffDirectoryResponse>('/staff-users/directory')
       .then((r) => setStaff(r.users))
       .catch(() => setStaff([]));
-  }, []);
+  }, [isStaff]);
 
-  const clientName = (id: string) => {
+  // REQ-06: company names come from /clients, a STAFF list — a client manager
+  // can't read it, and every request they see is their own company's anyway, so
+  // for them the company is simply left out (it used to fall back to an id
+  // fragment).
+  const clientName = (id: string): string | null => {
+    if (!isStaff) return null;
     const c = clients.find((x) => x.id === id);
     return c ? (locale === 'ar' ? c.name.ar : c.name.en) : id.slice(0, 8);
   };
@@ -150,7 +157,7 @@ export default function RequestsPage() {
         .filter((r) => fStatus === ALL || r.status === fStatus)
         .filter((r) =>
           matchesAnyField(
-            [r.title, t(`type.${r.type}`), requesterName(r), clientName(r.clientId)],
+            [r.title, t(`type.${r.type}`), requesterName(r), clientName(r.clientId) ?? ''],
             search,
           ),
         )
@@ -333,9 +340,14 @@ export default function RequestsPage() {
                     </bdi>
                   </div>
                   <span className="text-[13px] leading-[18px] text-muted-foreground">
-                    {t(`type.${req.type}`)} · {requesterName(req)} ·{' '}
-                    {req.requester ? t(`requester.${req.requester.kind}`) : ''} ·{' '}
-                    {clientName(req.clientId)}
+                    {[
+                      t(`type.${req.type}`),
+                      requesterName(req),
+                      req.requester ? t(`requester.${req.requester.kind}`) : null,
+                      clientName(req.clientId),
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
                   </span>
                 </div>
                 <StatusPill tone={toneFor('request', req.status)}>
@@ -463,7 +475,17 @@ export default function RequestsPage() {
                   </div>
                 )}
 
-                {req.assigneeUserId && req.status !== 'open' && (
+                {/* REQ-06: the staff directory is staff-only (UX-10b), so a client
+                    manager learns THAT the team has it, not who. */}
+                {req.assigneeUserId && req.status !== 'open' && !isStaff && (
+                  <div className="flex flex-col gap-px rounded-md bg-neutral-50 px-3.5 py-3 ring-1 ring-foreground/10">
+                    <span className="text-[13px] leading-[18px] font-medium">{t('withTeam')}</span>
+                    <span className="text-xs leading-4 text-muted-foreground">
+                      {t('withTeamSub')}
+                    </span>
+                  </div>
+                )}
+                {req.assigneeUserId && req.status !== 'open' && isStaff && (
                   <div className="flex flex-wrap items-center gap-3 rounded-md bg-neutral-50 px-3.5 py-3 ring-1 ring-foreground/10">
                     <Avatar name={staffName(req.assigneeUserId)} size="md" />
                     <span className="flex min-w-0 grow flex-col gap-px">
@@ -478,7 +500,7 @@ export default function RequestsPage() {
                         })}
                       </span>
                     </span>
-                    <Button variant="outline" size="sm" onClick={() => router.push('/tasks')}>
+                    <Button variant="outline" size="sm" onClick={() => router.push('/queue')}>
                       {t('openQueue')}
                     </Button>
                   </div>
