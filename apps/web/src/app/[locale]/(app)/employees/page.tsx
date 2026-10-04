@@ -15,6 +15,14 @@ import { Link, useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useCan } from '@/lib/session';
 import { NATIONALITIES } from '@/lib/nationality';
+import {
+  DOC_TYPES,
+  chipClass,
+  datedDocs,
+  isSaudi,
+  type DocDue,
+  type DocKey,
+} from '@/lib/employee-docs';
 import type { Locale } from '@/lib/employee-format';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/avatar';
@@ -56,21 +64,9 @@ import {
 // person stays — last, with "—" — because hiding a real employee (a Saudi on an
 // open-ended contract, say) from the People screen would be a silent loss.
 
-type DocKey = 'iqama' | 'permit' | 'contract' | 'passport' | 'insurance' | 'licence';
-
-const DOC_TYPES: ReadonlyArray<{ key: DocKey; date?: (e: EmployeeResponse) => string | null }> = [
-  { key: 'iqama', date: (e) => e.govdata?.iqamaExpiry ?? null },
-  { key: 'permit', date: (e) => e.govdata?.workPermitExpiry ?? null },
-  { key: 'contract', date: (e) => e.contractEndDate },
-  { key: 'passport', date: (e) => e.govdata?.passportExpiry ?? null },
-  { key: 'insurance' }, // not stored yet
-  { key: 'licence' }, // not stored yet
-];
-
 const BANDS = ['0-7', '8-14', '15-30', '31-60', '61-90'] as const;
 const PAGE = 50;
 const ALL = 'all';
-// The prototype's nationality list, as the ISO codes the API stores.
 
 // The prototype's 6-column grid (2.2fr 1.5fr 1.4fr 1.3fr 1.5fr 40px), as table
 // columns so the list keeps real table semantics. A <col> ignores calc(), so the
@@ -78,42 +74,6 @@ const ALL = 'all';
 // remainder proportionally — measured exact at 984px (263/179/167/155/179/40).
 const FR = [2.2, 1.5, 1.4, 1.3, 1.5];
 const FR_TOTAL = FR.reduce((a, b) => a + b, 0);
-
-interface DocDue {
-  key: DocKey;
-  iso: string;
-  days: number;
-}
-
-// Whole days from today (UTC) to a stored date. Storage is Gregorian UTC.
-function daysTo(iso: string): number {
-  const target = Date.parse(`${iso.slice(0, 10)}T00:00:00Z`);
-  const now = new Date();
-  const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
-  return Math.round((target - today) / 86_400_000);
-}
-
-const isSaudi = (e: EmployeeResponse) => e.nationality.toUpperCase() === 'SA';
-
-function datedDocs(e: EmployeeResponse): DocDue[] {
-  const out: DocDue[] = [];
-  for (const d of DOC_TYPES) {
-    // A Saudi has no iqama or work permit (the National ID does not expire).
-    if (isSaudi(e) && (d.key === 'iqama' || d.key === 'permit')) continue;
-    const iso = d.date?.(e);
-    if (iso) out.push({ key: d.key, iso, days: daysTo(iso) });
-  }
-  return out;
-}
-
-// The prototype's chip scale: overdue or ≤7d red, ≤14d amber, ≤30d grey, later
-// faded. Colour is never alone — the chip always carries its day count.
-function chipClass(days: number): string {
-  if (days <= 7) return 'bg-status-critical-surface text-status-critical';
-  if (days <= 14) return 'bg-status-warning-surface text-status-warning';
-  if (days <= 30) return 'bg-neutral-100 text-neutral-700';
-  return 'bg-transparent text-neutral-400';
-}
 
 export default function PeoplePage() {
   const t = useTranslations('people');
@@ -155,6 +115,11 @@ export default function PeoplePage() {
 
   useEffect(() => {
     void load();
+    // `?client=<id>` arrives from a Client record's "View register" (DS-10). Read
+    // from window.location, not useSearchParams, which would need a Suspense
+    // boundary on this prerendered page.
+    const c = new URLSearchParams(window.location.search).get('client');
+    if (c) setFClient(c);
   }, []);
 
   const clientName = (id: string) => {

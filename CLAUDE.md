@@ -1035,6 +1035,17 @@ Health/target/mobilisation NOT on cards (no data; dialog says "Soon"). Client ma
 roles, no board (matrix kept). `/vacancies` + `/candidates` redirect here. Found + fixed: DS-08's
 New request dialog never reset (see landmine). API 494/494 (2 of 3 runs; the third hit the
 supertest `Parse Error` flake in an untouched spec). Next: DS-10 (Clients + Client record).
+**DS-10 done — Clients + the Client record (header, Overview, People).** `/clients` = card grid
+(status in the band slot, sector·city·CR "soon", Saudi-share bar — by NATIONALITY, one colour,
+labelled as such — Headcount / Expiring 30d / Open items, Open record). `/clients/[id]` = header
+(View register → `/employees?client=`, Start a procedure with an employee picker — the shared
+dialog's `choices` mode — and a ⋯ menu for Edit / Portal users / Archive-Restore), 8 tabs:
+Overview (5 tiles, Nitaqat + Service panels "soon", expiry runway with an added **Overdue**
+column) + People (first 12, soonest first); Requests/Open work/Hiring = DS-11; Records/Fees/
+Commercial "soon". Figures computed in the browser (`clients/client-figures.ts`): headcount
+excludes leavers, Open items = active GRO processes ONLY (tasks are own-scoped → per-viewer
+counts), every figure matched SQL for all 5 companies. People's document rules extracted to
+`lib/employee-docs.ts`. No API change. Next: DS-11 (the record's Requests/Open work/Hiring).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

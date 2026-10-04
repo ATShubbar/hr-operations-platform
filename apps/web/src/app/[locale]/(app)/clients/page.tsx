@@ -1,80 +1,74 @@
 'use client';
 
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import type { ClientListResponse, ClientResponse } from '@hr/contracts';
-import { useRouter } from '@/i18n/navigation';
+import type {
+  ClientListResponse,
+  ClientResponse,
+  EmployeeListResponse,
+  GroProcessListResponse,
+  RequestListResponse,
+} from '@hr/contracts';
+import { Link, useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useCan } from '@/lib/session';
 import { toneFor } from '@/lib/status-tone';
 import { Button } from '@/components/ui/button';
-import { DataTable } from '@/components/ui/data-table';
+import { EmptyState } from '@/components/ui/empty-state';
 import { LoadError, NoAccess } from '@/components/ui/load-state';
+import { Skeleton } from '@/components/ui/skeleton';
 import { StatusPill } from '@/components/ui/status-pill';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { PortalUsersDialog } from './portal-users-dialog';
+import { toastSuccess } from '@/components/ui/toast';
+import { ClientFormDialog } from './client-form-dialog';
+import { figuresFor, type ClientFigures } from './client-figures';
+import { SaudiShare } from './saudi-share';
 
-type Status = 'active' | 'inactive';
-interface FormState {
-  id: string | null; // null = create
-  nameAr: string;
-  nameEn: string;
-  status: Status;
-}
+// Clients (DS-10) — the prototype's Clients screen (ADR-012): one card per
+// company, opening its record.
+//
+// A client stores only its two names and a status, so the card's figures are
+// computed from what the screen can read: the employee records, GRO processes and
+// requests (see client-figures.ts for what each one counts). The prototype's
+// Nitaqat band badge becomes the company's status; its sector · city · CR line is
+// the client profile feature's and says "coming soon". Edit, archive and portal
+// users moved from this list's rows into the record's header.
+//
+// The figures are computed in the browser from every employee, process and
+// request — right at today's size, and the place a server-side summary goes the
+// day a register outgrows it.
 
-const EMPTY_FORM: FormState = { id: null, nameAr: '', nameEn: '', status: 'active' };
-
-// Staff clients console (CLIENT-04) over the client.* API (CLIENT-02). List is
-// available to all staff; create/edit/archive to admins (a non-admin hitting a
-// mutation gets a 403, surfaced as saveError). A 401 means the session lapsed.
 export default function ClientsPage() {
   const t = useTranslations('clients');
   const locale = useLocale();
   const router = useRouter();
   const canCreate = useCan('client.create');
-  const canUpdate = useCan('client.update');
-  const canDelete = useCan('client.delete');
-  // ROLE-02: Administrators manage each client's portal users from here (the
-  // staff path). Client reps hold the same permission but never reach /clients.
-  const canPortalUsers = useCan('client-user.read');
-  const [portalFor, setPortalFor] = useState<ClientResponse | null>(null);
 
   const [clients, setClients] = useState<ClientResponse[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [figures, setFigures] = useState<Map<string, ClientFigures>>(new Map());
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [forbidden, setForbidden] = useState(false);
-
-  const [open, setOpen] = useState(false);
-  const [form, setForm] = useState<FormState>(EMPTY_FORM);
-  const [saving, setSaving] = useState(false);
-  const [formError, setFormError] = useState('');
+  const [createOpen, setCreateOpen] = useState(false);
 
   async function load() {
-    setLoading(true);
     setError('');
     try {
-      const res = await apiFetch<ClientListResponse>('/clients');
-      setClients(res.clients);
+      // The figures' sources are not fatal: without them a card still opens its
+      // record, it just has nothing to count.
+      const [c, e, g, r] = await Promise.all([
+        apiFetch<ClientListResponse>('/clients'),
+        apiFetch<EmployeeListResponse>('/employees').catch(() => ({ employees: [] })),
+        apiFetch<GroProcessListResponse>('/gro-processes').catch(() => ({ processes: [] })),
+        apiFetch<RequestListResponse>('/requests').catch(() => ({ requests: [] })),
+      ]);
+      setClients(c.clients);
+      setFigures(
+        new Map(
+          c.clients.map((x) => [x.id, figuresFor(x.id, e.employees, g.processes, r.requests)]),
+        ),
+      );
     } catch (err) {
-      if (err instanceof ApiError && err.status === 401) {
-        router.replace('/login');
-        return;
-      }
+      if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
       if (err instanceof ApiError && err.status === 403) setForbidden(true);
       else setError(t('error'));
     } finally {
@@ -83,204 +77,134 @@ export default function ClientsPage() {
   }
 
   useEffect(() => {
-    // Initial load, once on mount.
     void load();
   }, []);
 
-  const openCreate = () => {
-    setForm(EMPTY_FORM);
-    setFormError('');
-    setOpen(true);
-  };
-  const openEdit = (c: ClientResponse) => {
-    setForm({ id: c.id, nameAr: c.name.ar, nameEn: c.name.en, status: c.status });
-    setFormError('');
-    setOpen(true);
-  };
+  const name = (c: ClientResponse) => (locale === 'ar' ? c.name.ar : c.name.en);
+  // Active companies first, then by name; an archived one is history, not work.
+  const sorted = useMemo(
+    () =>
+      [...clients].sort(
+        (a, b) =>
+          Number(a.status !== 'active') - Number(b.status !== 'active') ||
+          name(a).localeCompare(name(b), locale),
+      ),
+    [clients, locale],
+  );
+  const active = clients.filter((c) => c.status === 'active').length;
 
-  async function save(e: FormEvent) {
-    e.preventDefault();
-    setSaving(true);
-    setFormError('');
-    const payload = { name: { ar: form.nameAr, en: form.nameEn }, status: form.status };
-    try {
-      if (form.id) {
-        await apiFetch(`/clients/${form.id}`, { method: 'PATCH', body: JSON.stringify(payload) });
-      } else {
-        await apiFetch('/clients', { method: 'POST', body: JSON.stringify(payload) });
-      }
-      setOpen(false);
-      await load();
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 401) {
-        router.replace('/login');
-        return;
-      }
-      setFormError(t('saveError'));
-    } finally {
-      setSaving(false);
-    }
-  }
+  const header = (
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
+      <div className="flex min-w-0 grow flex-col gap-1">
+        <h1 className="text-2xl font-semibold">{t('title')}</h1>
+        {!loading && !forbidden && (
+          <p className="text-sm text-muted-foreground">{t('summary', { count: active })}</p>
+        )}
+      </div>
+      {canCreate && (
+        <Button
+          size="sm"
+          onClick={() => setCreateOpen(true)}
+          className="shrink-0 self-start sm:self-auto"
+        >
+          {t('new')}
+        </Button>
+      )}
+    </div>
+  );
 
-  async function archive(c: ClientResponse) {
-    setError('');
-    try {
-      await apiFetch(`/clients/${c.id}`, { method: 'DELETE' });
-      await load();
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 401) {
-        router.replace('/login');
-        return;
-      }
-      setError(t('archiveError'));
-    }
-  }
-
-  const localizedName = (c: ClientResponse) => (locale === 'ar' ? c.name.ar : c.name.en);
-
-  // Deep-linked without the capability: the nav hides the link, a pasted URL does
-  // not. A refusal is not a failure, so it replaces the screen and offers no retry.
   if (forbidden) {
     return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-semibold">{t('title')}</h1>
-          <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
-        </div>
+      <div className="flex max-w-[1240px] flex-col gap-4">
+        {header}
         <NoAccess capability="client.read" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">{t('title')}</h1>
-          <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
-        </div>
-        {canCreate && <Button onClick={openCreate}>{t('new')}</Button>}
-      </div>
-
+    <div className="flex max-w-[1240px] flex-col gap-4">
+      {header}
       {error && (
         <LoadError message={error} onRetry={() => void load()} hasContent={clients.length > 0} />
       )}
 
-      {/* UX-03c. The actions column is passed only when the actor can actually do
-          something — DataTable renders the trailing cell whenever `actions` is
-          given, so gating inside the renderer would leave everyone else an empty
-          column with a header. */}
-      <DataTable
-        rows={clients}
-        loading={loading}
-        rowKey={(c) => c.id}
-        searchPlaceholder={t('searchPlaceholder')}
-        initialSort={{ key: 'name', dir: 'asc' }}
-        emptyTitle={t('empty')}
-        emptyAction={canCreate ? <Button onClick={openCreate}>{t('new')}</Button> : undefined}
-        columns={[
-          {
-            key: 'name',
-            header: t('colName'),
-            sortValue: (c) => localizedName(c),
-            // Both names are searchable regardless of locale: staff switch
-            // languages, and a client is often known by its English name even in
-            // the Arabic UI.
-            searchValues: (c) => [c.name.ar, c.name.en],
-            cell: (c) => <span className="font-medium">{localizedName(c)}</span>,
-          },
-          {
-            key: 'status',
-            header: t('colStatus'),
-            sortValue: (c) => c.status,
-            cell: (c) => (
-              <StatusPill tone={toneFor('client', c.status)}>
-                {c.status === 'active' ? t('statusActive') : t('statusInactive')}
-              </StatusPill>
-            ),
-          },
-        ]}
-        actions={
-          canUpdate || canDelete || canPortalUsers
-            ? (c) => (
-                <div className="flex justify-end gap-2">
-                  {canPortalUsers && (
-                    <Button variant="outline" size="sm" onClick={() => setPortalFor(c)}>
-                      {t('portalUsers')}
-                    </Button>
-                  )}
-                  {canUpdate && (
-                    <Button variant="outline" size="sm" onClick={() => openEdit(c)}>
-                      {t('edit')}
-                    </Button>
-                  )}
-                  {canDelete && c.status === 'active' && (
-                    <Button variant="ghost" size="sm" onClick={() => void archive(c)}>
-                      {t('archive')}
-                    </Button>
-                  )}
-                </div>
-              )
-            : undefined
-        }
-      />
-
-      <PortalUsersDialog client={portalFor} onClose={() => setPortalFor(null)} />
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{form.id ? t('editTitle') : t('createTitle')}</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={save} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="nameEn">{t('nameEn')}</Label>
-              <Input
-                id="nameEn"
-                value={form.nameEn}
-                onChange={(e) => setForm({ ...form, nameEn: e.target.value })}
-                required
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="nameAr">{t('nameAr')}</Label>
-              <Input
-                id="nameAr"
-                dir="rtl"
-                value={form.nameAr}
-                onChange={(e) => setForm({ ...form, nameAr: e.target.value })}
-                required
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label>{t('status')}</Label>
-              <Select
-                value={form.status}
-                onValueChange={(v) => setForm({ ...form, status: v as Status })}
+      {loading ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-busy="true">
+          {Array.from({ length: 6 }, (_, i) => (
+            <Skeleton key={i} className="h-64 rounded-xl" />
+          ))}
+        </div>
+      ) : clients.length === 0 ? (
+        <div className="rounded-xl bg-card p-6 ring-1 ring-foreground/10">
+          <EmptyState variant="first-run" title={t('empty')} />
+        </div>
+      ) : (
+        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {sorted.map((c) => {
+            const f = figures.get(c.id);
+            const href = `/clients/${c.id}`;
+            return (
+              <li
+                key={c.id}
+                className="flex flex-col gap-3.5 rounded-xl bg-card p-[18px] ring-1 ring-foreground/10"
               >
-                <SelectTrigger className="w-full">
-                  <SelectValue>
-                    {(v) => (v === 'inactive' ? t('statusInactive') : t('statusActive'))}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">{t('statusActive')}</SelectItem>
-                  <SelectItem value="inactive">{t('statusInactive')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            {formError && <p className="text-sm text-destructive">{formError}</p>}
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                {t('cancel')}
-              </Button>
-              <Button type="submit" disabled={saving}>
-                {saving ? t('saving') : t('save')}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+                <div className="flex items-start gap-2.5">
+                  <div className="flex min-w-0 grow flex-col gap-0.5">
+                    <h2 className="text-base leading-[22px] font-medium text-pretty">
+                      {c.name.en}
+                    </h2>
+                    {/* The prototype: direction rtl, aligned left — the END of an
+                        rtl box. */}
+                    <span dir="rtl" className="text-end text-xs leading-4 text-muted-foreground">
+                      {c.name.ar}
+                    </span>
+                  </div>
+                  <StatusPill tone={toneFor('client', c.status)} className="shrink-0">
+                    {c.status === 'active' ? t('statusActive') : t('statusInactive')}
+                  </StatusPill>
+                </div>
+                <span className="text-xs leading-4 text-neutral-400">{t('profileLineSoon')}</span>
+                <SaudiShare pct={f?.saudiPct ?? 0} label={t('saudiShare')} />
+                <dl className="grid grid-cols-3 gap-2 border-t pt-3">
+                  {(
+                    [
+                      ['headcount', f?.headcount],
+                      ['expiring30', f?.expiring30],
+                      ['openItems', f?.openItems],
+                    ] as const
+                  ).map(([k, v]) => (
+                    <div key={k} className="flex flex-col-reverse gap-px">
+                      <dt className="text-[11px] leading-[15px] text-muted-foreground">
+                        {t(`fig.${k}`)}
+                      </dt>
+                      <dd className="text-lg leading-6 font-semibold tabular-nums">{v ?? 0}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  nativeButton={false}
+                  render={<Link href={href} />}
+                  aria-label={t('openRecordFor', { name: name(c) })}
+                >
+                  {t('openRecord')}
+                </Button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      <ClientFormDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onSaved={(saved) => {
+          toastSuccess(t('created', { name: name(saved) }));
+          router.push(`/clients/${saved.id}`);
+        }}
+      />
     </div>
   );
 }

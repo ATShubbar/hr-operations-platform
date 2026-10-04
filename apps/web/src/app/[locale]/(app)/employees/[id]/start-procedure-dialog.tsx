@@ -45,21 +45,35 @@ const TYPES = [
 // procedure in memory; here it opens a REAL one through the GRO API (GRO-02),
 // for this employee, at `not_started` — assigning and advancing it stays on the
 // GRO screen, which already owns that workflow.
+//
+// DS-10: the Client record opens it too, for ONE of the company's people — pass
+// `choices` (and the company as `context`) instead of a fixed employee, and the
+// form asks who it is for first.
 export function StartProcedureDialog({
   open,
   onOpenChange,
   employeeId,
   employeeName,
+  choices,
+  context,
+  onStarted,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  employeeId: string;
-  employeeName: string;
+  employeeId?: string;
+  employeeName?: string;
+  choices?: ReadonlyArray<{ id: string; name: string }>;
+  context?: string;
+  /** Called after the procedure is opened (the Client record recounts its open items). */
+  onStarted?: () => void;
 }) {
   const t = useTranslations('person.proc');
   const tg = useTranslations('gro');
   const router = useRouter();
   const [type, setType] = useState<GroProcessType>('iqama_renewal');
+  const [picked, setPicked] = useState('');
+  const forId = employeeId ?? picked;
+  const forName = employeeName ?? choices?.find((c) => c.id === picked)?.name ?? '';
   const [due, setDue] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -71,11 +85,13 @@ export function StartProcedureDialog({
     try {
       await apiFetch('/gro-processes', {
         method: 'POST',
-        body: JSON.stringify({ employeeId, type, ...(due ? { dueDate: due } : {}) }),
+        body: JSON.stringify({ employeeId: forId, type, ...(due ? { dueDate: due } : {}) }),
       });
       onOpenChange(false);
       setDue('');
-      toastSuccess(t('started', { type: tg(`type.${type}`), name: employeeName }));
+      setPicked('');
+      toastSuccess(t('started', { type: tg(`type.${type}`), name: forName }));
+      onStarted?.();
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
       setError(t('error'));
@@ -89,9 +105,32 @@ export function StartProcedureDialog({
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
-          <DialogDescription>{t('description', { name: employeeName })}</DialogDescription>
+          <DialogDescription>
+            {choices
+              ? t('descriptionFor', { context: context ?? '' })
+              : t('description', { name: employeeName ?? '' })}
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="flex flex-col gap-3.5">
+          {choices && (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="sp-employee">{t('employee')}</Label>
+              <Select value={picked} onValueChange={(v) => setPicked(v ?? '')}>
+                <SelectTrigger id="sp-employee" className="w-full">
+                  <SelectValue placeholder={t('pickEmployee')}>
+                    {(v) => (v ? (choices.find((c) => c.id === v)?.name ?? '') : t('pickEmployee'))}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {choices.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="sp-type">{t('type')}</Label>
             <Select value={type} onValueChange={(v) => setType((v as GroProcessType) ?? 'other')}>
@@ -120,7 +159,7 @@ export function StartProcedureDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               {t('cancel')}
             </Button>
-            <Button type="submit" disabled={saving}>
+            <Button type="submit" disabled={saving || !forId}>
               {saving ? t('saving') : t('submit')}
             </Button>
           </div>
