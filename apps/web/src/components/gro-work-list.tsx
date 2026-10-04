@@ -86,6 +86,128 @@ export function DueCell({ iso }: { iso: string | null }) {
   );
 }
 
+/**
+ * Resolve for ONE procedure: the shared status control, plus the completion
+ * dialog that captures the resulting expiry when the type writes one back
+ * (GRO-03). Renders nothing for someone without gro.process.
+ */
+export function GroResolve({
+  process: p,
+  onChanged,
+  onEmployeeChanged,
+  className = 'h-6 w-32 text-xs',
+}: {
+  process: GroProcessResponse;
+  /** After the status change — the parent reloads. */
+  onChanged: () => Promise<void> | void;
+  /** Completing an expiry-bearing process changed that employee's record. */
+  onEmployeeChanged?: (employeeId: string) => void;
+  className?: string;
+}) {
+  const t = useTranslations('person.work');
+  const tg = useTranslations('gro');
+  const router = useRouter();
+  const canProcess = useCan('gro.process');
+  const [completing, setCompleting] = useState(false);
+  const [expiry, setExpiry] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  async function apply(next: GroProcessStatus, resultingExpiry: string | null) {
+    setSaving(true);
+    setError('');
+    try {
+      if (resultingExpiry) {
+        await apiFetch(`/gro-processes/${p.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ resultingExpiry }),
+        });
+      }
+      await apiFetch(`/gro-processes/${p.id}/status`, {
+        method: 'POST',
+        body: JSON.stringify({ status: next }),
+      });
+      setCompleting(false);
+      await onChanged();
+      if (next === 'completed' && resultingExpiry) onEmployeeChanged?.(p.employeeId);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
+      setError(t('error'));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const choose = (next: GroProcessStatus) => {
+    if (next === 'completed' && GRO_EXPIRY_TYPES.has(p.type)) {
+      setExpiry(p.resultingExpiry ?? '');
+      setError('');
+      setCompleting(true);
+      return;
+    }
+    void apply(next, null);
+  };
+
+  async function submitComplete(e: FormEvent) {
+    e.preventDefault();
+    if (expiry) await apply('completed', expiry);
+  }
+
+  if (!canProcess) return null;
+  return (
+    <>
+      <span className="flex shrink-0 flex-col items-end gap-0.5">
+        <StatusAction
+          next={GRO_NEXT[p.status]}
+          onSelect={choose}
+          label={(s) => tg(`status.${s}`)}
+          placeholder={t('resolve')}
+          className={className}
+        />
+        {error && !completing && (
+          <span role="alert" className="text-[11px] leading-4 text-destructive">
+            {error}
+          </span>
+        )}
+      </span>
+
+      <Dialog open={completing} onOpenChange={(o) => !o && setCompleting(false)}>
+        <DialogContent className="sm:max-w-[440px]">
+          <DialogHeader>
+            <DialogTitle>{t('completeTitle', { type: tg(`type.${p.type}`) })}</DialogTitle>
+            <DialogDescription>{t('completeDescription')}</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={submitComplete} className="flex flex-col gap-3.5">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor={`expiry-${p.id}`}>{t('resultingExpiry')}</Label>
+              <Input
+                id={`expiry-${p.id}`}
+                type="date"
+                value={expiry}
+                onChange={(e) => setExpiry(e.target.value)}
+                required
+              />
+            </div>
+            {error && (
+              <p role="alert" className="text-sm text-destructive">
+                {error}
+              </p>
+            )}
+            <div className="flex justify-end gap-2 pt-1">
+              <Button type="button" variant="outline" onClick={() => setCompleting(false)}>
+                {t('cancel')}
+              </Button>
+              <Button type="submit" disabled={saving || !expiry}>
+                {saving ? t('completing') : t('complete')}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
 export function GroWorkRows({
   items,
   personOf,
@@ -102,69 +224,8 @@ export function GroWorkRows({
 }) {
   const t = useTranslations('person.work');
   const tg = useTranslations('gro');
-  const router = useRouter();
-  const canProcess = useCan('gro.process');
-
-  const [error, setError] = useState('');
-  const [completing, setCompleting] = useState<GroProcessResponse | null>(null);
-  const [expiry, setExpiry] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [dialogError, setDialogError] = useState('');
-
-  async function apply(
-    p: GroProcessResponse,
-    next: GroProcessStatus,
-    resultingExpiry: string | null,
-  ) {
-    setSaving(true);
-    setError('');
-    setDialogError('');
-    try {
-      if (resultingExpiry) {
-        await apiFetch(`/gro-processes/${p.id}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ resultingExpiry }),
-        });
-      }
-      await apiFetch(`/gro-processes/${p.id}/status`, {
-        method: 'POST',
-        body: JSON.stringify({ status: next }),
-      });
-      setCompleting(null);
-      await onChanged();
-      if (next === 'completed' && resultingExpiry) onEmployeeChanged?.(p.employeeId);
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
-      if (completing) setDialogError(t('error'));
-      else setError(t('error'));
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  const choose = (p: GroProcessResponse, next: GroProcessStatus) => {
-    if (next === 'completed' && GRO_EXPIRY_TYPES.has(p.type)) {
-      setExpiry(p.resultingExpiry ?? '');
-      setDialogError('');
-      setCompleting(p);
-      return;
-    }
-    void apply(p, next, null);
-  };
-
-  async function submitComplete(e: FormEvent) {
-    e.preventDefault();
-    if (!completing || !expiry) return;
-    await apply(completing, 'completed', expiry);
-  }
-
   return (
     <>
-      {error && (
-        <p role="alert" className="border-b px-4 py-2 text-sm text-destructive">
-          {error}
-        </p>
-      )}
       {items.map((p) => {
         const person = personOf?.(p);
         return (
@@ -190,56 +251,10 @@ export function GroWorkRows({
               </span>
             </span>
             <DueCell iso={p.dueDate} />
-            {canProcess && (
-              <span className="flex shrink-0">
-                <StatusAction
-                  next={GRO_NEXT[p.status]}
-                  onSelect={(next) => choose(p, next)}
-                  label={(s) => tg(`status.${s}`)}
-                  placeholder={t('resolve')}
-                  className="h-6 w-32 text-xs"
-                />
-              </span>
-            )}
+            <GroResolve process={p} onChanged={onChanged} onEmployeeChanged={onEmployeeChanged} />
           </div>
         );
       })}
-
-      <Dialog open={completing !== null} onOpenChange={(o) => !o && setCompleting(null)}>
-        <DialogContent className="sm:max-w-[440px]">
-          <DialogHeader>
-            <DialogTitle>
-              {completing ? t('completeTitle', { type: tg(`type.${completing.type}`) }) : ''}
-            </DialogTitle>
-            <DialogDescription>{t('completeDescription')}</DialogDescription>
-          </DialogHeader>
-          <form onSubmit={submitComplete} className="flex flex-col gap-3.5">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="ow-expiry">{t('resultingExpiry')}</Label>
-              <Input
-                id="ow-expiry"
-                type="date"
-                value={expiry}
-                onChange={(e) => setExpiry(e.target.value)}
-                required
-              />
-            </div>
-            {dialogError && (
-              <p role="alert" className="text-sm text-destructive">
-                {dialogError}
-              </p>
-            )}
-            <div className="flex justify-end gap-2 pt-1">
-              <Button type="button" variant="outline" onClick={() => setCompleting(null)}>
-                {t('cancel')}
-              </Button>
-              <Button type="submit" disabled={saving || !expiry}>
-                {saving ? t('completing') : t('complete')}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }

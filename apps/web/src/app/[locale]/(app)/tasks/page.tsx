@@ -22,9 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -35,30 +33,16 @@ import {
 import { StatusPill } from '@/components/ui/status-pill';
 import { useStaffDirectory } from '@/lib/staff-directory';
 import { toneFor } from '@/lib/status-tone';
+import { NewTaskDialog } from './new-task-dialog';
 
 const STATUSES = ['open', 'in_progress', 'done', 'cancelled'] as const;
 const PRIORITIES = ['low', 'normal', 'high'] as const;
 const ALL = 'all';
-const NO_CLIENT = 'none';
 
 interface EditForm {
   status: string;
   priority: string;
 }
-interface CreateForm {
-  clientId: string;
-  title: string;
-  description: string;
-  priority: string;
-  dueDate: string;
-}
-const EMPTY_CREATE: CreateForm = {
-  clientId: NO_CLIENT,
-  title: '',
-  description: '',
-  priority: 'normal',
-  dueDate: '',
-};
 
 // Tasks console (TASK-04) over the task.* API (TASK-02). Internal work items,
 // staff-only; the API scopes non-admins to their own/assigned tasks (task.read-all
@@ -83,9 +67,6 @@ export default function TasksPage() {
   const [fClient, setFClient] = useState(ALL);
 
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState<CreateForm>(EMPTY_CREATE);
-  const [saving, setSaving] = useState(false);
-  const [formError, setFormError] = useState('');
 
   const [editTarget, setEditTarget] = useState<TaskResponse | null>(null);
   const [editForm, setEditForm] = useState<EditForm>({ status: 'open', priority: 'normal' });
@@ -150,34 +131,7 @@ export default function TasksPage() {
   };
 
   function openCreate() {
-    setForm(EMPTY_CREATE);
-    setFormError('');
     setOpen(true);
-  }
-
-  async function create(e: FormEvent) {
-    e.preventDefault();
-    setSaving(true);
-    setFormError('');
-    try {
-      await apiFetch('/tasks', {
-        method: 'POST',
-        body: JSON.stringify({
-          ...(form.clientId !== NO_CLIENT ? { clientId: form.clientId } : {}),
-          title: form.title,
-          ...(form.description ? { description: form.description } : {}),
-          priority: form.priority,
-          ...(form.dueDate ? { dueDate: form.dueDate } : {}),
-        }),
-      });
-      setOpen(false);
-      await load();
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
-      setFormError(t('saveError'));
-    } finally {
-      setSaving(false);
-    }
   }
 
   async function patch(id: string, body: Record<string, unknown>) {
@@ -381,96 +335,12 @@ export default function TasksPage() {
         }
       />
 
-      {/* Create dialog */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('createTitle')}</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={create} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="tk-title">{t('fieldTitle')}</Label>
-              <Input
-                id="tk-title"
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                required
-              />
-            </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label>{t('fieldClient')}</Label>
-                <Select
-                  value={form.clientId}
-                  onValueChange={(v) => setForm({ ...form, clientId: v ?? NO_CLIENT })}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue>
-                      {(v) => (v && v !== NO_CLIENT ? clientName(String(v)) : t('selectClient'))}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={NO_CLIENT}>{t('selectClient')}</SelectItem>
-                    {clients
-                      .filter((c) => c.status === 'active')
-                      .map((c) => (
-                        <SelectItem key={c.id} value={c.id}>
-                          {locale === 'ar' ? c.name.ar : c.name.en}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label>{t('fieldPriority')}</Label>
-                <Select
-                  value={form.priority}
-                  onValueChange={(v) => setForm({ ...form, priority: v ?? 'normal' })}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue>{(v) => t(`priority.${String(v)}`)}</SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PRIORITIES.map((p) => (
-                      <SelectItem key={p} value={p}>
-                        {t(`priority.${p}`)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="tk-desc">{t('fieldDescription')}</Label>
-              <Textarea
-                id="tk-desc"
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                rows={3}
-                />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="tk-due">{t('fieldDue')}</Label>
-              <Input
-                id="tk-due"
-                type="date"
-                value={form.dueDate}
-                onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
-                className="w-44"
-              />
-            </div>
-            {formError && <p className="text-sm text-destructive">{formError}</p>}
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                {t('cancel')}
-              </Button>
-              <Button type="submit" disabled={saving || !form.title}>
-                {saving ? t('saving') : t('save')}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <NewTaskDialog
+        open={open}
+        onOpenChange={setOpen}
+        clients={clients}
+        onCreated={() => void load()}
+      />
 
       {/* Edit dialog */}
       <Dialog open={editTarget !== null} onOpenChange={(o) => !o && setEditTarget(null)}>

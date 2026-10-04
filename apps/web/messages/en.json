@@ -1506,5 +1506,53 @@
     "fieldSource": "Where they came from",
     "sourcePlaceholder": "Referred by the site manager · CV on file",
     "candidateAdded": "{name} added to {title} · Applied."
+  },
+  "queue": {
+    "title": "Work queue",
+    "summary": "{shown} of {total, plural, one {# item} other {# items}} · grouped by deadline",
+    "clearFilters": "Clear filters",
+    "newTask": "New task",
+    "searchPlaceholder": "Search by employee, procedure or reference",
+    "kindLabel": "Kind of work",
+    "kind": {
+      "all": "All",
+      "procedure": "Procedures",
+      "request": "Requests",
+      "task": "Tasks"
+    },
+    "clientLabel": "Client",
+    "allClients": "All clients",
+    "mine": "Assigned to me",
+    "loadError": "The work queue could not be loaded.",
+    "emptyTitle": "Nothing left in this view",
+    "emptyFiltered": "Widen the filters to see more.",
+    "emptyAll": "Every procedure, request and task is done.",
+    "band": {
+      "over": "Past due",
+      "today": "Due today",
+      "week": "Next seven days",
+      "later": "Later",
+      "none": "No due date"
+    },
+    "bandNote": {
+      "over": "Act on these first",
+      "today": "Finish before the day ends",
+      "week": "Plan these now",
+      "later": "Nothing to do yet",
+      "none": "Give these a due date"
+    },
+    "tasksOwnNote": "Tasks show only the ones you created or are assigned to. Administrators and auditors see every task.",
+    "unassigned": "Unassigned",
+    "someone": "Assigned",
+    "assignLabel": "Assign {title}",
+    "assignHeading": "Assign this item",
+    "reassigned": "Reassigned to {name}.",
+    "snooze": "Snooze",
+    "snoozeHint": "Move the due date seven days later",
+    "snoozed": "Due date moved to {date}.",
+    "markDone": "Mark done",
+    "taskDone": "“{title}” marked done.",
+    "openRequest": "Open request",
+    "actionError": "That change could not be saved. Try again."
   }
 }

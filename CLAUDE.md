@@ -1054,6 +1054,14 @@ columns + candidates in board order, Open board → `/hiring`. The procedure row
 GRO-03 expiry dialog were EXTRACTED to `components/gro-work-list.tsx` and both records render
 them. Verified per role against SQL (tasks: HR 1 · GRO 2 · Admin 4 · Auditor 4, no buttons).
 No API change. Next: DS-12 (Work queue).
+**DS-12 done — the Work queue.** `/queue` merges active GRO processes, open/in-progress requests
+and tasks (each source optional per role) into deadline bands (Past due / Today / 7 days / Later /
+No due date) with search (Arabic fold), kind pills, client, Assigned to me. Per kind: assignee
+picker for procedures + tasks (a request's assignee only moves WITH its status — REQ-05
+follow-up), **Snooze = the real due date +7** (owner decision, audited), Resolve = GRO status
+control (`GroResolve`, split out of `gro-work-list.tsx`) / Mark done / Open request. Nav Work
+queue → `/queue`; `/tasks` in Other tools until DS-13's work-item dialog; New task form extracted
+to `tasks/new-task-dialog.tsx`. Matched SQL for all four roles. No API change. Next: DS-13.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

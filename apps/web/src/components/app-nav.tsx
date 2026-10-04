@@ -8,6 +8,7 @@ import {
   CalendarCheck,
   CalendarDays,
   ChartColumn,
+  ClipboardList,
   FileText,
   History,
   IdCard,
@@ -190,7 +191,7 @@ export function AppNav({
               ...(canTasks
                 ? [
                     {
-                      href: '/tasks',
+                      href: '/queue',
                       label: t('nav.workQueue'),
                       icon: Inbox,
                       count: counts.tasks,
@@ -232,7 +233,8 @@ export function AppNav({
           // kept reachable until a redesigned screen absorbs each one — documents
           // into the person record, expiry into Overview's runway, GRO into the
           // work queue, Google Calendar into Calendar. (Candidates went into Hiring
-          // in DS-09.)
+          // in DS-09; Tasks moved here in DS-12, until DS-13's work-item dialog
+          // takes over editing.)
           // A row leaves this group when its absorbing screen's card lands.
           {
             heading: t('nav.otherTools'),
@@ -244,6 +246,7 @@ export function AppNav({
                 ? [{ href: '/expiry', label: t('nav.expiry'), icon: Activity }]
                 : []),
               ...(canGro ? [{ href: '/gro', label: t('nav.gro'), icon: Landmark }] : []),
+              ...(canTasks ? [{ href: '/tasks', label: t('nav.tasks'), icon: ClipboardList }] : []),
               ...(canIntegrations
                 ? [{ href: '/integrations', label: t('nav.integrations'), icon: CalendarCheck }]
                 : []),
