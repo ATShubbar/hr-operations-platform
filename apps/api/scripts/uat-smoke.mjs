@@ -6,7 +6,8 @@
 // It talks to UAT exactly as a browser does: through the public web address,
 // whose /api/* is proxied to the internal API. Per role it proves sign-in, one
 // allowed screen and one refused one; then a real document round-trip through
-// the bucket; then a request whose status change notifies its client manager —
+// the bucket, and the seed's own files (SEED-01); then a request whose status
+// change notifies its client manager —
 // that notification is emailed by the BullMQ WORKER, so its log line
 // `email → client_manager-a@seed.hr.local` proves the worker processes jobs —
 // with a PDF attached to its thread and removed again (THREAD-02).
@@ -138,6 +139,23 @@ async function main() {
       const removed = await call(`/documents/${document.id}`, { cookie: hr, method: 'DELETE' });
       check(removed.status === 200, 'document: cleaned up', `HTTP ${removed.status}`);
     }
+  }
+
+  // SEED-01: the SEEDED files are real — a seeded document (Ahmed Hassan's
+  // iqama) and the client manager's sample attachment both download as PDFs.
+  if (hr) {
+    const pdfAt = async (path) => {
+      const link = await call(path, { cookie: hr });
+      if (!link.json?.url) return `HTTP ${link.status}`;
+      const head = Buffer.from(await (await fetch(link.json.url)).arrayBuffer()).subarray(0, 5).toString('latin1');
+      return head;
+    };
+    const doc = await pdfAt('/documents/d0000001-0000-4000-8000-000000000001/download');
+    check(doc === '%PDF-', 'seed: a seeded document downloads as a PDF', doc);
+    const file = await pdfAt(
+      '/requests/a0000001-0000-4000-8000-000000000001/attachments/f0000001-0000-4000-8000-000000000001/download',
+    );
+    check(file === '%PDF-', 'seed: a seeded request attachment downloads as a PDF', file);
   }
 
   // A request raised by the client manager, picked up by HR → the client

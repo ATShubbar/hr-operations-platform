@@ -181,7 +181,9 @@ SDK (ADR-010 clauses 5 and 6). Cloud Run injects secret values at deploy time.
   `SEED_TARGET=uat` and that password. The real production never gets either.
 - **Run it:** GitHub → Actions → **Seed UAT** → Run workflow (`main`; `seed-and-smoke` resets UAT to the scenario,
   `smoke-only` just checks). Jobs `uat-seed` and `uat-smoke` run as service account `uat-seed` (Cloud SQL `uat-*`
-  only; reads `uat-database-url` + `uat-seed-password`; registry reader).
+  only; reads `uat-database-url` + `uat-seed-password`; registry reader). SEED-01: it also reads
+  `uat-storage-access-key` + `uat-storage-secret-key` (the app's HMAC key) so the seed can write the files
+  behind its documents and sample attachments; the bucket settings come from `uat-env.yaml`.
 - **The smoke check** (`apps/api/scripts/uat-smoke.mjs`) signs in as HR officer, GRO officer, client manager and
   employee through the public address; one allowed + one refused route each; a document round-trip through the
   bucket; and a request whose notification the **worker** must email (find `email → client_manager-a@…` in the
@@ -260,3 +262,4 @@ Prices read from Google's **Cloud Billing Catalog** (official SKUs, `me-central1
 | 2026-10-04 | GCP-06: owner created `uat-seed-password` (me-central1, never displayed); service account `uat-seed` | created |
 | 2026-10-04 | GCP-06: Seed UAT run — seed 5 clients / 39 employees / 20 documents / 10 accounts (6/6 roles); smoke **25/25**; worker emailed `client_manager-a` 2 s after the request moved | verified |
 | 2026-10-04 | UAT-01: owner set `uat-seed-password` v2; `3354ed0` deployed (`UAT_DISABLE_MFA=true` on api + worker); re-seeded → @peopleandgro.com accounts; smoke **33/33** incl. Administrator + Auditor without an authenticator | verified |
+| 2026-10-04 | SEED-01 (owner-approved): `uat-seed` granted `roles/secretmanager.secretAccessor` on `uat-storage-access-key` and `uat-storage-secret-key` — two bindings, nothing created, no cost | done |

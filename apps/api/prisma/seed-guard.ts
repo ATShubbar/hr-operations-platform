@@ -58,3 +58,42 @@ export function seedEmailFor(local: string, env: SeedEnv): string {
   return email;
 }
 
+
+// SEED-01: where the seed writes the files behind its documents. In development
+// (and CI) the same local MinIO defaults as the app's StorageService; on UAT
+// EVERY setting must be supplied (Secret Manager + the workflow's env), so UAT is
+// never seeded silently without its files.
+export interface SeedStorageConfig {
+  endpoint: string;
+  region: string;
+  bucket: string;
+  accessKeyId: string;
+  secretAccessKey: string;
+}
+
+const STORAGE_DEV_DEFAULTS = {
+  STORAGE_ENDPOINT: 'http://localhost:9002',
+  STORAGE_REGION: 'us-east-1',
+  STORAGE_BUCKET: 'hr-documents',
+  STORAGE_ACCESS_KEY: 'hr_minio',
+  STORAGE_SECRET_KEY: 'hr_minio_dev_pw',
+} as const;
+
+export function seedStorageFor(env: SeedEnv): SeedStorageConfig {
+  const uat = env.NODE_ENV === 'production';
+  const keys = Object.keys(STORAGE_DEV_DEFAULTS) as (keyof typeof STORAGE_DEV_DEFAULTS)[];
+  if (uat) {
+    const missing = keys.filter((k) => !env[k]);
+    if (missing.length > 0) {
+      throw new Error(`Refusing to seed UAT without its file storage: ${missing.join(', ')} not supplied.`);
+    }
+  }
+  const get = (k: keyof typeof STORAGE_DEV_DEFAULTS) => env[k] || STORAGE_DEV_DEFAULTS[k];
+  return {
+    endpoint: get('STORAGE_ENDPOINT'),
+    region: get('STORAGE_REGION'),
+    bucket: get('STORAGE_BUCKET'),
+    accessKeyId: get('STORAGE_ACCESS_KEY'),
+    secretAccessKey: get('STORAGE_SECRET_KEY'),
+  };
+}

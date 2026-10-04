@@ -1,7 +1,8 @@
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient, Prisma } from '../src/generated/prisma/client';
-import { SEED_USER_DOMAIN, seedEmailFor, seedPasswordFor, UAT_SEED_EMAILS } from './seed-guard';
+import { SEED_USER_DOMAIN, seedEmailFor, seedPasswordFor, seedStorageFor, UAT_SEED_EMAILS } from './seed-guard';
+import { buildSamplePdf, SeedFiles } from './seed-files';
 import { leaveEndDate, splitByYear } from '../src/modules/leave/public-api';
 import {
   CLIENT_ROLES,
@@ -47,6 +48,11 @@ export const SEED_CLIENT_E = 'c1000000-0000-4000-8000-000000000005';
 // ---------------------------------------------------------------------------
 
 /** Midnight UTC, `days` from today. Negative = in the past. */
+/** Hours before now (a timestamp, for 'uploaded 6 hours ago' sample data). */
+function hoursAgo(hours: number): Date {
+  return new Date(Date.now() - hours * 3_600_000);
+}
+
 function daysFromNow(days: number): Date {
   const d = new Date();
   d.setUTCHours(0, 0, 0, 0);
@@ -358,9 +364,12 @@ const DOCUMENTS: ReadonlyArray<{
   { id: 'd0000003-0000-4000-8000-000000000014', client: SEED_CLIENT_C, employee: 'e0000003-0000-4000-8000-000000000001', category: 'other', titleEn: 'Fleet Insurance Policy', expiry: 300 },
 ];
 
-async function seedDocuments(prisma: PrismaClient): Promise<number> {
+async function seedDocuments(prisma: PrismaClient, files: SeedFiles): Promise<number> {
   for (const d of DOCUMENTS) {
     const fileName = `${d.category}-${d.id.slice(-4)}.pdf`;
+    // SEED-01: a real file behind every seeded document (it used to be a row
+    // pointing at nothing — Download answered NoSuchKey on seed data).
+    const pdf = samplePdf(d.titleEn, d.category);
     const rest = {
       clientId: d.client,
       employeeId: d.employee,
@@ -371,8 +380,10 @@ async function seedDocuments(prisma: PrismaClient): Promise<number> {
       status: 'available' as const,
       issueDate: yearsAgo(2),
       expiryDate: d.expiry === null ? null : daysFromNow(d.expiry),
+      sizeBytes: pdf.length,
     };
     const storageKey = `clients/${d.client}/documents/${d.id}/${fileName}`;
+    await files.put(storageKey, pdf);
     await prisma.document.upsert({
       where: { id: d.id },
       create: { id: d.id, storageKey, ...rest },
@@ -380,6 +391,69 @@ async function seedDocuments(prisma: PrismaClient): Promise<number> {
     });
   }
   return DOCUMENTS.length;
+}
+
+function samplePdf(title: string, kind: string): Buffer {
+  return buildSamplePdf([
+    'PEOPLE&GRO - sample document',
+    title,
+    `Type: ${kind}`,
+    'Sample data - not a real document.',
+  ]);
+}
+
+// SEED-01: two files on the seeded requests' threads (THREAD-02), so the
+// Attachments block isn't empty on UAT — the client manager's bank template on
+// the salary certificate, and the GRO officer's Absher receipt on the iqama
+// renewal. Re-seeding removes EVERY file on the seeded requests (rows + blobs),
+// as it does their comments, then writes these two again.
+const SEED_REQUEST_IDS = [
+  'a0000001-0000-4000-8000-000000000001',
+  'a0000001-0000-4000-8000-000000000002',
+  'a0000001-0000-4000-8000-000000000003',
+  'a0000001-0000-4000-8000-000000000004',
+  'a0000001-0000-4000-8000-000000000005',
+  'a0000002-0000-4000-8000-000000000001',
+  'a0000002-0000-4000-8000-000000000002',
+  'a0000002-0000-4000-8000-000000000003',
+  'a0000002-0000-4000-8000-000000000004',
+];
+
+async function seedRequestAttachments(prisma: PrismaClient, files: SeedFiles): Promise<number> {
+  const old = await prisma.requestAttachment.findMany({ where: { requestId: { in: SEED_REQUEST_IDS } } });
+  for (const a of old) await files.remove(a.storageKey).catch(() => undefined);
+  await prisma.requestAttachment.deleteMany({ where: { requestId: { in: SEED_REQUEST_IDS } } });
+
+  const repA = await prisma.authUser.findUnique({ where: { email: seedEmail('client_manager-a') } });
+  const gro = await prisma.authUser.findUnique({ where: { email: seedEmail('staff-gro_officer') } });
+  if (!repA || !gro) return 0;
+  const samples = [
+    { id: 'f0000001-0000-4000-8000-000000000001', requestId: 'a0000001-0000-4000-8000-000000000001', by: repA.id, fileName: 'Al Rajhi salary letter template.pdf', at: hoursAgo(20) },
+    { id: 'f0000001-0000-4000-8000-000000000002', requestId: 'a0000001-0000-4000-8000-000000000002', by: gro.id, fileName: 'Absher receipt - iqama renewal.pdf', at: hoursAgo(6) },
+  ];
+  for (const f of samples) {
+    const request = await prisma.request.findUniqueOrThrow({ where: { id: f.requestId } });
+    const pdf = samplePdf(f.fileName.replace(/\.pdf$/, ''), 'request attachment');
+    const storageKey = `clients/${request.clientId}/requests/${request.id}/${f.id}`;
+    await files.put(storageKey, pdf);
+    await prisma.requestAttachment.create({
+      data: {
+        id: f.id,
+        requestId: request.id,
+        clientId: request.clientId,
+        requesterEmployeeId: request.requesterEmployeeId,
+        uploadedByUserId: f.by,
+        fileName: f.fileName,
+        contentType: 'application/pdf',
+        sizeBytes: pdf.length,
+        storageKey,
+        status: 'available',
+        createdAt: f.at,
+        confirmedAt: f.at,
+      },
+    });
+  }
+  return samples.length;
 }
 
 async function seedRequests(prisma: PrismaClient): Promise<number> {
@@ -772,13 +846,16 @@ async function main(): Promise<void> {
   const prisma = new PrismaClient({
     adapter: new PrismaPg(process.env.DATABASE_URL ?? ''),
   });
+  // SEED-01: the files behind the documents (local MinIO in development; on UAT
+  // every storage setting must be supplied, or this throws before anything runs).
+  const files = new SeedFiles(seedStorageFor(process.env));
 
   try {
     // Client companies first — they originate the client_ids everything else
     // references (no FK across modules, so order is for clarity, not integrity).
     const clientCount = await seedClients(prisma);
     const employeeCount = await seedEmployees(prisma);
-    const documentCount = await seedDocuments(prisma);
+    const documentCount = await seedDocuments(prisma, files);
 
     const fixtures = [
       { clientId: SEED_CLIENT_A, note: 'seed:client-a:sample-1' },
@@ -793,6 +870,7 @@ async function main(): Promise<void> {
 
     const userCount = await seedUsers(prisma);
     const requestCount = await seedRequests(prisma);
+    const attachmentCount = await seedRequestAttachments(prisma, files);
     const taskCount = await seedTasks(prisma);
     const vacancyCount = await seedVacancies(prisma);
     const candidateCount = await seedCandidates(prisma);
@@ -808,13 +886,14 @@ async function main(): Promise<void> {
     });
     const rolesCovered = new Set(STAFF_ACCOUNTS.map((a) => a.role)).size + 1 + 1; // + client_manager + employee
     process.stdout.write(
-      `Seed complete: ${clientCount} client companies; ${employeeCount} employees; ${documentCount} documents; ${requestCount} requests; ${taskCount} tasks; ${vacancyCount} vacancies; ${candidateCount} candidates; ${groCount} GRO processes; ${calendarCount} calendar events; ${leaveCount} leave requests; ${rowCount} scope-check rows ` +
+      `Seed complete: ${clientCount} client companies; ${employeeCount} employees; ${documentCount} documents (with files); ${requestCount} requests; ${attachmentCount} request files; ${taskCount} tasks; ${vacancyCount} vacancies; ${candidateCount} candidates; ${groCount} GRO processes; ${calendarCount} calendar events; ${leaveCount} leave requests; ${rowCount} scope-check rows ` +
         `${notificationCount} notifications (purged ${purgedNotifications} orphans); ` +
         `across clients A (${SEED_CLIENT_A}) and B (${SEED_CLIENT_B}); ${userCount} auth users ` +
         `(${STAFF_ACCOUNTS.length} staff + ${CLIENT_REP_ASSIGNMENTS.length} client managers + 1 employee, ` +
         `${rolesCovered}/${STAFF_ROLES.length + CLIENT_ROLES.length + 1} roles covered).\n`,
     );
   } finally {
+    files.close();
     await prisma.$disconnect();
   }
 }

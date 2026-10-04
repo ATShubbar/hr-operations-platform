@@ -69,15 +69,8 @@ jobs:
       - name: Build the API's workspace packages
         run: pnpm turbo run build --filter='@hr/api^...'
 
-      # Several e2e specs read the seed's fixed fixtures (client A, its
-      # employees). Locally the database is always seeded; CI never was, so those
-      # specs had failed on every push since they were written — unseen, because
-      # nothing deployed from CI until GCP-04. Seeding here makes CI run the suite
-      # under the same conditions as every local run.
-      - name: Seed the test database
-        run: pnpm --filter @hr/api db:seed
-
-      # Document e2e specs upload to object storage. MinIO stopped publishing
+      # Document e2e specs upload to object storage — and (SEED-01) the seed writes
+      # the file behind every seeded document, so MinIO starts BEFORE the seed. MinIO stopped publishing
       # images (Docker Hub and Quay both refuse `minio/minio` since late 2025), so
       # this is Bitnami's frozen MinIO build, pinned by digest. Its entrypoint
       # starts the server itself (no `server /data` argument).
@@ -91,6 +84,14 @@ jobs:
             sleep 2
           done
           docker logs minio; exit 1
+
+      # Several e2e specs read the seed's fixed fixtures (client A, its
+      # employees). Locally the database is always seeded; CI never was, so those
+      # specs had failed on every push since they were written — unseen, because
+      # nothing deployed from CI until GCP-04. Seeding here makes CI run the suite
+      # under the same conditions as every local run.
+      - name: Seed the test database
+        run: pnpm --filter @hr/api db:seed
 
       - name: Lint, typecheck, test, build
         run: pnpm turbo run lint typecheck test build

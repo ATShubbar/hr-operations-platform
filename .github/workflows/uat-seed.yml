@@ -54,14 +54,18 @@ jobs:
           docker build -f apps/api/Dockerfile --target seed -t "$REPO/seed:$TAG" .
           docker push "$REPO/seed:$TAG"
 
+      # SEED-01: the seed also writes the files behind its documents and sample
+      # request attachments — the bucket settings come from the SAME file the
+      # app uses (uat-env.yaml), the key from Secret Manager (uat-seed was granted
+      # read on the two storage secrets, owner-approved 2026-10-04).
       - name: Seed (resets UAT to the sample scenario)
         if: inputs.action == 'seed-and-smoke'
         run: |
           gcloud run jobs deploy uat-seed --image "$REPO/seed:$TAG" --region "$REGION" \
             --service-account "$SA" \
             --set-cloudsql-instances "$SQL" \
-            --set-env-vars SEED_TARGET=uat \
-            --set-secrets DATABASE_URL=uat-database-url:latest,SEED_PASSWORD=uat-seed-password:latest \
+            --set-env-vars "SEED_TARGET=uat,$(grep '^STORAGE_' infra/gcp/uat-env.yaml | sed 's/: /=/' | paste -sd, -)" \
+            --set-secrets DATABASE_URL=uat-database-url:latest,SEED_PASSWORD=uat-seed-password:latest,STORAGE_ACCESS_KEY=uat-storage-access-key:latest,STORAGE_SECRET_KEY=uat-storage-secret-key:latest \
             --memory 1Gi --max-retries 0 --task-timeout 900 --labels env=uat --quiet
           gcloud run jobs execute uat-seed --region "$REGION" --wait
 

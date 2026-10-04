@@ -1334,6 +1334,12 @@ the type's CURRENT `serviceLevelDays` (SS-05's pinned self whitelist gained it o
 (`/clients`) and assignees (`/staff-users/directory`) from STAFF-only lists and fell back to `id.slice(0, 8)`; now client
 managers get no company (it is always their own) and "Being handled by PEOPLE&GRO" instead of an assignee, and the page
 doesn't request either list unless the viewer is staff. Staff "Open work queue" fixed `/tasks` → `/queue`.
+**SEED-01 done — seeded documents have real files.** `prisma/seed-files.ts` builds a valid one-page sample PDF
+("Sample data - not a real document") per seeded document and writes it through the S3 API (`SeedFiles`, same bucket
+rule as `StorageService`); two sample request attachments too. `seedStorageFor(env)` (seed-guard): local MinIO by
+default, but on UAT every `STORAGE_*` must be supplied or the seed refuses. CI now starts MinIO BEFORE seeding.
+`uat-seed.yml` passes the bucket settings from `uat-env.yaml` + the two storage secrets — owner-approved grant:
+`uat-seed` may read `uat-storage-access-key`/`-secret-key`. Smoke checks a seeded document + attachment download.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
