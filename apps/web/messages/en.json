@@ -62,7 +62,7 @@
     "settings": "Settings",
     "expiry": "Expiry",
     "requests": "Requests",
-    "tasks": "Tasks",
+    "tasks": "Task history",
     "vacancies": "Vacancies",
     "gro": "GRO",
     "calendar": "Calendar",
@@ -545,8 +545,8 @@
     "trailBy": "{name} · {role}"
   },
   "tasks": {
-    "title": "Tasks",
-    "subtitle": "Internal work items and their status.",
+    "title": "Task history",
+    "subtitle": "Finished and cancelled tasks. Open work is handled in the Work queue.",
     "new": "New task",
     "empty": "No tasks.",
     "loading": "Loading…",
@@ -594,7 +594,8 @@
       "normal": "Normal",
       "high": "High"
     },
-    "searchPlaceholder": "Search task or client…"
+    "searchPlaceholder": "Search task or client…",
+    "filterFinished": "Finished"
   },
   "integrations": {
     "title": "Google Calendar invitations",
@@ -1553,6 +1554,33 @@
     "markDone": "Mark done",
     "taskDone": "“{title}” marked done.",
     "openRequest": "Open request",
-    "actionError": "That change could not be saved. Try again."
+    "actionError": "That change could not be saved. Try again.",
+    "factEmployee": "Employee",
+    "factRequester": "Raised by",
+    "factClient": "Client",
+    "factDue": "Due",
+    "noDue": "No due date",
+    "detailHeading": {
+      "procedure": "Where this stands",
+      "request": "What was asked for",
+      "task": "What needs doing"
+    },
+    "step": "Step {n} of {total}",
+    "progress": "Procedure progress",
+    "noDetail": "No details recorded.",
+    "editTask": "Task",
+    "saveTask": "Save",
+    "taskSaved": "Task saved.",
+    "owns": "{role} · owns this item",
+    "openRecord": "Open record",
+    "threadTitle": "Attachments and comments",
+    "threadSoon": "Coming soon — signed letters, stamped copies and notes for whoever picks this up next.",
+    "snoozeSeven": "Snooze seven days",
+    "close": "Close",
+    "kindName": {
+      "procedure": "Government procedure",
+      "request": "Request",
+      "task": "Internal task"
+    }
   }
 }

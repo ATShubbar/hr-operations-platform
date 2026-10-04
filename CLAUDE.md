@@ -1062,6 +1062,15 @@ follow-up), **Snooze = the real due date +7** (owner decision, audited), Resolve
 control (`GroResolve`, split out of `gro-work-list.tsx`) / Mark done / Open request. Nav Work
 queue → `/queue`; `/tasks` in Other tools until DS-13's work-item dialog; New task form extracted
 to `tasks/new-task-dialog.tsx`. Matched SQL for all four roles. No API change. Next: DS-13.
+**DS-13 done — the work-item dialog; Tasks → Task history.** A queue row's title opens the
+prototype's dialog: facts (person/requester, client, due chip + Hijri), per-kind detail, a
+procedure step bar DERIVED from its real status (rejected = step 3, red), owner + Open record,
+a task status/priority editor, Snooze, and the per-kind primary. Row + dialog share
+`queue/queue-actions.ts` (`QueueItem` + `useQueueActions`). `/tasks` is **Task history**
+(owner decision), defaulting to finished (done OR cancelled, filtered on the page). Bugs: I
+reused `queue.kindLabel` (the pills' aria-label) as an object → `INSUFFICIENT_PATH`; and the
+dialog overflowed 351px-in-343px on a phone because DialogContent's grid items default to
+`min-width:auto` (fixed with `[&>*]:min-w-0`). No API change. Next: DS-14 (Calendar).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
@@ -1127,6 +1136,9 @@ to `tasks/new-task-dialog.tsx`. Matched SQL for all four roles. No API change. N
 - HTML drag-and-drop: judge drop legality from a REF set in `dragstart`, not React state (the
   first `dragover` can beat the re-render), and cancel `dragenter` as well as `dragover` — a fast
   drag can release before any `dragover` reaches the target (DS-09, measured with a real mouse).
+- `DialogContent` is a CSS grid: its items default to `min-width:auto`, so one truncating
+  (`nowrap`) line sets a minimum wider than a phone and the dialog overflows sideways. Give
+  the items `min-w-0` (`[&>*]:min-w-0` on DialogContent) when a dialog holds truncated text (DS-13).
 - Closing a dialog inside a `<Link>`'s onClick CANCELS the navigation — `next/link` runs
   `startTransition(() => router.push())` and the close unmounts the subtree owning that
   transition. Close on pathname change instead (UX-05).

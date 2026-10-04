@@ -35,7 +35,9 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { GRO_ACTIVE } from '@/components/gro-work-list';
 import { NewTaskDialog } from '../tasks/new-task-dialog';
-import { QueueRow, type QueueItem } from './queue-row';
+import { QueueRow } from './queue-row';
+import type { QueueItem } from './queue-actions';
+import { WorkItemDialog } from './work-item-dialog';
 
 // The Work queue (DS-12) — the prototype's queue (ADR-012): every open piece of
 // work in one list, grouped by how urgent it is — government procedures, requests
@@ -50,8 +52,7 @@ import { QueueRow, type QueueItem } from './queue-row';
 // product's own: the prototype's ("statutory fines accrue daily", "portals close
 // 15:00 Thursday") assert facts nothing here has verified.
 //
-// Clicking a row's title goes to the item's home (the person, the request, the
-// Tasks screen); the prototype's work-item dialog is DS-13.
+// Clicking a row's title opens the work-item dialog (DS-13).
 
 type Band = 'over' | 'today' | 'week' | 'later' | 'none';
 const BANDS: readonly Band[] = ['over', 'today', 'week', 'later', 'none'];
@@ -103,6 +104,8 @@ export default function WorkQueuePage() {
   const [client, setClient] = useState(ALL);
   const [mine, setMine] = useState(false);
   const [newOpen, setNewOpen] = useState(false);
+  // The open work item, by kind + id, so a reload hands the dialog fresh data.
+  const [openKey, setOpenKey] = useState<string | null>(null);
 
   // Each source is optional: a role that cannot read one kind of work simply has
   // none of it here. Only when nothing at all loads is it an error.
@@ -143,30 +146,32 @@ export default function WorkQueuePage() {
     const c = clients.find((x) => x.id === id);
     return c ? (locale === 'ar' ? c.name.ar : c.name.en) : null;
   };
-  const personName = (id: string) => {
+  const personOf = (id: string) => {
     const e = employees.find((x) => x.id === id);
-    return e ? (locale === 'ar' ? e.name.ar : e.name.en) : null;
+    return e ? { name: locale === 'ar' ? e.name.ar : e.name.en, ar: e.name.ar } : null;
   };
 
   // The three kinds as one shape.
   const all: QueueItem[] = useMemo(() => {
     const items: QueueItem[] = [];
     for (const p of processes.filter((x) => GRO_ACTIVE.has(x.status))) {
-      const person = personName(p.employeeId);
+      const person = personOf(p.employeeId);
       items.push({
         kind: 'procedure',
         id: p.id,
         title: tg(`type.${p.type}`),
         ref: p.referenceNumber,
-        meta: [person, clientName(p.clientId), tg(`status.${p.status}`)]
+        meta: [person?.name, clientName(p.clientId), tg(`status.${p.status}`)]
           .filter(Boolean)
           .join(' · '),
         clientId: p.clientId,
+        clientName: clientName(p.clientId),
+        person,
         due: p.dueDate,
         assigneeUserId: p.assigneeUserId,
-        href: `/employees/${p.employeeId}`,
+        recordHref: `/employees/${p.employeeId}`,
         gro: p,
-        searchText: [tg(`type.${p.type}`), p.referenceNumber ?? '', person ?? ''],
+        searchText: [tg(`type.${p.type}`), p.referenceNumber ?? '', person?.name ?? ''],
       });
     }
     for (const q of requests.filter((x) => OPEN.has(x.status))) {
@@ -184,9 +189,12 @@ export default function WorkQueuePage() {
           .filter(Boolean)
           .join(' · '),
         clientId: q.clientId,
+        clientName: clientName(q.clientId),
+        person: q.requester?.name ? { name: q.requester.name, ar: null } : null,
         due: q.dueDate,
         assigneeUserId: q.assigneeUserId,
-        href: `/requests?r=${q.id}`,
+        recordHref: `/requests?r=${q.id}`,
+        request: q,
         searchText: [q.title, q.requester?.name ?? '', q.id],
       });
     }
@@ -200,9 +208,12 @@ export default function WorkQueuePage() {
           .filter(Boolean)
           .join(' · '),
         clientId: k.clientId,
+        clientName: clientName(k.clientId),
+        person: null,
         due: k.dueDate,
         assigneeUserId: k.assigneeUserId,
-        href: '/tasks',
+        recordHref: null,
+        task: k,
         searchText: [k.title],
       });
     }
@@ -344,7 +355,13 @@ export default function WorkQueuePage() {
                 </span>
               </div>
               {items.map((i) => (
-                <QueueRow key={`${i.kind}-${i.id}`} item={i} staff={staff} onChanged={load} />
+                <QueueRow
+                  key={`${i.kind}-${i.id}`}
+                  item={i}
+                  staff={staff}
+                  onChanged={load}
+                  onOpen={() => setOpenKey(`${i.kind}-${i.id}`)}
+                />
               ))}
             </section>
           );
@@ -355,6 +372,12 @@ export default function WorkQueuePage() {
         <p className="text-xs leading-4 text-muted-foreground">{t('tasksOwnNote')}</p>
       )}
 
+      <WorkItemDialog
+        item={all.find((i) => `${i.kind}-${i.id}` === openKey) ?? null}
+        staff={staff}
+        onChanged={load}
+        onClose={() => setOpenKey(null)}
+      />
       <NewTaskDialog
         open={newOpen}
         onOpenChange={setNewOpen}

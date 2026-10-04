@@ -62,7 +62,7 @@
     "settings": "الإعدادات",
     "expiry": "الانتهاءات",
     "requests": "الطلبات",
-    "tasks": "المهام",
+    "tasks": "سجل المهام",
     "vacancies": "الشواغر",
     "gro": "الجوازات",
     "calendar": "التقويم",
@@ -545,8 +545,8 @@
     "trailBy": "{name} · {role}"
   },
   "tasks": {
-    "title": "المهام",
-    "subtitle": "عناصر العمل الداخلية وحالتها.",
+    "title": "سجل المهام",
+    "subtitle": "المهام المنجزة والملغاة. يُتابَع العمل المفتوح في قائمة العمل.",
     "new": "مهمة جديدة",
     "empty": "لا توجد مهام.",
     "loading": "جارٍ التحميل…",
@@ -594,7 +594,8 @@
       "normal": "عادية",
       "high": "عالية"
     },
-    "searchPlaceholder": "ابحث بالمهمة أو العميل…"
+    "searchPlaceholder": "ابحث بالمهمة أو العميل…",
+    "filterFinished": "المنتهية"
   },
   "integrations": {
     "title": "دعوات تقويم Google",
@@ -1553,6 +1554,33 @@
     "markDone": "تم الإنجاز",
     "taskDone": "سُجّلت «{title}» منجزة.",
     "openRequest": "فتح الطلب",
-    "actionError": "تعذّر حفظ هذا التغيير. حاول مجددًا."
+    "actionError": "تعذّر حفظ هذا التغيير. حاول مجددًا.",
+    "factEmployee": "الموظف",
+    "factRequester": "مقدّم الطلب",
+    "factClient": "العميل",
+    "factDue": "الموعد",
+    "noDue": "بلا موعد",
+    "detailHeading": {
+      "procedure": "أين وصل",
+      "request": "ما المطلوب",
+      "task": "ما الذي يجب إنجازه"
+    },
+    "step": "الخطوة {n} من {total}",
+    "progress": "تقدّم الإجراء",
+    "noDetail": "لا توجد تفاصيل مسجلة.",
+    "editTask": "المهمة",
+    "saveTask": "حفظ",
+    "taskSaved": "حُفظت المهمة.",
+    "owns": "{role} · المسؤول عن هذا العنصر",
+    "openRecord": "فتح السجل",
+    "threadTitle": "المرفقات والتعليقات",
+    "threadSoon": "قريبًا — الخطابات الموقعة والنسخ المختومة والملاحظات لمن يتابع بعدك.",
+    "snoozeSeven": "تأجيل سبعة أيام",
+    "close": "إغلاق",
+    "kindName": {
+      "procedure": "إجراء حكومي",
+      "request": "طلب",
+      "task": "مهمة داخلية"
+    }
   }
 }

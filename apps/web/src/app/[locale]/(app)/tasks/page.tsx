@@ -38,13 +38,21 @@ import { NewTaskDialog } from './new-task-dialog';
 const STATUSES = ['open', 'in_progress', 'done', 'cancelled'] as const;
 const PRIORITIES = ['low', 'normal', 'high'] as const;
 const ALL = 'all';
+// Task history's default (DS-13, owner decision): finished = done OR cancelled.
+// The API filters one status at a time, so this one is applied on the page.
+const FINISHED = 'finished';
+const FINISHED_SET = new Set(['done', 'cancelled']);
 
 interface EditForm {
   status: string;
   priority: string;
 }
 
-// Tasks console (TASK-04) over the task.* API (TASK-02). Internal work items,
+// Task history (DS-13; was the Tasks console, TASK-04) over the task.* API
+// (TASK-02). Open work moved to the Work queue (DS-12) and its work-item dialog
+// (DS-13); this screen keeps finished and cancelled tasks findable, defaulting
+// to them, with the status filter still able to show any.
+// Originally: Tasks console (TASK-04) over the task.* API (TASK-02). Internal work items,
 // staff-only; the API scopes non-admins to their own/assigned tasks (task.read-all
 // lifts that). Create needs task.create; Edit / Assign-to-me need task.update —
 // hidden without the capability. Some tasks are spawned from requests (TASK-03).
@@ -63,7 +71,7 @@ export default function TasksPage() {
   const [error, setError] = useState('');
   const [forbidden, setForbidden] = useState(false);
 
-  const [fStatus, setFStatus] = useState(ALL);
+  const [fStatus, setFStatus] = useState(FINISHED);
   const [fClient, setFClient] = useState(ALL);
 
   const [open, setOpen] = useState(false);
@@ -93,11 +101,13 @@ export default function TasksPage() {
     setError('');
     try {
       const params = new URLSearchParams();
-      if (f.status !== ALL) params.set('status', f.status);
+      if (f.status !== ALL && f.status !== FINISHED) params.set('status', f.status);
       if (f.client !== ALL) params.set('clientId', f.client);
       const qs = params.toString();
       const res = await apiFetch<TaskListResponse>(`/tasks${qs ? `?${qs}` : ''}`);
-      setTasks(res.tasks);
+      setTasks(
+        f.status === FINISHED ? res.tasks.filter((x) => FINISHED_SET.has(x.status)) : res.tasks,
+      );
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
         router.replace('/login');
@@ -124,10 +134,11 @@ export default function TasksPage() {
     setFClient(v);
     void load({ status: fStatus, client: v });
   };
+  // Clearing returns to the screen's default view (finished tasks), not to "all".
   const onClear = () => {
-    setFStatus(ALL);
+    setFStatus(FINISHED);
     setFClient(ALL);
-    void load({ status: ALL, client: ALL });
+    void load({ status: FINISHED, client: ALL });
   };
 
   function openCreate() {
@@ -203,7 +214,7 @@ export default function TasksPage() {
         searchPlaceholder={t('searchPlaceholder')}
         initialSort={{ key: 'due', dir: 'asc' }}
         emptyTitle={t('empty')}
-        filtersActive={fStatus !== ALL || fClient !== ALL}
+        filtersActive={fStatus !== FINISHED || fClient !== ALL}
         onClearFilters={onClear}
         // UX-13 — beside the search, no Apply. Names move from a visible
         // <Label> to aria-label, so the row lines up with the search box.
@@ -214,10 +225,17 @@ export default function TasksPage() {
               <Select value={fStatus} onValueChange={(v) => onFilterStatus(v ?? ALL)}>
                 <SelectTrigger id="f-status" className="w-40">
                   <SelectValue>
-                    {(v) => (v === ALL ? t('filterAll') : t(`status.${String(v)}`))}
+                    {(v) =>
+                      v === ALL
+                        ? t('filterAll')
+                        : v === FINISHED
+                          ? t('filterFinished')
+                          : t(`status.${String(v)}`)
+                    }
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value={FINISHED}>{t('filterFinished')}</SelectItem>
                   <SelectItem value={ALL}>{t('filterAll')}</SelectItem>
                   {STATUSES.map((s) => (
                     <SelectItem key={s} value={s}>

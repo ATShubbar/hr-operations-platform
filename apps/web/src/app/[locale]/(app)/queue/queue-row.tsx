@@ -1,132 +1,50 @@
 'use client';
 
 import { useState } from 'react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { Check, ChevronDown, ClipboardList, MessageSquare, Stamp } from 'lucide-react';
-import type { GroProcessResponse, StaffDirectoryEntry } from '@hr/contracts';
-import { Link, useRouter } from '@/i18n/navigation';
-import { apiFetch, ApiError } from '@/lib/api';
-import { useCan } from '@/lib/session';
+import type { StaffDirectoryEntry } from '@hr/contracts';
+import { Link } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { toastSuccess } from '@/components/ui/toast';
 import { DueCell, GroResolve } from '@/components/gro-work-list';
+import { useQueueActions, type QueueItem } from './queue-actions';
 
 // One Work queue row (DS-12): icon, title + reference, "who · client · status",
-// due (with Hijri), the assignee, Snooze and Resolve — the prototype's row.
+// due (with Hijri), the assignee, Snooze and Resolve — the prototype's row. The
+// title opens the work-item dialog (DS-13). Who may do what is decided in
+// queue-actions.ts, shared with the dialog.
 //
-// What each control does depends on the kind of work, because each kind has its
-// own API and rules:
-// - Assignee: procedures (gro.process) and tasks (task.update) are reassigned in
-//   place. A request's assignee only changes together with its status (REQ-03's
-//   `process`), so here it is shown, not edited — reassigning lives on the
-//   Requests screen.
-// - Snooze (owner decision): moves the REAL due date seven days later, through
-//   each kind's own update (audited) — not a view-only hide, so the date shown is
-//   always the date that is actually due. Hidden on undated items.
-// - Resolve: a procedure gets the GRO status control (GRO-03 expiry capture
-//   included), a task is marked done, a request opens on the Requests screen,
-//   where approve / decline live.
-
-export type QueueKind = 'procedure' | 'request' | 'task';
-
-export interface QueueItem {
-  kind: QueueKind;
-  id: string;
-  title: string;
-  ref: string | null;
-  meta: string;
-  clientId: string | null;
-  due: string | null;
-  assigneeUserId: string | null;
-  href: string;
-  gro?: GroProcessResponse;
-  searchText: string[];
-}
+// Resolve depends on the kind: a procedure gets the GRO status control (GRO-03
+// expiry capture included), a task is marked done, a request opens on the
+// Requests screen, where approve / decline live.
 
 const ICON = { procedure: Stamp, request: MessageSquare, task: ClipboardList } as const;
-const ENDPOINT: Record<QueueKind, string> = {
-  procedure: '/gro-processes',
-  request: '/requests',
-  task: '/tasks',
-};
-
-/** YYYY-MM-DD, `days` after the given date (UTC). */
-function addDays(iso: string, days: number) {
-  const d = new Date(`${iso.slice(0, 10)}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + days);
-  return d.toISOString().slice(0, 10);
-}
 
 export function QueueRow({
   item,
   staff,
   onChanged,
+  onOpen,
 }: {
   item: QueueItem;
   /** The people work can be handed to (administrator / HR / GRO officers). */
   staff: readonly StaffDirectoryEntry[];
   onChanged: () => Promise<void> | void;
+  /** Open the work-item dialog (DS-13). */
+  onOpen: () => void;
 }) {
   const t = useTranslations('queue');
   const tr = useTranslations('roles');
-  const locale = useLocale();
-  const router = useRouter();
-  const canGro = useCan('gro.process');
-  const canTask = useCan('task.update');
-  const canRequestUpdate = useCan('request.update');
   const [assignOpen, setAssignOpen] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
-
-  const canAssign = (item.kind === 'procedure' && canGro) || (item.kind === 'task' && canTask);
-  const canSnooze =
-    item.due !== null &&
-    ((item.kind === 'procedure' && canGro) ||
-      (item.kind === 'task' && canTask) ||
-      (item.kind === 'request' && canRequestUpdate));
+  const { busy, error, canAssign, canSnooze, canTask, patch, snooze } = useQueueActions(
+    item,
+    onChanged,
+  );
   const who = staff.find((s) => s.id === item.assigneeUserId);
   const Icon = ICON[item.kind];
-
-  const day = (iso: string) => {
-    const d = new Date(`${iso}T00:00:00Z`);
-    if (locale === 'ar') {
-      return new Intl.DateTimeFormat('ar', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-        timeZone: 'UTC',
-      }).format(d);
-    }
-    const month = new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(d);
-    return `${d.getUTCDate()} ${month} ${d.getUTCFullYear()}`;
-  };
-
-  async function patch(body: Record<string, unknown>, toast: string) {
-    setBusy(true);
-    setError('');
-    try {
-      await apiFetch(`${ENDPOINT[item.kind]}/${item.id}`, {
-        method: 'PATCH',
-        body: JSON.stringify(body),
-      });
-      await onChanged();
-      toastSuccess(toast);
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
-      setError(t('actionError'));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  const snooze = () => {
-    if (!item.due) return;
-    const next = addDays(item.due, 7);
-    void patch({ dueDate: next }, t('snoozed', { date: day(next) }));
-  };
 
   // The prototype shows the assignee's FIRST name over their role — the column
   // is 132px, and the full name is in the picker.
@@ -155,12 +73,13 @@ export function QueueRow({
       </span>
       <span className="flex min-w-0 grow basis-48 flex-col gap-px">
         <span className="flex min-w-0 items-center gap-2">
-          <Link
-            href={item.href}
-            className="truncate text-sm leading-5 font-medium outline-none hover:underline focus-visible:underline"
+          <button
+            type="button"
+            onClick={onOpen}
+            className="truncate text-start text-sm leading-5 font-medium outline-none hover:underline focus-visible:underline"
           >
             {item.title}
-          </Link>
+          </button>
           {item.ref && (
             <bdi dir="ltr" className="shrink-0 font-mono text-[11px] text-neutral-400">
               {item.ref}
@@ -246,7 +165,7 @@ export function QueueRow({
             variant="ghost"
             size="xs"
             disabled={busy}
-            onClick={snooze}
+            onClick={() => void snooze()}
             title={t('snoozeHint')}
           >
             {t('snooze')}
@@ -272,7 +191,7 @@ export function QueueRow({
             size="xs"
             className="w-28"
             nativeButton={false}
-            render={<Link href={item.href} />}
+            render={<Link href={item.recordHref ?? '/requests'} />}
           >
             {t('openRequest')}
           </Button>
