@@ -1274,7 +1274,13 @@ split turning «عبد الله» into «عبد». No API change.
 `/employees/:id?tab=leave`), the Person record's Leave tab (balance bar, four figures, carried/pending notes, history across
 years, Request leave pre-selected), Settings → System **Run carry-over** (Administrator). The Person record now honours
 `?tab=`. Figures matched hand-worked balances for three people; carry-over ran twice (36 credited → 36 already). No API
-change. Next: **LEAVE-06** (My leave for employees + nav counts + UAT seed).
+change.
+**LEAVE-06 done — the Leave epic (ADR-014) is COMPLETE (LEAVE-00..06).** `(app)/me/leave` (My leave: own requests +
+Withdraw, My balance over `/me/leave/balance`, self-mode Request leave), the detail pane extracted to `leaves/leave-detail.tsx`
+with an `audience`, nav badges (client manager → pending, staff → approved), a seeded leave scenario relative to today
+(away today, a clash, an overdrawn person, carry-over, last year) + **`flag.employee-self-service` ON for seed company A**,
+and a leave step in the UAT smoke check. Note: `configuration-client.e2e` deletes EVERY client setting — locally, re-seed
+after the suite to get the flag back. API 580/580.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

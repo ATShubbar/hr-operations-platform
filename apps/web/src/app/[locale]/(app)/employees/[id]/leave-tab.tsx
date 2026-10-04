@@ -26,7 +26,17 @@ import { RequestLeaveDialog } from '../../leaves/request-leave-dialog';
 // History lists every filed spell, newest first, across years; a spell crossing
 // 31 December appears as its two parts under one reference (owner decision —
 // split by day).
-export function LeaveTab({ employeeId, terminated }: { employeeId: string; terminated: boolean }) {
+export function LeaveTab({
+  employeeId,
+  terminated,
+  endpoint,
+}: {
+  employeeId: string;
+  terminated: boolean;
+  // Where the balance comes from: staff/client managers read
+  // /leave/balances/:id; an employee reads their own /me/leave/balance (LEAVE-06).
+  endpoint?: string;
+}) {
   const t = useTranslations('leaves');
   const tp = useTranslations('leaves.person');
   const locale = useLocale() as Locale;
@@ -39,7 +49,7 @@ export function LeaveTab({ employeeId, terminated }: { employeeId: string; termi
   async function load() {
     setError('');
     try {
-      setData(await apiFetch<EmployeeLeaveResponse>(`/leave/balances/${employeeId}`));
+      setData(await apiFetch<EmployeeLeaveResponse>(endpoint ?? `/leave/balances/${employeeId}`));
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
       setError(tp('error'));
@@ -48,7 +58,7 @@ export function LeaveTab({ employeeId, terminated }: { employeeId: string; termi
 
   useEffect(() => {
     void load();
-  }, [employeeId]);
+  }, [employeeId, endpoint]);
 
   if (error) return <LoadError message={error} onRetry={() => void load()} hasContent={false} />;
   if (!data) {

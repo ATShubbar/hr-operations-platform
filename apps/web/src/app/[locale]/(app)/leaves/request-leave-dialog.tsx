@@ -7,7 +7,14 @@ import { formatHijri } from '@hr/dates';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import type { Locale } from '@/lib/employee-format';
-import { LEAVE_CAP, LEAVE_TYPES, addDays, deductsBalance, leaveDate, riyadhToday } from '@/lib/leave';
+import {
+  LEAVE_CAP,
+  LEAVE_TYPES,
+  addDays,
+  deductsBalance,
+  leaveDate,
+  riyadhToday,
+} from '@/lib/leave';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -19,7 +26,13 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 
 type Person = LeaveBalanceListResponse['balances'][number];
@@ -35,6 +48,7 @@ export function RequestLeaveDialog({
   people,
   onSubmitted,
   preselect,
+  self = false,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -42,6 +56,8 @@ export function RequestLeaveDialog({
   onSubmitted: (row: LeaveResponse) => void;
   // The person the dialog opens for (LEAVE-05: from their record's Leave tab).
   preselect?: string;
+  // An employee raising their own (LEAVE-06): no "who" picker, POST /me/leave.
+  self?: boolean;
 }) {
   const t = useTranslations('leaves');
   const td = useTranslations('leaves.dialog');
@@ -93,10 +109,10 @@ export function RequestLeaveDialog({
     setSaving(true);
     setError('');
     try {
-      const row = await apiFetch<LeaveResponse>('/leave', {
+      const row = await apiFetch<LeaveResponse>(self ? '/me/leave' : '/leave', {
         method: 'POST',
         body: JSON.stringify({
-          employeeId: form.employeeId,
+          ...(self ? {} : { employeeId: form.employeeId }),
           type: form.type,
           startDate: form.startDate,
           days: want,
@@ -132,7 +148,10 @@ export function RequestLeaveDialog({
         <form onSubmit={submit} className="flex flex-col gap-3.5">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="lv-type">{td('type')}</Label>
-            <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: (v ?? 'annual') as LeaveType })}>
+            <Select
+              value={form.type}
+              onValueChange={(v) => setForm({ ...form, type: (v ?? 'annual') as LeaveType })}
+            >
               <SelectTrigger id="lv-type" className="w-full">
                 <SelectValue>{(v) => t(`type.${String(v)}`)}</SelectValue>
               </SelectTrigger>
@@ -147,26 +166,31 @@ export function RequestLeaveDialog({
             <p className="text-xs leading-4 text-muted-foreground">{t(`basis.${form.type}`)}</p>
           </div>
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="lv-who">{td('who')}</Label>
-            <Select value={form.employeeId} onValueChange={(v) => setForm({ ...form, employeeId: v ?? '' })}>
-              <SelectTrigger id="lv-who" className="w-full">
-                <SelectValue placeholder={td('choose')}>
-                  {(v) => {
-                    const p = people.find((x) => x.employee.id === v);
-                    return p ? name(p) : td('choose');
-                  }}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {people.map((p) => (
-                  <SelectItem key={p.employee.id} value={p.employee.id}>
-                    {name(p)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {!self && (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="lv-who">{td('who')}</Label>
+              <Select
+                value={form.employeeId}
+                onValueChange={(v) => setForm({ ...form, employeeId: v ?? '' })}
+              >
+                <SelectTrigger id="lv-who" className="w-full">
+                  <SelectValue placeholder={td('choose')}>
+                    {(v) => {
+                      const p = people.find((x) => x.employee.id === v);
+                      return p ? name(p) : td('choose');
+                    }}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {people.map((p) => (
+                    <SelectItem key={p.employee.id} value={p.employee.id}>
+                      {name(p)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-[120px_1fr]">
             <div className="flex flex-col gap-1.5">

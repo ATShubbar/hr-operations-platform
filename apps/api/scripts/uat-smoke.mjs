@@ -162,6 +162,32 @@ async function main() {
     }
   }
 
+  // Leave (LEAVE-06): HR raises for one of company A's people, the client
+  // manager approves, HR files — the employer-decides / PEOPLE&GRO-files flow.
+  if (cm && hr) {
+    const people = await call('/leave/balances', { cookie: hr });
+    const someone = people.json?.balances?.find((b) => b.employee.clientId === CLIENT_A)?.employee;
+    check(Boolean(someone), 'leave: balances list a company-A employee', `HTTP ${people.status}`);
+    if (someone) {
+      const start = new Date(Date.now() + 60 * 86_400_000).toISOString().slice(0, 10);
+      const raisedLeave = await call('/leave', {
+        cookie: hr,
+        method: 'POST',
+        body: { employeeId: someone.id, type: 'annual', startDate: start, days: 1, details: 'UAT smoke check' },
+      });
+      check(raisedLeave.status === 201, 'leave: raised by HR', `HTTP ${raisedLeave.status}`);
+      if (raisedLeave.json?.id) {
+        const id = raisedLeave.json.id;
+        const approvedLeave = await call(`/leave/${id}/approve`, { cookie: cm, method: 'POST' });
+        check(approvedLeave.json?.status === 'approved', 'leave: approved by the client manager', `HTTP ${approvedLeave.status}`);
+        const refused = await call(`/leave/${id}/file`, { cookie: cm, method: 'POST' });
+        check(refused.status === 403, 'leave: the client manager cannot file', `HTTP ${refused.status}`);
+        const filed = await call(`/leave/${id}/file`, { cookie: hr, method: 'POST' });
+        check(filed.json?.status === 'filed', 'leave: filed by HR', `HTTP ${filed.status}`);
+      }
+    }
+  }
+
   for (const cookie of Object.values(sessions)) {
     await call('/auth/logout', { cookie, method: 'POST' });
   }

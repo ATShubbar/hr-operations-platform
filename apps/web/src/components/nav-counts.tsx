@@ -1,11 +1,11 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import type { RequestListResponse, TaskListResponse } from '@hr/contracts';
+import type { LeaveListResponse, RequestListResponse, TaskListResponse } from '@hr/contracts';
 import { apiFetch } from '@/lib/api';
 import { useCan, useSession } from '@/lib/session';
 
-// Counts beside two nav rows (DS-02): requests waiting to be picked up, and the
+// Counts beside nav rows (DS-02; Leaves since LEAVE-06): requests waiting to be picked up, and the
 // caller's own unfinished tasks. Both come from list endpoints that already
 // exist — no API change — and both are the same question the screen itself
 // answers, so the number in the nav can never disagree with the screen.
@@ -19,7 +19,7 @@ import { useCan, useSession } from '@/lib/session';
 // already renders for roles without the permission. An error banner over the
 // navigation for a hint would be out of all proportion.
 
-export type NavCounts = { requests?: number; tasks?: number };
+export type NavCounts = { requests?: number; tasks?: number; leave?: number };
 
 const NavCountsContext = createContext<NavCounts>({});
 
@@ -35,6 +35,11 @@ export function NavCountsProvider({ children }: { children: ReactNode }) {
   const isStaff = me.principalType === 'staff';
   const canRequests = useCan('request.read') && isStaff;
   const canTasks = useCan('task.read') && isStaff;
+  // Leave (LEAVE-06): the prototype's badge counts what THIS role still has to
+  // do — a client manager decides (`pending`), PEOPLE&GRO files (`approved`).
+  // Both hold leave.read; employees don't (and the prototype shows them none).
+  const leaveStatus = me.principalType === 'client_rep' ? 'pending' : isStaff ? 'approved' : null;
+  const canLeave = useCan('leave.read') && leaveStatus !== null;
   const [counts, setCounts] = useState<NavCounts>({});
 
   useEffect(() => {
@@ -66,10 +71,16 @@ export function NavCountsProvider({ children }: { children: ReactNode }) {
         .catch(() => {});
     }
 
+    if (canLeave) {
+      apiFetch<LeaveListResponse>(`/leave?status=${leaveStatus}`)
+        .then((res) => !cancelled && setCounts((c) => ({ ...c, leave: res.leave.length })))
+        .catch(() => {});
+    }
+
     return () => {
       cancelled = true;
     };
-  }, [canRequests, canTasks, me.userId]);
+  }, [canRequests, canTasks, canLeave, leaveStatus, me.userId]);
 
   return <NavCountsContext.Provider value={counts}>{children}</NavCountsContext.Provider>;
 }

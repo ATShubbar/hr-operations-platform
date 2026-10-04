@@ -89,7 +89,8 @@
     "rolesAndPermissions": "Roles and permissions",
     "auditTrail": "Audit trail",
     "savedViews": "Saved views",
-    "myLeave": "My leave"
+    "myLeave": "My leave",
+    "countLeave": "{count, plural, =0 {No leave waiting on you} one {# leave request waiting on you} other {# leave requests waiting on you}}"
   },
   "documents": {
     "category": {
@@ -1074,8 +1075,6 @@
     "loading": "Loading…",
     "terminal": "No further steps",
     "comingSoon": "Coming soon",
-    "leavesSoon": "Leave requests, approvals and balances will live here: an employee asks, the client endorses, the team approves and files it.",
-    "myLeaveSoon": "You'll be able to request leave here and see your balance and history.",
     "soon": "Soon"
   },
   "staffUsers": {
@@ -1874,7 +1873,8 @@
       "filed": "Filed and recorded against the employee.",
       "declined": "Declined. Nothing was recorded.",
       "withdrawn": "Withdrawn by the person who raised it. Nothing was recorded.",
-      "theEmployer": "the employer"
+      "theEmployer": "the employer",
+      "pendingEmployee": "With the employer for a decision."
     },
     "annualBalance": "Annual balance",
     "balanceLine": "{available} of {total} days available",
@@ -1973,6 +1973,14 @@
       "confirm": "Credit unused annual leave from {from} into {year}? It's safe to run again — anyone already credited for {year} is skipped.",
       "done": "{year}: {credited} credited · {already} already credited · {nothing} with nothing to carry.",
       "error": "The carry-over didn't run. Try again."
+    },
+    "mine": {
+      "title": "My leave",
+      "summary": "{onFile, plural, one {# request} other {# requests}} on file · {awaiting} awaiting a decision",
+      "balanceTab": "My balance",
+      "emptyTitle": "No leave yet",
+      "empty": "Request leave here; your employer decides, then People & Gro records it.",
+      "submitted": "{ref} submitted · with your employer for a decision."
     }
   }
 }

@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient, Prisma } from '../src/generated/prisma/client';
 import { SEED_USER_DOMAIN, seedEmailFor, seedPasswordFor, UAT_SEED_EMAILS } from './seed-guard';
+import { leaveEndDate, splitByYear } from '../src/modules/leave/public-api';
 import {
   CLIENT_ROLES,
   PasswordService,
@@ -592,6 +593,161 @@ async function purgeOrphanNotifications(prisma: PrismaClient): Promise<number> {
   return count;
 }
 
+// Leave (LEAVE-06, ADR-014): one company's worth of every leave state, placed
+// relative to today like everything else here — someone away today, an
+// overlapping pair (the clash note), the employee account's own pending request,
+// one person overdrawn, carry-over credits and last year's leave — so the Leaves
+// screen, the Balances tab, the Person Leave tab and My leave all show real
+// figures. Filed spells write their ledger entries the way filing does (split
+// by leave year), so the seed is right whatever day it runs.
+async function seedLeave(prisma: PrismaClient): Promise<number> {
+  const id = async (local: string) =>
+    (await prisma.authUser.findUnique({ where: { email: seedEmail(local) } }))?.id ?? null;
+  const [hr, repA, repB, employeeUser] = await Promise.all([
+    id('staff-hr_officer'),
+    id('client_manager-a'),
+    id('client_manager-b'),
+    id('employee-a'),
+  ]);
+  if (!hr || !repA || !repB || !employeeUser) return 0; // accounts not seeded → skip
+
+  // Idempotency: replace exactly the leave of the seeded people.
+  const seeded = EMPLOYEES.map(([, empId]) => empId);
+  await prisma.leaveEntry.deleteMany({ where: { employeeId: { in: seeded } } });
+  await prisma.leaveRequest.deleteMany({ where: { employeeId: { in: seeded } } });
+
+  const A = (n: number) => `e0000001-0000-4000-8000-${String(n).padStart(12, '0')}`;
+  const B1 = 'e0000002-0000-4000-8000-000000000001';
+  const year = new Date().getUTCFullYear();
+  type Spec = {
+    emp: string;
+    client: string;
+    type: 'annual' | 'sick' | 'marriage';
+    start: Date;
+    days: number;
+    status: 'pending' | 'approved' | 'declined' | 'withdrawn' | 'filed';
+    raisedBy: string;
+    selfRaised?: boolean;
+    decidedBy?: string;
+    details?: string;
+  };
+  const specs: Spec[] = [
+    // Away today (5 of 7 days), filed; 30 days a year (hired 7 years ago).
+    { emp: A(5), client: SEED_CLIENT_A, type: 'annual', start: daysFromNow(-2), days: 7, status: 'filed', raisedBy: repA, decidedBy: repA, details: 'Family visit. Cover agreed with the sales team.' },
+    // The employee account's own request, waiting on the employer.
+    { emp: A(2), client: SEED_CLIENT_A, type: 'annual', start: daysFromNow(21), days: 5, status: 'pending', raisedBy: employeeUser, selfRaised: true, details: 'Trip home after the quarter close.' },
+    // Ahmed's leave earlier this year, filed.
+    { emp: A(2), client: SEED_CLIENT_A, type: 'annual', start: daysFromNow(-60), days: 3, status: 'filed', raisedBy: hr, decidedBy: repA },
+    // Approved, awaiting filing — and overlapping the next one (the clash).
+    { emp: A(3), client: SEED_CLIENT_A, type: 'annual', start: daysFromNow(9), days: 4, status: 'approved', raisedBy: repA, decidedBy: repA, details: 'Wedding of a sibling.' },
+    { emp: A(9), client: SEED_CLIENT_A, type: 'annual', start: daysFromNow(10), days: 4, status: 'pending', raisedBy: hr, details: 'Short break; support rota covered by the vendor.' },
+    // Sick leave waiting on the employer.
+    { emp: A(6), client: SEED_CLIENT_A, type: 'sick', start: daysFromNow(3), days: 2, status: 'pending', raisedBy: hr, details: 'Planned minor procedure; certificate to follow.' },
+    // Overdrawn: 25 days taken against ~18 accrued — the excess is unpaid.
+    { emp: A(7), client: SEED_CLIENT_A, type: 'annual', start: daysFromNow(-90), days: 25, status: 'filed', raisedBy: repA, decidedBy: repA, details: 'Extended family leave, agreed as partly unpaid.' },
+    // Last-quarter leave for the long-serving supervisor.
+    { emp: A(1), client: SEED_CLIENT_A, type: 'annual', start: daysFromNow(-120), days: 10, status: 'filed', raisedBy: hr, decidedBy: repA },
+    // Declined, and withdrawn.
+    { emp: A(12), client: SEED_CLIENT_A, type: 'marriage', start: daysFromNow(30), days: 5, status: 'declined', raisedBy: hr, decidedBy: repA },
+    { emp: A(8), client: SEED_CLIENT_A, type: 'annual', start: daysFromNow(40), days: 6, status: 'withdrawn', raisedBy: repA },
+    // The other company: one pending request of its own.
+    { emp: B1, client: SEED_CLIENT_B, type: 'annual', start: daysFromNow(14), days: 3, status: 'pending', raisedBy: repB, details: 'Eid travel.' },
+  ];
+
+  const now = new Date();
+  let n = 0;
+  for (const s of specs) {
+    const decided = s.status !== 'pending' && s.status !== 'withdrawn';
+    const row = await prisma.leaveRequest.create({
+      data: {
+        clientId: s.client,
+        employeeId: s.emp,
+        type: s.type,
+        startDate: s.start,
+        days: s.days,
+        endDate: leaveEndDate(s.start, s.days),
+        details: s.details ?? null,
+        status: s.status,
+        raisedByUserId: s.raisedBy,
+        raisedByEmployeeId: s.selfRaised ? s.emp : null,
+        decidedByUserId: decided ? (s.decidedBy ?? repA) : null,
+        decidedAt: decided ? now : null,
+        filedByUserId: s.status === 'filed' ? hr : null,
+        filedAt: s.status === 'filed' ? now : null,
+        withdrawnAt: s.status === 'withdrawn' ? now : null,
+      },
+    });
+    if (s.status === 'filed') {
+      await prisma.leaveEntry.createMany({
+        data: splitByYear(s.start, s.days).map((part) => ({
+          clientId: s.client,
+          employeeId: s.emp,
+          requestId: row.id,
+          kind: 'taken' as const,
+          type: s.type,
+          startDate: part.startDate,
+          endDate: part.endDate,
+          days: part.days,
+          leaveYear: part.leaveYear,
+          createdByUserId: hr,
+        })),
+      });
+    }
+    n += 1;
+  }
+
+  // Carried into this year (what the 1 January job would have credited), and a
+  // spell from last year so the history spans years.
+  await prisma.leaveEntry.createMany({
+    data: [
+      { clientId: SEED_CLIENT_A, employeeId: A(1), kind: 'carried' as const, type: 'annual' as const, days: 6, leaveYear: year },
+      { clientId: SEED_CLIENT_A, employeeId: A(5), kind: 'carried' as const, type: 'annual' as const, days: 10, leaveYear: year },
+    ],
+  });
+  const lastYear = await prisma.leaveRequest.create({
+    data: {
+      clientId: SEED_CLIENT_A,
+      employeeId: A(1),
+      type: 'annual',
+      startDate: new Date(Date.UTC(year - 1, 5, 1)),
+      days: 15,
+      endDate: leaveEndDate(new Date(Date.UTC(year - 1, 5, 1)), 15),
+      status: 'filed',
+      raisedByUserId: hr,
+      decidedByUserId: repA,
+      decidedAt: now,
+      filedByUserId: hr,
+      filedAt: now,
+    },
+  });
+  await prisma.leaveEntry.create({
+    data: {
+      clientId: SEED_CLIENT_A,
+      employeeId: A(1),
+      requestId: lastYear.id,
+      kind: 'taken',
+      type: 'annual',
+      startDate: lastYear.startDate,
+      endDate: lastYear.endDate,
+      days: 15,
+      leaveYear: year - 1,
+      createdByUserId: hr,
+    },
+  });
+  return n + 1;
+}
+
+// Employee self-service (ADR-011) is per company and off by default. The seed
+// switches it on for company A, so the seeded employee account can use My file /
+// My leave on UAT (LEAVE-06). The e2e suites make their own companies.
+async function seedSelfServiceFlag(prisma: PrismaClient): Promise<void> {
+  await prisma.clientSetting.upsert({
+    where: { clientId_key: { clientId: SEED_CLIENT_A, key: 'flag.employee-self-service' } },
+    update: { value: true },
+    create: { clientId: SEED_CLIENT_A, key: 'flag.employee-self-service', value: true },
+  });
+}
+
 async function main(): Promise<void> {
   const prisma = new PrismaClient({
     adapter: new PrismaPg(process.env.DATABASE_URL ?? ''),
@@ -622,6 +778,8 @@ async function main(): Promise<void> {
     const candidateCount = await seedCandidates(prisma);
     const groCount = await seedGroProcesses(prisma);
     const calendarCount = await seedCalendarEvents(prisma);
+    const leaveCount = await seedLeave(prisma);
+    await seedSelfServiceFlag(prisma);
     const purgedNotifications = await purgeOrphanNotifications(prisma);
     const notificationCount = await seedNotifications(prisma);
 
@@ -630,7 +788,7 @@ async function main(): Promise<void> {
     });
     const rolesCovered = new Set(STAFF_ACCOUNTS.map((a) => a.role)).size + 1 + 1; // + client_manager + employee
     process.stdout.write(
-      `Seed complete: ${clientCount} client companies; ${employeeCount} employees; ${documentCount} documents; ${requestCount} requests; ${taskCount} tasks; ${vacancyCount} vacancies; ${candidateCount} candidates; ${groCount} GRO processes; ${calendarCount} calendar events; ${rowCount} scope-check rows ` +
+      `Seed complete: ${clientCount} client companies; ${employeeCount} employees; ${documentCount} documents; ${requestCount} requests; ${taskCount} tasks; ${vacancyCount} vacancies; ${candidateCount} candidates; ${groCount} GRO processes; ${calendarCount} calendar events; ${leaveCount} leave requests; ${rowCount} scope-check rows ` +
         `${notificationCount} notifications (purged ${purgedNotifications} orphans); ` +
         `across clients A (${SEED_CLIENT_A}) and B (${SEED_CLIENT_B}); ${userCount} auth users ` +
         `(${STAFF_ACCOUNTS.length} staff + ${CLIENT_REP_ASSIGNMENTS.length} client managers + 1 employee, ` +

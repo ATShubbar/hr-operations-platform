@@ -164,7 +164,17 @@ export function AppNav({
               { href: '/overview', label: t('nav.overview'), icon: LayoutGrid },
               // LEAVE-04: the prototype gives client managers Leaves (approving
               // their own people's requests is theirs to do).
-              ...(canLeave ? [{ href: '/leaves', label: t('nav.leaves'), icon: Plane }] : []),
+              ...(canLeave
+                ? [
+                    {
+                      href: '/leaves',
+                      label: t('nav.leaves'),
+                      icon: Plane,
+                      count: counts.leave,
+                      countLabel: t('nav.countLeave', { count: counts.leave ?? 0 }),
+                    },
+                  ]
+                : []),
               { href: '/portal/company', label: t('nav.portalCompany'), icon: Building2 },
               { href: '/portal/employees', label: t('nav.portalEmployees'), icon: UsersRound },
               { href: '/portal/documents', label: t('nav.portalDocuments'), icon: FileText },
@@ -212,7 +222,17 @@ export function AppNav({
                     },
                   ]
                 : []),
-              ...(canLeave ? [{ href: '/leaves', label: t('nav.leaves'), icon: Plane }] : []),
+              ...(canLeave
+                ? [
+                    {
+                      href: '/leaves',
+                      label: t('nav.leaves'),
+                      icon: Plane,
+                      count: counts.leave,
+                      countLabel: t('nav.countLeave', { count: counts.leave ?? 0 }),
+                    },
+                  ]
+                : []),
               ...(canEmployees
                 ? [{ href: '/employees', label: t('nav.people'), icon: Users }]
                 : []),
