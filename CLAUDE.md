@@ -1128,6 +1128,13 @@ Add a user; client + employee accounts linked to where they're managed). **API: 
 `ROLE_PERMISSIONS` as-is + ACTIVE account counts — no second copy of the matrix anywhere. Test
 imports must go through `modules/auth/public-api` (the boundary lint caught a deep import). API
 **511/511** ×2.
+**DS-20 done — My file.** `/me` is the prototype's: header card (avatar lg, names, job · company ·
+joined), **documents by TYPE** (iqama/permit/contract/passport dated from the RECORD, file = the
+matching available document → Download; unmatched uploads keep their own rows — DS-07's rule on the
+employee side), identifiers + pay side by side, a requests strip. At 375 a fixed-column table clipped
+the chip inside its card while the PAGE showed 0 overflow — measure a table against its CARD, not
+only the page. **Found:** seeded documents have NO objects in MinIO (Download → `NoSuchKey` on seed
+data; real uploads work) — SEED-01 follow-up. No API change.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

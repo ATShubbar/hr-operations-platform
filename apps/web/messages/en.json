@@ -1359,8 +1359,6 @@
     "noDocuments": "No documents on file yet.",
     "download": "Download",
     "downloadFailed": "Couldn't prepare the download. Try again.",
-    "expired": "Expired",
-    "daysLeft": "{days, plural, =0 {Expires today} one {# day left} other {# days left}}",
     "myIdentifiers": "My identifiers",
     "myPay": "My pay",
     "noneOnFile": "None on file.",
@@ -1384,7 +1382,11 @@
     "raised": "Request sent: {title}",
     "raisedOn": "raised {date}",
     "notEnabledTitle": "Not available yet",
-    "notEnabled": "Your employer hasn't turned on self-service for your company. Contact HR if you need something."
+    "notEnabled": "Your employer hasn't turned on self-service for your company. Contact HR if you need something.",
+    "colDocument": "Document",
+    "colExpires": "Expires",
+    "colLeft": "Left",
+    "gosiStatus": "GOSI registration"
   },
   "header": {
     "searchPlaceholder": "Search people, refs, ID numbers"

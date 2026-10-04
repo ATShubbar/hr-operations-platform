@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import type {
   DownloadResponse,
@@ -11,24 +11,16 @@ import type {
 } from '@hr/contracts';
 import { Link } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
-import {
-  CONTRACT_TYPE_KEY,
-  EXIT_REENTRY_KEY,
-  GOSI_REG_KEY,
-  dualDate,
-  type Locale,
-} from '@/lib/employee-format';
-import { EXPIRY_TONE, expirySeverity } from '@/lib/status-tone';
+import { formatHijri } from '@hr/dates';
+import { chipClass, daysTo } from '@/lib/employee-docs';
+import { EXIT_REENTRY_KEY, GOSI_REG_KEY, type Locale } from '@/lib/employee-format';
 import { cn } from '@/lib/utils';
-import { Button, buttonVariants } from '@/components/ui/button';
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { LoadError } from '@/components/ui/load-state';
 import { Skeleton, SkeletonRegion } from '@/components/ui/skeleton';
-import { StatusPill } from '@/components/ui/status-pill';
 import { RaiseRequestDialog } from './raise-request-dialog';
-
-const DAY_MS = 86_400_000;
 
 type Loaded = {
   profile: SelfProfileResponse;
@@ -36,14 +28,16 @@ type Loaded = {
   openRequests: number;
 };
 
-// "My file" (SS-07) — the employee's own record, the prototype's isMe screen,
-// built PHONE-FIRST: one column at 375px, two only where a field list has room.
+// "My file" (SS-07; DS-20 brought it to the prototype's layout) — the employee's
+// own record, the prototype's isMe screen, built PHONE-FIRST: one column at
+// 375px, two only where a field list has room.
 // Everything comes from the /me* API (SS-03/04/05), already fenced to this one
 // employee by the database; this page only arranges it.
 export default function MyFilePage() {
   const t = useTranslations('me');
   const tEmp = useTranslations('employees');
   const tDoc = useTranslations('documents');
+  const tPeople = useTranslations('people');
   const tStates = useTranslations('states');
   const locale = useLocale() as Locale;
 
@@ -130,7 +124,24 @@ export default function MyFilePage() {
       ? (profile.jobTitle.ar ?? profile.jobTitle.en)
       : (profile.jobTitle.en ?? profile.jobTitle.ar);
   const company = locale === 'ar' ? profile.company.ar : profile.company.en;
-  const joined = dualDate(profile.hireDate, locale);
+
+  // The prototype's "11 Aug 2026": day, three-letter month, year (en-GB would
+  // print "Sept"); Arabic uses its own month names in the same order.
+  const shortDate = (iso: string) => {
+    const d = new Date(`${iso.slice(0, 10)}T00:00:00Z`);
+    if (locale === 'ar') {
+      return new Intl.DateTimeFormat('ar', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        timeZone: 'UTC',
+      }).format(d);
+    }
+    const month = new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(d);
+    return `${d.getUTCDate()} ${month} ${d.getUTCFullYear()}`;
+  };
+  const chipText = (days: number) =>
+    days < 0 ? tPeople('over', { n: Math.abs(days) }) : tPeople('left', { n: days });
 
   const money = (n: number | null) =>
     n == null
@@ -141,26 +152,70 @@ export default function MyFilePage() {
           maximumFractionDigits: 2,
         }).format(n);
 
+  // ---- My documents: one row per document TYPE (DS-20) ----
+  // The prototype's rows are the person's documents by type, dated from the
+  // RECORD — the DS-07 rule on the staff side: the record's date is the
+  // authority, the file is the matching available document (the one valid
+  // longest). Uploaded files that match no type keep a row of their own, so
+  // nothing an employee could download before is lost.
   const ids = profile.identifiers;
-  const identifiers: Array<[string, ReactNode, string | null]> = [
-    [tEmp('fieldIqama'), ids.iqamaNumber, dualDate(ids.iqamaExpiry, locale)],
-    [tEmp('fieldNationalId'), ids.nationalId, null],
-    [tEmp('fieldPassport'), ids.passportNumber, dualDate(ids.passportExpiry, locale)],
-    [tEmp('fieldBorder'), ids.borderNumber, null],
-    [tEmp('fieldWorkPermit'), ids.workPermitNumber, dualDate(ids.workPermitExpiry, locale)],
+  const saudi = profile.nationality.toUpperCase() === 'SA';
+  const usedFiles = new Set<string>();
+  const fileFor = (categories: readonly string[]) => {
+    const f =
+      documents
+        .filter((d) => categories.includes(d.category))
+        .sort((a, b) => (b.expiryDate ?? '').localeCompare(a.expiryDate ?? ''))[0] ?? null;
+    if (f) usedFiles.add(f.id);
+    return f;
+  };
+  const typeRows = (
     [
-      tEmp('fieldGosiRegNo'),
-      ids.gosiRegistrationNumber,
-      ids.gosiRegistrationStatus
-        ? tEmp(GOSI_REG_KEY[ids.gosiRegistrationStatus as keyof typeof GOSI_REG_KEY])
-        : null,
-    ],
-  ].filter(([, value]) => value) as Array<[string, ReactNode, string | null]>;
+      ['iqama', saudi ? null : ids.iqamaExpiry, ['iqama', 'national_id']],
+      ['permit', saudi ? null : ids.workPermitExpiry, []],
+      ['contract', profile.contractEndDate, ['contract']],
+      ['passport', ids.passportExpiry, ['passport']],
+    ] as const
+  )
+    .map(([key, recordIso, categories]) => {
+      const file = fileFor(categories);
+      const iso = recordIso ?? file?.expiryDate ?? null;
+      return { key, label: tPeople(`doc.${key}`), iso, file };
+    })
+    .filter((r) => r.iso || r.file);
+  const otherRows = documents
+    .filter((d) => !usedFiles.has(d.id))
+    .map((d) => ({
+      key: d.id,
+      label: d.title || tDoc(`category.${d.category}`),
+      iso: d.expiryDate,
+      file: d,
+    }));
+  const docRows = [...typeRows, ...otherRows];
+
+  const identifiers: Array<[string, string]> = [
+    [tEmp('fieldIqama'), ids.iqamaNumber],
+    [tEmp('fieldNationalId'), ids.nationalId],
+    [tEmp('fieldPassport'), ids.passportNumber],
+    [tEmp('fieldBorder'), ids.borderNumber],
+    [tEmp('fieldWorkPermit'), ids.workPermitNumber],
+    [tEmp('fieldGosiRegNo'), ids.gosiRegistrationNumber],
+  ].filter((row): row is [string, string] => Boolean(row[1]));
+  if (ids.gosiRegistrationStatus) {
+    identifiers.push([
+      t('gosiStatus'),
+      tEmp(GOSI_REG_KEY[ids.gosiRegistrationStatus as keyof typeof GOSI_REG_KEY]),
+    ]);
+  }
   if (ids.exitReentryStatus && ids.exitReentryStatus !== 'none') {
     identifiers.push([
       tEmp('fieldExitReentry'),
-      tEmp(EXIT_REENTRY_KEY[ids.exitReentryStatus as keyof typeof EXIT_REENTRY_KEY]),
-      dualDate(ids.exitReentryExpiry, locale),
+      [
+        tEmp(EXIT_REENTRY_KEY[ids.exitReentryStatus as keyof typeof EXIT_REENTRY_KEY]),
+        ids.exitReentryExpiry ? shortDate(ids.exitReentryExpiry) : null,
+      ]
+        .filter(Boolean)
+        .join(' · '),
     ]);
   }
 
@@ -173,25 +228,48 @@ export default function MyFilePage() {
     [tEmp('fieldIban'), profile.pay.bankIbanLast4 ? `•••• ${profile.pay.bankIbanLast4}` : null],
   ].filter((row): row is [string, string] => Boolean(row[1]));
 
+  const factList = (rows: Array<[string, string]>, mono: boolean) =>
+    rows.length === 0 ? (
+      <p className="text-[13px] text-muted-foreground">{t('noneOnFile')}</p>
+    ) : (
+      <dl className="flex flex-col gap-[9px]">
+        {rows.map(([label, value]) => (
+          <div key={label} className="flex items-baseline gap-2">
+            <dt className="grow text-xs leading-4 text-muted-foreground">{label}</dt>
+            <dd className={cn('text-end text-xs', mono && 'font-mono')}>
+              <bdi dir={mono ? 'ltr' : undefined}>{value}</bdi>
+            </dd>
+          </div>
+        ))}
+      </dl>
+    );
+
   return (
-    <div className="space-y-6">
+    <div className="flex max-w-[1000px] flex-col gap-4">
       {/* ---- Who ---- */}
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0 space-y-1">
-          <h1 className="text-2xl font-semibold">{name}</h1>
-          <p className="text-sm text-muted-foreground">
-            <bdi>{otherName}</bdi>
-          </p>
-          <p className="text-sm">
-            {[job, company, joined ? t('joined', { date: joined }) : null]
+      <div className="flex flex-wrap items-start gap-4 rounded-xl bg-card px-5 py-[18px] ring-1 ring-foreground/10">
+        <Avatar name={profile.name.en} size="lg" />
+        <div className="flex min-w-0 grow basis-48 flex-col gap-[3px]">
+          <h1 className="text-[22px] leading-[30px] font-semibold tracking-[-0.01em]">{name}</h1>
+          <span
+            dir={locale === 'ar' ? 'ltr' : 'rtl'}
+            className="w-fit text-[13px] leading-[18px] text-muted-foreground"
+          >
+            {otherName}
+          </span>
+          <span className="text-[13px] leading-[18px] text-neutral-700">
+            {[
+              job,
+              company,
+              profile.hireDate ? t('joined', { date: shortDate(profile.hireDate) }) : null,
+            ]
               .filter(Boolean)
               .join(' · ')}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {tEmp(CONTRACT_TYPE_KEY[profile.contractType])}
-          </p>
+          </span>
         </div>
-        <Button onClick={() => setRaiseOpen(true)}>{t('raise')}</Button>
+        <Button size="sm" className="shrink-0" onClick={() => setRaiseOpen(true)}>
+          {t('raise')}
+        </Button>
       </div>
       {notice && (
         <p role="status" className="text-sm text-muted-foreground">
@@ -200,120 +278,140 @@ export default function MyFilePage() {
       )}
 
       {/* ---- My documents ---- */}
-      <Card>
-        <CardHeader className="border-b">
-          <CardTitle>{t('myDocuments')}</CardTitle>
-          <p className="text-sm text-muted-foreground">{t('documentsNote')}</p>
-        </CardHeader>
-        <CardContent>
-          {documents.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{t('noDocuments')}</p>
-          ) : (
-            <ul className="divide-y">
-              {documents.map((d) => {
-                const days = d.expiryDate
-                  ? Math.floor(
-                      (Date.parse(d.expiryDate) -
-                        Date.parse(new Date().toISOString().slice(0, 10))) /
-                        DAY_MS,
-                    )
-                  : null;
+      <section
+        aria-labelledby="me-docs"
+        className="overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10"
+      >
+        <div className="flex flex-col gap-0.5 px-5 py-4">
+          <h2 id="me-docs" className="text-base leading-6 font-medium">
+            {t('myDocuments')}
+          </h2>
+          <p className="text-[13px] leading-[18px] text-muted-foreground">{t('documentsNote')}</p>
+        </div>
+        {docRows.length === 0 ? (
+          <p className="border-t px-5 py-6 text-[13px] text-muted-foreground">{t('noDocuments')}</p>
+        ) : (
+          <table className="w-full border-separate border-spacing-0 text-[13px] leading-[18px]">
+            <thead>
+              <tr className="bg-neutral-100 text-xs leading-4 text-muted-foreground">
+                <th scope="col" className="border-t px-3 py-2 text-start sm:px-5 font-medium">
+                  {t('colDocument')}
+                </th>
+                <th
+                  scope="col"
+                  className="w-px border-t px-2.5 py-2 sm:px-4 text-end font-medium whitespace-nowrap"
+                >
+                  {t('colExpires')}
+                </th>
+                <th
+                  scope="col"
+                  className="w-px border-t px-2.5 py-2 sm:px-4 text-end font-medium whitespace-nowrap"
+                >
+                  {t('colLeft')}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {docRows.map((r) => {
+                const days = r.iso ? daysTo(r.iso) : null;
                 return (
-                  <li key={d.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3">
-                    <div className="min-w-0 flex-1 basis-48">
-                      <p className="truncate font-medium">{d.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {tDoc(`category.${d.category}`)}
-                        {d.expiryDate ? ` · ${dualDate(d.expiryDate, locale)}` : ''}
-                      </p>
-                    </div>
-                    {days !== null && (
-                      <StatusPill tone={EXPIRY_TONE[expirySeverity(days)]}>
-                        {days < 0 ? t('expired') : t('daysLeft', { days })}
-                      </StatusPill>
-                    )}
-                    <Button variant="outline" size="sm" onClick={() => void download(d)}>
-                      {t('download')}
-                    </Button>
-                  </li>
+                  <tr key={r.key} className="h-[52px] [&>td]:border-t">
+                    <td className="px-3 py-1.5 sm:px-5">
+                      <span className="block text-sm leading-5 break-words">{r.label}</span>
+                      {r.file && (
+                        <button
+                          type="button"
+                          onClick={() => void download(r.file!)}
+                          className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                        >
+                          {t('download')}
+                        </button>
+                      )}
+                    </td>
+                    <td className="px-2.5 text-end whitespace-nowrap sm:px-4">
+                      {r.iso ? (
+                        <span className="flex flex-col items-end">
+                          <span>{shortDate(r.iso)}</span>
+                          <span className="text-[10px] leading-[14px] text-neutral-400">
+                            {formatHijri(new Date(r.iso), locale)}
+                          </span>
+                        </span>
+                      ) : (
+                        <span className="text-neutral-400">—</span>
+                      )}
+                    </td>
+                    <td className="px-2.5 text-end sm:px-4">
+                      {days !== null && (
+                        <span
+                          className={cn(
+                            'inline-flex h-5 items-center rounded-full px-2 font-mono text-[11px] leading-5 whitespace-nowrap',
+                            chipClass(days),
+                          )}
+                        >
+                          {chipText(days)}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
                 );
               })}
-            </ul>
-          )}
-          {downloadError && (
-            <p role="alert" className="mt-2 text-sm text-destructive">
-              {downloadError}
-            </p>
-          )}
-        </CardContent>
-      </Card>
+            </tbody>
+          </table>
+        )}
+        {downloadError && (
+          <p role="alert" className="border-t px-5 py-2 text-sm text-destructive">
+            {downloadError}
+          </p>
+        )}
+      </section>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {/* ---- My identifiers ---- */}
-        <Card>
-          <CardHeader className="border-b">
-            <CardTitle>{t('myIdentifiers')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {identifiers.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{t('noneOnFile')}</p>
-            ) : (
-              <dl className="grid grid-cols-1 gap-y-3 sm:grid-cols-2 sm:gap-x-6">
-                {identifiers.map(([label, value, sub]) => (
-                  <div key={label} className="min-w-0">
-                    <dt className="text-xs text-muted-foreground">{label}</dt>
-                    <dd className="mt-0.5 font-mono text-sm">
-                      <bdi dir="ltr">{value}</bdi>
-                    </dd>
-                    {sub && <dd className="text-xs text-muted-foreground">{sub}</dd>}
-                  </div>
-                ))}
-              </dl>
-            )}
-          </CardContent>
-        </Card>
+        <section
+          aria-labelledby="me-ids"
+          className="flex flex-col gap-3 rounded-xl bg-card px-5 py-[18px] ring-1 ring-foreground/10"
+        >
+          <h2 id="me-ids" className="text-base leading-6 font-medium">
+            {t('myIdentifiers')}
+          </h2>
+          {factList(identifiers, true)}
+        </section>
 
         {/* ---- My pay ---- */}
-        <Card>
-          <CardHeader className="border-b">
-            <CardTitle>{t('myPay')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {pay.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{t('noneOnFile')}</p>
-            ) : (
-              <dl className="grid grid-cols-1 gap-y-3 sm:grid-cols-2 sm:gap-x-6">
-                {pay.map(([label, value]) => (
-                  <div key={label}>
-                    <dt className="text-xs text-muted-foreground">{label}</dt>
-                    <dd className="mt-0.5 text-sm tabular-nums">
-                      <bdi dir="ltr">{value}</bdi>
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            )}
-          </CardContent>
-        </Card>
+        <section
+          aria-labelledby="me-pay"
+          className="flex flex-col gap-3 rounded-xl bg-card px-5 py-[18px] ring-1 ring-foreground/10"
+        >
+          <h2 id="me-pay" className="text-base leading-6 font-medium">
+            {t('myPay')}
+          </h2>
+          {factList(pay, true)}
+        </section>
       </div>
 
       {/* ---- My requests (summary) ---- */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('myRequests')}</CardTitle>
-          <p className="text-sm text-muted-foreground">
+      <section
+        aria-labelledby="me-reqs"
+        className="flex flex-wrap items-center gap-3 rounded-xl bg-card px-5 py-3.5 ring-1 ring-foreground/10"
+      >
+        <span className="flex min-w-0 grow flex-col gap-px">
+          <h2 id="me-reqs" className="text-sm leading-5 font-medium">
+            {t('myRequests')}
+          </h2>
+          <span className="text-xs leading-4 text-muted-foreground">
             {t('openWithTeam', { count: openRequests })}
-          </p>
-          <CardAction>
-            <Link
-              href="/me/requests"
-              className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
-            >
-              {t('openRequests')}
-            </Link>
-          </CardAction>
-        </CardHeader>
-      </Card>
+          </span>
+        </span>
+        <Button
+          variant="outline"
+          size="sm"
+          className="shrink-0"
+          nativeButton={false}
+          render={<Link href="/me/requests" />}
+        >
+          {t('openRequests')}
+        </Button>
+      </section>
 
       <RaiseRequestDialog
         open={raiseOpen}
