@@ -15,6 +15,7 @@ import type {
 import { RequestCreatedEvent } from '../domain/request-created.event';
 import { RequestStatusChangedEvent } from '../domain/request-status-changed.event';
 import { canTransition } from '../domain/status-workflow';
+import { ServiceLevelService } from './service-level.service';
 
 // Requests registry access (REQ-01/02). TWO data paths, both owned here:
 //   - STAFF path (app_staff, cross-client) via PrismaService — create/list/find/update.
@@ -32,6 +33,7 @@ export class RequestsService {
     private readonly audit: AuditService,
     private readonly events: EventBus,
     private readonly employeeDb: EmployeeScopedPrismaService,
+    private readonly sla: ServiceLevelService,
   ) {}
 
   // ---- Employee self-service path (SS-05, ADR-011) --------------------------
@@ -75,9 +77,12 @@ export class RequestsService {
       });
       return created;
     });
+    // THREAD-04: the employee can't choose a due date (employee_raise), so the
+    // SYSTEM sets the type's service level right after the raise commits.
+    const dueDate = await this.sla.setInitialDue(row);
     // Same fact as every other create — Tasks spawns its work item from it.
     await this.publishCreated(row);
-    return row;
+    return dueDate ? { ...row, dueDate } : row;
   }
 
   // One request THIS employee raised, or null (RLS: employee_own_read) — THREAD-01.
@@ -95,8 +100,10 @@ export class RequestsService {
   // ---- staff path (cross-client) ----
 
   async create(input: CreateRequestInput): Promise<RequestRecord> {
+    // THREAD-04: no due date given → the type's service level sets one.
+    const dueDate = input.dueDate ?? (await this.sla.dueFor(input.type, input.clientId));
     const row = await this.prisma.$transaction(async (tx) => {
-      const created = await tx.request.create({ data: toCreateData(input) });
+      const created = await tx.request.create({ data: toCreateData({ ...input, dueDate }) });
       await this.audit.record(tx, {
         resource: 'request',
         resourceId: created.id,
@@ -169,13 +176,21 @@ export class RequestsService {
       }
       const asking = input.status === 'info_needed';
       if (asking && !input.note) throw new BadRequestException('Say what is needed when asking for more detail');
+      // THREAD-04: leaving info_needed by hand ends the pause — the due date
+      // moves by the working days the wait lasted.
+      const leaving = before.status === 'info_needed';
+      const pause = leaving
+        ? await this.sla.dueAfterPause(before.clientId, before.dueDate, before.infoNeededSince)
+        : null;
       const row = await tx.request.update({
         where: { id },
         data: {
           status: input.status,
           // THREAD-03: remember where the requester's reply returns it; leaving
-          // info_needed (by hand) forgets it.
+          // info_needed (by hand) forgets it. THREAD-04: and when the wait began.
           infoReturnsTo: asking ? before.status : null,
+          infoNeededSince: asking ? new Date() : null,
+          ...(pause ? { dueDate: pause.dueDate } : {}),
           ...(input.assigneeUserId !== undefined ? { assigneeUserId: input.assigneeUserId } : {}),
         },
       });
@@ -187,6 +202,7 @@ export class RequestsService {
         before: snapshot(before),
         after: snapshot(row),
       });
+      if (pause && before.dueDate) await this.sla.recordPause(tx, row, before.dueDate, pause);
       if (asking) {
         // The note IS the question: posted to the thread as the asker's comment,
         // in the same transaction. The status notification tells the requester
@@ -232,8 +248,9 @@ export class RequestsService {
 
   async createForClient(clientId: string, input: CreateRequestInput): Promise<RequestRecord> {
     // clientId is the caller's scoped client (from context), never input.
+    const dueDate = input.dueDate ?? (await this.sla.dueFor(input.type, clientId));
     const row = await this.scoped.transaction(clientId, async (tx) => {
-      const created = await tx.request.create({ data: toCreateData({ ...input, clientId }) });
+      const created = await tx.request.create({ data: toCreateData({ ...input, clientId, dueDate }) });
       await this.audit.record(tx, {
         resource: 'request',
         resourceId: created.id,

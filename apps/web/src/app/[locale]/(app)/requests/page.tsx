@@ -361,6 +361,14 @@ export default function RequestsPage() {
                       {formatHijri(new Date(req.dueDate), locale)}
                     </dd>
                   )}
+                  {/* THREAD-04: the type's turnaround — and the clock's pause while waiting. */}
+                  {req.serviceLevelDays !== null && (
+                    <dd className="text-[11px] leading-[15px] text-muted-foreground">
+                      {req.status === 'info_needed'
+                        ? t('slaPaused')
+                        : t('sla', { count: req.serviceLevelDays })}
+                    </dd>
+                  )}
                 </div>
                 <div className="flex flex-col gap-0.5 border-t px-5 py-3 sm:border-t-0 sm:border-s">
                   <dt className="text-xs leading-4 text-muted-foreground">{t('priorityLabel')}</dt>

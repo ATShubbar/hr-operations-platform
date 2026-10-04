@@ -30,6 +30,7 @@ import { UsersService } from '../../auth/public-api';
 import { ClientsService } from '../../clients/public-api';
 import { RequestsService } from '../application/requests.service';
 import { RequestThreadService } from '../application/request-thread.service';
+import { ServiceLevelService } from '../application/service-level.service';
 import type { UpdateRequestInput } from '../domain/request';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -46,6 +47,7 @@ export class RequestsController {
     private readonly clients: ClientsService,
     private readonly users: UsersService,
     private readonly thread: RequestThreadService,
+    private readonly sla: ServiceLevelService,
   ) {}
 
   // ---- The thread (ADR-016, THREAD-01) -----------------------------------------
@@ -85,8 +87,11 @@ export class RequestsController {
   // DS-08: every response names its requester (name + kind, never an email).
   // One lookup per response — a single row or the whole list.
   private async respond(rows: RequestRecord[]): Promise<RequestResponse[]> {
-    const who = await this.users.principals(rows.map((r) => r.createdByUserId));
-    return rows.map((r) => toResponse(r, who.get(r.createdByUserId) ?? null));
+    const [who, days] = await Promise.all([
+      this.users.principals(rows.map((r) => r.createdByUserId)),
+      this.sla.days(),
+    ]);
+    return rows.map((r) => toResponse(r, who.get(r.createdByUserId) ?? null, days[r.type]));
   }
   private async respondOne(row: RequestRecord): Promise<RequestResponse> {
     return (await this.respond([row]))[0]!;
@@ -199,7 +204,11 @@ export class RequestsController {
   }
 }
 
-function toResponse(r: RequestRecord, requester: RequestResponse['requester']): RequestResponse {
+function toResponse(
+  r: RequestRecord,
+  requester: RequestResponse['requester'],
+  serviceLevelDays: number | null,
+): RequestResponse {
   return {
     id: r.id,
     clientId: r.clientId,
@@ -209,6 +218,7 @@ function toResponse(r: RequestRecord, requester: RequestResponse['requester']): 
     status: r.status,
     priority: r.priority,
     dueDate: r.dueDate ? r.dueDate.toISOString().slice(0, 10) : null,
+    serviceLevelDays,
     createdByUserId: r.createdByUserId,
     requester,
     assigneeUserId: r.assigneeUserId,

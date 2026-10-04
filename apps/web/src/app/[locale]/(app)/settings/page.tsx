@@ -17,6 +17,7 @@ import { NotificationPreferences } from '@/components/notification-preferences';
 import { AccessTable } from './access-table';
 import { ExpiryScanSection } from './expiry-scan';
 import { LeaveCarryOverSection } from './leave-carry-over';
+import { SERVICE_LEVEL_KEY, ServiceLevelsSection } from './service-levels';
 import { GoogleCalendarSection } from './google-calendar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -328,6 +329,13 @@ export default function SettingsPage() {
           <TabsPanel value="system" className="space-y-6">
             {canRunScan && <ExpiryScanSection />}
             {canCarryOver && <LeaveCarryOverSection />}
+            {canWriteSystem && system && (
+              <ServiceLevelsSection
+                value={system[SERVICE_LEVEL_KEY] as Record<string, number> | undefined}
+                busy={busy}
+                onSave={(next) => void patchSystem(SERVICE_LEVEL_KEY, next)}
+              />
+            )}
             {/* ---- System settings (Administrator only) ---- */}
             {canWriteSystem && system && (
               <>

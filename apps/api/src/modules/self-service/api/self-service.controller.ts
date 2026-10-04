@@ -43,6 +43,7 @@ import {
   RequestAttachmentsService,
   RequestThreadService,
   RequestsService,
+  ServiceLevelService,
   toSelfRequestResponse,
 } from '../../requests/public-api';
 import { StorageService } from '../../storage/public-api';
@@ -78,6 +79,7 @@ export class SelfServiceController {
     private readonly leaveBalances: LeaveBalanceService,
     private readonly thread: RequestThreadService,
     private readonly attachments: RequestAttachmentsService,
+    private readonly sla: ServiceLevelService,
   ) {}
 
   @RequirePermission('self-service.read')
@@ -124,7 +126,8 @@ export class SelfServiceController {
   async myRequests(): Promise<SelfRequestListResponse> {
     const record = await this.ownRecord();
     const rows = await this.requests.listForEmployee(record.id);
-    return { requests: rows.map(toSelfRequestResponse) };
+    const days = await this.sla.days();
+    return { requests: rows.map((r) => toSelfRequestResponse(r, days[r.type])) };
   }
 
   // Raise a request (SS-05) — the first thing an employee WRITES, so it has its
@@ -144,7 +147,7 @@ export class SelfServiceController {
       ...parsed.data,
       createdByUserId: actorId,
     });
-    return toSelfRequestResponse(row);
+    return toSelfRequestResponse(row, (await this.sla.days())[row.type]);
   }
 
   // One request I raised (THREAD-01): the detail My requests opens. Anything
@@ -155,7 +158,7 @@ export class SelfServiceController {
     const record = await this.ownRecord();
     const row = UUID_RE.test(id) ? await this.requests.findForEmployee(record.id, id) : null;
     if (!row) throw new NotFoundException('Request not found');
-    return toSelfRequestResponse(row);
+    return toSelfRequestResponse(row, (await this.sla.days())[row.type]);
   }
 
   // The thread on a request I raised (ADR-016): read, and add to it.

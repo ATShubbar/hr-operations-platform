@@ -144,9 +144,16 @@ describe('My requests — employee self-service (SS-05, e2e)', () => {
       createdByUserId: me.userId,
       status: 'open',
       priority: 'normal',
-      dueDate: null,
       assigneeUserId: null,
     });
+    // THREAD-04: the due date is the SYSTEM's — the type's service level, set
+    // after the raise commits on the staff connection (the employee still can't
+    // choose one: employee_raise requires it empty), and audited as such.
+    expect(row.dueDate).not.toBeNull();
+    const set = await prisma.auditEntry.findFirst({
+      where: { resource: 'request', resourceId: row.id, action: 'service-level-set' },
+    });
+    expect(set).not.toBeNull();
   });
 
   it('writes EXACTLY one audit entry, as the employee, for my company — and spawns ONE task', async () => {
@@ -169,7 +176,7 @@ describe('My requests — employee self-service (SS-05, e2e)', () => {
   it('returns EXACTLY the agreed request fields', async () => {
     const res = await raise((await mine()).cookie, { type: 'general', title: title() }).expect(201);
     expect(Object.keys(res.body).sort()).toEqual(
-      ['createdAt', 'description', 'id', 'status', 'title', 'type', 'updatedAt'].sort(),
+      ['createdAt', 'description', 'id', 'serviceLevelDays', 'status', 'title', 'type', 'updatedAt'].sort(),
     );
   });
 

@@ -177,7 +177,14 @@
       "integrations": "Integrations"
     },
     "scanTitle": "Document expiry",
-    "scanSubtitle": "The scan runs every day at 06:00 (Riyadh). Run it now to raise any alerts that are due — a document is never alerted twice at the same threshold. What is expiring is on the Overview."
+    "scanSubtitle": "The scan runs every day at 06:00 (Riyadh). Run it now to raise any alerts that are due — a document is never alerted twice at the same threshold. What is expiring is on the Overview.",
+    "serviceLevels": {
+      "title": "Service levels",
+      "subtitle": "How many working days each type of request has. A new request's due date is set from its type (unless one is given); the clock pauses while it waits on the requester. Requests already raised keep their dates.",
+      "unit": "Working days of each company's week (Sunday–Thursday unless changed). Public holidays are not counted out yet.",
+      "invalid": "Each type needs a whole number of days from 1 to 60.",
+      "save": "Save service levels"
+    }
   },
   "employees": {
     "loading": "Loading…",
@@ -624,7 +631,9 @@
     "infoStaffTitle": "Waiting on the requester",
     "infoStaffSub": "A reply from their side — a comment or a file — sends it back to where it was.",
     "infoRequesterTitle": "PEOPLE&GRO needs more detail",
-    "infoRequesterSub": "Read the question in the comments below and reply, or attach a file. Your reply sends the request back to the team."
+    "infoRequesterSub": "Read the question in the comments below and reply, or attach a file. Your reply sends the request back to the team.",
+    "sla": "{count, plural, one {Service level # working day} other {Service level # working days}}",
+    "slaPaused": "Service level paused while waiting on the requester"
   },
   "tasks": {
     "saveError": "Could not save — check your permissions.",

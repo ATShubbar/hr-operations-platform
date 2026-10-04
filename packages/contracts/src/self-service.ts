@@ -102,6 +102,9 @@ export const selfRequestResponseSchema = z.object({
   title: z.string(),
   description: z.string().nullable(),
   status: requestStatusSchema,
+  // THREAD-04: the published turnaround for its type — not the due date, which
+  // stays staff triage (SS-05).
+  serviceLevelDays: z.number().int().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });

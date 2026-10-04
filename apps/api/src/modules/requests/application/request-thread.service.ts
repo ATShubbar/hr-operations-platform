@@ -14,6 +14,7 @@ import { UsersService } from '../../auth/public-api';
 import { EventBus } from '../../events/public-api';
 import { RequestCommentAddedEvent } from '../domain/request-comment-added.event';
 import { returnIfWaiting } from './requester-reply';
+import { ServiceLevelService } from './service-level.service';
 
 type Tx = Prisma.TransactionClient;
 type Reads = Pick<Tx, 'request' | 'requestComment'>;
@@ -34,6 +35,7 @@ export class RequestThreadService {
     private readonly audit: AuditService,
     private readonly users: UsersService,
     private readonly events: EventBus,
+    private readonly sla: ServiceLevelService,
   ) {}
 
   // ---- reads ---------------------------------------------------------------
@@ -105,10 +107,12 @@ export class RequestThreadService {
         after: { requestId, length: row.body.length },
       });
       // THREAD-03: the requester's side answering brings a waiting request back.
-      if (!byStaff) await returnIfWaiting(tx, this.audit, request);
-      return { request, row };
+      const waited = byStaff ? null : await returnIfWaiting(tx, this.audit, request);
+      return { request, row, waited };
     });
     if (!done) return null;
+    // THREAD-04: the wait is over — the service-level clock resumes later.
+    if (done.waited) await this.sla.extendAfterReturn(done.request, done.waited);
     await this.publish(done.request, done.row, byStaff);
     return (await this.present([done.row]))[0]!;
   }

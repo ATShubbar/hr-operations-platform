@@ -59,3 +59,5 @@ export function gregorianFromHijri(year: number, month: number, day: number): Da
     `Hijri date ${year}-${month}-${day} does not exist in the Umm al-Qura calendar`,
   );
 }
+
+export { addWorkingDays, dayIn, workingDaysBetween } from './working-days.js';

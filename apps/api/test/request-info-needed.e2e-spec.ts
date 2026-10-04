@@ -251,40 +251,46 @@ describe('Ask for more detail (THREAD-03, e2e)', () => {
         return fn(tx as unknown as PrismaClient);
       });
     const waiting = async (extra: object = {}) => {
-      const r = await mk('fence', { status: 'info_needed', infoReturnsTo: 'in_progress', assigneeUserId: hr.userId, ...extra });
+      const r = await mk('fence', {
+        status: 'info_needed',
+        infoReturnsTo: 'in_progress',
+        infoNeededSince: new Date(), // THREAD-04: the wait's start travels with the status
+        assigneeUserId: hr.userId,
+        ...extra,
+      });
       return r.id;
     };
 
     it('the requester’s side leaves info_needed only to where it was', async () => {
       const id = await waiting();
-      await expect(asClientX((tx) => tx.request.update({ where: { id }, data: { status: 'resolved', infoReturnsTo: null } }))).rejects.toThrow();
-      await expect(asClientX((tx) => tx.request.update({ where: { id }, data: { status: 'open', infoReturnsTo: null } }))).rejects.toThrow();
-      await asClientX((tx) => tx.request.update({ where: { id }, data: { status: 'in_progress', infoReturnsTo: null } }));
+      await expect(asClientX((tx) => tx.request.update({ where: { id }, data: { status: 'resolved', infoReturnsTo: null, infoNeededSince: null } }))).rejects.toThrow();
+      await expect(asClientX((tx) => tx.request.update({ where: { id }, data: { status: 'open', infoReturnsTo: null, infoNeededSince: null } }))).rejects.toThrow();
+      await asClientX((tx) => tx.request.update({ where: { id }, data: { status: 'in_progress', infoReturnsTo: null, infoNeededSince: null } }));
       expect(await statusOf(id)).toBe('in_progress');
     });
 
     it('an employee may return only a request they raised, and only to where it was', async () => {
       const mine = await waiting({ createdByUserId: me.userId, requesterEmployeeId: emp.me });
       const theirs = await waiting({ createdByUserId: colleague.userId, requesterEmployeeId: emp.colleague });
-      await expect(asMe((tx) => tx.request.update({ where: { id: mine }, data: { status: 'cancelled', infoReturnsTo: null } }))).rejects.toThrow();
+      await expect(asMe((tx) => tx.request.update({ where: { id: mine }, data: { status: 'cancelled', infoReturnsTo: null, infoNeededSince: null } }))).rejects.toThrow();
       await expect(asMe((tx) => tx.request.update({ where: { id: mine }, data: { title: 'renamed' } }))).rejects.toThrow();
-      const moved = await asMe((tx) => tx.request.updateMany({ where: { id: theirs }, data: { status: 'in_progress', infoReturnsTo: null } }));
+      const moved = await asMe((tx) => tx.request.updateMany({ where: { id: theirs }, data: { status: 'in_progress', infoReturnsTo: null, infoNeededSince: null } }));
       expect(moved.count).toBe(0);
       expect(await statusOf(theirs)).toBe('info_needed');
-      await asMe((tx) => tx.request.update({ where: { id: mine }, data: { status: 'in_progress', infoReturnsTo: null } }));
+      await asMe((tx) => tx.request.update({ where: { id: mine }, data: { status: 'in_progress', infoReturnsTo: null, infoNeededSince: null } }));
       expect(await statusOf(mine)).toBe('in_progress');
     });
 
     it('entering info_needed records where it was — for staff too — and the two always travel together', async () => {
       const r = await mk('enter');
-      await expect(staffDb.request.update({ where: { id: r.id }, data: { status: 'info_needed', infoReturnsTo: 'in_progress' } })).rejects.toThrow();
-      await expect(staffDb.request.update({ where: { id: r.id }, data: { status: 'info_needed' } })).rejects.toThrow();
+      await expect(staffDb.request.update({ where: { id: r.id }, data: { status: 'info_needed', infoReturnsTo: 'in_progress', infoNeededSince: new Date() } })).rejects.toThrow();
+      await expect(staffDb.request.update({ where: { id: r.id }, data: { status: 'info_needed', infoNeededSince: new Date() } })).rejects.toThrow();
       await expect(staffDb.request.update({ where: { id: r.id }, data: { infoReturnsTo: 'open' } })).rejects.toThrow();
       const resolved = await mk('enter from resolved', { status: 'resolved' });
       await expect(
-        staffDb.request.update({ where: { id: resolved.id }, data: { status: 'info_needed', infoReturnsTo: 'resolved' } }),
+        staffDb.request.update({ where: { id: resolved.id }, data: { status: 'info_needed', infoReturnsTo: 'resolved', infoNeededSince: new Date() } }),
       ).rejects.toThrow();
-      await staffDb.request.update({ where: { id: r.id }, data: { status: 'info_needed', infoReturnsTo: 'open' } });
+      await staffDb.request.update({ where: { id: r.id }, data: { status: 'info_needed', infoReturnsTo: 'open', infoNeededSince: new Date() } });
       expect(await statusOf(r.id)).toBe('info_needed');
     });
   });

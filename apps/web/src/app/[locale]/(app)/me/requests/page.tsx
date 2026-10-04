@@ -141,6 +141,13 @@ export default function MyRequestsPage() {
                       {tReq(`type.${r.type}`)} ·{' '}
                       {t('raisedOn', { date: dualDate(r.createdAt, locale) ?? '' })}
                     </p>
+                    {r.serviceLevelDays !== null && (
+                      <p className="text-xs leading-4 text-muted-foreground">
+                        {r.status === 'info_needed'
+                          ? tReq('slaPaused')
+                          : tReq('sla', { count: r.serviceLevelDays })}
+                      </p>
+                    )}
                   </div>
                   <StatusPill tone={toneFor('request', r.status)}>
                     {tReq(`status.${r.status}`)}

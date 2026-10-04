@@ -2,3 +2,5 @@
 // every other module reads settings — the catalog and stores stay private.
 export { ConfigurationModule } from './configuration.module';
 export { ConfigService } from './application/config.service';
+// THREAD-04: the service-level setting, read by Requests.
+export { SERVICE_LEVEL_KEY, serviceLevelDaysSchema } from './domain/catalog';

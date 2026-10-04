@@ -1318,7 +1318,18 @@ reply's own fenced tx; audited `info-returned`); staff replies never do. Trigger
 can't enter info_needed and may leave only to the recorded status; `app_employee` gets UPDATE on just status/
 info_returns_to of a waiting request it raised. Web: Ask dialog (required note), `InfoNeededBanner` (staff/requester),
 amber `warning` tone, counted as open in queue/dashboard/My file, Service operations column `reqInfoNeeded`. API
-**632/632**. Next: **THREAD-04** (service level per type — owner confirms the days).
+**632/632**.
+**THREAD-04 done — service level per request type (ADR-016 rev. 3); the request-thread epic (THREAD-00..04) is
+COMPLETE.** `@hr/dates` gains `addWorkingDays` / `workingDaysBetween` / `dayIn` (pure, unit-tested). Setting
+`request.service-level-days` (system, strict, every type 1–60; defaults Letter 2 · Certificate 2 · Document 3 · GRO 5 ·
+General 1), edited in Settings → System → Service levels (`config.write`). `ServiceLevelService` (Requests, imports
+Configuration): a new request without a due date gets one in its company's `working.week` and the system `timezone` —
+staff/client paths in the insert, the EMPLOYEE path right after the raise commits on the staff connection
+(`service-level-set`; SS-05's fence still forbids an employee choosing one). The pause: `info_needed_since` (CHECK with
+`info_needed`); a staff hand-exit extends the due date in its tx, a requester's reply extends it AFTER its commit on the
+staff connection (the client/employee roles never write a due date) — audited `service-level-paused`. Responses carry
+the type's CURRENT `serviceLevelDays` (SS-05's pinned self whitelist gained it on purpose). New requests only. API
+**645/645**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

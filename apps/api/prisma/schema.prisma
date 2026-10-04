@@ -454,6 +454,10 @@ model Request {
   // THREAD-03 (ADR-016 rev. 2): while `info_needed`, where the requester's reply
   // returns it — `open` or `in_progress` (with its assignee). Null otherwise.
   infoReturnsTo       RequestStatus?   @map("info_returns_to")
+  // THREAD-04: when the wait began — the service-level clock pauses from here
+  // until the request leaves info_needed (its due date moves by the paused
+  // working days). Null when not waiting.
+  infoNeededSince     DateTime?        @map("info_needed_since")
   priority            RequestPriority  @default(normal)
   dueDate             DateTime?        @map("due_date") @db.Date
   createdByUserId     String           @map("created_by_user_id") @db.Uuid

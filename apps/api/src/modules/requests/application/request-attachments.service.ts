@@ -30,6 +30,7 @@ import { FILE_SCANNER, StorageService, type FileScanner } from '../../storage/pu
 import { matchesSignature } from '../domain/file-signature';
 import { RequestAttachmentAddedEvent } from '../domain/request-attachment-added.event';
 import { returnIfWaiting } from './requester-reply';
+import { ServiceLevelService } from './service-level.service';
 
 type Tx = Prisma.TransactionClient;
 
@@ -69,6 +70,7 @@ export class RequestAttachmentsService {
     private readonly events: EventBus,
     private readonly storage: StorageService,
     @Inject(FILE_SCANNER) private readonly scanner: FileScanner,
+    private readonly sla: ServiceLevelService,
   ) {}
 
   // ---- reads ---------------------------------------------------------------
@@ -196,11 +198,16 @@ export class RequestAttachmentsService {
       // THREAD-03: a file from the requester's side that passed its checks
       // answers a request waiting on them. Re-read on this connection — the
       // status may have moved since the first read.
+      let waited: { dueDate: Date | null; since: Date | null } | null = null;
       if (verdict.status === 'available' && path.kind !== 'staff') {
         const current = await this.findRequest(tx, requestId);
-        if (current) await returnIfWaiting(tx, this.audit, current);
+        if (current) waited = await returnIfWaiting(tx, this.audit, current);
       }
-      return tx.requestAttachment.findUniqueOrThrow({ where: { id: file.id } });
+      return { row: await tx.requestAttachment.findUniqueOrThrow({ where: { id: file.id } }), waited };
+    }).then(async ({ row, waited }) => {
+      // THREAD-04: the wait is over — the service-level clock resumes later.
+      if (waited) await this.sla.extendAfterReturn(request, waited);
+      return row;
     });
     if (updated.status === 'available') await this.publish(request, updated, path.kind === 'staff');
     return (await this.present([updated]))[0]!;

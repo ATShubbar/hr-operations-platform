@@ -106,6 +106,22 @@ read receipts, holiday calendars.
   progress / cancelled). Staff comments and files never return it; a file returns it only once it
   has passed its checks. Audited as `ask-info` and `info-returned` (the decision trail labels both).
 
+- **rev. 3 (THREAD-04, 2026-10-04) — the service level, three owner decisions.**
+  ★ Defaults mapped from the prototype's REQ_SLA: **Letter 2 · Certificate 2 · Document 3 · GRO
+  service 5 · General 1** working days. ★ **Editable** by an Administrator — a system setting,
+  `request.service-level-days` (catalog-validated: every type, 1–60; audited like any setting) in
+  Settings → System. ★ **New requests only**: a request raised from now on without a due date
+  gets one (working days of its company's `working.week`, counted from the next working day, in
+  the system timezone); existing requests keep theirs. The **pause**: `info_needed_since` travels
+  with `info_needed` (CHECK); leaving it extends the due date by the working days waited — in the
+  same transaction for staff, and for a requester's reply right AFTER it commits, on the staff
+  connection, so the client and employee roles never write a due date. The employee path keeps
+  SS-05's fence (an employee can't choose a due date): the system sets it after the raise commits
+  (audited `service-level-set`); pauses are audited `service-level-paused`. Responses (staff,
+  client and the employee's own whitelist) carry the type's CURRENT `serviceLevelDays` — the due
+  date already set does not follow a later change of the setting. Public holidays still not
+  modelled.
+
 ## Links
 - architecture.md v1.10; ADR-004 (events), ADR-011 (self-service), ADR-012 (prototype fidelity),
   ADR-013 (roles); DOC-04 (scan hook)

@@ -150,6 +150,12 @@ async function main() {
       body: { type: 'letter', title: `UAT smoke ${new Date().toISOString()}` },
     });
     check(raised.status === 201, 'request: raised by the client manager', `HTTP ${raised.status}`);
+    // THREAD-04: a letter gets its service level's due date (working days).
+    check(
+      Boolean(raised.json?.dueDate) && Number.isInteger(raised.json?.serviceLevelDays),
+      'request: due date set from its service level',
+      `due ${raised.json?.dueDate} · ${raised.json?.serviceLevelDays} working days`,
+    );
     if (raised.json?.id) {
       const moved = await call(`/requests/${raised.json.id}/process`, {
         cookie: hr,

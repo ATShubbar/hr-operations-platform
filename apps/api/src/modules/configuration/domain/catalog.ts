@@ -42,6 +42,20 @@ const ianaTimezoneSchema = z.string().refine(
 
 const localeSchema = z.enum(['ar', 'en']);
 
+// THREAD-04 (ADR-016): a request's turnaround by type, in WORKING days of the
+// company's `working.week`. Every type must be present; 1–60 days.
+const serviceDays = z.number().int().min(1).max(60);
+export const serviceLevelDaysSchema = z
+  .object({
+    letter: serviceDays,
+    certificate: serviceDays,
+    document: serviceDays,
+    gro_service: serviceDays,
+    general: serviceDays,
+  })
+  .strict();
+export const SERVICE_LEVEL_KEY = 'request.service-level-days';
+
 const SETTING_DEFS: readonly SettingDef[] = [
   {
     key: 'calendar.display',
@@ -56,6 +70,16 @@ const SETTING_DEFS: readonly SettingDef[] = [
     default: [0, 1, 2, 3, 4],
     levels: ['system', 'client'],
     description: 'Working weekdays (0=Sunday … 6=Saturday); affects calendar, SLAs, due dates.',
+  },
+  {
+    // Owner decision (THREAD-04): mapped from the prototype's REQ_SLA — salary
+    // certificate / bank letter 2, documents 3, government services 5 (exit
+    // re-entry 3 … final exit 7), a general query 1. Editable by an Administrator.
+    key: 'request.service-level-days',
+    schema: serviceLevelDaysSchema,
+    default: { letter: 2, certificate: 2, document: 3, gro_service: 5, general: 1 },
+    levels: ['system'],
+    description: 'Turnaround per request type, in working days; sets a new request\'s due date.',
   },
   {
     key: 'timezone',

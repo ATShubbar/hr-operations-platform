@@ -29,6 +29,8 @@ export const requestResponseSchema = z.object({
   status: requestStatusSchema,
   priority: requestPrioritySchema,
   dueDate: z.string().nullable(), // Gregorian ISO date (YYYY-MM-DD)
+  // THREAD-04: the type's turnaround in working days (the current setting).
+  serviceLevelDays: z.number().int().nullable(),
   createdByUserId: z.uuid(),
   // DS-08: WHO raised it, by name and kind — never their email. `name` is null
   // when the account has no display name; the whole field is null if the

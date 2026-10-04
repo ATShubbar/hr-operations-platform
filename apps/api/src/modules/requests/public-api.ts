@@ -3,6 +3,7 @@ export { RequestsModule } from './requests.module';
 export { RequestsService } from './application/requests.service';
 export { RequestThreadService } from './application/request-thread.service';
 export { RequestAttachmentsService } from './application/request-attachments.service';
+export { ServiceLevelService } from './application/service-level.service';
 export { ATTACHMENT_DOWNLOAD_TTL_SECONDS, INVALID_ATTACHMENT } from './api/request-attachments.controller';
 export { toSelfRequestResponse } from './domain/request-view';
 export type { CreateRequestInput } from './domain/request';
