@@ -26,8 +26,8 @@ build contract. Changes go through ADRs (adr/), never through drift.
 
 | File | What |
 |---|---|
-| architecture.md | Frozen build contract — **v1.10** (ADR-011 self-service · ADR-012 LTR/prototype fidelity · ADR-013 six roles · ADR-014 leave · ADR-015 search · ADR-016 request thread) |
-| adr/README.md | Decision index (ADR-001..016, statuses) |
+| architecture.md | Frozen build contract — **v1.11** (ADR-011 self-service · ADR-012 LTR/prototype fidelity · ADR-013 six roles · ADR-014 leave · ADR-015 search · ADR-016 request thread · ADR-017 dependants) |
+| adr/README.md | Decision index (ADR-001..017, statuses) |
 | BACKLOG.md | Task board + cards + working rules |
 | ACTION-PLAN.md | Phased plan, DoD checklists with evidence rule |
 | evidence/skeleton/ | Per-task proof (WS-01..) |
@@ -1380,6 +1380,14 @@ before/after values (owner), audited Critical BEFORE the bytes return with `{fil
 and a fingerprint, never the rows. Shared CSV writer `src/csv/csv.ts` (REP-03 now uses it). Screen: pill on notable/
 critical rows only, Severity filter, Flagged critical = today's count + a button into them, Export for holders with a
 truncation note. Live: tile 304 = SQL 304 = file rows; the downloaded bytes' SHA-256 = the audit row's. API **676/676**.
+**DEP-00 done — dependants are IN the architecture (ADR-017, v1.11).** Owned by Employees (`emp_dependants`: spouse/son/
+daughter, names, birth date, iqama number, iqama/passport/insurance expiries; NO `client_id` copy — it would go stale on a
+transfer; removal soft). Staff read with `employee.read`, the iqama number only with `govdata.read`; **`govdata.update`
+holders change them** (Administrator, HR officer, GRO officer — the prototype gates Add on the ID fields; my first draft's
+`employee.update` would have shut the GRO officer out, corrected at review). The employee sees their own incl. numbers
+(self-service, `employee_self` fence); **client managers nothing** (no `app_client` grant). Audited `dependant`,
+`resource_id` = the sponsoring employee (History), severity notable. Expiries on the record ONLY (no alerts/runway yet);
+fees → Billing ("coming soon"). No new permission. Build: DEP-01 table · DEP-02 API · DEP-03 Family tab · DEP-04 My file.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

@@ -1,10 +1,11 @@
 # HR Operations Platform — Architecture
 
 ## Version
-**v1.10 — FROZEN (v1.4 frozen 2026-07-18; v1.5 amended by ADR-011, v1.6 by ADR-012, v1.7 by ADR-013 — all 2026-10-03; v1.8 by ADR-014, v1.9 by ADR-015 and v1.10 by ADR-016, 2026-10-04).**
+**v1.11 — FROZEN (v1.4 frozen 2026-07-18; v1.5 amended by ADR-011, v1.6 by ADR-012, v1.7 by ADR-013 — all 2026-10-03; v1.8 by ADR-014, v1.9 by ADR-015 and v1.10 by ADR-016, 2026-10-04; v1.11 by ADR-017, 2026-10-05).**
 This document is the build contract. Changes now require either a new ADR (for decisions) or an explicit unfreeze with a version bump — implementation drift is not a change mechanism. Implementation work is tracked in `BACKLOG.md`.
 
 ### Changelog
+- **v1.11** — **Dependants brought into scope (ADR-017)**, reversing the v1.1–v1.10 exclusion: the family on an employee's sponsorship (spouse, son, daughter) as records owned by the Employees module, each with its own iqama number and iqama/passport/insurance expiries. Staff read them (iqama number only with `govdata.read`); `govdata.update` holders (Administrator, HR officer, GRO officer) add, edit and remove them (soft); the employee sees their own, numbers included, through self-service; client managers see nothing. Expiries are shown on the record only, not yet in alerts or the runway; dependant fees wait for Billing. No new permission.
 - **v1.10** — **The request thread (ADR-016)**: comments and attachments visible to everyone on a request (no internal notes), posted by all who see it except the Auditor (`request.comment`; employees via `/me`); attachments scanned before download; a new status `info_needed` ("Ask for more detail") that the requester's reply returns to where it was — open, or in progress with its assignee (ADR-016 rev. 2); a per-type service level in working days, paused while info is needed (ADR-016 rev. 3: an Administrator setting, `request.service-level-days`).
 - **v1.9** — **Global search (ADR-015)**: a `Search` delivery module behind one endpoint, permission-aware per source (identifier matching only for `govdata.read` holders), a `search.read` permission for every role, and identifier lookups audited (last four digits only).
 - **v1.8** — **Leave brought into scope (ADR-014)**, reversing the v1.1–v1.7 exclusion: a `Leave` domain module (requests + a balance ledger); the employer's client manager approves, PEOPLE&GRO files; calendar days; the prototype's nine leave types with their caps; annual balances (21/30 days by service, monthly accrual from 1 January, carry-over capped at 10, may go below zero = unpaid); a `leave` row in the permission catalog and matrix; employees reach their own leave through self-service only.
@@ -48,8 +49,8 @@ There is no multi-consultancy tenancy in scope. The enforced isolation boundary 
 ## Users & Authorization
 
 **In scope:** consultancy staff, authorized client company representatives, and — since v1.5 (ADR-011) — **employees using self-service** for their own record, where their client company has opted in.
-**Out of scope:** employee editing of their own record (changes are requested, and made by staff); dependants; phone/SMS sign-in; languages beyond Arabic and English (a known gap for the expatriate workforce — see ADR-011).
-*History:* v1.1–v1.4 excluded employee self-service ("employees are managed records, not users"); ADR-011 reversed that on 2026-10-03. v1.1–v1.7 also excluded leave; ADR-014 brought it in on 2026-10-04.
+**Out of scope:** employee editing of their own record (changes are requested, and made by staff); phone/SMS sign-in; languages beyond Arabic and English (a known gap for the expatriate workforce — see ADR-011).
+*History:* v1.1–v1.4 excluded employee self-service ("employees are managed records, not users"); ADR-011 reversed that on 2026-10-03. v1.1–v1.7 also excluded leave; ADR-014 brought it in on 2026-10-04. v1.1–v1.10 excluded dependants; ADR-017 brought them in on 2026-10-05.
 
 ### Roles
 Six built-in roles since v1.7 (ADR-013). Editable roles and permissions are a later, safeguarded feature epic — until then these bundles are fixed in code.
@@ -115,6 +116,7 @@ Client manager is always scoped to **their own client company only**; Employee i
 | Employees — core profile | CRUD | CRU | R | R | R (own) | R (self) |
 | Employees — salary & financial | RU | RU | – | R | – | R (self) |
 | Employees — government data (iqama, visas, GOSI) | CRUD | CRU | CRUD | R | R (own, expiry/status only) | R (self, incl. numbers) |
+| Dependants (ADR-017; read via `employee.read`, iqama number via `govdata.read`, changes via `govdata.update`, removal is soft) | CRU + remove | CRU + remove | CRU + remove | R | – | R (self, incl. numbers) |
 | Documents | CRUD | CRUD | CRU (gov docs) | R | R (own) | R (self, available only) |
 | Recruitment (vacancies, candidates, pipeline) | CRUD | CRU | RU | R | R (own vacancies) | – |
 | GRO workflows | CRUD | CRU | CRUD | R | R (own, status only) | – |
@@ -175,7 +177,7 @@ Invariants (not configurable):
 ## Business Modules
 1. Authentication & Authorization
 2. Clients
-3. Employees
+3. Employees (including the dependants on each employee's sponsorship; ADR-017)
 4. Documents
 5. Recruitment
 6. GRO

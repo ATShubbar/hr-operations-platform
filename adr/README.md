@@ -28,6 +28,7 @@ One decision per file, numbered in creation order. A record is never edited to c
 | [ADR-014](ADR-014-leave.md) | Leave — the employer approves, PEOPLE&GRO files; statutory types, caps and annual balances | Accepted (amends architecture.md scope, modules, catalog + matrix; v1.8) |
 | [ADR-015](ADR-015-global-search.md) | Global search — one permission-aware read across modules; identifier lookups audited | Accepted (amends architecture.md modules, catalog + matrix; v1.9) |
 | [ADR-016](ADR-016-request-thread.md) | The request thread — comments and attachments both sides see, "Ask for more detail", a service level per type | Accepted (amends architecture.md matrix, catalog, request statuses; v1.10) · rev. 1 (THREAD-02: removed files stay as a line, 20 files per request, `rejected`) · rev. 2 (THREAD-03: a required note, either requester-side reply, returns to where it was) · rev. 3 (THREAD-04: service-level defaults, an Administrator setting, new requests only) |
+| [ADR-017](ADR-017-dependants.md) | Dependants — the family on an employee's sponsorship, owned by Employees; staff read, `govdata.update` holders change, the employee sees their own, client managers nothing; expiries on the record only | Accepted (amends architecture.md scope, matrix, Employees module; v1.11) |
 
 ## Template
 
