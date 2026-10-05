@@ -715,7 +715,8 @@
       "scheduled": "مجدولة",
       "cancelled": "ملغاة"
     },
-    "searchPlaceholder": "ابحث بالمرجع أو العنوان…"
+    "searchPlaceholder": "ابحث بالمرجع أو العنوان…",
+    "badTimezone": "هذه ليست منطقة زمنية معروفة — استخدم اسمًا مثل Asia/Riyadh."
   },
   "calendar": {
     "title": "التقويم",

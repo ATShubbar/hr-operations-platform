@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { GcalInvitationListResponse, GcalInvitationResponse } from '@hr/contracts';
+import { isValidTimeZone, utcToZonedWallClock, zonedTimeToUtc } from '@hr/dates';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { dualDate, type Locale } from '@/lib/employee-format';
@@ -55,6 +56,15 @@ const EMPTY: Form = {
   attendeeEmails: '',
 };
 
+// GCAL-04: what left, shown two ways — the local time in the invitation's zone
+// (what the attendees will see) beside the exact instant sent (UTC).
+function zoned(t: { dateTime: string; timeZone: string }): string {
+  const local = isValidTimeZone(t.timeZone)
+    ? utcToZonedWallClock(new Date(t.dateTime), t.timeZone).replace('T', ' ')
+    : '?';
+  return `${local} ${t.timeZone} · ${t.dateTime}`;
+}
+
 // Google Calendar invitations (GCAL-03) over the GCAL-02 API. Schedule an
 // outbound invitation (typed form) and inspect EXACTLY the whitelisted payload that
 // left the system — the ADR-009 transparency view. Gated on integration.google-calendar.
@@ -106,16 +116,19 @@ export function GoogleCalendarSection() {
 
   async function create(e: FormEvent) {
     e.preventDefault();
-    setSaving(true);
     setFormError('');
+    // GCAL-04: the times mean that wall clock IN THE CHOSEN ZONE — never the
+    // browser's (`new Date(form.start)` read them in the browser's zone).
+    if (!isValidTimeZone(form.timezone)) return setFormError(t('badTimezone'));
+    setSaving(true);
     const emails = form.attendeeEmails
       .split(/[\n,]+/)
       .map((s) => s.trim())
       .filter(Boolean);
     const body = {
       kind: form.kind,
-      start: new Date(form.start).toISOString(),
-      end: new Date(form.end).toISOString(),
+      start: zonedTimeToUtc(form.start, form.timezone).toISOString(),
+      end: zonedTimeToUtc(form.end, form.timezone).toISOString(),
       timezone: form.timezone,
       ...(form.kind === 'interview'
         ? {
@@ -401,14 +414,8 @@ export function GoogleCalendarSection() {
               <dl className="space-y-2">
                 <Row label={t('payloadSummary')} value={inspect.payload.summary} />
                 <Row label={t('payloadDescription')} value={inspect.payload.description} />
-                <Row
-                  label={t('payloadStart')}
-                  value={`${inspect.payload.start.dateTime} (${inspect.payload.start.timeZone})`}
-                />
-                <Row
-                  label={t('payloadEnd')}
-                  value={`${inspect.payload.end.dateTime} (${inspect.payload.end.timeZone})`}
-                />
+                <Row label={t('payloadStart')} value={zoned(inspect.payload.start)} />
+                <Row label={t('payloadEnd')} value={zoned(inspect.payload.end)} />
                 {inspect.payload.location && (
                   <Row label={t('payloadLocation')} value={inspect.payload.location} />
                 )}

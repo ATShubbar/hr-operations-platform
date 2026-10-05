@@ -715,7 +715,8 @@
       "scheduled": "Scheduled",
       "cancelled": "Cancelled"
     },
-    "searchPlaceholder": "Search reference or title…"
+    "searchPlaceholder": "Search reference or title…",
+    "badTimezone": "That isn't a timezone this browser knows — use an IANA name such as Asia/Riyadh."
   },
   "calendar": {
     "title": "Calendar",

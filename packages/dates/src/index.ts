@@ -61,3 +61,4 @@ export function gregorianFromHijri(year: number, month: number, day: number): Da
 }
 
 export { addWorkingDays, dayIn, workingDaysBetween } from './working-days.js';
+export { isValidTimeZone, utcToZonedWallClock, zonedTimeToUtc } from './zoned-time.js';

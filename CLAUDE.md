@@ -1367,6 +1367,10 @@ terminated, at an ACTIVE company — DS-17's dashboard rule) now drives the Work
 (owner), headcount/Saudi/Saudization over people under management, leavers still shown in the Terminated column. The
 web's `underManagement()` calls the same function; an e2e test checks the report's totals equal the rule over the whole
 DB. Seed: report 39 → 35 = the dashboard tile. API **668/668**.
+**GCAL-04 done — invitation times use the chosen zone.** `@hr/dates` `zonedTimeToUtc` / `utcToZonedWallClock` /
+`isValidTimeZone` (Intl-based, DST: gap → forward, overlap → first). The schedule form converts with the CHOSEN zone
+(it used `new Date(datetime-local)`, i.e. the browser's zone) and refuses unknown zones; the transparency view shows the
+local time beside the UTC instant. No API change.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
@@ -1427,6 +1431,9 @@ DB. Seed: report 39 → 35 = the dashboard tile. API **668/668**.
   Click at a size that fits the pane (375), or verify the handler with `element.click()`;
   for layout sweeps, load each route in a same-origin `<iframe>` sized to the width — each
   frame is its own media-query viewport and nothing is clicked (DS-02).
+- `new Date('2026-10-06T10:00')` (a `datetime-local` value) is read in the BROWSER's zone. When a form also names a zone,
+  convert with `zonedTimeToUtc(value, zone)` from `@hr/dates` (GCAL-04: 10:00 "Asia/Riyadh" from a UTC+4 browser left as
+  06:00Z).
 - Chrome throttles `setTimeout` to ~1s in a non-foreground tab, so ANY in-browser timing
   measured through timers is quantised to multiples of 1000ms (UX-05: readings of 999/1000/
   3999/5001/6000 looked like an app bug and were the browser). Foreground the tab, or don't
