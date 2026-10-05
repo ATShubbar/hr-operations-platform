@@ -589,6 +589,23 @@ export type EnumGosiRegistrationStatusNullableWithAggregatesFilter<$PrismaModel 
   _max?: Prisma.NestedEnumGosiRegistrationStatusNullableFilter<$PrismaModel>
 }
 
+export type EnumDependantRelationshipFilter<$PrismaModel = never> = {
+  equals?: $Enums.DependantRelationship | Prisma.EnumDependantRelationshipFieldRefInput<$PrismaModel>
+  in?: $Enums.DependantRelationship[] | Prisma.ListEnumDependantRelationshipFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DependantRelationship[] | Prisma.ListEnumDependantRelationshipFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDependantRelationshipFilter<$PrismaModel> | $Enums.DependantRelationship
+}
+
+export type EnumDependantRelationshipWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DependantRelationship | Prisma.EnumDependantRelationshipFieldRefInput<$PrismaModel>
+  in?: $Enums.DependantRelationship[] | Prisma.ListEnumDependantRelationshipFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DependantRelationship[] | Prisma.ListEnumDependantRelationshipFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDependantRelationshipWithAggregatesFilter<$PrismaModel> | $Enums.DependantRelationship
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumDependantRelationshipFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumDependantRelationshipFilter<$PrismaModel>
+}
+
 export type EnumDocumentCategoryFilter<$PrismaModel = never> = {
   equals?: $Enums.DocumentCategory | Prisma.EnumDocumentCategoryFieldRefInput<$PrismaModel>
   in?: $Enums.DocumentCategory[] | Prisma.ListEnumDocumentCategoryFieldRefInput<$PrismaModel>
@@ -1480,6 +1497,23 @@ export type NestedEnumGosiRegistrationStatusNullableWithAggregatesFilter<$Prisma
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedEnumGosiRegistrationStatusNullableFilter<$PrismaModel>
   _max?: Prisma.NestedEnumGosiRegistrationStatusNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumDependantRelationshipFilter<$PrismaModel = never> = {
+  equals?: $Enums.DependantRelationship | Prisma.EnumDependantRelationshipFieldRefInput<$PrismaModel>
+  in?: $Enums.DependantRelationship[] | Prisma.ListEnumDependantRelationshipFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DependantRelationship[] | Prisma.ListEnumDependantRelationshipFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDependantRelationshipFilter<$PrismaModel> | $Enums.DependantRelationship
+}
+
+export type NestedEnumDependantRelationshipWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.DependantRelationship | Prisma.EnumDependantRelationshipFieldRefInput<$PrismaModel>
+  in?: $Enums.DependantRelationship[] | Prisma.ListEnumDependantRelationshipFieldRefInput<$PrismaModel>
+  notIn?: $Enums.DependantRelationship[] | Prisma.ListEnumDependantRelationshipFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumDependantRelationshipWithAggregatesFilter<$PrismaModel> | $Enums.DependantRelationship
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumDependantRelationshipFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumDependantRelationshipFilter<$PrismaModel>
 }
 
 export type NestedEnumDocumentCategoryFilter<$PrismaModel = never> = {

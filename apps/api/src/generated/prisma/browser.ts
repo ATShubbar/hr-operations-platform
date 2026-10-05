@@ -63,6 +63,11 @@ export type Client = Prisma.ClientModel
  */
 export type Employee = Prisma.EmployeeModel
 /**
+ * Model Dependant
+ * 
+ */
+export type Dependant = Prisma.DependantModel
+/**
  * Model Document
  * 
  */

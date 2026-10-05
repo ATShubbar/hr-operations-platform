@@ -60,6 +60,7 @@ export const ModelName = {
   UserSetting: 'UserSetting',
   Client: 'Client',
   Employee: 'Employee',
+  Dependant: 'Dependant',
   Document: 'Document',
   Notification: 'Notification',
   ExpiryAlert: 'ExpiryAlert',
@@ -235,6 +236,26 @@ export const EmployeeScalarFieldEnum = {
 } as const
 
 export type EmployeeScalarFieldEnum = (typeof EmployeeScalarFieldEnum)[keyof typeof EmployeeScalarFieldEnum]
+
+
+export const DependantScalarFieldEnum = {
+  id: 'id',
+  employeeId: 'employeeId',
+  relationship: 'relationship',
+  nameEn: 'nameEn',
+  nameAr: 'nameAr',
+  dateOfBirth: 'dateOfBirth',
+  iqamaNumber: 'iqamaNumber',
+  iqamaExpiry: 'iqamaExpiry',
+  passportExpiry: 'passportExpiry',
+  insuranceExpiry: 'insuranceExpiry',
+  removedAt: 'removedAt',
+  removedByUserId: 'removedByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DependantScalarFieldEnum = (typeof DependantScalarFieldEnum)[keyof typeof DependantScalarFieldEnum]
 
 
 export const DocumentScalarFieldEnum = {

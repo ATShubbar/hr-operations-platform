@@ -1388,6 +1388,13 @@ holders change them** (Administrator, HR officer, GRO officer — the prototype 
 (self-service, `employee_self` fence); **client managers nothing** (no `app_client` grant). Audited `dependant`,
 `resource_id` = the sponsoring employee (History), severity notable. Expiries on the record ONLY (no alerts/runway yet);
 fees → Billing ("coming soon"). No new permission. Build: DEP-01 table · DEP-02 API · DEP-03 Family tab · DEP-04 My file.
+**DEP-01 done — `emp_dependants` + `DependantsService`.** No `client_id`; CHECKs (non-blank name, removed_at ⇔ remover);
+`app_staff` SELECT/INSERT/UPDATE — **NO DELETE, even for staff** (soft removal); `app_employee` SELECT under `employee_self`;
+`app_client` NOTHING. Service (Employees): `listFor` (spouse, then children oldest first) · `listForSelf` (app_employee) ·
+`add`/`update`/`remove`, audited `dependant` against the SPONSOR with a non-sensitive snapshot (update lists changed FIELD
+NAMES, never the iqama number or dates); severity notable. 404 other sponsor's dependant, 409 removed. Seed: 6 dependants on
+Ahmed Hassan (iqama +45d), Syed Ali, Rajesh Kumar (expired −6d). Six red proofs (4 fences + snapshot + sponsor check).
+API **687/687**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

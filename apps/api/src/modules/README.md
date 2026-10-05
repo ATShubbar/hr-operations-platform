@@ -71,6 +71,11 @@ fenced to ONE employee record. A table an employee may read MUST, in its own mig
    same-company colleague. Every OTHER non-public route must keep refusing employees (the
    harness's principal fence enforces it).
 
+A table that NO company-scoped role reads (DEP-01 `emp_dependants`: client managers get nothing)
+needs no `client_id` — grant `app_client` nothing and ship no client policy. Don't copy a
+`client_id` that can go stale (a sponsorship transfer moves the employee, not their rows).
+Where history refers to rows, withhold DELETE from `app_staff` too and remove softly.
+
 Do NOT grant `app_employee` to `app_client` (or any role) to "switch role" inside a
 transaction: Postgres applies a policy `TO app_employee` to its members, so the employee
 policies would start applying to client-rep queries.

@@ -316,6 +316,40 @@ enum GosiRegistrationStatus {
   not_registered
 }
 
+// DEP-01 (ADR-017): the family on an employee's sponsorship — spouse and
+// children, each with their OWN iqama, passport and insurance. Owned by the
+// Employees module. `employee_id` is the sponsor (a bare reference, validated
+// app-side). Deliberately NO client_id: a copy would go stale when a transfer
+// moves the sponsor, and no company-scoped role reads this table (client
+// managers get no grant). Removal is soft — history refers to the row — and no
+// role, staff included, may DELETE. An employee reads their own rows only
+// (app_employee, `employee_self`). Dates are Gregorian; Hijri is rendered.
+model Dependant {
+  id              String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employeeId      String                @map("employee_id") @db.Uuid
+  relationship    DependantRelationship
+  nameEn          String                @map("name_en")
+  nameAr          String?               @map("name_ar")
+  dateOfBirth     DateTime?             @map("date_of_birth") @db.Date
+  iqamaNumber     String?               @map("iqama_number")
+  iqamaExpiry     DateTime?             @map("iqama_expiry") @db.Date
+  passportExpiry  DateTime?             @map("passport_expiry") @db.Date
+  insuranceExpiry DateTime?             @map("insurance_expiry") @db.Date
+  removedAt       DateTime?             @map("removed_at")
+  removedByUserId String?               @map("removed_by_user_id") @db.Uuid
+  createdAt       DateTime              @default(now()) @map("created_at")
+  updatedAt       DateTime              @updatedAt @map("updated_at")
+
+  @@index([employeeId])
+  @@map("emp_dependants")
+}
+
+enum DependantRelationship {
+  spouse
+  son
+  daughter
+}
+
 // Document metadata (DOC-01; ACTION-PLAN 3.2). The Documents module's registry —
 // metadata ONLY; the blob lives in object storage (STOR-01) under storageKey.
 // Client-scoped via a STANDARD client_id column (RLS keyed on it; staff full,

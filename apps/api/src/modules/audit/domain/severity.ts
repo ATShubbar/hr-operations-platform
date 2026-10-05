@@ -30,6 +30,8 @@ const RULES: readonly Rule[] = [
   // of sensitive records, data leaving the system, ID-number lookups.
   { resource: 'salary', action: 'update', severity: 'notable' },
   { resource: 'govdata', action: 'update', severity: 'notable' },
+  // DEP-01 (ADR-017): a dependant carries an iqama number — graded like govdata.
+  { resource: 'dependant', severity: 'notable' },
   { resource: 'request', action: 'process', severity: 'notable' },
   { resource: 'leave', action: 'approve', severity: 'notable' },
   { resource: 'leave', action: 'decline', severity: 'notable' },

@@ -842,6 +842,54 @@ async function seedSelfServiceFlag(prisma: PrismaClient): Promise<void> {
   });
 }
 
+// DEP-01 (ADR-017): families on three expatriate employees' sponsorship, dated
+// relative to seed time so the Family tab always has something to show: an
+// expired dependant iqama, one inside the 90-day Renew window, one comfortable.
+// Ahmed Hassan's family is there for the employee login's My file (DEP-04).
+// Upserted back to LIVE (removed stamps cleared) on every run.
+const SEED_DEPENDANTS: ReadonlyArray<{
+  id: string;
+  employeeId: string;
+  relationship: 'spouse' | 'son' | 'daughter';
+  en: string;
+  ar: string;
+  born: number; // years ago
+  iqama: string | null;
+  iqamaExpiry: number | null; // days from now
+  passportExpiry: number | null;
+  insuranceExpiry: number | null;
+}> = [
+  // Ahmed Hassan (EG, client A)
+  { id: 'f2000001-0000-4000-8000-000000000001', employeeId: 'e0000001-0000-4000-8000-000000000002', relationship: 'spouse', en: 'Yasmin Hassan', ar: 'ياسمين حسن', born: 34, iqama: '2400000101', iqamaExpiry: 45, passportExpiry: 900, insuranceExpiry: 120 },
+  { id: 'f2000001-0000-4000-8000-000000000002', employeeId: 'e0000001-0000-4000-8000-000000000002', relationship: 'son', en: 'Omar Hassan', ar: 'عمر حسن', born: 7, iqama: '2400000102', iqamaExpiry: 45, passportExpiry: 400, insuranceExpiry: 120 },
+  // Syed Ali (PK, client A)
+  { id: 'f2000001-0000-4000-8000-000000000003', employeeId: 'e0000001-0000-4000-8000-000000000004', relationship: 'spouse', en: 'Sadia Ali', ar: 'سعدية علي', born: 31, iqama: '2400000201', iqamaExpiry: 210, passportExpiry: 1200, insuranceExpiry: 75 },
+  // Rajesh Kumar (IN, client B)
+  { id: 'f2000001-0000-4000-8000-000000000004', employeeId: 'e0000002-0000-4000-8000-000000000001', relationship: 'spouse', en: 'Anitha Kumar', ar: 'أنيثا كومار', born: 38, iqama: '2400000301', iqamaExpiry: -6, passportExpiry: 640, insuranceExpiry: -6 },
+  { id: 'f2000001-0000-4000-8000-000000000005', employeeId: 'e0000002-0000-4000-8000-000000000001', relationship: 'daughter', en: 'Maryam Kumar', ar: 'مريم كومار', born: 12, iqama: '2400000302', iqamaExpiry: -6, passportExpiry: 300, insuranceExpiry: -6 },
+  { id: 'f2000001-0000-4000-8000-000000000006', employeeId: 'e0000002-0000-4000-8000-000000000001', relationship: 'son', en: 'Faris Kumar', ar: 'فارس كومار', born: 2, iqama: null, iqamaExpiry: null, passportExpiry: 1500, insuranceExpiry: null },
+];
+
+async function seedDependants(prisma: PrismaClient): Promise<number> {
+  for (const d of SEED_DEPENDANTS) {
+    const data = {
+      employeeId: d.employeeId,
+      relationship: d.relationship,
+      nameEn: d.en,
+      nameAr: d.ar,
+      dateOfBirth: yearsAgo(d.born),
+      iqamaNumber: d.iqama,
+      iqamaExpiry: d.iqamaExpiry === null ? null : daysFromNow(d.iqamaExpiry),
+      passportExpiry: d.passportExpiry === null ? null : daysFromNow(d.passportExpiry),
+      insuranceExpiry: d.insuranceExpiry === null ? null : daysFromNow(d.insuranceExpiry),
+      removedAt: null,
+      removedByUserId: null,
+    };
+    await prisma.dependant.upsert({ where: { id: d.id }, create: { id: d.id, ...data }, update: data });
+  }
+  return SEED_DEPENDANTS.length;
+}
+
 async function main(): Promise<void> {
   const prisma = new PrismaClient({
     adapter: new PrismaPg(process.env.DATABASE_URL ?? ''),
@@ -855,6 +903,7 @@ async function main(): Promise<void> {
     // references (no FK across modules, so order is for clarity, not integrity).
     const clientCount = await seedClients(prisma);
     const employeeCount = await seedEmployees(prisma);
+    const dependantCount = await seedDependants(prisma);
     const documentCount = await seedDocuments(prisma, files);
 
     const fixtures = [
@@ -886,7 +935,7 @@ async function main(): Promise<void> {
     });
     const rolesCovered = new Set(STAFF_ACCOUNTS.map((a) => a.role)).size + 1 + 1; // + client_manager + employee
     process.stdout.write(
-      `Seed complete: ${clientCount} client companies; ${employeeCount} employees; ${documentCount} documents (with files); ${requestCount} requests; ${attachmentCount} request files; ${taskCount} tasks; ${vacancyCount} vacancies; ${candidateCount} candidates; ${groCount} GRO processes; ${calendarCount} calendar events; ${leaveCount} leave requests; ${rowCount} scope-check rows ` +
+      `Seed complete: ${clientCount} client companies; ${employeeCount} employees; ${dependantCount} dependants; ${documentCount} documents (with files); ${requestCount} requests; ${attachmentCount} request files; ${taskCount} tasks; ${vacancyCount} vacancies; ${candidateCount} candidates; ${groCount} GRO processes; ${calendarCount} calendar events; ${leaveCount} leave requests; ${rowCount} scope-check rows ` +
         `${notificationCount} notifications (purged ${purgedNotifications} orphans); ` +
         `across clients A (${SEED_CLIENT_A}) and B (${SEED_CLIENT_B}); ${userCount} auth users ` +
         `(${STAFF_ACCOUNTS.length} staff + ${CLIENT_REP_ASSIGNMENTS.length} client managers + 1 employee, ` +

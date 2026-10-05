@@ -393,6 +393,7 @@ export const ModelName = {
   UserSetting: 'UserSetting',
   Client: 'Client',
   Employee: 'Employee',
+  Dependant: 'Dependant',
   Document: 'Document',
   Notification: 'Notification',
   ExpiryAlert: 'ExpiryAlert',
@@ -423,7 +424,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "authUser" | "authAccountToken" | "coreScopeCheck" | "auditEntry" | "systemSetting" | "clientSetting" | "userSetting" | "client" | "employee" | "document" | "notification" | "expiryAlert" | "notificationPreference" | "request" | "requestComment" | "requestAttachment" | "task" | "vacancy" | "candidate" | "groProcess" | "gcalInvitation" | "calendarEvent" | "leaveRequest" | "leaveEntry"
+    modelProps: "authUser" | "authAccountToken" | "coreScopeCheck" | "auditEntry" | "systemSetting" | "clientSetting" | "userSetting" | "client" | "employee" | "dependant" | "document" | "notification" | "expiryAlert" | "notificationPreference" | "request" | "requestComment" | "requestAttachment" | "task" | "vacancy" | "candidate" | "groProcess" | "gcalInvitation" | "calendarEvent" | "leaveRequest" | "leaveEntry"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1090,6 +1091,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.EmployeeCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.EmployeeCountAggregateOutputType> | number
+        }
+      }
+    }
+    Dependant: {
+      payload: Prisma.$DependantPayload<ExtArgs>
+      fields: Prisma.DependantFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.DependantFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DependantPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.DependantFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DependantPayload>
+        }
+        findFirst: {
+          args: Prisma.DependantFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DependantPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.DependantFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DependantPayload>
+        }
+        findMany: {
+          args: Prisma.DependantFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DependantPayload>[]
+        }
+        create: {
+          args: Prisma.DependantCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DependantPayload>
+        }
+        createMany: {
+          args: Prisma.DependantCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.DependantCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DependantPayload>[]
+        }
+        delete: {
+          args: Prisma.DependantDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DependantPayload>
+        }
+        update: {
+          args: Prisma.DependantUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DependantPayload>
+        }
+        deleteMany: {
+          args: Prisma.DependantDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.DependantUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.DependantUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DependantPayload>[]
+        }
+        upsert: {
+          args: Prisma.DependantUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$DependantPayload>
+        }
+        aggregate: {
+          args: Prisma.DependantAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateDependant>
+        }
+        groupBy: {
+          args: Prisma.DependantGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DependantGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.DependantCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.DependantCountAggregateOutputType> | number
         }
       }
     }
@@ -2386,6 +2461,26 @@ export const EmployeeScalarFieldEnum = {
 export type EmployeeScalarFieldEnum = (typeof EmployeeScalarFieldEnum)[keyof typeof EmployeeScalarFieldEnum]
 
 
+export const DependantScalarFieldEnum = {
+  id: 'id',
+  employeeId: 'employeeId',
+  relationship: 'relationship',
+  nameEn: 'nameEn',
+  nameAr: 'nameAr',
+  dateOfBirth: 'dateOfBirth',
+  iqamaNumber: 'iqamaNumber',
+  iqamaExpiry: 'iqamaExpiry',
+  passportExpiry: 'passportExpiry',
+  insuranceExpiry: 'insuranceExpiry',
+  removedAt: 'removedAt',
+  removedByUserId: 'removedByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DependantScalarFieldEnum = (typeof DependantScalarFieldEnum)[keyof typeof DependantScalarFieldEnum]
+
+
 export const DocumentScalarFieldEnum = {
   id: 'id',
   clientId: 'clientId',
@@ -2967,6 +3062,20 @@ export type ListEnumGosiRegistrationStatusFieldRefInput<$PrismaModel> = FieldRef
 
 
 /**
+ * Reference to a field of type 'DependantRelationship'
+ */
+export type EnumDependantRelationshipFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DependantRelationship'>
+    
+
+
+/**
+ * Reference to a field of type 'DependantRelationship[]'
+ */
+export type ListEnumDependantRelationshipFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DependantRelationship[]'>
+    
+
+
+/**
  * Reference to a field of type 'DocumentCategory'
  */
 export type EnumDocumentCategoryFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DocumentCategory'>
@@ -3350,6 +3459,7 @@ export type GlobalOmitConfig = {
   userSetting?: Prisma.UserSettingOmit
   client?: Prisma.ClientOmit
   employee?: Prisma.EmployeeOmit
+  dependant?: Prisma.DependantOmit
   document?: Prisma.DocumentOmit
   notification?: Prisma.NotificationOmit
   expiryAlert?: Prisma.ExpiryAlertOmit

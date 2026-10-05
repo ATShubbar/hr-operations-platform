@@ -5,6 +5,7 @@ import { ClientsModule } from '../clients/public-api';
 import { AccessController } from './api/access.controller';
 import { EmployeesController } from './api/employees.controller';
 import { CandidateHiredHandler } from './application/candidate-hired.handler';
+import { DependantsService } from './application/dependants.service';
 import { EmployeesService } from './application/employees.service';
 
 // Employees module (architecture.md domain core; ADR-003 layout). EMP-01
@@ -13,10 +14,11 @@ import { EmployeesService } from './application/employees.service';
 // caller's capabilities via AuthModule's PolicyService). REC-05: CandidateHiredHandler
 // subscribes to Recruitment's candidate.hired event and creates the employee
 // record (ADR-004) — the event bus is @Global, so no RecruitmentModule import.
+// DEP-01 (ADR-017): DependantsService — the family on an employee's sponsorship.
 @Module({
   imports: [AuditModule, AuthModule, ClientsModule],
   controllers: [EmployeesController, AccessController],
-  providers: [EmployeesService, CandidateHiredHandler],
-  exports: [EmployeesService],
+  providers: [EmployeesService, DependantsService, CandidateHiredHandler],
+  exports: [EmployeesService, DependantsService],
 })
 export class EmployeesModule {}

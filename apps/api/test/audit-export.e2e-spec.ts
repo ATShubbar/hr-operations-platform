@@ -65,6 +65,7 @@ describe('Audit severity + export (AUDIT-07, e2e)', () => {
         ['salary', 'update'], ['govdata', 'update'], ['request', 'process'], ['leave', 'approve'], ['leave', 'decline'],
         ['leave', 'file'], ['client', 'delete'], ['client', 'archive'], ['document', 'delete'], ['candidate', 'delete'],
         ['report', 'export'], ['search', 'identifier-lookup'], ['leave-balance', 'carry-over'],
+        ['dependant', 'create'], ['dependant', 'update'], ['dependant', 'remove'],
       ]) expect(severityOf(r!, a!), `${r}.${a}`).toBe('notable');
       for (const [r, a] of [['task', 'create'], ['request-comment', 'create'], ['calendar-event', 'update'], ['config', 'user-set']])
         expect(severityOf(r!, a!), `${r}.${a}`).toBe('routine');

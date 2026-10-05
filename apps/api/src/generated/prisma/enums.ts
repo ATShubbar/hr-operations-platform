@@ -119,6 +119,15 @@ export const GosiRegistrationStatus = {
 export type GosiRegistrationStatus = (typeof GosiRegistrationStatus)[keyof typeof GosiRegistrationStatus]
 
 
+export const DependantRelationship = {
+  spouse: 'spouse',
+  son: 'son',
+  daughter: 'daughter'
+} as const
+
+export type DependantRelationship = (typeof DependantRelationship)[keyof typeof DependantRelationship]
+
+
 export const DocumentCategory = {
   iqama: 'iqama',
   passport: 'passport',
