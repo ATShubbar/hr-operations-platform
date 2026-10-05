@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { isFinished } from '@hr/contracts';
+import { isFinished, isUnderManagement } from '@hr/contracts';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { AuditService } from '../../audit/public-api';
 import { ClientsService } from '../../clients/public-api';
@@ -90,8 +90,14 @@ export class ReportingService {
 
   // Headcount and composition by client. Clients with no employees are still
   // listed — an empty client is information, not an absence of data.
+  // REP-06: headcount and Saudization count the people UNDER MANAGEMENT — not
+  // left, at an ACTIVE company — the same rule the dashboards use
+  // (`isUnderManagement`, @hr/contracts/headcount). Archived companies are left
+  // out (owner decision); a leaver stays visible in the Terminated column but
+  // adds nothing to the headcount.
   private async workforce(now: Date): Promise<ReportResult> {
-    const [clients, employees] = await Promise.all([this.clients.list(), this.employees.list()]);
+    const [allClients, employees] = await Promise.all([this.clients.list(), this.employees.list()]);
+    const clients = allClients.filter((c) => c.status === 'active');
     const byClient = new Map<string, ReportRow>();
     for (const c of clients) {
       byClient.set(c.id, {
@@ -113,12 +119,15 @@ export class ReportingService {
       suspended: 'suspended',
       terminated: 'terminated',
     };
+    const managed: typeof employees = [];
     for (const e of employees) {
       const row = byClient.get(e.clientId);
-      if (!row) continue; // an employee whose client was hard-deleted — not counted
-      row.headcount = (row.headcount as number) + 1;
+      if (!row) continue; // an archived (or hard-deleted) company — not in this report
       const key = STATUS_KEY[e.employmentStatus];
       if (key) row[key] = (row[key] as number) + 1;
+      if (!isUnderManagement(e.employmentStatus, 'active')) continue; // a leaver: column only
+      managed.push(e);
+      row.headcount = (row.headcount as number) + 1;
       // Saudization proxy: nationality 'SA'. `countsTowardSaudization` is a
       // nullable v1 field (manual entry), so nationality is the reliable signal.
       if (e.nationality === 'SA') row.saudi = (row.saudi as number) + 1;
@@ -132,8 +141,8 @@ export class ReportingService {
     }
     rows.sort(byNumberThenLabel('headcount', 'client'));
 
-    const headcount = employees.length;
-    const saudi = employees.filter((e) => e.nationality === 'SA').length;
+    const headcount = managed.length;
+    const saudi = managed.filter((e) => e.nationality === 'SA').length;
     return {
       id: 'workforce',
       generatedAt: now.toISOString(),
@@ -152,7 +161,7 @@ export class ReportingService {
       summary: {
         clients: clients.length,
         headcount,
-        active: employees.filter((e) => e.employmentStatus === 'active').length,
+        active: managed.filter((e) => e.employmentStatus === 'active').length,
         saudi,
         saudizationPct: headcount === 0 ? 0 : round2((saudi / headcount) * 100),
       },

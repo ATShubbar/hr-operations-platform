@@ -1362,6 +1362,11 @@ task done/cancelled · request **resolved**/closed/cancelled (owner) · procedur
 tabs all use it (the API and web had disagreed). A unit test makes every workflow status DECIDED — a new status fails it
 until someone chooses. The web imports the zod-free SUBPATH (`@hr/contracts/work-status`), never the package root
 (DS-06 landmine; measured: no zod in the queue page's scripts). API **665/665**.
+**REP-06 done — one headcount rule.** `@hr/contracts/headcount` `isUnderManagement(employmentStatus, clientStatus)` (not
+terminated, at an ACTIVE company — DS-17's dashboard rule) now drives the Workforce report too: active companies only
+(owner), headcount/Saudi/Saudization over people under management, leavers still shown in the Terminated column. The
+web's `underManagement()` calls the same function; an e2e test checks the report's totals equal the rule over the whole
+DB. Seed: report 39 → 35 = the dashboard tile. API **668/668**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

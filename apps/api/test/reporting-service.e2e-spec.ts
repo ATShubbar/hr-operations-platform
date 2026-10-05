@@ -243,14 +243,17 @@ describe('Reporting — ReportingService (REP-01)', () => {
 
   // ---- read models ----
 
-  it('workforce: headcount, status split and Saudization for the client', async () => {
+  it('workforce: headcount (under management), status split and Saudization for the client', async () => {
+    // REP-06: headcount and Saudization count the people UNDER MANAGEMENT (not
+    // left, at an active company) — the dashboards' definition. The leaver stays
+    // visible in the Terminated column but no longer adds to the headcount.
     const r = row(await reporting.run('workforce', NOW), 'client', CLIENT_NAME);
-    expect(num(r, 'headcount')).toBe(3);
+    expect(num(r, 'headcount')).toBe(2);
     expect(num(r, 'active')).toBe(2);
     expect(num(r, 'terminated')).toBe(1);
     expect(num(r, 'saudi')).toBe(1);
-    expect(num(r, 'nonSaudi')).toBe(2);
-    expect(num(r, 'saudizationPct')).toBe(33.33);
+    expect(num(r, 'nonSaudi')).toBe(1);
+    expect(num(r, 'saudizationPct')).toBe(50);
   });
 
   it('compliance-expiry: buckets each government item and document by horizon', async () => {

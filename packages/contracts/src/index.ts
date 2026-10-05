@@ -394,3 +394,4 @@ export {
 } from './request-thread.js';
 
 export { FINISHED, isFinished, type WorkKind } from './work-status.js';
+export { isUnderManagement } from './headcount.js';

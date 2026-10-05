@@ -1,3 +1,4 @@
+import { isUnderManagement } from '@hr/contracts/headcount';
 import { isFinished } from '@hr/contracts/work-status';
 import type {
   ClientResponse,
@@ -29,8 +30,12 @@ export function underManagement(
   employees: readonly EmployeeResponse[],
   clients: readonly ClientResponse[],
 ): EmployeeResponse[] {
-  const active = new Set(clients.filter((c) => c.status === 'active').map((c) => c.id));
-  return employees.filter((e) => e.employmentStatus !== 'terminated' && active.has(e.clientId));
+  // The ONE headcount rule (REP-06, @hr/contracts/headcount) — the Workforce
+  // report counts with the same function, so the two always agree.
+  const status = new Map(clients.map((c) => [c.id, c.status]));
+  return employees.filter((e) =>
+    isUnderManagement(e.employmentStatus, status.get(e.clientId) ?? 'inactive'),
+  );
 }
 
 export interface ClientFigures {
