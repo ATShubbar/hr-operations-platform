@@ -1350,8 +1350,12 @@ an ACTIVE STAFF account whose role holds the kind's permission (request.process 
 held by Administrator, HR officer, GRO officer today). Requests, tasks and procedures all call it (create + update;
 clearing to null still allowed for tasks/procedures). The person handed a task (`TaskAssignedEvent` → Notifications,
 category `task`) or a procedure (GRO notifies directly, category `general`) is told, never self, never on a re-save with
-the same assignee. The queue picker offers only `ASSIGNEE_ROLES`. API **658/658**. Follow-up TASK-05: a spawned task's
-due date is still a hard-coded 3 Sun–Thu working days (ignores the request's service level and `working.week`).
+the same assignee. The queue picker offers only `ASSIGNEE_ROLES`. API **658/658**.
+**TASK-05 done — a spawned task is due when its request is, and follows it.** `RequestCreatedEvent` carries `dueDate`
+(the employee path now publishes the row WITH the system's date); new `RequestDueDateChangedEvent` (after commit, only
+on a real change: staff update/snooze, client update, `process` leaving info_needed, the post-reply pause in
+ServiceLevelService) → Tasks moves the request's OPEN task (audited update), never a finished one. The tasks module's
+own working-day copy is DELETED — `@hr/dates` is the only implementation. API **663/663**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
