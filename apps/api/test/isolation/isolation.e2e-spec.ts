@@ -259,6 +259,15 @@ describe('Cross-client isolation harness (e2e)', () => {
           endDate: new Date('2026-11-01T00:00:00Z'),
         })),
       });
+      // And one dependant each, NAMED with their sponsor's id (DEP-02). The staff
+      // role may not delete dependants (soft removal), so cleanup uses the owner.
+      await prisma.dependant.createMany({
+        data: [meId, colleagueId].map((owner) => ({
+          employeeId: owner,
+          relationship: 'spouse' as const,
+          nameEn: `ISO-dependant ${owner}`,
+        })),
+      });
       me = await loginAsEmployee(app, meId);
       colleague = await loginAsEmployee(app, colleagueId);
     });
@@ -272,6 +281,7 @@ describe('Cross-client isolation harness (e2e)', () => {
         adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL ?? '' }),
       });
       await owner.leaveRequest.deleteMany({ where: { clientId: companyId } });
+      await owner.dependant.deleteMany({ where: { employeeId: { in: created } } });
       await owner.$disconnect();
       await prisma.employee.deleteMany({ where: { id: { in: created } } });
       await prisma.clientSetting.deleteMany({ where: { clientId: companyId } });

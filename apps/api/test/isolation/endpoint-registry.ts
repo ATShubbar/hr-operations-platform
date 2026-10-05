@@ -117,6 +117,11 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'PATCH /employees/:id/salary': 'staff',
   'PATCH /employees/:id/govdata': 'staff',
   'DELETE /employees/:id': 'staff',
+  // DEP-02 (ADR-017): dependants — staff only (client managers see nothing of a family).
+  'GET /employees/:id/dependants': 'staff',
+  'POST /employees/:id/dependants': 'staff',
+  'PATCH /employees/:id/dependants/:dependantId': 'staff',
+  'POST /employees/:id/dependants/:dependantId/remove': 'staff',
   // Documents upload flow (DOC-02): staff issue/confirm for an explicit client
   // in the body — cross-client by permission, so 'staff'. Client-rep upload-own
   // is deferred (portal); the table still ships RLS.
@@ -223,6 +228,8 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   // My documents (SS-04): the list is probed by the colleague loop; the download
   // takes an id, so it is `employee-read` (scoping proven in self-service-documents.e2e).
   'GET /me/documents': 'employee',
+  // DEP-02: my family — fixture dependants are NAMED with their sponsor's id.
+  'GET /me/dependants': 'employee',
   'GET /me/documents/:id/download': 'employee-read',
   // My requests (SS-05): the list is probed by the colleague loop; raising one
   // is the employee's only write (scoping proven in self-service-requests.e2e).

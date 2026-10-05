@@ -28,6 +28,7 @@ import {
   type SelfProfileResponse,
   type SelfRequestListResponse,
   type SelfRequestResponse,
+  type SelfDependantListResponse,
 } from '@hr/contracts';
 import { RequirePermission } from '../../../auth/permissions.decorator';
 import { requestContext } from '../../../context/request-context';
@@ -35,7 +36,12 @@ import type { EmployeeModel as EmployeeRecord } from '../../../generated/prisma/
 import { ClientsService } from '../../clients/public-api';
 import { ConfigService } from '../../configuration/public-api';
 import { DocumentsService, toSelfDocumentResponse } from '../../documents/public-api';
-import { EmployeesService, toSelfProfileResponse } from '../../employees/public-api';
+import {
+  DependantsService,
+  EmployeesService,
+  toSelfDependant,
+  toSelfProfileResponse,
+} from '../../employees/public-api';
 import { LeaveBalanceService, LeavePresenter, LeaveService } from '../../leave/public-api';
 import {
   ATTACHMENT_DOWNLOAD_TTL_SECONDS,
@@ -69,6 +75,7 @@ const SELF_DOWNLOAD_TTL_SECONDS = 300;
 export class SelfServiceController {
   constructor(
     private readonly employees: EmployeesService,
+    private readonly dependants: DependantsService,
     private readonly clients: ClientsService,
     private readonly config: ConfigService,
     private readonly documents: DocumentsService,
@@ -91,6 +98,18 @@ export class SelfServiceController {
       ar: company?.nameAr ?? '',
       en: company?.nameEn ?? '',
     });
+  }
+
+  // My family (DEP-02, ADR-017): the dependants on my sponsorship, numbers
+  // included (one's own identifiers — ADR-011), read through app_employee so the
+  // DATABASE decides whose rows exist; removed ones are left out. Same gates as
+  // the rest of /me: the company's switch, a live record.
+  @RequirePermission('self-service.read')
+  @Get('dependants')
+  async myDependants(): Promise<SelfDependantListResponse> {
+    const record = await this.ownRecord();
+    const rows = await this.dependants.listForSelf(record.id);
+    return { dependants: rows.map(toSelfDependant) };
   }
 
   // My documents (SS-04): AVAILABLE ones only, soonest expiry first. The

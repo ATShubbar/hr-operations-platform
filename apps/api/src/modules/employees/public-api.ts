@@ -11,4 +11,5 @@ export {
   type EmployeeVisibility,
 } from './domain/employee-view';
 export type { CreateEmployeeInput } from './domain/employee';
+export { toSelfDependant } from './domain/dependant-view';
 export type { DependantInput, DependantPatch, DependantRelationship } from './domain/dependant';

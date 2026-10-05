@@ -1395,6 +1395,12 @@ fees → Billing ("coming soon"). No new permission. Build: DEP-01 table · DEP-
 NAMES, never the iqama number or dates); severity notable. 404 other sponsor's dependant, 409 removed. Seed: 6 dependants on
 Ahmed Hassan (iqama +45d), Syed Ali, Rajesh Kumar (expired −6d). Six red proofs (4 fences + snapshot + sponsor check).
 API **687/687**.
+**DEP-02 done — the dependants API.** `GET/POST /employees/:id/dependants`, `PATCH …/:dependantId`, `POST …/:dependantId/remove`
+(204) — read `employee.read`, change `govdata.update`, STAFF ONLY via `scopeOf` (proven with a WIDENED policy: a client
+manager granted both perms is still 403 — without that test the check was not load-bearing, since no client role holds
+them). `GET /me/dependants` (self-service, own family incl. numbers, app_employee read). Contracts `dependant.ts`: STRICT
+writes, date-only strings that must be real, iqama `^2\d{9}$`; whitelisted responses, `identifierVisible` + `iqamaNumber:
+null` for non-`govdata.read` readers (narrowed-policy test). Harness fixtures NAMED with the sponsor id. API **700/700**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

@@ -395,3 +395,19 @@ export {
 
 export { FINISHED, isFinished, type WorkKind } from './work-status.js';
 export { isUnderManagement } from './headcount.js';
+export {
+  dependantRelationshipSchema,
+  createDependantSchema,
+  updateDependantSchema,
+  dependantResponseSchema,
+  dependantListResponseSchema,
+  selfDependantSchema,
+  selfDependantListResponseSchema,
+  type DependantRelationship,
+  type CreateDependant,
+  type UpdateDependant,
+  type DependantResponse,
+  type DependantListResponse,
+  type SelfDependant,
+  type SelfDependantListResponse,
+} from './dependant.js';
