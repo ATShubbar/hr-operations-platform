@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import type { AuditListResponse, AuditQuery, AuditSummaryResponse } from '@hr/contracts';
 import { PrismaService } from '../../../prisma/prisma.service';
 import type { Prisma } from '../../../generated/prisma/client';
+import type { AuditEntryModel } from '../../../generated/prisma/models';
+import { severityOf, whereSeverity } from '../domain/severity';
 
 // Audit read (AUDIT-04). Reads through the STAFF path (app_staff holds SELECT
 // on aud_entries; the permissive staff RLS policy returns all clients' rows —
@@ -26,7 +28,9 @@ export interface RecordHistoryRow {
 export class AuditQueryService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async list(query: AuditQuery): Promise<AuditListResponse> {
+  // The filters the Audit trail applies — shared by the list and the export
+  // (AUDIT-07), so a file holds exactly what the screen shows.
+  private whereFor(query: Omit<AuditQuery, 'limit' | 'beforeId'>): Prisma.AuditEntryWhereInput {
     const where: Prisma.AuditEntryWhereInput = {};
     if (query.resource) where.resource = query.resource;
     // DS-15: several record types (a category) — combined with `resource` by AND.
@@ -46,6 +50,14 @@ export class AuditQueryService {
         ...(query.to ? { lte: query.to } : {}),
       };
     }
+    // AUDIT-07: severity is derived from record type + action — filtered on the
+    // server through the same rule table that labels each entry.
+    if (query.severity) where.AND = [...((where.AND as Prisma.AuditEntryWhereInput[]) ?? []), whereSeverity(query.severity)];
+    return where;
+  }
+
+  async list(query: AuditQuery): Promise<AuditListResponse> {
+    const where = this.whereFor(query);
     if (query.beforeId) where.id = { lt: BigInt(query.beforeId) };
 
     // Fetch one extra row to decide whether a next page exists.
@@ -67,6 +79,7 @@ export class AuditQueryService {
         resource: r.resource,
         resourceId: r.resourceId,
         action: r.action,
+        severity: severityOf(r.resource, r.action),
         before: r.before,
         after: r.after,
         requestId: r.requestId,
@@ -85,15 +98,33 @@ export class AuditQueryService {
     const now = new Date();
     const since =
       from ?? new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-    const [eventsToday, actors] = await Promise.all([
+    const [eventsToday, actors, critical] = await Promise.all([
       this.prisma.auditEntry.count({ where: { createdAt: { gte: since } } }),
       this.prisma.auditEntry.findMany({
         where: { actorId: { not: null } },
         distinct: ['actorId'],
         select: { actorId: true },
       }),
+      // AUDIT-07: the Flagged-critical tile — critical events in the same window.
+      this.prisma.auditEntry.count({ where: { AND: [{ createdAt: { gte: since } }, whereSeverity('critical')] } }),
     ]);
-    return { eventsToday, actors: actors.length };
+    return { eventsToday, actors: actors.length, critical };
+  }
+
+  /**
+   * AUDIT-07: the rows an export holds — the same filters as the list, newest
+   * first, at most `max` (one more is read to tell the caller it was cut).
+   */
+  async forExport(
+    query: Omit<AuditQuery, 'limit' | 'beforeId'>,
+    max: number,
+  ): Promise<{ rows: AuditEntryModel[]; truncated: boolean }> {
+    const rows = await this.prisma.auditEntry.findMany({
+      where: this.whereFor(query),
+      orderBy: { id: 'desc' },
+      take: max + 1,
+    });
+    return { rows: rows.slice(0, max), truncated: rows.length > max };
   }
 
   /**

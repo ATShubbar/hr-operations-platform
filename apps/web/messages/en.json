@@ -418,7 +418,6 @@
     "summary": "{count, plural, one {# event today} other {# events today}} · retained for seven years",
     "summaryRetention": "Retained for seven years",
     "export": "Export",
-    "soon": "Soon",
     "tileToday": "Events today",
     "tileActors": "Actors on record",
     "tileCritical": "Flagged critical",
@@ -490,7 +489,8 @@
       "notification-pref": "notification preferences",
       "gcal-invitation": "a calendar invitation",
       "report": "a report",
-      "config": "a setting"
+      "config": "a setting",
+      "audit": "the audit trail"
     },
     "phrase": {
       "config__system-set": "Changed a system-wide setting",
@@ -499,7 +499,6 @@
       "config__user-set": "Changed a personal setting",
       "config__user-clear": "Cleared a personal setting"
     },
-    "severitySoon": "Severity — coming soon",
     "changes": "{count, plural, =0 {What changed} one {What changed · # field} other {What changed · # fields}}",
     "noChanges": "No field values were recorded for this entry.",
     "moreFields": "{count, plural, one {# more field not shown} other {# more fields not shown}}",
@@ -509,7 +508,18 @@
     "notRecorded": "Not recorded",
     "requestId": "Request id",
     "retention": "Retained for seven years · entries cannot be edited or deleted.",
-    "eventsMore": "{count}+ events so far"
+    "eventsMore": "{count}+ events so far",
+    "exporting": "Exporting…",
+    "exportDone": "{count, plural, one {Exported # event.} other {Exported # events.}}",
+    "exportTruncated": "Exported the newest {count, number} events — the export stops there. Narrow the filters for older entries.",
+    "exportError": "Could not export the audit trail.",
+    "severityLabel": "Severity",
+    "allSeverities": "All severities",
+    "severity": {
+      "routine": "Routine",
+      "notable": "Notable",
+      "critical": "Critical"
+    }
   },
   "expiry": {
     "runScan": "Run scan now",

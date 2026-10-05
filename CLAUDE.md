@@ -1371,6 +1371,15 @@ DB. Seed: report 39 → 35 = the dashboard tile. API **668/668**.
 `isValidTimeZone` (Intl-based, DST: gap → forward, overlap → first). The schedule form converts with the CHOSEN zone
 (it used `new Date(datetime-local)`, i.e. the browser's zone) and refuses unknown zones; the transparency view shows the
 local time beside the UTC instant. No API change.
+**AUDIT-07 done — the Audit trail exports, and every entry has a severity.** `audit.export` (Administrator +
+Auditor — the Auditor's one named exception to "changes nothing"; reports stay read-only for them). Severity is DERIVED
+from (record type, action) in ONE table, `modules/audit/domain/severity.ts` — never stored, so an edit re-grades the
+trail; `whereSeverity()` makes it a server-side filter; a test asserts every audited write pair is graded on purpose.
+`GET /audit/export` (in `modules/history`) = the list's filters minus paging, ≤10,000 rows newest first, CSV with FULL
+before/after values (owner), audited Critical BEFORE the bytes return with `{filters, rows, truncated, sha256}` — the act
+and a fingerprint, never the rows. Shared CSV writer `src/csv/csv.ts` (REP-03 now uses it). Screen: pill on notable/
+critical rows only, Severity filter, Flagged critical = today's count + a button into them, Export for holders with a
+truncation note. Live: tile 304 = SQL 304 = file rows; the downloaded bytes' SHA-256 = the audit row's. API **676/676**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

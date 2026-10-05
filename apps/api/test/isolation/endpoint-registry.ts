@@ -58,6 +58,8 @@ export type ScopeClass =
 
 export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'GET /health': 'public',
+  // AUDIT-07: the audit trail export (staff only: Administrator + Auditor).
+  'GET /audit/export': 'staff',
   'GET /ready': 'public',
   'POST /auth/login': 'public',
   // SS-06a: set a password from a one-time emailed link (the TOKEN is the

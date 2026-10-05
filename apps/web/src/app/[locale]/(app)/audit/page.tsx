@@ -13,6 +13,8 @@ import type {
 import { formatHijri } from '@hr/dates';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
+import { useCan } from '@/lib/session';
+import { toneFor } from '@/lib/status-tone';
 import {
   AUDIT_CATEGORIES,
   CATEGORY_CLASS,
@@ -33,6 +35,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { StatusPill } from '@/components/ui/status-pill';
 import { EntryDialog } from './entry-dialog';
 
 // The Audit trail (DS-15) — the prototype's screen (ADR-012) over the audit log
@@ -44,14 +47,20 @@ import { EntryDialog } from './entry-dialog';
 // Filtering only the rows already loaded would silently miss older entries —
 // the reason UX-03c kept this screen off the client-side DataTable.
 //
-// The header's figures come from GET /audit/summary. "Flagged critical" needs a
-// severity nothing records, and Export is a bulk extraction that deserves its own
-// card (who may, audited like REP-03) — both are shown "coming soon".
+// The header's figures come from GET /audit/summary. AUDIT-07: every entry
+// carries the SERVER's severity (routine / notable / critical — one table,
+// modules/audit/domain/severity.ts), the severity filter runs server-side like
+// the others, "Flagged critical" counts today's critical entries and opens them,
+// and Export (audit.export — Administrator + Auditor) downloads EVERY entry the
+// current filters match, not just the pages loaded, as CSV with full before/after
+// values. The export is itself an audited, critical event.
 
 const PAGE_SIZE = 50;
 const ALL = 'all';
 const WINDOWS = ['all', '0', '7', '30'] as const;
 type Window = (typeof WINDOWS)[number];
+const SEVERITIES = ['critical', 'notable', 'routine'] as const;
+type Severity = (typeof SEVERITIES)[number];
 
 /** Local midnight `days` ago, as an ISO instant. */
 function startOfDayAgo(days: number): string {
@@ -113,6 +122,10 @@ export default function AuditTrailPage() {
   const [actor, setActor] = useState(ALL);
   const [category, setCategory] = useState<AuditCategory | typeof ALL>(ALL);
   const [win, setWin] = useState<Window>('all');
+  const [severity, setSeverity] = useState<Severity | typeof ALL>(ALL);
+  const canExport = useCan('audit.export');
+  const [exporting, setExporting] = useState(false);
+  const [exportNote, setExportNote] = useState('');
 
   // Typing searches after a pause, not per keystroke.
   useEffect(() => {
@@ -127,8 +140,9 @@ export default function AuditTrailPage() {
     if (actor !== ALL) p.set('actorId', actor);
     if (category !== ALL) p.set('resources', resourcesOf(category).join(','));
     if (win !== 'all') p.set('from', startOfDayAgo(Number(win)));
+    if (severity !== ALL) p.set('severity', severity);
     return p;
-  }, [q, actor, category, win]);
+  }, [q, actor, category, win, severity]);
 
   const fetchPage = useCallback(
     async (beforeId?: string) => {
@@ -166,13 +180,52 @@ export default function AuditTrailPage() {
       .catch(() => setStaff([]));
   }, []);
 
-  const filtered = q !== '' || actor !== ALL || category !== ALL || win !== 'all';
+  const filtered =
+    q !== '' || actor !== ALL || category !== ALL || win !== 'all' || severity !== ALL;
   const reset = () => {
     setSearch('');
     setQ('');
     setActor(ALL);
     setCategory(ALL);
     setWin('all');
+    setSeverity(ALL);
+  };
+
+  // The export is a file, not JSON — fetched directly so the CSV bytes (BOM and
+  // all) reach the browser untouched. Same filters as the list, minus paging: the
+  // server writes every matching entry, up to its cap, and says when it stopped.
+  async function exportCsv() {
+    setExporting(true);
+    setExportNote('');
+    try {
+      const p = new URLSearchParams(params);
+      p.delete('limit');
+      const qs = p.toString();
+      const res = await fetch(`/api/audit/export${qs ? `?${qs}` : ''}`, { credentials: 'include' });
+      if (res.status === 401) return void router.replace('/login');
+      if (!res.ok) throw new ApiError(res.status, 'export failed');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `audit-trail-${localDay(new Date().toISOString())}.csv`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+      const rows = Number(res.headers.get('X-Export-Rows') ?? 0);
+      setExportNote(
+        res.headers.get('X-Export-Truncated') === 'true'
+          ? t('exportTruncated', { count: rows })
+          : t('exportDone', { count: rows }),
+      );
+    } catch {
+      setExportNote(t('exportError'));
+    } finally {
+      setExporting(false);
+    }
+  }
+  const showCritical = () => {
+    setSeverity('critical');
+    setWin('0');
   };
 
   // ---- labels ----
@@ -239,19 +292,20 @@ export default function AuditTrailPage() {
     );
   }
 
-  const tile = (label: string, value: ReactNode, soon = false) => (
-    <div className="flex flex-col gap-[3px] rounded-xl bg-card p-4 ring-1 ring-foreground/10">
+  const tileBody = (label: string, value: ReactNode) => (
+    <>
       <span className="text-[11px] leading-4 font-medium text-muted-foreground uppercase ltr:tracking-[0.05em]">
         {label}
       </span>
-      {soon ? (
-        <span className="text-[13px] leading-[34px] text-neutral-400">{t('soon')}</span>
-      ) : (
-        <span className="text-[28px] leading-[34px] font-semibold tracking-[-0.02em] tabular-nums">
-          {value}
-        </span>
-      )}
-    </div>
+      <span className="text-[28px] leading-[34px] font-semibold tracking-[-0.02em] tabular-nums">
+        {value}
+      </span>
+    </>
+  );
+  const TILE =
+    'flex flex-col gap-[3px] rounded-xl bg-card p-4 text-start ring-1 ring-foreground/10';
+  const tile = (label: string, value: ReactNode) => (
+    <div className={TILE}>{tileBody(label, value)}</div>
   );
 
   return (
@@ -263,24 +317,42 @@ export default function AuditTrailPage() {
             {summary ? t('summary', { count: summary.eventsToday }) : t('summaryRetention')}
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled
-          aria-describedby="export-soon"
-          className="shrink-0 self-start sm:self-auto"
-        >
-          {t('export')}
-          <span id="export-soon" className="text-[11px] font-normal text-muted-foreground">
-            {t('soon')}
-          </span>
-        </Button>
+        {canExport && (
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={exporting}
+            onClick={() => void exportCsv()}
+            className="shrink-0 self-start sm:self-auto"
+          >
+            {exporting ? t('exporting') : t('export')}
+          </Button>
+        )}
       </div>
+      {exportNote && (
+        <p role="status" className="-mt-2 text-xs leading-4 text-muted-foreground">
+          {exportNote}
+        </p>
+      )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {tile(t('tileToday'), summary ? num.format(summary.eventsToday) : '—')}
         {tile(t('tileActors'), summary ? num.format(summary.actors) : '—')}
-        {tile(t('tileCritical'), null, true)}
+        {summary ? (
+          // The tile is the way in: it shows today's critical entries.
+          <button
+            type="button"
+            onClick={showCritical}
+            className={cn(
+              TILE,
+              'transition-colors outline-none hover:bg-neutral-50 focus-visible:ring-3 focus-visible:ring-ring/50',
+            )}
+          >
+            {tileBody(t('tileCritical'), num.format(summary.critical))}
+          </button>
+        ) : (
+          tile(t('tileCritical'), '—')
+        )}
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -340,6 +412,24 @@ export default function AuditTrailPage() {
             {WINDOWS.map((w) => (
               <SelectItem key={w} value={w}>
                 {t(`window.${w}`)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
+          value={severity}
+          onValueChange={(v) => setSeverity((v as Severity | typeof ALL) ?? ALL)}
+        >
+          <SelectTrigger size="sm" className="w-full sm:w-[200px]" aria-label={t('severityLabel')}>
+            <SelectValue>
+              {(v) => (v === ALL ? t('allSeverities') : t(`severity.${String(v)}`))}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>{t('allSeverities')}</SelectItem>
+            {SEVERITIES.map((s) => (
+              <SelectItem key={s} value={s}>
+                {t(`severity.${s}`)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -430,6 +520,15 @@ export default function AuditTrailPage() {
                         >
                           {t(`category.${cat}`)}
                         </span>
+                        {/* Routine is most of the log — only what matters wears a pill. */}
+                        {e.severity !== 'routine' && (
+                          <StatusPill
+                            tone={toneFor('auditSeverity', e.severity)}
+                            className="shrink-0"
+                          >
+                            {t(`severity.${e.severity}`)}
+                          </StatusPill>
+                        )}
                         <ChevronRight
                           aria-hidden
                           className="hidden size-4 shrink-0 text-neutral-400 sm:block"

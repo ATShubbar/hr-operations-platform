@@ -104,6 +104,8 @@ export const AUDITED_WRITES: Record<string, string> = {
 // deliberately an allow-list, not a coverage requirement — the coverage spec
 // only checks that each entry is still a live GET route.
 export const AUDITED_READS: Record<string, string> = {
+  // AUDIT-07: taking a copy of the trail (with values) is recorded — as Critical.
+  'GET /audit/export': 'audit.export',
   'GET /reports/:id/export': 'report.export',
   // ADR-015: an identifier lookup (iqama, passport, …) that found someone.
   'GET /search': 'search.identifier-lookup',

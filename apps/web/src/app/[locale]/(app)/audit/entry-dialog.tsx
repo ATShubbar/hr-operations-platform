@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import type { AuditEntry } from '@hr/contracts';
 import { formatHijri } from '@hr/dates';
 import { categoryOf, CATEGORY_CLASS } from '@/lib/audit-category';
+import { toneFor } from '@/lib/status-tone';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/avatar';
 import {
@@ -14,14 +15,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { StatusPill } from '@/components/ui/status-pill';
 
 // One audit entry (DS-15) — the prototype's detail dialog: what happened to
 // which record, the category, who, when (both calendars), and — owner decision —
 // each changed field as before → after. That is what audit.read already returns
 // to its holders (Administrator, Auditor); nothing new is exposed.
 //
-// Not recorded, and said so: the source address (the log has none) and a
-// severity (a judgement nothing makes yet).
+// Not recorded, and said so: the source address (the log has none). The
+// severity is the server's (AUDIT-07).
 
 const MAX_FIELDS = 30;
 
@@ -93,9 +95,9 @@ export function EntryDialog({
                 >
                   {t(`category.${cat}`)}
                 </span>
-                <span className="inline-flex h-5 items-center rounded-full px-2 text-[11px] leading-5 text-neutral-500 ring-1 ring-neutral-200 ring-inset">
-                  {t('severitySoon')}
-                </span>
+                <StatusPill tone={toneFor('auditSeverity', entry.severity)}>
+                  {t(`severity.${entry.severity}`)}
+                </StatusPill>
               </div>
 
               <section aria-labelledby="ae-changes" className="flex flex-col gap-1.5">

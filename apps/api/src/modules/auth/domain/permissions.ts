@@ -18,6 +18,8 @@ export const PERMISSIONS = [
   'scope-check.create',
   // Audit log read.
   'audit.read',
+  // AUDIT-07: take a copy of the trail (CSV, with values) — itself audited as Critical.
+  'audit.export',
   // Client companies: staff read the registry; writes create/update/archive.
   // A client rep's own company is read through the portal (portal.read).
   'client.read',
@@ -275,6 +277,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
   administrator: [
     ...STAFF_BASE,
     'audit.read',
+    'audit.export', // AUDIT-07
     'staff-user.read',
     'staff-user.create',
     'staff-user.update',
@@ -410,6 +413,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
   auditor: [
     ...STAFF_BASE,
     'audit.read',
+    'audit.export', // AUDIT-07
     'staff-user.read',
     'client-user.read',
     'employee-user.read',

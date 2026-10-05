@@ -207,8 +207,9 @@ const MATRIX: Record<string, Row> = {
     auditor: ['report.read'], // reads, never exports
   },
   'Audit logs': {
-    administrator: ['audit.read'],
-    auditor: ['audit.read'],
+    // AUDIT-07 (owner): both may export the trail — itself audited, as Critical.
+    administrator: ['audit.read', 'audit.export'],
+    auditor: ['audit.read', 'audit.export'],
   },
   // Employee: the matrix says U (own), but the employee role has never held
   // notification-pref.update (ADR-011 rev. 3 granted only the bell + language).
@@ -271,6 +272,10 @@ describe('Permission matrix v1.7 (ROLE-03, ADR-013)', () => {
       'notification-pref.update',
       'config.write-self',
       'session.end',
+      // AUDIT-07 (owner decision): the Auditor may take the audit trail away as a
+      // file — reading the log IS the role. It changes nothing, and the export is
+      // itself audited as critical. Reports stay read-only for them (above).
+      'audit.export',
     ]);
     const auditorWrites = ROLE_PERMISSIONS.auditor.filter(
       (p) =>

@@ -116,6 +116,16 @@ const LEAVE: Record<string, StatusTone> = {
   withdrawn: 'neutral',
 };
 
+// Audit severity (AUDIT-07): the server's judgement of how much an entry
+// matters (modules/audit/domain/severity.ts). Routine is most of the log and must
+// stay quiet; notable asks for a look; critical (access, settings, legal hold,
+// exports of the log itself) is what a reviewer reads first.
+const AUDIT_SEVERITY: Record<string, StatusTone> = {
+  routine: 'neutral',
+  notable: 'warning',
+  critical: 'critical',
+};
+
 const DOMAINS = {
   vacancy: VACANCY,
   client: CLIENT,
@@ -128,6 +138,7 @@ const DOMAINS = {
   employee: EMPLOYEE,
   candidate: CANDIDATE,
   leave: LEAVE,
+  auditSeverity: AUDIT_SEVERITY,
 } as const;
 
 export type StatusDomain = keyof typeof DOMAINS;

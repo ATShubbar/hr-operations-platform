@@ -98,7 +98,7 @@ Every permission follows one pattern: **`resource.action`** — lowercase, dot-s
 | Tasks | `task` | `task.update` |
 | Calendar | `calendar` | `calendar.create` |
 | Reports | `report` | `report.read`, `report.export` |
-| Audit logs | `audit` | `audit.read` |
+| Audit logs | `audit` | `audit.read`, `audit.export` (AUDIT-07: the trail as CSV, itself audited as Critical) |
 | Notification preferences | `notification-pref` | `notification-pref.update` |
 
 ### Permission matrix (seed)
@@ -124,7 +124,7 @@ Client manager is always scoped to **their own client company only**; Employee i
 | Tasks (internal) | CRUD | CRU (own/assigned) | CRU (own/assigned) | R | – | – |
 | Calendar | CRUD | CRUD | CRUD | R | – | – |
 | Reports | R + export | – | – | R | – | – |
-| Audit logs | R | – | – | R | – | – |
+| Audit logs | R + export | – | – | R + export | – | – |
 | Notification preferences | CRUD (all) | U (own) | U (own) | U (own) | U (own) | U (own) |
 
 ## Tech Stack

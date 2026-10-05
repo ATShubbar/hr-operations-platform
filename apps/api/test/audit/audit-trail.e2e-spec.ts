@@ -120,7 +120,9 @@ describe('Audit trail API — resources, q, summary (DS-15, e2e)', () => {
 
   it('summary: events since a moment, and distinct actors; exactly those keys', async () => {
     const res = await get(`/audit/summary?from=${seededAt.toISOString()}`).expect(200);
-    expect(Object.keys(res.body).sort()).toEqual(['actors', 'eventsToday']);
+    // AUDIT-07 added `critical` (the Flagged critical tile) — its count is
+    // proven in audit-export.e2e-spec.ts.
+    expect(Object.keys(res.body).sort()).toEqual(['actors', 'critical', 'eventsToday']);
     expect(res.body.eventsToday).toBeGreaterThanOrEqual(4);
     expect(res.body.actors).toBeGreaterThanOrEqual(2);
 

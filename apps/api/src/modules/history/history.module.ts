@@ -5,6 +5,7 @@ import { DocumentsModule } from '../documents/public-api';
 import { EmployeesModule } from '../employees/public-api';
 import { GroModule } from '../gro/public-api';
 import { RequestsModule } from '../requests/public-api';
+import { AuditExportController } from './api/audit-export.controller';
 import { EmployeeHistoryController } from './api/employee-history.controller';
 import { RequestHistoryController } from './api/request-history.controller';
 
@@ -17,6 +18,6 @@ import { RequestHistoryController } from './api/request-history.controller';
 // decision trail (GET /requests/:id/history) on the same terms.
 @Module({
   imports: [AuditModule, AuthModule, EmployeesModule, DocumentsModule, GroModule, RequestsModule],
-  controllers: [EmployeeHistoryController, RequestHistoryController],
+  controllers: [EmployeeHistoryController, RequestHistoryController, AuditExportController],
 })
 export class HistoryModule {}

@@ -25,6 +25,8 @@ export const auditQuerySchema = z.object({
     .pipe(z.array(z.string().min(1).max(100)).min(1).max(50))
     .optional(),
   q: z.string().trim().min(1).max(100).optional(),
+  // AUDIT-07: how serious — derived from the record type + action (one rule table).
+  severity: z.enum(['routine', 'notable', 'critical']).optional(),
   limit: z.coerce.number().int().min(1).max(200).default(50),
   // Cursor: return entries with id < beforeId. String because the id is a
   // BigInt (see auditEntrySchema.id) that must not lose precision.
@@ -42,6 +44,8 @@ export const auditEntrySchema = z.object({
   // resources that do not record it). DS-15 shows it as the entry's target.
   resourceId: z.uuid().nullable(),
   action: z.string(),
+  // AUDIT-07: derived, never stored — re-graded if the rule table changes.
+  severity: z.enum(['routine', 'notable', 'critical']),
   before: z.unknown(),
   after: z.unknown(),
   requestId: z.string().nullable(),
@@ -62,6 +66,8 @@ export const auditSummaryQuerySchema = z.object({
 export const auditSummaryResponseSchema = z.object({
   eventsToday: z.number().int(),
   actors: z.number().int(),
+  // AUDIT-07: critical events since `from` — the Flagged-critical tile.
+  critical: z.number().int(),
 });
 
 export type AuditQuery = z.infer<typeof auditQuerySchema>;
