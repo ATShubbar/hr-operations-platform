@@ -1,3 +1,4 @@
+import { isFinished } from '@hr/contracts/work-status';
 import type {
   ClientResponse,
   EmployeeResponse,
@@ -17,8 +18,6 @@ import { DOC_TYPES, datedDocs, isSaudi, type DocKey } from '@/lib/employee-docs'
 //   they are own-scoped (task.read-all lifts it), so the same company would show a
 //   different count to each viewer.
 // - Requests waiting = open requests not yet decided.
-
-const GRO_DONE = new Set(['completed', 'cancelled']);
 
 /**
  * The people under management (DS-17, owner decision): not terminated, AND at a
@@ -59,7 +58,9 @@ export function figuresFor(
       (n, e) => n + datedDocs(e).filter((d) => d.days >= 0 && d.days <= 30).length,
       0,
     ),
-    openItems: processes.filter((p) => p.clientId === clientId && !GRO_DONE.has(p.status)).length,
+    openItems: processes.filter(
+      (p) => p.clientId === clientId && !isFinished('procedure', p.status),
+    ).length,
     waiting: requests.filter((r) => r.clientId === clientId && r.status === 'open').length,
   };
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import { isFinished } from '@hr/contracts/work-status';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import type {
@@ -21,7 +22,7 @@ import { apiFetch } from '@/lib/api';
 import { datedDocs, daysTo, isSaudi } from '@/lib/employee-docs';
 import { Avatar } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { GRO_ACTIVE } from '@/components/gro-work-list';
+import { isOpenProcedure } from '@/components/gro-work-list';
 import { figuresFor, underManagement } from '../clients/client-figures';
 
 // The Reports dashboard (DS-16) — the prototype's analytics panels, computed on
@@ -34,9 +35,7 @@ import { figuresFor, underManagement } from '../clients/client-figures';
 // level is measured against each request's OWN due date (no promised turnaround
 // is stored), and procedures are grouped by TYPE (no portal is stored).
 
-const OPEN = new Set(['open', 'in_progress']);
-// A request waiting on its requester (THREAD-03) still counts as open.
-const REQUEST_OPEN = new Set(['open', 'in_progress', 'info_needed']);
+// Open = not finished — the ONE shared definition (CAL-04).
 const ASSIGNABLE = new Set(['administrator', 'hr_officer', 'gro_officer']);
 const MONTHS = 6;
 
@@ -90,9 +89,9 @@ export function ReportsDashboard() {
     const staffRows = underManagement(data.employees, data.clients);
     const saudis = staffRows.filter(isSaudi).length;
     const docs = staffRows.flatMap(datedDocs);
-    const procs = data.processes.filter((p) => GRO_ACTIVE.has(p.status));
-    const reqs = data.requests.filter((r) => REQUEST_OPEN.has(r.status));
-    const tasks = data.tasks.filter((x) => OPEN.has(x.status));
+    const procs = data.processes.filter((p) => isOpenProcedure(p.status));
+    const reqs = data.requests.filter((r) => !isFinished('request', r.status));
+    const tasks = data.tasks.filter((x) => !isFinished('task', x.status));
     const work = [
       ...procs.map((p) => ({ due: p.dueDate, who: p.assigneeUserId })),
       ...reqs.map((r) => ({ due: r.dueDate, who: r.assigneeUserId })),

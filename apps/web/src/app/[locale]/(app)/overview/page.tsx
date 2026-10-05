@@ -1,5 +1,6 @@
 'use client';
 
+import { isFinished } from '@hr/contracts/work-status';
 import { useEffect, useMemo, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import type {
@@ -65,11 +66,6 @@ import { PortfolioTable } from './portfolio-table';
 // picks by principal. Employees never reach it (AppShell confines them to /me).
 
 const ASSIGNABLE = new Set(['administrator', 'hr_officer', 'gro_officer']);
-const FINISHED = {
-  gro: new Set(['completed', 'cancelled']),
-  request: new Set(['resolved', 'closed', 'cancelled']),
-  task: new Set(['done', 'cancelled']),
-};
 const NEEDS = 5;
 
 // A runway cell's cohort on People: the runway's bands, in People's filter values.
@@ -198,9 +194,9 @@ function StaffOverview() {
   const oldest = pastDue.reduce((m, i) => Math.max(m, -daysTo(i.due as string)), 0);
   const waiting = data.requests.filter((r) => r.status === 'open').length;
   const cleared =
-    data.processes.filter((p) => FINISHED.gro.has(p.status) && isToday(p.updatedAt)).length +
-    data.requests.filter((r) => FINISHED.request.has(r.status) && isToday(r.updatedAt)).length +
-    data.tasks.filter((k) => FINISHED.task.has(k.status) && isToday(k.updatedAt)).length;
+    data.processes.filter((p) => isFinished('procedure', p.status) && isToday(p.updatedAt)).length +
+    data.requests.filter((r) => isFinished('request', r.status) && isToday(r.updatedAt)).length +
+    data.tasks.filter((k) => isFinished('task', k.status) && isToday(k.updatedAt)).length;
 
   const now = new Date();
   const todayLine = [

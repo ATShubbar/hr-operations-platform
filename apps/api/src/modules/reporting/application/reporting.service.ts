@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { isFinished } from '@hr/contracts';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { AuditService } from '../../audit/public-api';
 import { ClientsService } from '../../clients/public-api';
@@ -300,8 +301,8 @@ export class ReportingService {
       const key = STATUS_COLUMN[p.status];
       if (key) row[key] = (row[key] as number) + 1;
       row.total = (row.total as number) + 1;
-      // Overdue = a past due date on a process that still has a live deadline.
-      // Terminal set matches CAL-02's (completed/rejected/cancelled).
+      // Overdue = a past due date on a process that still has a live deadline
+      // (the shared definition of finished, CAL-04).
       if (isActiveProcess(p.status) && isPastDue(p.dueDate, now)) {
         row.overdue = (row.overdue as number) + 1;
         overdue += 1;
@@ -499,16 +500,18 @@ const STATUS_COLUMN: Record<string, string> = {
   cancelled: 'cancelled',
 };
 
-// Terminal-status sets, matching CAL-02's calendar-view definition: an item in a
-// terminal state no longer has a live deadline, so it can never be "overdue".
+// A finished item no longer has a live deadline, so it can never be "overdue".
+// "Finished" is the ONE shared definition (CAL-04, @hr/contracts/work-status), the
+// same the calendar, queue and overviews use: a REJECTED procedure is still open
+// work; a RESOLVED request is finished.
 function isActiveProcess(status: string): boolean {
-  return !['completed', 'rejected', 'cancelled'].includes(status);
+  return !isFinished('procedure', status);
 }
 function isActiveRequest(status: string): boolean {
-  return !['closed', 'cancelled'].includes(status);
+  return !isFinished('request', status);
 }
 function isActiveTask(status: string): boolean {
-  return !['done', 'cancelled'].includes(status);
+  return !isFinished('task', status);
 }
 
 // Rows sort by a headline metric (descending) with a label tie-break, so a report

@@ -1,5 +1,6 @@
 'use client';
 
+import { isFinished } from '@hr/contracts/work-status';
 import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { ListChecks } from 'lucide-react';
@@ -14,7 +15,7 @@ import { apiFetch, ApiError } from '@/lib/api';
 import { useCan } from '@/lib/session';
 import { useStaffDirectory } from '@/lib/staff-directory';
 import { Button } from '@/components/ui/button';
-import { DueCell, GRO_ACTIVE, GroWorkRows, byDue } from '@/components/gro-work-list';
+import { DueCell, isOpenProcedure, GroWorkRows, byDue } from '@/components/gro-work-list';
 import { toastSuccess } from '@/components/ui/toast';
 
 // The Client record's Open work tab (DS-11): what is still open against this
@@ -27,8 +28,6 @@ import { toastSuccess } from '@/components/ui/toast';
 // else only their own or assigned ones — the Tasks screen's rule — and the tab
 // says so, so a shorter list does not read as missing work. The Overview's Open
 // items tile stays procedures-only, the same number for everyone.
-
-const TASK_OPEN = new Set(['open', 'in_progress']);
 
 export function OpenWorkTab({
   clientId,
@@ -57,7 +56,7 @@ export function OpenWorkTab({
   async function loadTasks() {
     try {
       const res = await apiFetch<TaskListResponse>(`/tasks?clientId=${clientId}`);
-      setTasks(res.tasks.filter((x) => TASK_OPEN.has(x.status)).sort(byDue));
+      setTasks(res.tasks.filter((x) => !isFinished('task', x.status)).sort(byDue));
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
       setTasks([]);
@@ -86,7 +85,7 @@ export function OpenWorkTab({
     }
   }
 
-  const procedures = processes.filter((p) => GRO_ACTIVE.has(p.status)).sort(byDue);
+  const procedures = processes.filter((p) => isOpenProcedure(p.status)).sort(byDue);
   const person = (id: string) => {
     const e = employees.find((x) => x.id === id);
     return e ? (locale === 'ar' ? e.name.ar : e.name.en) : null;

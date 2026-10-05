@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import type { EmployeeResponse, GroProcessListResponse, GroProcessResponse } from '@hr/contracts';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
-import { GRO_ACTIVE, GroWorkRows, byDue } from '@/components/gro-work-list';
+import { isOpenProcedure, GroWorkRows, byDue } from '@/components/gro-work-list';
 
 // The Person record's Open work tab (DS-07) — the prototype's list of what is
 // still open on this person, soonest first, each with a due date (and its Hijri
@@ -33,7 +33,7 @@ export function OpenWorkTab({
   async function load() {
     try {
       const res = await apiFetch<GroProcessListResponse>(`/gro-processes?employeeId=${emp.id}`);
-      setItems(res.processes.filter((p) => GRO_ACTIVE.has(p.status)).sort(byDue));
+      setItems(res.processes.filter((p) => isOpenProcedure(p.status)).sort(byDue));
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
       setItems([]);

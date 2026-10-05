@@ -1356,6 +1356,12 @@ the same assignee. The queue picker offers only `ASSIGNEE_ROLES`. API **658/658*
 on a real change: staff update/snooze, client update, `process` leaving info_needed, the post-reply pause in
 ServiceLevelService) → Tasks moves the request's OPEN task (audited update), never a finished one. The tasks module's
 own working-day copy is DELETED — `@hr/dates` is the only implementation. API **663/663**.
+**CAL-04 done — ONE definition of "finished".** `@hr/contracts/work-status` (`FINISHED` + `isFinished(kind, status)`):
+task done/cancelled · request **resolved**/closed/cancelled (owner) · procedure completed/cancelled (**rejected is open**
+— the workflow retries it). Calendar view, reports, queue, both Overviews, client figures, dashboard and the Open-work
+tabs all use it (the API and web had disagreed). A unit test makes every workflow status DECIDED — a new status fails it
+until someone chooses. The web imports the zod-free SUBPATH (`@hr/contracts/work-status`), never the package root
+(DS-06 landmine; measured: no zod in the queue page's scripts). API **665/665**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

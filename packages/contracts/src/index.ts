@@ -392,3 +392,5 @@ export {
   type RequestAttachmentListResponse,
   type RequestAttachmentUploadResponse,
 } from './request-thread.js';
+
+export { FINISHED, isFinished, type WorkKind } from './work-status.js';

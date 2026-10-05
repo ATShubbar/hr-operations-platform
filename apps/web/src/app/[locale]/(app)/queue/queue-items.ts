@@ -1,5 +1,6 @@
 'use client';
 
+import { isFinished } from '@hr/contracts/work-status';
 import { useMemo } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import type {
@@ -9,14 +10,14 @@ import type {
   RequestResponse,
   TaskResponse,
 } from '@hr/contracts';
-import { GRO_ACTIVE } from '@/components/gro-work-list';
 import type { QueueItem } from './queue-actions';
 
 // Open work as one list (DS-12; shared with the Overview in DS-17, so the two
 // screens can't disagree about what is open or in what order).
 //
-// Open means: procedures not completed / cancelled (the GRO screen's rule),
-// requests open or in progress, tasks open or in progress. Order: soonest due
+// Open means NOT finished by the one shared definition (CAL-04): procedures not
+// completed / cancelled (a rejected one is still open), requests not resolved /
+// closed / cancelled (info needed is open), tasks not done / cancelled. Order: soonest due
 // first, no due date last; ties go to whichever was opened first — the
 // prototype's "by statutory deadline, then by how long the file has been open".
 //
@@ -28,14 +29,8 @@ import type { QueueItem } from './queue-actions';
 
 export type QueueView = 'open' | 'finished';
 
-const OPEN = new Set(['open', 'in_progress']);
-// A request waiting on its requester (THREAD-03) is still open work, not finished.
-const REQUEST_OPEN = new Set(['open', 'in_progress', 'info_needed']);
-const DONE = {
-  procedure: new Set(['completed', 'cancelled']),
-  request: new Set(['resolved', 'closed', 'cancelled']),
-  task: new Set(['done', 'cancelled']),
-};
+// Open = NOT finished, finished = finished — the ONE shared definition (CAL-04,
+// @hr/contracts/work-status), the same the calendar, reports and overviews use.
 
 export interface WorkSources {
   processes: readonly GroProcessResponse[];
@@ -67,7 +62,7 @@ export function useQueueItems(
 
     const items: QueueItem[] = [];
     for (const p of processes.filter((x) =>
-      view === 'open' ? GRO_ACTIVE.has(x.status) : DONE.procedure.has(x.status),
+      view === 'open' ? !isFinished('procedure', x.status) : isFinished('procedure', x.status),
     )) {
       const person = personOf(p.employeeId);
       items.push({
@@ -91,7 +86,7 @@ export function useQueueItems(
       });
     }
     for (const q of requests.filter((x) =>
-      view === 'open' ? REQUEST_OPEN.has(x.status) : DONE.request.has(x.status),
+      view === 'open' ? !isFinished('request', x.status) : isFinished('request', x.status),
     )) {
       items.push({
         kind: 'request',
@@ -119,7 +114,7 @@ export function useQueueItems(
       });
     }
     for (const k of tasks.filter((x) =>
-      view === 'open' ? OPEN.has(x.status) : DONE.task.has(x.status),
+      view === 'open' ? !isFinished('task', x.status) : isFinished('task', x.status),
     )) {
       items.push({
         kind: 'task',

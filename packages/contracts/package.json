@@ -2,7 +2,7 @@
   "name": "@hr/contracts",
   "version": "0.0.1",
   "private": true,
-  "description": "Shared request/response schemas (Zod) — single source of truth per ADR-007",
+  "description": "Shared request/response schemas (Zod) \u2014 single source of truth per ADR-007",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -10,6 +10,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./work-status": {
+      "types": "./dist/work-status.d.ts",
+      "default": "./dist/work-status.js"
     }
   },
   "scripts": {

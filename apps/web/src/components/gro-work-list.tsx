@@ -1,5 +1,6 @@
 'use client';
 
+import { isFinished } from '@hr/contracts/work-status';
 import { useState, type FormEvent } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Stamp } from 'lucide-react';
@@ -29,13 +30,8 @@ import { StatusAction } from '@/components/ui/status-action';
 // the GRO screen uses (lib/gro-workflow.ts); completing a process whose type
 // writes an expiry back to the employee asks for that date first (GRO-03).
 
-export const GRO_ACTIVE: ReadonlySet<GroProcessStatus> = new Set([
-  'not_started',
-  'in_progress',
-  'submitted',
-  'approved',
-  'rejected',
-]);
+/** An open procedure — not finished by the ONE shared definition (CAL-04). */
+export const isOpenProcedure = (status: GroProcessStatus) => !isFinished('procedure', status);
 
 /** Soonest due first; undated last. */
 export const byDue = <T extends { dueDate: string | null }>(a: T, b: T) =>

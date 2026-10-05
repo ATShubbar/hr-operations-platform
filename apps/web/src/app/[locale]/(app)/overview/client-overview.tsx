@@ -1,5 +1,6 @@
 'use client';
 
+import { isFinished } from '@hr/contracts/work-status';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import type {
@@ -47,11 +48,9 @@ import { PortfolioTable } from './portfolio-table';
 // hiring pipeline and the procedure counts still work, and every figure built on
 // the register says "not enabled" — the portal pages' own calm state.
 
+// "With the team": open requests the TEAM is working on — deliberately not
+// info_needed, which is waiting on the client (THREAD-03). Not a finished rule.
 const WAITING = new Set(['open', 'in_progress']);
-const FINISHED = {
-  request: new Set(['resolved', 'closed', 'cancelled']),
-  gro: new Set(['completed', 'cancelled']),
-};
 const SHOWN_REQUESTS = 6;
 const EMPTY_PIPELINE: VacancyPipeline = {
   applied: 0,
@@ -210,8 +209,8 @@ export function ClientOverview() {
   const inProgress = pipeline.applied + pipeline.screening + pipeline.interview + pipeline.offer;
   const openRoles = data.vacancies.filter((v) => v.status === 'open').length;
   const cleared =
-    data.requests.filter((r) => FINISHED.request.has(r.status) && isToday(r.updatedAt)).length +
-    data.processes.filter((p) => FINISHED.gro.has(p.status) && isToday(p.updatedAt)).length;
+    data.requests.filter((r) => isFinished('request', r.status) && isToday(r.updatedAt)).length +
+    data.processes.filter((p) => isFinished('procedure', p.status) && isToday(p.updatedAt)).length;
 
   const recent = [...data.requests]
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
