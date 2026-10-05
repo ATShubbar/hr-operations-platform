@@ -105,6 +105,19 @@ export class TasksService {
     return result.row;
   }
 
+  /**
+   * TASK-05: the request's due date moved — its OPEN task(s) follow (each change
+   * audited as an ordinary task update). A finished task is left alone.
+   */
+  async followRequestDueDate(requestId: string, dueDate: Date | null): Promise<void> {
+    const open = await this.prisma.task.findMany({
+      where: { requestId, status: { in: ['open', 'in_progress'] } },
+    });
+    for (const t of open) {
+      if ((t.dueDate?.getTime() ?? null) !== (dueDate?.getTime() ?? null)) await this.update(t.id, { dueDate });
+    }
+  }
+
   async remove(id: string): Promise<TaskRecord | null> {
     return this.prisma.$transaction(async (tx) => {
       const before = await tx.task.findUnique({ where: { id } });

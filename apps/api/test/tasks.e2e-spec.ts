@@ -5,12 +5,13 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AppModule } from '../src/app.module';
 import { PrismaClient } from '../src/generated/prisma/client';
-import { addWorkingDays, isWorkingDay, TasksService } from '../src/modules/tasks/public-api';
+import { TasksService } from '../src/modules/tasks/public-api';
 import { cleanupHelperUsers, loginAsStaff } from './helpers/login';
 
 // TASK-01: the Tasks registry + service (staff path). Service-level (HTTP + the
-// own/assigned scope land in TASK-02) — proves create (audited, defaults), list
-// with the own/assigned scope filter, and the Sun–Thu working-days helper.
+// own/assigned scope land in TASK-02) — proves create (audited, defaults) and list
+// with the own/assigned scope filter. (Working-day maths lives in @hr/dates since
+// TASK-05 removed the tasks module's own copy; its tests are there.)
 
 describe('Tasks service (TASK-01, e2e)', () => {
   let app: INestApplication;
@@ -72,12 +73,4 @@ describe('Tasks service (TASK-01, e2e)', () => {
     expect(bobScoped.some((t) => t.title === 'Alice task')).toBe(false);
   });
 
-  it('computes Sun–Thu-aware due dates (skips Fri/Sat)', () => {
-    // 2026-08-06 is a Thursday; +1 working day → Sunday 2026-08-09 (skip Fri/Sat).
-    const thu = new Date(Date.UTC(2026, 7, 6));
-    expect(isWorkingDay(thu)).toBe(true);
-    expect(isWorkingDay(new Date(Date.UTC(2026, 7, 7)))).toBe(false); // Friday
-    const next = addWorkingDays(thu, 1);
-    expect(next.toISOString().slice(0, 10)).toBe('2026-08-09'); // Sunday
-  });
 });

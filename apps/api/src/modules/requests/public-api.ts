@@ -12,6 +12,7 @@ export type { CreateRequestInput } from './domain/request';
 // creation (TASK-03 — a request spawns a task).
 export { RequestStatusChangedEvent } from './domain/request-status-changed.event';
 export { RequestCreatedEvent } from './domain/request-created.event';
+export { RequestDueDateChangedEvent } from './domain/request-due-date-changed.event';
 export { RequestAssignedEvent } from './domain/request-assigned.event';
 export { RequestCommentAddedEvent } from './domain/request-comment-added.event';
 export { RequestAttachmentAddedEvent } from './domain/request-attachment-added.event';

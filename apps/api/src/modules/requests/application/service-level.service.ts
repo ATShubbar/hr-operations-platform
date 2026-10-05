@@ -5,6 +5,9 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import type { Prisma } from '../../../generated/prisma/client';
 import { AuditService } from '../../audit/public-api';
 import { ConfigService, SERVICE_LEVEL_KEY, serviceLevelDaysSchema } from '../../configuration/public-api';
+import { EventBus } from '../../events/public-api';
+import { requestContext } from '../../../context/request-context';
+import { RequestDueDateChangedEvent } from '../domain/request-due-date-changed.event';
 
 type Tx = Prisma.TransactionClient;
 type Days = Record<RequestType, number>;
@@ -27,6 +30,7 @@ export class ServiceLevelService {
     private readonly config: ConfigService,
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly events: EventBus,
   ) {}
 
   /** The current turnaround per type (the setting; its catalog default when unset). */
@@ -90,13 +94,20 @@ export class ServiceLevelService {
     try {
       const next = await this.dueAfterPause(request.clientId, waited.dueDate, waited.since);
       if (!next || !waited.dueDate) return;
-      await this.prisma.$transaction(async (tx) => {
-        const moved = await tx.request.updateMany({
+      const moved = await this.prisma.$transaction(async (tx) => {
+        const res = await tx.request.updateMany({
           where: { id: request.id, dueDate: waited.dueDate },
           data: { dueDate: next.dueDate },
         });
-        if (moved.count === 1) await this.recordPause(tx, request, waited.dueDate!, next);
+        if (res.count === 1) await this.recordPause(tx, request, waited.dueDate!, next);
+        return res.count === 1;
       });
+      // TASK-05: the request's open task follows its due date.
+      if (moved) {
+        await this.events.publish(
+          new RequestDueDateChangedEvent(request.id, next.dueDate, requestContext.get()?.requestId ?? null),
+        );
+      }
     } catch (err) {
       this.logger.warn(`Request ${request.id}: service-level pause not applied (${String(err)})`);
     }

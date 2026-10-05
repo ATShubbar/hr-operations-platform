@@ -15,6 +15,8 @@ export class RequestCreatedEvent implements DomainEvent {
     readonly type: RequestType,
     readonly title: string,
     readonly createdByUserId: string,
+    // TASK-05: the request's due date (its service level) — the spawned task's.
+    readonly dueDate: Date | null,
     readonly correlationId: string | null,
   ) {}
 }

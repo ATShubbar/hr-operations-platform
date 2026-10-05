@@ -15,6 +15,7 @@ import type {
 } from '../domain/request';
 import { RequestAssignedEvent } from '../domain/request-assigned.event';
 import { RequestCreatedEvent } from '../domain/request-created.event';
+import { RequestDueDateChangedEvent } from '../domain/request-due-date-changed.event';
 import { RequestStatusChangedEvent } from '../domain/request-status-changed.event';
 import { canTransition } from '../domain/status-workflow';
 import { ServiceLevelService } from './service-level.service';
@@ -138,9 +139,11 @@ export class RequestsService {
     // THREAD-04: the employee can't choose a due date (employee_raise), so the
     // SYSTEM sets the type's service level right after the raise commits.
     const dueDate = await this.sla.setInitialDue(row);
-    // Same fact as every other create — Tasks spawns its work item from it.
-    await this.publishCreated(row);
-    return dueDate ? { ...row, dueDate } : row;
+    const withDue = dueDate ? { ...row, dueDate } : row;
+    // Same fact as every other create — Tasks spawns its work item from it,
+    // due when the request is (TASK-05), so publish it WITH the system's date.
+    await this.publishCreated(withDue);
+    return withDue;
   }
 
   // One request THIS employee raised, or null (RLS: employee_own_read) — THREAD-01.
@@ -202,7 +205,7 @@ export class RequestsService {
   }
 
   async update(id: string, data: UpdateRequestInput): Promise<RequestRecord | null> {
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const before = await tx.request.findUnique({ where: { id } });
       if (!before) return null;
       const row = await tx.request.update({ where: { id }, data: toUpdateData(data) });
@@ -214,8 +217,11 @@ export class RequestsService {
         before: snapshot(before),
         after: snapshot(row),
       });
-      return row;
+      return { before, row };
     });
+    if (!result) return null;
+    await this.publishDueDateChanged(result.before.dueDate, result.row);
+    return result.row;
   }
 
   // Advance a request's status (REQ-03), staff path (cross-client). Validates the
@@ -301,6 +307,8 @@ export class RequestsService {
         requestContext.get()?.requestId ?? null,
       ),
     );
+    // TASK-05: leaving info_needed by hand may have moved the due date (the pause).
+    await this.publishDueDateChanged(result.before.dueDate, result.row);
     // REQ-05: "Approve and assign" hands it to someone too — tell them.
     if (result.row.assigneeUserId && result.row.assigneeUserId !== result.before.assigneeUserId) {
       await this.publishAssigned(result.row);
@@ -337,8 +345,18 @@ export class RequestsService {
         row.type,
         row.title,
         row.createdByUserId,
+        row.dueDate,
         requestContext.get()?.requestId ?? null,
       ),
+    );
+  }
+
+  // TASK-05: tell Tasks the due date moved (its open task follows). The pause
+  // after a requester's reply is published by ServiceLevelService itself.
+  private async publishDueDateChanged(before: Date | null, row: RequestRecord): Promise<void> {
+    if ((before?.getTime() ?? null) === (row.dueDate?.getTime() ?? null)) return;
+    await this.events.publish(
+      new RequestDueDateChangedEvent(row.id, row.dueDate, requestContext.get()?.requestId ?? null),
     );
   }
 
@@ -365,7 +383,7 @@ export class RequestsService {
     id: string,
     data: UpdateRequestInput,
   ): Promise<RequestRecord | null> {
-    return this.scoped.transaction(clientId, async (tx) => {
+    const result = await this.scoped.transaction(clientId, async (tx) => {
       // RLS scopes the read; a foreign id is invisible here → null → 404.
       const before = await tx.request.findUnique({ where: { id } });
       if (!before) return null;
@@ -377,8 +395,11 @@ export class RequestsService {
         before: snapshot(before),
         after: snapshot(row),
       });
-      return row;
+      return { before, row };
     });
+    if (!result) return null;
+    await this.publishDueDateChanged(result.before.dueDate, result.row);
+    return result.row;
   }
 }
 
