@@ -22,6 +22,12 @@ export interface RecordHistoryRow {
   actorId: string | null;
   actorRole: string | null;
   at: string;
+  /**
+   * For entries keyed to a PARENT record, the sub-record they concern, read from
+   * the snapshot (DEP-03: a dependant's changes are keyed to the sponsor and carry
+   * `dependantId`). The snapshot itself never leaves this service.
+   */
+  subjectId: string | null;
 }
 
 @Injectable()
@@ -153,6 +159,8 @@ export class AuditQueryService {
         actorId: true,
         actorRole: true,
         createdAt: true,
+        before: true,
+        after: true,
       },
     });
     return rows.map((r) => ({
@@ -163,6 +171,13 @@ export class AuditQueryService {
       actorId: r.actorId,
       actorRole: r.actorRole,
       at: r.createdAt.toISOString(),
+      subjectId: dependantRef(r.after) ?? dependantRef(r.before),
     }));
   }
+}
+
+function dependantRef(snapshot: unknown): string | null {
+  if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot)) return null;
+  const v = (snapshot as Record<string, unknown>).dependantId;
+  return typeof v === 'string' ? v : null;
 }

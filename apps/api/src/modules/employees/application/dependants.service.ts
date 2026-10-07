@@ -34,6 +34,12 @@ export class DependantsService {
     return order(await this.prisma.dependant.findMany({ where: { employeeId, removedAt: null } }));
   }
 
+  // Every dependant this sponsor has ever had, removed ones included — for the
+  // Person record's History, which still names a removed dependant (DEP-03).
+  allFor(employeeId: string): Promise<DependantRecord[]> {
+    return this.prisma.dependant.findMany({ where: { employeeId } });
+  }
+
   // The employee's OWN dependants. The id MUST come from the session: the
   // unfiltered query below returns whatever the employee_self policy admits.
   async listForSelf(employeeId: string): Promise<DependantRecord[]> {

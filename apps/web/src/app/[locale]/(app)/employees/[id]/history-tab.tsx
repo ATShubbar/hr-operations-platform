@@ -86,6 +86,7 @@ export function HistoryTab({ employeeId }: { employeeId: string }) {
       : t('fallback', { resource: e.resource, action: e.action });
     if (e.subject?.kind === 'document') return `${base} · ${e.subject.title}`;
     if (e.subject?.kind === 'gro-process') return `${base} · ${tg(`type.${e.subject.type}`)}`;
+    if (e.subject?.kind === 'dependant') return `${base} · ${e.subject.name}`;
     return base;
   };
   const roleLabel = (role: string | null) => {

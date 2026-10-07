@@ -1401,6 +1401,14 @@ manager granted both perms is still 403 — without that test the check was not 
 them). `GET /me/dependants` (self-service, own family incl. numbers, app_employee read). Contracts `dependant.ts`: STRICT
 writes, date-only strings that must be real, iqama `^2\d{9}$`; whitelisted responses, `identifierVisible` + `iqamaNumber:
 null` for non-`govdata.read` readers (narrowed-policy test). Harness fixtures NAMED with the sponsor id. API **700/700**.
+**DEP-03 done — the Person record's Family tab.** `family-tab.tsx` (the prototype's: header "N dependants sponsored · annual
+dependant fees coming soon", one card per dependant, iqama grouped / "Not yet issued" / masked `••• ••• •••` with sr-only
+text, 3 document rows with Greg+Hijri, days-left chip, Renew ≤90d writing one field) + `dependant-dialog.tsx` (Add/Edit,
+sends ONLY changed fields; a masked number is never sent unless retyped). ⋯ Edit/Remove need `govdata.update`; Auditor sees 0
+buttons. **Found + fixed an API gap:** History never showed dependant changes (ADR-017 said it would) — `forRecords` now
+exposes `subjectId` (the snapshot's `dependantId`, snapshot stays inside), history names the dependant even after removal.
+Phone: below `sm` the date moves under the name (the 4-col grid hid Renew 97px off-card at 375). Arabic summary opening
+with a digit isolated in `<bdi>` (digit landed at the wrong end of the LTR line). API **701/701**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

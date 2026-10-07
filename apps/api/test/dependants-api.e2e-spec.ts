@@ -270,6 +270,53 @@ describe('Dependants API (DEP-02, e2e)', () => {
     });
   });
 
+  describe("the sponsor's History (ADR-017: changes appear on the Person record)", () => {
+    it("add, edit and remove show on the SPONSOR's history, naming the dependant — never on a colleague's", async () => {
+      const id = (
+        await add(p.gro, ids.me, {
+          ...wife(`${MARK} history wife`),
+          relationship: 'spouse',
+        }).expect(201)
+      ).body.id as string;
+      await http()
+        .patch(`${base(ids.me)}/${id}`)
+        .set('Cookie', p.gro.cookie)
+        .send({ nameAr: 'ه' })
+        .expect(200);
+      await http()
+        .post(`${base(ids.me)}/${id}/remove`)
+        .set('Cookie', p.gro.cookie)
+        .expect(204);
+
+      const mine = await http()
+        .get(`/employees/${ids.me}/history`)
+        .set('Cookie', p.hr.cookie)
+        .expect(200);
+      const about = (
+        mine.body.entries as Array<{ resource: string; action: string; subject: unknown }>
+      ).filter(
+        (e) =>
+          e.resource === 'dependant' && JSON.stringify(e.subject).includes(`${MARK} history wife`),
+      );
+      expect(about.map((e) => e.action).sort()).toEqual(['create', 'remove', 'update']);
+      // A REMOVED dependant is still named — history refers to the row.
+      for (const e of about)
+        expect(e.subject).toEqual({
+          kind: 'dependant',
+          name: `${MARK} history wife`,
+          relationship: 'spouse',
+        });
+      // The entry stays curated: no snapshots, no identifier.
+      expect(JSON.stringify(mine.body)).not.toContain('2111111111');
+
+      const theirs = await http()
+        .get(`/employees/${ids.colleague}/history`)
+        .set('Cookie', p.hr.cookie)
+        .expect(200);
+      expect(JSON.stringify(theirs.body)).not.toContain(`${MARK} history wife`);
+    });
+  });
+
   describe('GET /me/dependants', () => {
     it("an employee reads their OWN family, numbers included — never a colleague's", async () => {
       await add(p.hr, ids.colleague, wife(`${MARK} colleague wife`)).expect(201);

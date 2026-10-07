@@ -19,6 +19,7 @@ import { StatusPill } from '@/components/ui/status-pill';
 import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs';
 import { useRecordLabel } from '@/components/header-location';
 import { DocumentsTab } from './documents-tab';
+import { FamilyTab } from './family-tab';
 import { HistoryTab } from './history-tab';
 import { LeaveTab } from './leave-tab';
 import { OpenWorkTab } from './open-work-tab';
@@ -30,9 +31,9 @@ import { StartProcedureDialog } from './start-procedure-dialog';
 // link, a header card (avatar, both names, status, a position · company ·
 // department line, Start a procedure), and seven tabs.
 //
-// Built: Profile (DS-06), Documents and Open work (DS-07). Family, Leave and
-// Mobilisation have no backend and are shown "coming soon" (owner rule); History
-// is the person's curated audit timeline (AUDIT-06).
+// Built: Profile (DS-06), Documents and Open work (DS-07), Leave (LEAVE-05),
+// Family (DEP-03, ADR-017). Mobilisation has no backend and is shown "coming
+// soon" (owner rule); History is the person's curated audit timeline (AUDIT-06).
 //
 // Two things the prototype does not show are kept (owner decision): the
 // employee's self-service access, as the last block of Profile, and Terminate,
@@ -258,17 +259,23 @@ export default function PersonRecordPage() {
           <LeaveTab employeeId={emp.id} terminated={emp.employmentStatus === 'terminated'} />
         </TabsPanel>
 
-        {(['family', 'mob'] as const).map((k) => (
-          <TabsPanel key={k} value={k}>
-            <div className="rounded-xl bg-card p-6 ring-1 ring-foreground/10">
-              <EmptyState
-                variant="first-run"
-                title={ts('comingSoon')}
-                description={t(`soon.${k}`)}
-              />
-            </div>
-          </TabsPanel>
-        ))}
+        <TabsPanel value="family">
+          <FamilyTab
+            employeeId={emp.id}
+            sponsorName={name}
+            terminated={emp.employmentStatus === 'terminated'}
+          />
+        </TabsPanel>
+
+        <TabsPanel value="mob">
+          <div className="rounded-xl bg-card p-6 ring-1 ring-foreground/10">
+            <EmptyState
+              variant="first-run"
+              title={ts('comingSoon')}
+              description={t('soon.mob')}
+            />
+          </div>
+        </TabsPanel>
       </Tabs>
 
       {canStartProcedure && (

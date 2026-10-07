@@ -6,7 +6,7 @@ import { requestContext } from '../../../context/request-context';
 import { AuditQueryService } from '../../audit/public-api';
 import { UsersService } from '../../auth/public-api';
 import { DocumentsService } from '../../documents/public-api';
-import { EmployeesService } from '../../employees/public-api';
+import { DependantsService, EmployeesService } from '../../employees/public-api';
 import { GroProcessesService } from '../../gro/public-api';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -16,7 +16,7 @@ const LIMIT = 100;
 
 // GET /employees/:id/history (AUDIT-06) — one person's history: their record,
 // their self-service account, their documents (deleted ones included) and their
-// GRO processes, newest first.
+// GRO processes and (DEP-03) their dependants, newest first.
 //
 // STAFF ONLY and gated by `employee.history`, the curated capability every staff
 // role holds. What it returns is curated on purpose: action, which record, the
@@ -27,6 +27,7 @@ const LIMIT = 100;
 export class EmployeeHistoryController {
   constructor(
     private readonly employees: EmployeesService,
+    private readonly dependants: DependantsService,
     private readonly documents: DocumentsService,
     private readonly gro: GroProcessesService,
     private readonly audit: AuditQueryService,
@@ -41,10 +42,12 @@ export class EmployeeHistoryController {
       throw new NotFoundException('Employee not found');
     }
 
-    const [docs, processes] = await Promise.all([
+    const [docs, processes, family] = await Promise.all([
       this.documents.allForEmployee(id),
       this.gro.list({ employeeId: id }),
+      this.dependants.allFor(id),
     ]);
+    const dependantById = new Map(family.map((d) => [d.id, d]));
     const docById = new Map(docs.map((d) => [d.id, d]));
     const procById = new Map(processes.map((p) => [p.id, p]));
 
@@ -55,6 +58,8 @@ export class EmployeeHistoryController {
         { resource: 'employee-user', ids: [id] },
         { resource: 'document', ids: docs.map((d) => d.id) },
         { resource: 'gro-process', ids: processes.map((p) => p.id) },
+        // DEP-03 (ADR-017): dependant changes are keyed to the sponsor.
+        { resource: 'dependant', ids: [id] },
       ],
       LIMIT + 1,
     );
@@ -66,6 +71,8 @@ export class EmployeeHistoryController {
     const entries: EmployeeHistoryEntry[] = page.map((r) => {
       const doc = r.resource === 'document' ? docById.get(r.resourceId) : undefined;
       const proc = r.resource === 'gro-process' ? procById.get(r.resourceId) : undefined;
+      const dep =
+        r.resource === 'dependant' && r.subjectId ? dependantById.get(r.subjectId) : undefined;
       return {
         id: r.id,
         at: r.at,
@@ -80,7 +87,9 @@ export class EmployeeHistoryController {
           ? { kind: 'document', title: doc.title, category: doc.category }
           : proc
             ? { kind: 'gro-process', type: proc.type }
-            : null,
+            : dep
+              ? { kind: 'dependant', name: dep.nameEn, relationship: dep.relationship }
+              : null,
       };
     });
     return { entries, truncated: rows.length > LIMIT };

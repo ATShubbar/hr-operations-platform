@@ -15,6 +15,8 @@ export const historyResourceSchema = z.enum([
   'document',
   'gro-process',
   'request',
+  // DEP-03 (ADR-017): a dependant's changes, keyed to the sponsor.
+  'dependant',
 ]);
 
 export const employeeHistoryEntrySchema = z.object({
@@ -33,6 +35,8 @@ export const employeeHistoryEntrySchema = z.object({
     .discriminatedUnion('kind', [
       z.object({ kind: z.literal('document'), title: z.string(), category: z.string() }),
       z.object({ kind: z.literal('gro-process'), type: z.string() }),
+      // The dependant by name and relationship — never their iqama number.
+      z.object({ kind: z.literal('dependant'), name: z.string(), relationship: z.string() }),
     ])
     .nullable(),
 });

@@ -1442,7 +1442,6 @@
       "history": "History"
     },
     "soon": {
-      "family": "Dependants on this employee's sponsorship and their own iqama dates.",
       "mob": "Onboarding and final-exit steps, in order, with what is blocking each."
     },
     "redaction": {
@@ -1619,6 +1618,11 @@
           "create": "Procedure opened",
           "update": "Procedure updated",
           "status": "Procedure status changed"
+        },
+        "dependant": {
+          "create": "Dependant added",
+          "update": "Dependant updated",
+          "remove": "Dependant removed"
         }
       },
       "fallback": "{resource} · {action}",
@@ -1630,6 +1634,75 @@
       "since": "History is kept from 4 Oct 2026; earlier changes were logged without the record they concerned.",
       "truncated": "Showing the 100 most recent entries.",
       "error": "Could not load this person's history."
+    },
+    "family": {
+      "title": "Dependants",
+      "summary": "{count, plural, one {# dependant sponsored} other {# dependants sponsored}}",
+      "feeSoon": "annual dependant fees coming soon",
+      "emptySummary": "No dependants on file. Family iqamas are sponsored by the employee and renewed with their own annual fee.",
+      "nothing": "Nothing on file.",
+      "add": "Add a dependant",
+      "relationship": {
+        "spouse": "Spouse",
+        "son": "Son",
+        "daughter": "Daughter"
+      },
+      "age": "{n, plural, one {# year} other {# years}}",
+      "ageUnknown": "Age not recorded",
+      "notIssued": "Not yet issued",
+      "hidden": "Iqama number hidden",
+      "doc": {
+        "iqama": "Dependant iqama",
+        "passport": "Dependant passport",
+        "insurance": "Dependant insurance"
+      },
+      "notOnFile": "Not on file",
+      "renew": "Renew",
+      "more": "More actions for {name}",
+      "edit": "Edit",
+      "remove": "Remove",
+      "removeTitle": "Remove {name}?",
+      "removeBody": "They leave this list. The record is kept, and the change stays in this person's history.",
+      "removeConfirm": "Remove",
+      "removing": "Removing…",
+      "removed": "{name} removed.",
+      "removeError": "Could not remove. Try again.",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…",
+      "loadError": "Could not load dependants.",
+      "renewTitle": "Record a renewal",
+      "newExpiry": "New expiry date",
+      "renewed": "{label} for {name} now expires {date}.",
+      "renewError": "Could not save the new date.",
+      "renewPast": "Choose a date after today.",
+      "dialog": {
+        "addTitle": "Add a dependant",
+        "editTitle": "Edit dependant",
+        "description": "Sponsored under {name}.",
+        "relationship": "Relationship",
+        "nameEn": "Full name",
+        "nameAr": "Name in Arabic",
+        "dateOfBirth": "Date of birth",
+        "iqamaNumber": "Iqama number",
+        "iqamaHint": "Leave empty if not yet issued",
+        "iqamaHidden": "Hidden — type a new number to replace it",
+        "iqamaExpiry": "Iqama expiry",
+        "passportExpiry": "Passport expiry",
+        "insuranceExpiry": "Insurance expiry",
+        "add": "Add dependant",
+        "save": "Save changes",
+        "saving": "Saving…",
+        "added": "{name} added as a dependant.",
+        "saved": "Changes saved.",
+        "error": {
+          "name": "Give the dependant a name.",
+          "iqama": "An iqama number is 10 digits starting with 2.",
+          "invalid": "Some details aren't valid. Check the dates and the iqama number.",
+          "generic": "Could not save. Try again.",
+          "removed": "This dependant has been removed."
+        }
+      }
     }
   },
   "hiring": {
