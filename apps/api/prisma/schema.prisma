@@ -763,6 +763,59 @@ enum GroProcessStatus {
   cancelled
 }
 
+// Onboarding and final-exit SEQUENCES (MOB-01, ADR-018): one row per run of one of
+// the two fixed step lists (gro/domain/sequence-definitions.ts). STAFF-OWNED — client
+// managers and employees see nothing (owner decision), so app_client/app_employee get
+// no grants. At most ONE running sequence per employee per kind (a partial unique
+// index in the migration — Prisma can't express it). `clientId` is the employee's
+// company when the run started, for reporting. Nothing is deleted: a run ends
+// `completed` or `cancelled`.
+model GroSequence {
+  id                String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employeeId        String            @map("employee_id") @db.Uuid
+  clientId          String            @map("client_id") @db.Uuid
+  kind              GroSequenceKind
+  status            GroSequenceStatus @default(running)
+  startedOn         DateTime          @map("started_on") @db.Date
+  startedByUserId   String?           @map("started_by_user_id") @db.Uuid
+  completedAt       DateTime?         @map("completed_at")
+  cancelledAt       DateTime?         @map("cancelled_at")
+  cancelledByUserId String?           @map("cancelled_by_user_id") @db.Uuid
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+  steps             GroSequenceStep[]
+
+  @@index([employeeId])
+  @@index([status])
+  @@map("gro_sequences")
+}
+
+// One row per step of a run, created when the run starts. Filing sets filed_on/by;
+// REOPENING clears them (the row stays — no DELETE grant).
+model GroSequenceStep {
+  id             String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sequenceId     String      @map("sequence_id") @db.Uuid
+  stepKey        String      @map("step_key")
+  filedOn        DateTime?   @map("filed_on") @db.Date
+  filedByUserId  String?     @map("filed_by_user_id") @db.Uuid
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+  sequence       GroSequence @relation(fields: [sequenceId], references: [id])
+
+  @@unique([sequenceId, stepKey])
+  @@map("gro_sequence_steps")
+}
+
+enum GroSequenceKind {
+  onboarding
+  final_exit
+}
+
+enum GroSequenceStatus {
+  running
+  completed
+  cancelled
+}
+
 // Google Calendar invitations (GCAL-02, ADR-009). The platform-side record of an
 // outbound invitation: the external Google event id, the reference code that links
 // back (the platform record is the source of truth), and the exact WHITELISTED

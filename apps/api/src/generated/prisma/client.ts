@@ -145,6 +145,16 @@ export type Candidate = Prisma.CandidateModel
  */
 export type GroProcess = Prisma.GroProcessModel
 /**
+ * Model GroSequence
+ * 
+ */
+export type GroSequence = Prisma.GroSequenceModel
+/**
+ * Model GroSequenceStep
+ * 
+ */
+export type GroSequenceStep = Prisma.GroSequenceStepModel
+/**
  * Model GcalInvitation
  * 
  */

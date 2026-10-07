@@ -277,6 +277,23 @@ export const GroProcessStatus = {
 export type GroProcessStatus = (typeof GroProcessStatus)[keyof typeof GroProcessStatus]
 
 
+export const GroSequenceKind = {
+  onboarding: 'onboarding',
+  final_exit: 'final_exit'
+} as const
+
+export type GroSequenceKind = (typeof GroSequenceKind)[keyof typeof GroSequenceKind]
+
+
+export const GroSequenceStatus = {
+  running: 'running',
+  completed: 'completed',
+  cancelled: 'cancelled'
+} as const
+
+export type GroSequenceStatus = (typeof GroSequenceStatus)[keyof typeof GroSequenceStatus]
+
+
 export const GcalInvitationKind = {
   interview: 'interview',
   meeting: 'meeting'

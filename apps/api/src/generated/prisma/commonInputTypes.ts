@@ -884,6 +884,40 @@ export type EnumGroProcessStatusWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumGroProcessStatusFilter<$PrismaModel>
 }
 
+export type EnumGroSequenceKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.GroSequenceKind | Prisma.EnumGroSequenceKindFieldRefInput<$PrismaModel>
+  in?: $Enums.GroSequenceKind[] | Prisma.ListEnumGroSequenceKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.GroSequenceKind[] | Prisma.ListEnumGroSequenceKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumGroSequenceKindFilter<$PrismaModel> | $Enums.GroSequenceKind
+}
+
+export type EnumGroSequenceStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.GroSequenceStatus | Prisma.EnumGroSequenceStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.GroSequenceStatus[] | Prisma.ListEnumGroSequenceStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.GroSequenceStatus[] | Prisma.ListEnumGroSequenceStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumGroSequenceStatusFilter<$PrismaModel> | $Enums.GroSequenceStatus
+}
+
+export type EnumGroSequenceKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.GroSequenceKind | Prisma.EnumGroSequenceKindFieldRefInput<$PrismaModel>
+  in?: $Enums.GroSequenceKind[] | Prisma.ListEnumGroSequenceKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.GroSequenceKind[] | Prisma.ListEnumGroSequenceKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumGroSequenceKindWithAggregatesFilter<$PrismaModel> | $Enums.GroSequenceKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumGroSequenceKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumGroSequenceKindFilter<$PrismaModel>
+}
+
+export type EnumGroSequenceStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.GroSequenceStatus | Prisma.EnumGroSequenceStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.GroSequenceStatus[] | Prisma.ListEnumGroSequenceStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.GroSequenceStatus[] | Prisma.ListEnumGroSequenceStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumGroSequenceStatusWithAggregatesFilter<$PrismaModel> | $Enums.GroSequenceStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumGroSequenceStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumGroSequenceStatusFilter<$PrismaModel>
+}
+
 export type EnumGcalInvitationKindFilter<$PrismaModel = never> = {
   equals?: $Enums.GcalInvitationKind | Prisma.EnumGcalInvitationKindFieldRefInput<$PrismaModel>
   in?: $Enums.GcalInvitationKind[] | Prisma.ListEnumGcalInvitationKindFieldRefInput<$PrismaModel>
@@ -1792,6 +1826,40 @@ export type NestedEnumGroProcessStatusWithAggregatesFilter<$PrismaModel = never>
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumGroProcessStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumGroProcessStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumGroSequenceKindFilter<$PrismaModel = never> = {
+  equals?: $Enums.GroSequenceKind | Prisma.EnumGroSequenceKindFieldRefInput<$PrismaModel>
+  in?: $Enums.GroSequenceKind[] | Prisma.ListEnumGroSequenceKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.GroSequenceKind[] | Prisma.ListEnumGroSequenceKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumGroSequenceKindFilter<$PrismaModel> | $Enums.GroSequenceKind
+}
+
+export type NestedEnumGroSequenceStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.GroSequenceStatus | Prisma.EnumGroSequenceStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.GroSequenceStatus[] | Prisma.ListEnumGroSequenceStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.GroSequenceStatus[] | Prisma.ListEnumGroSequenceStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumGroSequenceStatusFilter<$PrismaModel> | $Enums.GroSequenceStatus
+}
+
+export type NestedEnumGroSequenceKindWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.GroSequenceKind | Prisma.EnumGroSequenceKindFieldRefInput<$PrismaModel>
+  in?: $Enums.GroSequenceKind[] | Prisma.ListEnumGroSequenceKindFieldRefInput<$PrismaModel>
+  notIn?: $Enums.GroSequenceKind[] | Prisma.ListEnumGroSequenceKindFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumGroSequenceKindWithAggregatesFilter<$PrismaModel> | $Enums.GroSequenceKind
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumGroSequenceKindFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumGroSequenceKindFilter<$PrismaModel>
+}
+
+export type NestedEnumGroSequenceStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.GroSequenceStatus | Prisma.EnumGroSequenceStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.GroSequenceStatus[] | Prisma.ListEnumGroSequenceStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.GroSequenceStatus[] | Prisma.ListEnumGroSequenceStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumGroSequenceStatusWithAggregatesFilter<$PrismaModel> | $Enums.GroSequenceStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumGroSequenceStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumGroSequenceStatusFilter<$PrismaModel>
 }
 
 export type NestedEnumGcalInvitationKindFilter<$PrismaModel = never> = {

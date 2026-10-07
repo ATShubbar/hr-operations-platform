@@ -405,6 +405,8 @@ export const ModelName = {
   Vacancy: 'Vacancy',
   Candidate: 'Candidate',
   GroProcess: 'GroProcess',
+  GroSequence: 'GroSequence',
+  GroSequenceStep: 'GroSequenceStep',
   GcalInvitation: 'GcalInvitation',
   CalendarEvent: 'CalendarEvent',
   LeaveRequest: 'LeaveRequest',
@@ -424,7 +426,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "authUser" | "authAccountToken" | "coreScopeCheck" | "auditEntry" | "systemSetting" | "clientSetting" | "userSetting" | "client" | "employee" | "dependant" | "document" | "notification" | "expiryAlert" | "notificationPreference" | "request" | "requestComment" | "requestAttachment" | "task" | "vacancy" | "candidate" | "groProcess" | "gcalInvitation" | "calendarEvent" | "leaveRequest" | "leaveEntry"
+    modelProps: "authUser" | "authAccountToken" | "coreScopeCheck" | "auditEntry" | "systemSetting" | "clientSetting" | "userSetting" | "client" | "employee" | "dependant" | "document" | "notification" | "expiryAlert" | "notificationPreference" | "request" | "requestComment" | "requestAttachment" | "task" | "vacancy" | "candidate" | "groProcess" | "groSequence" | "groSequenceStep" | "gcalInvitation" | "calendarEvent" | "leaveRequest" | "leaveEntry"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1982,6 +1984,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    GroSequence: {
+      payload: Prisma.$GroSequencePayload<ExtArgs>
+      fields: Prisma.GroSequenceFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.GroSequenceFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroSequencePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.GroSequenceFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroSequencePayload>
+        }
+        findFirst: {
+          args: Prisma.GroSequenceFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroSequencePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.GroSequenceFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroSequencePayload>
+        }
+        findMany: {
+          args: Prisma.GroSequenceFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroSequencePayload>[]
+        }
+        create: {
+          args: Prisma.GroSequenceCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroSequencePayload>
+        }
+        createMany: {
+          args: Prisma.GroSequenceCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.GroSequenceCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroSequencePayload>[]
+        }
+        delete: {
+          args: Prisma.GroSequenceDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroSequencePayload>
+        }
+        update: {
+          args: Prisma.GroSequenceUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroSequencePayload>
+        }
+        deleteMany: {
+          args: Prisma.GroSequenceDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.GroSequenceUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.GroSequenceUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroSequencePayload>[]
+        }
+        upsert: {
+          args: Prisma.GroSequenceUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroSequencePayload>
+        }
+        aggregate: {
+          args: Prisma.GroSequenceAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateGroSequence>
+        }
+        groupBy: {
+          args: Prisma.GroSequenceGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GroSequenceGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.GroSequenceCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GroSequenceCountAggregateOutputType> | number
+        }
+      }
+    }
+    GroSequenceStep: {
+      payload: Prisma.$GroSequenceStepPayload<ExtArgs>
+      fields: Prisma.GroSequenceStepFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.GroSequenceStepFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroSequenceStepPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.GroSequenceStepFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroSequenceStepPayload>
+        }
+        findFirst: {
+          args: Prisma.GroSequenceStepFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroSequenceStepPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.GroSequenceStepFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroSequenceStepPayload>
+        }
+        findMany: {
+          args: Prisma.GroSequenceStepFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroSequenceStepPayload>[]
+        }
+        create: {
+          args: Prisma.GroSequenceStepCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroSequenceStepPayload>
+        }
+        createMany: {
+          args: Prisma.GroSequenceStepCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.GroSequenceStepCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroSequenceStepPayload>[]
+        }
+        delete: {
+          args: Prisma.GroSequenceStepDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroSequenceStepPayload>
+        }
+        update: {
+          args: Prisma.GroSequenceStepUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroSequenceStepPayload>
+        }
+        deleteMany: {
+          args: Prisma.GroSequenceStepDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.GroSequenceStepUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.GroSequenceStepUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroSequenceStepPayload>[]
+        }
+        upsert: {
+          args: Prisma.GroSequenceStepUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GroSequenceStepPayload>
+        }
+        aggregate: {
+          args: Prisma.GroSequenceStepAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateGroSequenceStep>
+        }
+        groupBy: {
+          args: Prisma.GroSequenceStepGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GroSequenceStepGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.GroSequenceStepCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GroSequenceStepCountAggregateOutputType> | number
+        }
+      }
+    }
     GcalInvitation: {
       payload: Prisma.$GcalInvitationPayload<ExtArgs>
       fields: Prisma.GcalInvitationFieldRefs
@@ -2668,6 +2818,36 @@ export const GroProcessScalarFieldEnum = {
 export type GroProcessScalarFieldEnum = (typeof GroProcessScalarFieldEnum)[keyof typeof GroProcessScalarFieldEnum]
 
 
+export const GroSequenceScalarFieldEnum = {
+  id: 'id',
+  employeeId: 'employeeId',
+  clientId: 'clientId',
+  kind: 'kind',
+  status: 'status',
+  startedOn: 'startedOn',
+  startedByUserId: 'startedByUserId',
+  completedAt: 'completedAt',
+  cancelledAt: 'cancelledAt',
+  cancelledByUserId: 'cancelledByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GroSequenceScalarFieldEnum = (typeof GroSequenceScalarFieldEnum)[keyof typeof GroSequenceScalarFieldEnum]
+
+
+export const GroSequenceStepScalarFieldEnum = {
+  id: 'id',
+  sequenceId: 'sequenceId',
+  stepKey: 'stepKey',
+  filedOn: 'filedOn',
+  filedByUserId: 'filedByUserId',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GroSequenceStepScalarFieldEnum = (typeof GroSequenceStepScalarFieldEnum)[keyof typeof GroSequenceStepScalarFieldEnum]
+
+
 export const GcalInvitationScalarFieldEnum = {
   id: 'id',
   externalEventId: 'externalEventId',
@@ -3258,6 +3438,34 @@ export type ListEnumGroProcessStatusFieldRefInput<$PrismaModel> = FieldRefInputT
 
 
 /**
+ * Reference to a field of type 'GroSequenceKind'
+ */
+export type EnumGroSequenceKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GroSequenceKind'>
+    
+
+
+/**
+ * Reference to a field of type 'GroSequenceKind[]'
+ */
+export type ListEnumGroSequenceKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GroSequenceKind[]'>
+    
+
+
+/**
+ * Reference to a field of type 'GroSequenceStatus'
+ */
+export type EnumGroSequenceStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GroSequenceStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'GroSequenceStatus[]'
+ */
+export type ListEnumGroSequenceStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GroSequenceStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'GcalInvitationKind'
  */
 export type EnumGcalInvitationKindFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'GcalInvitationKind'>
@@ -3471,6 +3679,8 @@ export type GlobalOmitConfig = {
   vacancy?: Prisma.VacancyOmit
   candidate?: Prisma.CandidateOmit
   groProcess?: Prisma.GroProcessOmit
+  groSequence?: Prisma.GroSequenceOmit
+  groSequenceStep?: Prisma.GroSequenceStepOmit
   gcalInvitation?: Prisma.GcalInvitationOmit
   calendarEvent?: Prisma.CalendarEventOmit
   leaveRequest?: Prisma.LeaveRequestOmit

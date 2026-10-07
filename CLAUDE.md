@@ -1422,6 +1422,12 @@ Owner: the Hiring column becomes real (candidate stage `mobilisation` creates th
 it; withdraw/reject mid-mobilisation cancels + terminates) · fees SHOWN only (Billing records) · final exit's last step
 TERMINATES · staff only (`gro.process` files, Auditor reads; `scopeOf` keeps client managers out). Events: CandidateMobilising
 → EmployeeMobilising → OnboardingCompleted. Not in queue/calendar yet. Build MOB-01..05; MOB-04 must handle ~20 status readers.
+**MOB-01 done — sequence tables, engine, service.** `gro_sequences` + `gro_sequence_steps` (staff-owned: app_staff SELECT/INSERT/
+UPDATE, NO DELETE; app_client/app_employee nothing; PARTIAL UNIQUE index = one running run per employee per kind; step rows
+made at start, reopen CLEARS filed_on/by). Pure `gro/domain/sequence-engine.ts` (filed/ready/blocked, targets, filedDependents,
+`integrityProblems` — needs must name an EARLIER step) over `sequence-definitions.ts` (the prototype's runbooks verbatim).
+`SequencesService` start/file/reopen/cancel, audited `gro-sequence` against the employee; a COMPLETED FINAL EXIT can't be
+reopened (owner-approved), a completed onboarding can. 8 red proofs. API **715/715**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

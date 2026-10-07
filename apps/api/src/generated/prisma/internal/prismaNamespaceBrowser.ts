@@ -72,6 +72,8 @@ export const ModelName = {
   Vacancy: 'Vacancy',
   Candidate: 'Candidate',
   GroProcess: 'GroProcess',
+  GroSequence: 'GroSequence',
+  GroSequenceStep: 'GroSequenceStep',
   GcalInvitation: 'GcalInvitation',
   CalendarEvent: 'CalendarEvent',
   LeaveRequest: 'LeaveRequest',
@@ -443,6 +445,36 @@ export const GroProcessScalarFieldEnum = {
 } as const
 
 export type GroProcessScalarFieldEnum = (typeof GroProcessScalarFieldEnum)[keyof typeof GroProcessScalarFieldEnum]
+
+
+export const GroSequenceScalarFieldEnum = {
+  id: 'id',
+  employeeId: 'employeeId',
+  clientId: 'clientId',
+  kind: 'kind',
+  status: 'status',
+  startedOn: 'startedOn',
+  startedByUserId: 'startedByUserId',
+  completedAt: 'completedAt',
+  cancelledAt: 'cancelledAt',
+  cancelledByUserId: 'cancelledByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GroSequenceScalarFieldEnum = (typeof GroSequenceScalarFieldEnum)[keyof typeof GroSequenceScalarFieldEnum]
+
+
+export const GroSequenceStepScalarFieldEnum = {
+  id: 'id',
+  sequenceId: 'sequenceId',
+  stepKey: 'stepKey',
+  filedOn: 'filedOn',
+  filedByUserId: 'filedByUserId',
+  updatedAt: 'updatedAt'
+} as const
+
+export type GroSequenceStepScalarFieldEnum = (typeof GroSequenceStepScalarFieldEnum)[keyof typeof GroSequenceStepScalarFieldEnum]
 
 
 export const GcalInvitationScalarFieldEnum = {
