@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { LoadError } from '@/components/ui/load-state';
 import { Skeleton, SkeletonRegion } from '@/components/ui/skeleton';
+import { FamilySection } from './family-section';
 import { RaiseRequestDialog } from './raise-request-dialog';
 
 type Loaded = {
@@ -44,6 +45,8 @@ export default function MyFilePage() {
   const [data, setData] = useState<Loaded | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'disabled' | 'error'>('loading');
   const [raiseOpen, setRaiseOpen] = useState(false);
+  // DEP-04: "Request a change" from My family opens the same dialog, filled in.
+  const [raiseFamily, setRaiseFamily] = useState(false);
   const [notice, setNotice] = useState('');
   const [downloadError, setDownloadError] = useState('');
 
@@ -268,7 +271,14 @@ export default function MyFilePage() {
               .join(' · ')}
           </span>
         </div>
-        <Button size="sm" className="shrink-0" onClick={() => setRaiseOpen(true)}>
+        <Button
+          size="sm"
+          className="shrink-0"
+          onClick={() => {
+            setRaiseFamily(false);
+            setRaiseOpen(true);
+          }}
+        >
           {t('raise')}
         </Button>
       </div>
@@ -390,6 +400,14 @@ export default function MyFilePage() {
         </section>
       </div>
 
+      {/* ---- My family (DEP-04) ---- */}
+      <FamilySection
+        onRequestChange={() => {
+          setRaiseFamily(true);
+          setRaiseOpen(true);
+        }}
+      />
+
       {/* ---- My requests (summary) ---- */}
       <section
         aria-labelledby="me-reqs"
@@ -417,6 +435,7 @@ export default function MyFilePage() {
       <RaiseRequestDialog
         open={raiseOpen}
         onOpenChange={setRaiseOpen}
+        preset={raiseFamily ? { type: 'general', title: t('family.requestTitle') } : undefined}
         onRaised={(r) => {
           setNotice(t('raised', { title: r.title }));
           setData((prev) => (prev ? { ...prev, openRequests: prev.openRequests + 1 } : prev));

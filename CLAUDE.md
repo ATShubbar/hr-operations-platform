@@ -1409,6 +1409,11 @@ buttons. **Found + fixed an API gap:** History never showed dependant changes (A
 exposes `subjectId` (the snapshot's `dependantId`, snapshot stays inside), history names the dependant even after removal.
 Phone: below `sm` the date moves under the name (the 4-col grid hid Renew 97px off-card at 375). Arabic summary opening
 with a digit isolated in `<bdi>` (digit landed at the wrong end of the LTR line). API **701/701**.
+**DEP-04 done — My family; the dependants epic (ADR-017, DEP-00..04) is COMPLETE.** `me/family-section.tsx`: own dependants,
+read-only, numbers in full, chips; one action "Something wrong? Request a change" → the raise dialog PRESET to General ·
+"Family details" (`preset` read through a REF — an inline object as an effect dependency would reset the form on every
+keystroke). Verified as employee-a: Yasmin + Omar, 45d iqamas, nothing of a same-company colleague's family; the request
+reached staff with General's 1-day due date. No API change.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

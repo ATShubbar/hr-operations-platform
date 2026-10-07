@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import type { RequestType, SelfRequestResponse } from '@hr/contracts';
 import { apiFetch } from '@/lib/api';
@@ -35,10 +35,13 @@ export function RaiseRequestDialog({
   open,
   onOpenChange,
   onRaised,
+  preset,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onRaised: (request: SelfRequestResponse) => void;
+  /** Opens with these filled in (DEP-04: "Family details" from My family). */
+  preset?: { type: RequestType; title: string };
 }) {
   const t = useTranslations('me');
   const tReq = useTranslations('requests');
@@ -47,14 +50,18 @@ export function RaiseRequestDialog({
   const [description, setDescription] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  // Read through a ref: a caller's inline object is new on every render, and the
+  // reset below must run once per OPENING, not on every keystroke.
+  const presetRef = useRef(preset);
+  presetRef.current = preset;
 
   // Start each opening blank. Resetting on success instead cleared the form
   // while it was still fading out — the person watched their request empty
   // itself (seen in verification, SS-07).
   useEffect(() => {
     if (!open) return;
-    setType('letter');
-    setTitle('');
+    setType(presetRef.current?.type ?? 'letter');
+    setTitle(presetRef.current?.title ?? '');
     setDescription('');
     setError('');
   }, [open]);

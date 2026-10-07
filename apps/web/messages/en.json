@@ -1348,7 +1348,13 @@
     "colDocument": "Document",
     "colExpires": "Expires",
     "colLeft": "Left",
-    "gosiStatus": "GOSI registration"
+    "gosiStatus": "GOSI registration",
+    "family": {
+      "title": "My family",
+      "none": "No dependants on file.",
+      "requestChange": "Something wrong? Request a change",
+      "requestTitle": "Family details"
+    }
   },
   "header": {
     "searchPlaceholder": "Search people, refs, ID numbers"
