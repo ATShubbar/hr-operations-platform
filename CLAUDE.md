@@ -1428,6 +1428,10 @@ made at start, reopen CLEARS filed_on/by). Pure `gro/domain/sequence-engine.ts` 
 `integrityProblems` — needs must name an EARLIER step) over `sequence-definitions.ts` (the prototype's runbooks verbatim).
 `SequencesService` start/file/reopen/cancel, audited `gro-sequence` against the employee; a COMPLETED FINAL EXIT can't be
 reopened (owner-approved), a completed onboarding can. 8 red proofs. API **715/715**.
+**MOB-02 done — the sequences API.** `GET/POST /employees/:id/sequences`, `POST /gro-sequences/:id/steps/:key/file|reopen`,
+`POST /gro-sequences/:id/cancel` (`gro.read` / `gro.process`). CLIENT MANAGERS HOLD gro.read, so every route asks `scopeOf`
+for the staff path — proven with a REAL client manager (skip the check → their read returns 200). Contracts `sequence.ts`:
+strict bodies, whitelisted responses, steps + `waitingOn` as KEYS (web translates), people as names. API **722/722**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

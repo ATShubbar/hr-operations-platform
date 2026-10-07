@@ -196,6 +196,13 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'GET /gro-processes/:id': 'client-read',
   'PATCH /gro-processes/:id': 'staff',
   'POST /gro-processes/:id/status': 'staff',
+  // MOB-02 (ADR-018): onboarding / final-exit sequences — staff only (client
+  // managers hold gro.read but are refused by scopeOf).
+  'GET /employees/:id/sequences': 'staff',
+  'POST /employees/:id/sequences': 'staff',
+  'POST /gro-sequences/:id/steps/:key/file': 'staff',
+  'POST /gro-sequences/:id/steps/:key/reopen': 'staff',
+  'POST /gro-sequences/:id/cancel': 'staff',
   // Calendar (CAL-02): STAFF-ONLY — clients have no calendar access, so every route
   // is 'staff'. Events are own-scoped (calendar.read-all lifts it); the /calendar/view
   // endpoint merges Tasks/Requests/GRO deadlines read-only. Own-scoping + source

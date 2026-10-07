@@ -42,7 +42,7 @@ export interface SequenceView {
   startedByUserId: string | null;
   completedAt: Date | null;
   cancelledAt: Date | null;
-  steps: StepView[];
+  steps: Array<StepView & { filedByUserId: string | null }>;
 }
 
 type Row = GroSequenceModel & { steps: GroSequenceStepModel[] };
@@ -65,7 +65,10 @@ function toView(row: Row): SequenceView {
     startedByUserId: row.startedByUserId,
     completedAt: row.completedAt,
     cancelledAt: row.cancelledAt,
-    steps: stepsOf(row.kind, day(row.startedOn), filed),
+    steps: stepsOf(row.kind, day(row.startedOn), filed).map((st) => ({
+      ...st,
+      filedByUserId: row.steps.find((x) => x.stepKey === st.key)?.filedByUserId ?? null,
+    })),
   };
 }
 

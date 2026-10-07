@@ -4,6 +4,7 @@ import { AuthModule } from '../auth/public-api';
 import { EmployeesModule } from '../employees/public-api';
 import { NotificationsModule } from '../notifications/public-api';
 import { GroProcessesController } from './api/gro-processes.controller';
+import { SequencesController } from './api/sequences.controller';
 import { DocumentExpiringHandler } from './application/document-expiring.handler';
 import { GroProcessesService } from './application/gro-processes.service';
 import { SequencesService } from './application/sequences.service';
@@ -20,7 +21,7 @@ import { SequencesService } from './application/sequences.service';
 // MOB-01 (ADR-018): SequencesService — onboarding and final-exit sequences.
 @Module({
   imports: [AuditModule, AuthModule, EmployeesModule, NotificationsModule],
-  controllers: [GroProcessesController],
+  controllers: [GroProcessesController, SequencesController],
   providers: [GroProcessesService, SequencesService, DocumentExpiringHandler],
   exports: [GroProcessesService, SequencesService],
 })
