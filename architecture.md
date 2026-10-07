@@ -1,10 +1,11 @@
 # HR Operations Platform — Architecture
 
 ## Version
-**v1.11 — FROZEN (v1.4 frozen 2026-07-18; v1.5 amended by ADR-011, v1.6 by ADR-012, v1.7 by ADR-013 — all 2026-10-03; v1.8 by ADR-014, v1.9 by ADR-015 and v1.10 by ADR-016, 2026-10-04; v1.11 by ADR-017, 2026-10-05).**
+**v1.12 — FROZEN (v1.4 frozen 2026-07-18; v1.5 amended by ADR-011, v1.6 by ADR-012, v1.7 by ADR-013 — all 2026-10-03; v1.8 by ADR-014, v1.9 by ADR-015 and v1.10 by ADR-016, 2026-10-04; v1.11 by ADR-017, 2026-10-05; v1.12 by ADR-018, 2026-10-07).**
 This document is the build contract. Changes now require either a new ADR (for decisions) or an explicit unfreeze with a version bump — implementation drift is not a change mechanism. Implementation work is tracked in `BACKLOG.md`.
 
 ### Changelog
+- **v1.12** — **Onboarding and final exit as ordered sequences (ADR-018)**: GRO owns sequences — runs of the prototype's fixed step lists (onboarding: 11 steps from block visa to first payroll; final exit: 8 steps from notice to departure), each step ready, blocked on the steps it waits on, or filed; reopen only while nothing filed depends on it; standard fees shown, recorded later by Billing. Staff only (`gro.process` files, the Auditor reads). The Hiring board's new candidate stage `mobilisation` creates the employee with the new employment status `onboarding` (not under management) and starts onboarding; its completion makes them `active` and the candidate `hired`. A final exit's completion terminates the employee. No new permission.
 - **v1.11** — **Dependants brought into scope (ADR-017)**, reversing the v1.1–v1.10 exclusion: the family on an employee's sponsorship (spouse, son, daughter) as records owned by the Employees module, each with its own iqama number and iqama/passport/insurance expiries. Staff read them (iqama number only with `govdata.read`); `govdata.update` holders (Administrator, HR officer, GRO officer) add, edit and remove them (soft); the employee sees their own, numbers included, through self-service; client managers see nothing. Expiries are shown on the record only, not yet in alerts or the runway; dependant fees wait for Billing. No new permission.
 - **v1.10** — **The request thread (ADR-016)**: comments and attachments visible to everyone on a request (no internal notes), posted by all who see it except the Auditor (`request.comment`; employees via `/me`); attachments scanned before download; a new status `info_needed` ("Ask for more detail") that the requester's reply returns to where it was — open, or in progress with its assignee (ADR-016 rev. 2); a per-type service level in working days, paused while info is needed (ADR-016 rev. 3: an Administrator setting, `request.service-level-days`).
 - **v1.9** — **Global search (ADR-015)**: a `Search` delivery module behind one endpoint, permission-aware per source (identifier matching only for `govdata.read` holders), a `search.read` permission for every role, and identifier lookups audited (last four digits only).
@@ -180,7 +181,7 @@ Invariants (not configurable):
 3. Employees (including the dependants on each employee's sponsorship; ADR-017)
 4. Documents
 5. Recruitment
-6. GRO
+6. GRO (single government procedures, and — since v1.12 — onboarding and final-exit SEQUENCES of ordered steps; ADR-018)
 7. Requests
 8. Tasks
 9. Calendar

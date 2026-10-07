@@ -26,8 +26,8 @@ build contract. Changes go through ADRs (adr/), never through drift.
 
 | File | What |
 |---|---|
-| architecture.md | Frozen build contract — **v1.11** (ADR-011 self-service · ADR-012 LTR/prototype fidelity · ADR-013 six roles · ADR-014 leave · ADR-015 search · ADR-016 request thread · ADR-017 dependants) |
-| adr/README.md | Decision index (ADR-001..017, statuses) |
+| architecture.md | Frozen build contract — **v1.12** (ADR-011 self-service · ADR-012 LTR/prototype fidelity · ADR-013 six roles · ADR-014 leave · ADR-015 search · ADR-016 request thread · ADR-017 dependants · ADR-018 onboarding/final exit) |
+| adr/README.md | Decision index (ADR-001..018, statuses) |
 | BACKLOG.md | Task board + cards + working rules |
 | ACTION-PLAN.md | Phased plan, DoD checklists with evidence rule |
 | evidence/skeleton/ | Per-task proof (WS-01..) |
@@ -1414,6 +1414,14 @@ read-only, numbers in full, chips; one action "Something wrong? Request a change
 "Family details" (`preset` read through a REF — an inline object as an effect dependency would reset the form on every
 keystroke). Verified as employee-a: Yasmin + Omar, 45d iqamas, nothing of a same-company colleague's family; the request
 reached staff with General's 1-day due date. No API change.
+**MOB-00 done — onboarding + final exit are IN the architecture (ADR-018, v1.12).** GRO owns SEQUENCES (`gro_sequences` +
+`gro_sequence_steps`) of the prototype's FIXED step lists (onboarding 11: block visa → salary account/WPS; final exit 8: notice
+→ departure + iqama cancelled); step ready / blocked ("Waiting on…") / filed; reopen only while no filed step depends on it.
+Owner: the Hiring column becomes real (candidate stage `mobilisation` creates the employee as NEW employment status
+`onboarding` — NOT under management — and starts onboarding; completion → `active` + candidate `hired`; Saudi nationals skip
+it; withdraw/reject mid-mobilisation cancels + terminates) · fees SHOWN only (Billing records) · final exit's last step
+TERMINATES · staff only (`gro.process` files, Auditor reads; `scopeOf` keeps client managers out). Events: CandidateMobilising
+→ EmployeeMobilising → OnboardingCompleted. Not in queue/calendar yet. Build MOB-01..05; MOB-04 must handle ~20 status readers.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
