@@ -308,7 +308,6 @@
       "commercial": "Commercial"
     },
     "soon": {
-      "commercial": "Service tier, pricing, term, invoices and payment status.",
       "value": "Soon"
     },
     "tile": {
@@ -558,6 +557,96 @@
         "voided": "{ref} voided.",
         "receiptAttached": "Receipt attached to {ref}.",
         "receiptRemoved": "Receipt removed from {ref}."
+      }
+    },
+    "commercial": {
+      "loadError": "Could not load the commercial terms.",
+      "locked": {
+        "title": "Commercial terms are an administrator screen",
+        "body": "Subscription tier, fees, invoices and payment status are visible to administrators only. The government fees paid for this client are on the Fees tab."
+      },
+      "subscription": "Subscription",
+      "subscriptionSub": "A platform fee plus a rate for every employee under management.",
+      "edit": "Edit terms",
+      "record": "Record terms",
+      "platformFee": "Platform fee",
+      "seats": "{count, plural, one {# employee} other {# employees}} at {rate} each",
+      "monthly": "Monthly",
+      "billed": {
+        "monthly": "Monthly — invoiced monthly",
+        "quarterly": "Quarterly — invoiced every quarter",
+        "annual": "Annual — invoiced once a year"
+      },
+      "annual": "Annual contract value",
+      "unrecovered": "Government fees not yet recovered",
+      "nextInvoice": "On the next invoice (estimate)",
+      "estimateNote": "An estimate from today's headcount and the fees still recorded. The invoice itself is issued from the accounting system; no VAT is calculated here.",
+      "noTerms": "No commercial terms are recorded for this client yet, so there is nothing to estimate.",
+      "noTermsReadOnly": "No commercial terms are recorded for this client yet. An administrator records them.",
+      "agreement": "Agreement",
+      "termStart": "Term start",
+      "termEnd": "Term end",
+      "renewal": "Renewal",
+      "renewIn": "{count, plural, one {# day to renewal} other {# days to renewal}}",
+      "termEnded": "Term has ended",
+      "po": "Purchase order",
+      "paymentTerms": "Payment terms",
+      "paymentDays": "{count, plural, =0 {Due on receipt} one {# day} other {# days}}",
+      "standing": "Account standing",
+      "agreementNote": "Tier and term dates come from the client's profile — change them in the Service panel on Overview. Account standing comes with invoice records.",
+      "updatedBy": "Terms last changed by {name} on {date}",
+      "updatedOn": "Terms last changed on {date}",
+      "includes": "What {tier} includes",
+      "includesNoTier": "What the tier includes",
+      "noTier": "No tier is recorded for this client.",
+      "includesNote": "A description of the package. Nothing in the console is switched on or off by the tier.",
+      "tierIncludes": {
+        "essential": [
+          "Expiry monitoring on every document",
+          "Government procedures filed on your behalf",
+          "Employee request inbox",
+          "Standard reporting"
+        ],
+        "professional": [
+          "Everything in Essential",
+          "A named government relations officer",
+          "Nitaqat band monitoring and forecasting",
+          "Payroll and WPS file preparation",
+          "Priority portal appointments"
+        ],
+        "enterprise": [
+          "Everything in Professional",
+          "A dedicated account team",
+          "Multi-site and multi-CR handling",
+          "Quarterly compliance review with your board",
+          "Custom service levels"
+        ]
+      },
+      "invoices": "Invoices",
+      "invoicesSoon": "Invoice records — the number as issued, the amount, the fees each one recovers and whether it has been paid — are coming next.",
+      "recordTitle": "Record commercial terms",
+      "editTitle": "Edit commercial terms",
+      "formHint": "Amounts are in Saudi riyals, per month, before any tax.",
+      "form": {
+        "platform": "Platform fee (SAR a month)",
+        "seat": "Rate per employee (SAR a month)",
+        "cycle": "Billing cycle",
+        "days": "Payment terms (days)",
+        "po": "Purchase order number (optional)",
+        "tierNote": "The tier and the term dates are part of the client's profile and are changed on Overview."
+      },
+      "cycle": {
+        "monthly": "Monthly",
+        "quarterly": "Quarterly",
+        "annual": "Annual"
+      },
+      "saved": "Commercial terms saved",
+      "error": {
+        "amountMissing": "Enter both amounts. Use 0 if there is no charge.",
+        "amount": "Enter an amount in riyals, with at most two decimal places.",
+        "days": "Payment terms are a number of days from 0 to 365.",
+        "invalid": "These terms were not accepted. Check the amounts and the purchase order.",
+        "save": "Could not save the terms. Try again."
       }
     }
   },
@@ -1341,7 +1430,8 @@
       "self-service": "Self-service",
       "employee-user": "Employee accounts",
       "session": "Sign-in session",
-      "fee": "Government fees"
+      "fee": "Government fees",
+      "billing": "Commercial terms & invoices"
     },
     "action": {
       "read": "Read",

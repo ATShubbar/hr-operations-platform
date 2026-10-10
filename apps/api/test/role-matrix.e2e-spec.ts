@@ -210,6 +210,13 @@ const MATRIX: Record<string, Row> = {
     gro_officer: ['fee.read', 'fee.create', 'fee.update', 'fee.delete'],
     auditor: ['fee.read'],
   },
+  // ADR-020: the Administrator keeps each client's commercial terms (and its
+  // invoice records); the Auditor reads. Officers hold NEITHER — the Fees tab
+  // is theirs, the Commercial tab is not.
+  'Commercial terms & invoice records': {
+    administrator: ['billing.read', 'billing.update'],
+    auditor: ['billing.read'],
+  },
   Reports: {
     administrator: ['report.read', 'report.export'],
     auditor: ['report.read'], // reads, never exports

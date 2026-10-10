@@ -5,7 +5,9 @@ import { ClientsModule } from '../clients/public-api';
 import { EmployeesModule } from '../employees/public-api';
 import { GroModule } from '../gro/public-api';
 import { StorageModule } from '../storage/public-api';
+import { BillingController } from './api/billing.controller';
 import { FeesController } from './api/fees.controller';
+import { BillingTermsService } from './application/billing-terms.service';
 import { FeeReceiptsService } from './application/fee-receipts.service';
 import { FeesService } from './application/fees.service';
 import { StepReopenedHandler } from './application/step-reopened.handler';
@@ -18,10 +20,12 @@ import { StepReopenedHandler } from './application/step-reopened.handler';
 // BILL-02: receipts go through StorageModule (presigned upload, then the same
 // size / virus / type checks as every other file); StepReopenedHandler
 // subscribes to GRO's "step reopened" and voids that step's fee (ADR-004).
+// BILL-04: a client's commercial terms and the estimate of what they come to
+// (BillingController, `billing.*` — the Administrator's; the Auditor reads).
 @Module({
   imports: [AuditModule, AuthModule, ClientsModule, EmployeesModule, GroModule, StorageModule],
-  controllers: [FeesController],
-  providers: [FeesService, FeeReceiptsService, StepReopenedHandler],
+  controllers: [FeesController, BillingController],
+  providers: [FeesService, FeeReceiptsService, StepReopenedHandler, BillingTermsService],
   exports: [FeesService],
 })
 export class BillingModule {}

@@ -1097,3 +1097,28 @@ enum FeeReceiptStatus {
   quarantined
   rejected
 }
+
+// BILL-04 (ADR-020): a client's commercial terms — ONE row per client. A
+// platform fee plus a rate per employee under management, both per month and
+// in whole halalas, billed on a cycle. STAFF-OWNED, and behind `billing.*`
+// (Administrator; the Auditor reads) at the API. The tier and the term dates
+// are NOT here: ADR-019 put them on the client's profile.
+model BillingTerms {
+  clientId           String       @id @map("client_id") @db.Uuid
+  platformFeeHalalas Int          @map("platform_fee_halalas")
+  seatRateHalalas    Int          @map("seat_rate_halalas")
+  cycle              BillingCycle
+  poNumber           String?      @map("po_number")
+  paymentTermsDays   Int          @map("payment_terms_days")
+  updatedByUserId    String?      @map("updated_by_user_id") @db.Uuid
+  createdAt          DateTime     @default(now()) @map("created_at")
+  updatedAt          DateTime     @updatedAt @map("updated_at")
+
+  @@map("bil_terms")
+}
+
+enum BillingCycle {
+  monthly
+  quarterly
+  annual
+}

@@ -78,7 +78,8 @@ export const ModelName = {
   CalendarEvent: 'CalendarEvent',
   LeaveRequest: 'LeaveRequest',
   LeaveEntry: 'LeaveEntry',
-  Fee: 'Fee'
+  Fee: 'Fee',
+  BillingTerms: 'BillingTerms'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -608,6 +609,21 @@ export const FeeScalarFieldEnum = {
 } as const
 
 export type FeeScalarFieldEnum = (typeof FeeScalarFieldEnum)[keyof typeof FeeScalarFieldEnum]
+
+
+export const BillingTermsScalarFieldEnum = {
+  clientId: 'clientId',
+  platformFeeHalalas: 'platformFeeHalalas',
+  seatRateHalalas: 'seatRateHalalas',
+  cycle: 'cycle',
+  poNumber: 'poNumber',
+  paymentTermsDays: 'paymentTermsDays',
+  updatedByUserId: 'updatedByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BillingTermsScalarFieldEnum = (typeof BillingTermsScalarFieldEnum)[keyof typeof BillingTermsScalarFieldEnum]
 
 
 export const SortOrder = {

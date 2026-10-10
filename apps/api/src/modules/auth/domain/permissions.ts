@@ -138,6 +138,10 @@ export const PERMISSIONS = [
   'fee.create',
   'fee.update',
   'fee.delete',
+  // BILL-04 (ADR-020): a client's commercial terms (and, BILL-05, its invoice
+  // records). The Administrator's; the Auditor reads; officers hold neither.
+  'billing.read',
+  'billing.update',
   // Leave (ADR-014, LEAVE-02). Client managers raise + APPROVE their own
   // company's; PEOPLE&GRO FILES (writes the ledger); `withdraw` = a pending
   // request the caller raised. Employees never hold these — /me/leave is
@@ -348,6 +352,8 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'fee.create',
     'fee.update',
     'fee.delete',
+    'billing.read',
+    'billing.update',
   ],
   // People files end to end — pay, contracts, hiring (prototype `hr`: employees
   // RWC, procedures RWC, documents RWCD, requests RWCD, payroll RW, hiring RWC,
@@ -446,6 +452,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'report.read',
     'leave.read',
     'fee.read',
+    'billing.read', // BILL-04: reads the terms, changes nothing
   ],
   client_manager: CLIENT_MANAGER,
   // `session.end` (SS-01 — logout is permission-gated, and an account that

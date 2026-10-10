@@ -36,6 +36,8 @@ const RULES: readonly Rule[] = [
   // takes an amount out of what is owed, so it is what a reviewer reads first.
   { resource: 'fee', action: 'void', severity: 'critical' },
   { resource: 'fee', severity: 'notable' },
+  // BILL-04: what a client is charged changed.
+  { resource: 'billing-terms', severity: 'notable' },
   { resource: 'request', action: 'process', severity: 'notable' },
   { resource: 'leave', action: 'approve', severity: 'notable' },
   { resource: 'leave', action: 'decline', severity: 'notable' },

@@ -157,3 +157,8 @@ export type LeaveEntry = Prisma.LeaveEntryModel
  * 
  */
 export type Fee = Prisma.FeeModel
+/**
+ * Model BillingTerms
+ * 
+ */
+export type BillingTerms = Prisma.BillingTermsModel

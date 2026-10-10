@@ -411,7 +411,8 @@ export const ModelName = {
   CalendarEvent: 'CalendarEvent',
   LeaveRequest: 'LeaveRequest',
   LeaveEntry: 'LeaveEntry',
-  Fee: 'Fee'
+  Fee: 'Fee',
+  BillingTerms: 'BillingTerms'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -427,7 +428,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "authUser" | "authAccountToken" | "coreScopeCheck" | "auditEntry" | "systemSetting" | "clientSetting" | "userSetting" | "client" | "employee" | "dependant" | "document" | "notification" | "expiryAlert" | "notificationPreference" | "request" | "requestComment" | "requestAttachment" | "task" | "vacancy" | "candidate" | "groProcess" | "groSequence" | "groSequenceStep" | "gcalInvitation" | "calendarEvent" | "leaveRequest" | "leaveEntry" | "fee"
+    modelProps: "authUser" | "authAccountToken" | "coreScopeCheck" | "auditEntry" | "systemSetting" | "clientSetting" | "userSetting" | "client" | "employee" | "dependant" | "document" | "notification" | "expiryAlert" | "notificationPreference" | "request" | "requestComment" | "requestAttachment" | "task" | "vacancy" | "candidate" | "groProcess" | "groSequence" | "groSequenceStep" | "gcalInvitation" | "calendarEvent" | "leaveRequest" | "leaveEntry" | "fee" | "billingTerms"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2503,6 +2504,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    BillingTerms: {
+      payload: Prisma.$BillingTermsPayload<ExtArgs>
+      fields: Prisma.BillingTermsFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BillingTermsFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingTermsPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BillingTermsFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingTermsPayload>
+        }
+        findFirst: {
+          args: Prisma.BillingTermsFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingTermsPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BillingTermsFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingTermsPayload>
+        }
+        findMany: {
+          args: Prisma.BillingTermsFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingTermsPayload>[]
+        }
+        create: {
+          args: Prisma.BillingTermsCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingTermsPayload>
+        }
+        createMany: {
+          args: Prisma.BillingTermsCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BillingTermsCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingTermsPayload>[]
+        }
+        delete: {
+          args: Prisma.BillingTermsDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingTermsPayload>
+        }
+        update: {
+          args: Prisma.BillingTermsUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingTermsPayload>
+        }
+        deleteMany: {
+          args: Prisma.BillingTermsDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BillingTermsUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BillingTermsUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingTermsPayload>[]
+        }
+        upsert: {
+          args: Prisma.BillingTermsUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BillingTermsPayload>
+        }
+        aggregate: {
+          args: Prisma.BillingTermsAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBillingTerms>
+        }
+        groupBy: {
+          args: Prisma.BillingTermsGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BillingTermsGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BillingTermsCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BillingTermsCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -3053,6 +3128,21 @@ export const FeeScalarFieldEnum = {
 } as const
 
 export type FeeScalarFieldEnum = (typeof FeeScalarFieldEnum)[keyof typeof FeeScalarFieldEnum]
+
+
+export const BillingTermsScalarFieldEnum = {
+  clientId: 'clientId',
+  platformFeeHalalas: 'platformFeeHalalas',
+  seatRateHalalas: 'seatRateHalalas',
+  cycle: 'cycle',
+  poNumber: 'poNumber',
+  paymentTermsDays: 'paymentTermsDays',
+  updatedByUserId: 'updatedByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BillingTermsScalarFieldEnum = (typeof BillingTermsScalarFieldEnum)[keyof typeof BillingTermsScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -3747,6 +3837,20 @@ export type ListEnumFeeReceiptStatusFieldRefInput<$PrismaModel> = FieldRefInputT
 
 
 /**
+ * Reference to a field of type 'BillingCycle'
+ */
+export type EnumBillingCycleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BillingCycle'>
+    
+
+
+/**
+ * Reference to a field of type 'BillingCycle[]'
+ */
+export type ListEnumBillingCycleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BillingCycle[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -3897,6 +4001,7 @@ export type GlobalOmitConfig = {
   leaveRequest?: Prisma.LeaveRequestOmit
   leaveEntry?: Prisma.LeaveEntryOmit
   fee?: Prisma.FeeOmit
+  billingTerms?: Prisma.BillingTermsOmit
 }
 
 /* Types for Logging */

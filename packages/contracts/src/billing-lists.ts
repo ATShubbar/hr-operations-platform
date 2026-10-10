@@ -118,3 +118,47 @@ export function standardStepFee(
 export function standardProcedureFee(fees: StandardFees, type: string): number {
   return fees.procedures[type] ?? 0;
 }
+
+// ---------------------------------------------------------------------------
+// Commercial terms (BILL-04, ADR-020): a platform fee plus a rate per employee,
+// billed on a cycle. The ESTIMATE of the next invoice is arithmetic over these
+// and nothing more — the app issues no invoice and calculates no VAT.
+// ---------------------------------------------------------------------------
+
+export const BILLING_CYCLES = ['monthly', 'quarterly', 'annual'] as const;
+export type BillingCycle = (typeof BILLING_CYCLES)[number];
+
+/** How many months one invoice covers. */
+export const CYCLE_MONTHS: Record<BillingCycle, number> = { monthly: 1, quarterly: 3, annual: 12 };
+
+/** The largest platform fee or per-employee rate: SAR 1,000,000 a month. */
+export const MAX_TERM_HALALAS = 100_000_000;
+
+export interface SubscriptionEstimate {
+  headcount: number;
+  platformFeeHalalas: number;
+  seatsHalalas: number;
+  monthlyHalalas: number;
+  cycleMonths: number;
+  cycleHalalas: number;
+  annualHalalas: number;
+}
+
+/** The subscription for one cycle and one year, from the terms and a headcount. */
+export function estimateSubscription(
+  terms: { platformFeeHalalas: number; seatRateHalalas: number; cycle: BillingCycle },
+  headcount: number,
+): SubscriptionEstimate {
+  const seatsHalalas = terms.seatRateHalalas * headcount;
+  const monthlyHalalas = terms.platformFeeHalalas + seatsHalalas;
+  const cycleMonths = CYCLE_MONTHS[terms.cycle];
+  return {
+    headcount,
+    platformFeeHalalas: terms.platformFeeHalalas,
+    seatsHalalas,
+    monthlyHalalas,
+    cycleMonths,
+    cycleHalalas: monthlyHalalas * cycleMonths,
+    annualHalalas: monthlyHalalas * 12,
+  };
+}

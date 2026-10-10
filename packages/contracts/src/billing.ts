@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import {
+  BILLING_CYCLES,
   DEFAULT_STANDARD_FEES,
   FEE_AUTHORITIES,
   FEE_RECEIPT_MAX_BYTES,
@@ -7,6 +8,7 @@ import {
   FEE_RECEIPT_TYPES,
   FEE_STATUSES,
   MAX_FEE_HALALAS,
+  MAX_TERM_HALALAS,
 } from './billing-lists.js';
 
 // Billing (ADR-020) — BILL-01: the ledger of government fees paid on clients'
@@ -158,6 +160,49 @@ export const standardFeesSchema = z.strictObject({
 });
 export const STANDARD_FEES_KEY = 'billing.standard-fees';
 
+// ---------------------------------------------------------------------------
+// Commercial terms and the estimate (BILL-04). Administrator only
+// (`billing.*`); the Auditor reads. The whole set is sent on every save —
+// there is one row of terms per client and no half-written state.
+// ---------------------------------------------------------------------------
+
+export const billingCycleSchema = z.enum(BILLING_CYCLES);
+const termAmount = z.number().int().min(0).max(MAX_TERM_HALALAS);
+
+export const billingTermsSchema = z.strictObject({
+  platformFeeHalalas: termAmount, // per month
+  seatRateHalalas: termAmount, // per employee under management, per month
+  cycle: billingCycleSchema,
+  poNumber: z.string().trim().min(1).max(60).nullable(),
+  paymentTermsDays: z.number().int().min(0).max(365),
+});
+
+export const billingSummaryResponseSchema = z.object({
+  clientId: z.uuid(),
+  terms: billingTermsSchema.nullable(), // null = none recorded yet
+  // Arithmetic over the terms and the people under management (REP-06's rule).
+  // null without terms. An ESTIMATE: the invoice itself is issued elsewhere,
+  // and VAT is not calculated here (ADR-020).
+  estimate: z
+    .object({
+      headcount: z.number().int(),
+      platformFeeHalalas: z.number().int(),
+      seatsHalalas: z.number().int(),
+      monthlyHalalas: z.number().int(),
+      cycleMonths: z.number().int(),
+      cycleHalalas: z.number().int(),
+      annualHalalas: z.number().int(),
+      nextInvoiceHalalas: z.number().int(), // the cycle + the fees not yet recovered
+    })
+    .nullable(),
+  // Every fee still `recorded`, whatever its age — what is owed for fees.
+  unrecoveredFeesHalalas: z.number().int(),
+  termsUpdatedBy: z.string().nullable(), // a display name
+  termsUpdatedAt: z.string().nullable(), // ISO 8601
+});
+
+export type BillingTerms = z.infer<typeof billingTermsSchema>;
+export type BillingSummaryResponse = z.infer<typeof billingSummaryResponseSchema>;
 export type CreateFeeRequest = z.infer<typeof createFeeRequestSchema>;
 export type UpdateFeeRequest = z.infer<typeof updateFeeRequestSchema>;
 export type VoidFeeRequest = z.infer<typeof voidFeeRequestSchema>;

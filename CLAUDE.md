@@ -1546,6 +1546,15 @@ Remove receipt / Void-with-reason (officers + Administrator; the Auditor gets no
 prototype; **"Not yet invoiced" is EVERYTHING still recorded** (an old unbilled fee is still owed — the one deliberate change).
 Void fees are in no figure and listed only under Void. `toneFor('fee')`. Ledger text WRAPS (an ellipsis hid what was paid
 for). No API change.
+**BILL-04 done — commercial terms and the next-invoice estimate.** `bil_terms` (ONE row per client: platform fee + rate per
+employee, per month, whole halalas; cycle; PO; payment-terms days; staff-owned, no delete) + `billing.read`/`billing.update`
+(Administrator both, Auditor read, officers NEITHER). `GET /billing/clients/:clientId` + `PUT …/terms` (whole set replaced,
+strict, audited `billing-terms` create/update, notable; `scopeOf` staff check proven with a widened policy). The ESTIMATE is
+never stored: `estimateSubscription` (`@hr/contracts/billing-lists`) over the people under management (`isUnderManagement`
+with the client's status) + every fee still `recorded`. Web `clients/[id]/commercial-tab.tsx`: Subscription / Agreement
+(term dates + tier come from the PROFILE) / tier inclusions (prototype wording, "switches nothing on") / Invoices + account
+standing "Soon" (BILL-05); officers get the locked state and NO request is made. Every Client-record tab is now built.
+Arabic values that open with a digit (dates, day counts) need isolating under the LTR layout. API **780/780**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

@@ -402,3 +402,12 @@ export const FeeReceiptStatus = {
 } as const
 
 export type FeeReceiptStatus = (typeof FeeReceiptStatus)[keyof typeof FeeReceiptStatus]
+
+
+export const BillingCycle = {
+  monthly: 'monthly',
+  quarterly: 'quarterly',
+  annual: 'annual'
+} as const
+
+export type BillingCycle = (typeof BillingCycle)[keyof typeof BillingCycle]
