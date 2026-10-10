@@ -79,9 +79,22 @@ jobs:
           docker run -d --name minio -p 9000:9000 \
             -e MINIO_ROOT_USER="$STORAGE_ACCESS_KEY" -e MINIO_ROOT_PASSWORD="$STORAGE_SECRET_KEY" \
             bitnamilegacy/minio@sha256:451fe6858cb770cc9d0e77ba811ce287420f781c7c1b806a386f6896471a349c
-          for i in $(seq 1 30); do
-            curl -fsS http://localhost:9000/minio/health/live && exit 0
-            sleep 2
+          # CI-01: wait until MinIO has been READY for five seconds running, not
+          # for its first sign of life. The seed step failed about one run in
+          # three, three seconds in — where it first writes a file. This image's
+          # entrypoint starts the server once to configure it and then RESTARTS
+          # it, so a single passing probe can be the server that is about to go
+          # away. (A hypothesis: the failed runs' logs need a GitHub sign-in to
+          # read. If the seed still fails after this, it is something else.)
+          ok=0
+          for i in $(seq 1 90); do
+            if curl -fsS http://localhost:9000/minio/health/ready >/dev/null 2>&1; then
+              ok=$((ok + 1))
+            else
+              ok=0
+            fi
+            if [ "$ok" -ge 5 ]; then exit 0; fi
+            sleep 1
           done
           docker logs minio; exit 1
 
@@ -90,8 +103,15 @@ jobs:
       # specs had failed on every push since they were written — unseen, because
       # nothing deployed from CI until GCP-04. Seeding here makes CI run the suite
       # under the same conditions as every local run.
+      # On failure, show the object store's log beside the seed's own error, so
+      # the next failure says what it was (CI-01).
       - name: Seed the test database
-        run: pnpm --filter @hr/api db:seed
+        run: |
+          pnpm --filter @hr/api db:seed || {
+            echo '--- object store log (last 60 lines) ---'
+            docker logs minio 2>&1 | tail -60
+            exit 1
+          }
 
       - name: Lint, typecheck, test, build
         run: pnpm turbo run lint typecheck test build
