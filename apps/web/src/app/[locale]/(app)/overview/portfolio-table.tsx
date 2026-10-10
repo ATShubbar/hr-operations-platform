@@ -3,11 +3,13 @@
 import { useLocale, useTranslations } from 'next-intl';
 import type { ClientResponse } from '@hr/contracts';
 import { Link } from '@/i18n/navigation';
+import { BandPill } from '@/components/client-profile-bits';
 import { cn } from '@/lib/utils';
 import type { ClientFigures } from '../clients/client-figures';
 
 // The Overview's client portfolio table (DS-17) — one row per company: headcount,
-// Nitaqat band ("soon"), Saudisation, expiring in 30 days, open items. Staff see
+// the STORED Nitaqat band (PROF-03 — "Band not recorded" when there is none),
+// Saudisation, expiring in 30 days, open items. Staff see
 // every active client, each opening its Client record; a client manager sees
 // their own row only, with no link (DS-18 — they have no Client record screen).
 // The note under it says what the two derived columns mean (client-figures.ts).
@@ -27,7 +29,6 @@ export function PortfolioTable({
   linkToRecord?: boolean;
 }) {
   const t = useTranslations('overview');
-  const ts = useTranslations('states');
   const locale = useLocale();
 
   return (
@@ -109,7 +110,9 @@ export function PortfolioTable({
                       )}
                     </th>
                     <td className="text-end font-mono">{f.headcount}</td>
-                    <td className="text-xs text-neutral-400">{ts('soon')}</td>
+                    <td>
+                      <BandPill band={c.nitaqat?.band} />
+                    </td>
                     <td className="text-end font-mono">{f.saudiPct}%</td>
                     <td className={cn('text-end font-mono', expiringTone(f.expiring30))}>
                       {f.expiring30}

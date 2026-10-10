@@ -18,6 +18,7 @@ import type {
   TaskResponse,
 } from '@hr/contracts';
 import { Link } from '@/i18n/navigation';
+import { BandPill } from '@/components/client-profile-bits';
 import { SequencesPanel } from '@/components/sequences-panel';
 import { apiFetch } from '@/lib/api';
 import { datedDocs, daysTo, isSaudi } from '@/lib/employee-docs';
@@ -53,6 +54,13 @@ const empty =
   <T,>(v: T) =>
   () =>
     v;
+
+// The Saudi-share bar takes its colour from the company's STORED Nitaqat band
+// (red, amber, otherwise ink) — never from the percentage (ADR-019).
+const BAND_FILL: Record<string, string> = {
+  red: 'bg-status-critical',
+  yellow: 'bg-status-warning',
+};
 
 export function ReportsDashboard() {
   const t = useTranslations('reports.dash');
@@ -243,10 +251,12 @@ export function ReportsDashboard() {
                   className="flex items-center gap-3 rounded outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <span className="w-[150px] shrink-0 truncate text-xs leading-4">{name(c)}</span>
-                  {bar(f.saudiPct)}
+                  {bar(f.saudiPct, BAND_FILL[c.nitaqat?.band ?? ''] ?? 'bg-neutral-900')}
                   <span className="w-10 shrink-0 text-end font-mono text-xs">{f.saudiPct}%</span>
-                  <span className="hidden shrink-0 rounded-full px-1.5 text-[10px] leading-[18px] text-neutral-400 ring-1 ring-neutral-200 ring-inset sm:inline">
-                    {t('bandSoon')}
+                  {/* The STORED band (PROF-03); a fixed slot so the bars line up
+                      down the list, wide enough for "Band not recorded" on one line. */}
+                  <span className="hidden w-[124px] shrink-0 justify-end whitespace-nowrap sm:flex">
+                    <BandPill band={c.nitaqat?.band} />
                   </span>
                 </Link>
               </li>

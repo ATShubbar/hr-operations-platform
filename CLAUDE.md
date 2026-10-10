@@ -1491,6 +1491,11 @@ edit sends ONLY what changed; 409/400 mapped to our words. `components/client-pr
 "Band not recorded", never a colour) + `ProfileLine` (sector · city · CR, one `<bdi>` run). Cards: band in the badge slot
 (archived companies show "Archived" there); `SaudiShare` bar coloured by the STORED band (red/amber/ink), never by a
 percentage threshold. `toneFor('nitaqat', band)`. Lists translated under the `clientProfile` namespace. No API change.
+**PROF-03 done — the band on screen.** Client record → Overview **Nitaqat position**: stored band pill, the prototype's note
+per band (`clients.nitaqatNote.red|yellow|clear`), "As shown on Qiwa · checked {date} · {hijri}", bar coloured by the band,
+Next band up / Band below from the ladder; no band = said plainly. A fixed line says the share is a count by nationality,
+not the official figure. Overview portfolio band column (staff AND the client manager's own row — it already reads
+`/portal/company`), Reports "Saudisation by client" band in a fixed 124px slot so bars align. NOTHING is calculated.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

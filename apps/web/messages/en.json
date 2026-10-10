@@ -321,7 +321,6 @@
       "waiting": "Requests waiting"
     },
     "nitaqat": "Nitaqat position",
-    "nitaqatSoon": "The Nitaqat band is coming soon. The share below counts Saudis on the register by nationality — Nitaqat weights some people differently.",
     "bandUp": "Next band up",
     "bandDown": "Band below",
     "service": "Service",
@@ -429,7 +428,17 @@
         "email": "That email address doesn't look right.",
         "invalid": "Some details aren't valid. Check them and try again."
       }
-    }
+    },
+    "nitaqatNote": {
+      "red": "Work permits and transfers are blocked while the band is red. Every hire must be Saudi until it clears.",
+      "yellow": "Renewals still pass, but new permits are restricted. One Saudi hire moves this to green.",
+      "clear": "The band supports permits, renewals and transfers without restriction."
+    },
+    "nitaqatNone": "No Nitaqat band is recorded for this company. An administrator can add it from Edit details.",
+    "nitaqatChecked": "As shown on Qiwa · checked {date} · {hijri}",
+    "shareNote": "The share counts Saudis on the register by nationality. Nitaqat weights some people differently, so it is not the official figure.",
+    "bandTop": "Already at the top band",
+    "bandBottom": "Nothing below this band"
   },
   "audit": {
     "title": "Audit trail",
@@ -1025,8 +1034,7 @@
       "feesSoonNote": "Billing is coming soon",
       "soon": "Soon",
       "saudiTitle": "Saudisation by client",
-      "saudiSub": "Saudi share of each register by nationality. The Nitaqat band on file is coming soon.",
-      "bandSoon": "Band soon",
+      "saudiSub": "Saudi share of each register by nationality, beside the Nitaqat band recorded from Qiwa.",
       "forecastTitle": "Expiry forecast",
       "forecastSub": "Documents falling due, month by month. The tallest bar is {max}.",
       "forecastItem": "{month}: {count}",
@@ -1102,7 +1110,7 @@
       "open": "Open items"
     },
     "portfolioEmpty": "No active client companies yet.",
-    "portfolioNote": "Saudisation here is the share of Saudi nationals on the register, not the Nitaqat-weighted figure. Open items are active government procedures.",
+    "portfolioNote": "The band is the one recorded from Qiwa. Saudisation here is the share of Saudi nationals on the register, not the Nitaqat-weighted figure. Open items are active government procedures.",
     "client": {
       "raise": "Raise a request",
       "raised": "Request sent to the team.",
