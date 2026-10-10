@@ -4,12 +4,19 @@ import { useEffect, useState } from 'react';
 import { TriangleAlert } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import type {
+  FeeListResponse,
+  FeeResponse,
   SequenceKind,
   SequenceListResponse,
   SequenceResponse,
   SequenceStep,
 } from '@hr/contracts';
+import { standardStepFee } from '@hr/contracts/billing-lists';
 import { formatHijri } from '@hr/dates';
+import { FeeCapture, feeCaptureProblem, type FeeCaptureValue } from '@/components/fee-capture';
+import { recordFee, type RecordFeeResult } from '@/lib/fees';
+import { halalasToInput, sarTextToHalalas, useMoney } from '@/lib/money';
+import { useStandardFees } from '@/lib/standard-fees';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useCan } from '@/lib/session';
@@ -35,8 +42,15 @@ import { toastError, toastSuccess } from '@/components/ui/toast';
 // (else the most recent) sequence: its label, when it started, what is next, how
 // much is filed, then every step — number, title, "portal · note", what it waits
 // on or when it was filed, its target date in both calendars, the standard fee
-// (shown for information: recording fees is Billing's) and Mark filed / Blocked /
-// Reopen.
+// and Mark filed / Blocked / Reopen.
+//
+// BILL-02 (ADR-020): filing a step also asks WHAT WAS PAID — the standard fee
+// (an Administrator setting) prefilled, the person confirming or correcting it,
+// with an optional receipt. The fee is a second request after the filing: if it
+// fails the step stays filed and the person is told, so it is never lost
+// silently. A filed step shows the fee recorded for it; one without a fee offers
+// "Record fee". Reopening a step voids its fee, unless an invoice already
+// recovers it. All of this needs `fee.*`; without it the tab is as it was.
 //
 // Staff only (the API refuses everyone else). Starting, filing, reopening and
 // cancelling need gro.process; the Auditor reads. Step titles and notes arrive as
@@ -68,6 +82,45 @@ export function MobilisationTab({
   const locale = useLocale() as Locale;
   const router = useRouter();
   const canProcess = useCan('gro.process');
+  const canReadFees = useCan('fee.read');
+  const canRecordFee = useCan('fee.create');
+  const tf = useTranslations('fees');
+  const money = useMoney();
+  const standard = useStandardFees();
+  // The live (not void) fee of each step, by "sequence|step".
+  const [fees, setFees] = useState<Map<string, FeeResponse>>(new Map());
+  async function loadFees() {
+    if (!canReadFees) return;
+    try {
+      const res = await apiFetch<FeeListResponse>(`/fees?employeeId=${employeeId}`);
+      setFees(
+        new Map(
+          res.fees.flatMap((f) =>
+            f.source.kind === 'sequence_step' && f.status !== 'void'
+              ? [[`${f.source.sequenceId}|${f.source.stepKey}`, f] as const]
+              : [],
+          ),
+        ),
+      );
+    } catch {
+      // The steps still work without the fee lines; the Fees tab is the ledger.
+    }
+  }
+  const feeOf = (run: SequenceResponse, step: SequenceStep) => fees.get(`${run.id}|${step.key}`);
+  const standardOf = (run: SequenceResponse, step: SequenceStep) =>
+    standardStepFee(standard, run.kind, step.key);
+  /** Say what happened to a fee, in the person's language. */
+  function reportFee(result: RecordFeeResult) {
+    if (result.ok) {
+      toastSuccess(
+        tf('toast.recorded', { amount: money(result.fee.amountHalalas), ref: result.fee.ref }),
+      );
+    } else if (result.stage === 'receipt') {
+      toastError(tf('toast.receiptFailed', { ref: result.fee.ref }));
+    } else {
+      toastError(tf(result.duplicate ? 'toast.duplicate' : 'toast.notRecorded'));
+    }
+  }
 
   const [runs, setRuns] = useState<SequenceResponse[] | null>(null);
   const [error, setError] = useState('');
@@ -87,6 +140,7 @@ export function MobilisationTab({
   }
   useEffect(() => {
     void load();
+    void loadFees();
   }, [employeeId]);
 
   const day = (iso: string) => {
@@ -103,7 +157,6 @@ export function MobilisationTab({
     return `${d.getUTCDate()} ${month} ${d.getUTCFullYear()}`;
   };
   const hijri = (iso: string) => formatHijri(new Date(`${iso.slice(0, 10)}T00:00:00Z`), locale);
-  const sar = (n: number) => new Intl.NumberFormat('en-US').format(n);
   const title = (key: string) => t(`step.${key}.title`);
   const list = (keys: string[]) => keys.map(title).join(t('and'));
 
@@ -158,36 +211,84 @@ export function MobilisationTab({
     filing.run.steps.every((s) => s.key === filing.step.key || s.state === 'filed');
   const [filedOn, setFiledOn] = useState('');
   const [fileError, setFileError] = useState('');
+  const [paid, setPaid] = useState<FeeCaptureValue>({ amount: '', receipt: null });
   const openFile = (run: SequenceResponse, step: SequenceStep) => {
     setFiledOn(todayIso());
     setFileError('');
+    setPaid({ amount: halalasToInput(standardOf(run, step)), receipt: null });
     setFiling({ run, step });
   };
   async function submitFile() {
     if (!filing || !filedOn) return;
     if (filedOn > todayIso()) return setFileError(t('error.future'));
+    const problem = canRecordFee ? feeCaptureProblem(paid) : null;
+    if (problem) return setFileError(tf(`error.${problem}`));
+    const amountHalalas = canRecordFee ? (sarTextToHalalas(paid.amount) ?? 0) : 0;
     setBusy(true);
     setFileError('');
+    const { run, step } = filing;
+    let updated: SequenceResponse;
     try {
-      const updated = await apiFetch<SequenceResponse>(
-        `/gro-sequences/${filing.run.id}/steps/${filing.step.key}/file`,
+      updated = await apiFetch<SequenceResponse>(
+        `/gro-sequences/${run.id}/steps/${step.key}/file`,
         { method: 'POST', body: JSON.stringify({ filedOn }) },
       );
-      replace(updated);
-      const exited = updated.status === 'completed' && updated.kind === 'final_exit';
-      toastSuccess(
-        t(exited ? 'toast.exitComplete' : 'toast.filed', { title: title(filing.step.key) }),
-      );
-      setFiling(null);
-      // A completion changes the person — onboarding makes them active, a final
-      // exit ends their employment (MOB-05): let the record refresh.
-      if (updated.status === 'completed') onEmployeeChanged?.();
     } catch (err) {
       setFiling(null);
-      refused(err, t('error.generic'));
-    } finally {
       setBusy(false);
+      return refused(err, t('error.generic'));
     }
+    replace(updated);
+    const exited = updated.status === 'completed' && updated.kind === 'final_exit';
+    toastSuccess(t(exited ? 'toast.exitComplete' : 'toast.filed', { title: title(step.key) }));
+    setFiling(null);
+    // The step IS filed. The fee is a second request: whatever happens to it
+    // is reported on its own, and never undoes the filing.
+    if (amountHalalas > 0) {
+      reportFee(
+        await recordFee({
+          source: { kind: 'sequence_step', sequenceId: run.id, stepKey: step.key },
+          amountHalalas,
+          paidOn: filedOn,
+          receipt: paid.receipt,
+        }),
+      );
+      await loadFees();
+    }
+    setBusy(false);
+    // A completion changes the person — onboarding makes them active, a final
+    // exit ends their employment (MOB-05): let the record refresh.
+    if (updated.status === 'completed') onEmployeeChanged?.();
+  }
+
+  // ---- record a fee for a step that is already filed ----
+  const [feeFor, setFeeFor] = useState<{ run: SequenceResponse; step: SequenceStep } | null>(null);
+  const [feePaidOn, setFeePaidOn] = useState('');
+  const [feeError, setFeeError] = useState('');
+  const openFee = (run: SequenceResponse, step: SequenceStep) => {
+    setFeePaidOn(step.filedOn ?? todayIso());
+    setFeeError('');
+    setPaid({ amount: halalasToInput(standardOf(run, step)), receipt: null });
+    setFeeFor({ run, step });
+  };
+  async function submitFee() {
+    if (!feeFor) return;
+    if (!feePaidOn || feePaidOn > todayIso()) return setFeeError(tf('error.future'));
+    const problem = feeCaptureProblem(paid);
+    const amountHalalas = sarTextToHalalas(paid.amount) ?? 0;
+    if (problem || amountHalalas === 0) return setFeeError(tf(`error.${problem ?? 'amount'}`));
+    setBusy(true);
+    const result = await recordFee({
+      source: { kind: 'sequence_step', sequenceId: feeFor.run.id, stepKey: feeFor.step.key },
+      amountHalalas,
+      paidOn: feePaidOn,
+      receipt: paid.receipt,
+    });
+    reportFee(result);
+    // Recorded (with or without its receipt) → done; not recorded → stay open.
+    if (result.ok || result.stage === 'receipt') setFeeFor(null);
+    await loadFees();
+    setBusy(false);
   }
 
   async function reopen(run: SequenceResponse, step: SequenceStep) {
@@ -204,6 +305,14 @@ export function MobilisationTab({
       );
       replace(updated);
       toastSuccess(t('toast.reopened', { title: title(step.key) }));
+      // BILL-02: the step's fee was voided — or stays, if an invoice recovers it.
+      const had = feeOf(run, step);
+      if (had) {
+        const amount = money(had.amountHalalas);
+        if (had.status === 'invoiced') toastError(tf('toast.feeKept', { amount }));
+        else toastSuccess(tf('toast.feeVoided', { amount }));
+        await loadFees();
+      }
     } catch (err) {
       refused(err, t('error.generic'));
     } finally {
@@ -291,8 +400,11 @@ export function MobilisationTab({
           onCancel={setCancelling}
           day={day}
           hijri={hijri}
-          sar={sar}
           list={list}
+          money={money}
+          standardOf={standardOf}
+          feeOf={feeOf}
+          onRecordFee={canRecordFee ? openFee : undefined}
         />
       )}
 
@@ -333,6 +445,51 @@ export function MobilisationTab({
         </section>
       )}
 
+      {/* ---- Record a fee for a step already filed ---- */}
+      <Dialog open={feeFor !== null} onOpenChange={(o) => !o && setFeeFor(null)}>
+        <DialogContent className="sm:max-w-[460px] [&>*]:min-w-0">
+          <DialogHeader>
+            <DialogTitle>{tf('recordTitle')}</DialogTitle>
+            <DialogDescription>
+              {feeFor ? `${title(feeFor.step.key)} · ${feeFor.step.portal}` : ''}
+            </DialogDescription>
+          </DialogHeader>
+          {feeFor && (
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="mob-fee-paid-on">{tf('paidOn')}</Label>
+                <Input
+                  id="mob-fee-paid-on"
+                  type="date"
+                  max={todayIso()}
+                  value={feePaidOn}
+                  onChange={(e) => (setFeeError(''), setFeePaidOn(e.target.value))}
+                />
+              </div>
+              <FeeCapture
+                id="mob-fee"
+                value={paid}
+                onChange={(next) => (setFeeError(''), setPaid(next))}
+                standardHalalas={standardOf(feeFor.run, feeFor.step)}
+              />
+              {feeError && (
+                <p role="alert" className="text-sm text-destructive">
+                  {feeError}
+                </p>
+              )}
+              <div className="flex justify-end gap-2">
+                <Button variant="ghost" size="sm" onClick={() => setFeeFor(null)}>
+                  {tf('cancel')}
+                </Button>
+                <Button size="sm" disabled={busy} onClick={() => void submitFee()}>
+                  {busy ? tf('recording') : tf('record')}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* ---- Mark filed ---- */}
       <Dialog open={filing !== null} onOpenChange={(o) => !o && setFiling(null)}>
         <DialogContent className="sm:max-w-[460px] [&>*]:min-w-0">
@@ -357,11 +514,23 @@ export function MobilisationTab({
                   onChange={(e) => setFiledOn(e.target.value)}
                 />
               </div>
-              <p className="text-xs leading-4 text-muted-foreground">
-                {filing.step.fee > 0
-                  ? t('feeNote', { portal: filing.step.portal, amount: sar(filing.step.fee) })
-                  : t('noFeeNote')}
-              </p>
+              {canRecordFee ? (
+                <FeeCapture
+                  id="mob-file"
+                  value={paid}
+                  onChange={(next) => (setFileError(''), setPaid(next))}
+                  standardHalalas={standardOf(filing.run, filing.step)}
+                />
+              ) : (
+                <p className="text-xs leading-4 text-muted-foreground">
+                  {standardOf(filing.run, filing.step) > 0
+                    ? t('feeNote', {
+                        portal: filing.step.portal,
+                        amount: money(standardOf(filing.run, filing.step)),
+                      })
+                    : t('noFeeNote')}
+                </p>
+              )}
               {endsEmployment && (
                 <p className="flex items-start gap-2.5 rounded-md bg-status-warning-surface px-3.5 py-3 text-[13px] leading-[18px] font-medium ring-1 ring-status-warning-line">
                   <TriangleAlert
@@ -426,8 +595,11 @@ function SequenceCard({
   onCancel,
   day,
   hijri,
-  sar,
   list,
+  money,
+  standardOf,
+  feeOf,
+  onRecordFee,
 }: {
   run: SequenceResponse;
   canProcess: boolean;
@@ -437,10 +609,17 @@ function SequenceCard({
   onCancel: (run: SequenceResponse) => void;
   day: (iso: string) => string;
   hijri: (iso: string) => string;
-  sar: (n: number) => string;
   list: (keys: string[]) => string;
+  money: (halalas: number) => string;
+  /** The standard fee for a step, in halalas (the Administrator's setting). */
+  standardOf: (run: SequenceResponse, step: SequenceStep) => number;
+  /** The live fee recorded for a step, if any. */
+  feeOf: (run: SequenceResponse, step: SequenceStep) => FeeResponse | undefined;
+  /** Present when the viewer may record a fee for a filed step. */
+  onRecordFee?: (run: SequenceResponse, step: SequenceStep) => void;
 }) {
   const t = useTranslations('person.mob');
+  const tf = useTranslations('fees');
   const done = run.steps.filter((s) => s.state === 'filed').length;
   const blocked = run.steps.filter((s) => s.state === 'blocked').length;
   const next = run.steps.find((s) => s.state === 'ready');
@@ -552,6 +731,35 @@ function SequenceCard({
                   </bdi>
                 </span>
               )}
+              {/* BILL-02: what was actually paid for this step. */}
+              {s.state === 'filed' &&
+                (() => {
+                  const fee = feeOf(run, s);
+                  if (fee) {
+                    return (
+                      <span className="text-[11px] leading-[15px] text-foreground">
+                        <bdi>
+                          {fee.status === 'invoiced'
+                            ? tf('invoicedLine', { amount: money(fee.amountHalalas) })
+                            : tf('recordedRef', {
+                                amount: money(fee.amountHalalas),
+                                ref: fee.ref,
+                              })}
+                        </bdi>
+                      </span>
+                    );
+                  }
+                  return onRecordFee ? (
+                    <button
+                      type="button"
+                      onClick={() => onRecordFee(run, s)}
+                      className="w-fit rounded text-[11px] leading-[15px] font-medium text-foreground underline underline-offset-2 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      aria-label={`${tf('record')} — ${t(`step.${s.key}.title`)}`}
+                    >
+                      {tf('record')}
+                    </button>
+                  ) : null;
+                })()}
             </span>
             <span className="ms-[34px] flex shrink-0 flex-col sm:ms-0 sm:w-[124px] sm:items-end">
               <span className="text-xs leading-4 whitespace-nowrap text-muted-foreground">
@@ -566,7 +774,7 @@ function SequenceCard({
                 dissolves into the prototype's 88px + 96px columns. */}
             <span className="flex shrink-0 grow items-center justify-end gap-3 sm:contents">
               <span className="flex shrink-0 items-center justify-end font-mono text-[11px] whitespace-nowrap text-neutral-500 sm:w-[88px]">
-                {s.fee > 0 ? <bdi>{t('fee', { amount: sar(s.fee) })}</bdi> : t('noFee')}
+                {standardOf(run, s) > 0 ? <bdi>{money(standardOf(run, s))}</bdi> : t('noFee')}
               </span>
               <span className="flex shrink-0 items-center justify-end sm:w-24">
                 {live && s.state === 'ready' && canProcess && (

@@ -1673,7 +1673,8 @@
       "complete": "Complete",
       "completing": "Completing…",
       "cancel": "Cancel",
-      "error": "Could not change the status. Try again."
+      "error": "Could not change the status. Try again.",
+      "completeFeeOnly": "Confirm what was paid for this procedure, if anything, before it is marked completed."
     },
     "history": {
       "action": {
@@ -1822,7 +1823,6 @@
         "cancelled": "Cancelled"
       },
       "target": "Target {date}",
-      "fee": "SAR {amount}",
       "noFee": "No fee",
       "markFiled": "Mark filed",
       "blocked": "Blocked",
@@ -1842,7 +1842,7 @@
       "cancelling": "Cancelling…",
       "fileTitle": "Mark as filed",
       "fileOn": "Filed on",
-      "feeNote": "The standard {portal} fee is SAR {amount}. Shown for information — recording fees comes with billing.",
+      "feeNote": "The standard {portal} fee is {amount}.",
       "noFeeNote": "This step carries no government fee.",
       "saving": "Saving…",
       "close": "Cancel",
@@ -2491,5 +2491,55 @@
     "procedure": {
       "red": "While the band is red, work permits and transfers are blocked. Qiwa may refuse this procedure."
     }
+  },
+  "fees": {
+    "amountPaid": "Amount paid (SAR)",
+    "amountHelp": "The standard fee is {standard}. Enter what was actually paid.",
+    "amountHelpNone": "No standard fee is set for this. Enter what was paid, if anything.",
+    "willRecord": "{amount} will be recorded against the client.",
+    "willRecordNothing": "Left empty, no fee is recorded.",
+    "receipt": "Receipt (optional)",
+    "receiptHelp": "PDF, JPG or PNG, up to 10 MB.",
+    "paidOn": "Paid on",
+    "authority": "Paid to",
+    "recordTitle": "Record the fee",
+    "record": "Record fee",
+    "recording": "Recording…",
+    "cancel": "Cancel",
+    "recordedLine": "{amount} recorded",
+    "recordedRef": "{amount} recorded · {ref}",
+    "invoicedLine": "{amount} invoiced",
+    "authorityName": {
+      "qiwa": "Qiwa",
+      "muqeem": "Muqeem",
+      "gosi": "GOSI",
+      "absher": "Absher",
+      "mudad": "Mudad",
+      "balady": "Balady",
+      "mofa": "MOFA",
+      "enjaz": "Enjaz",
+      "gamca": "GAMCA",
+      "seha": "Seha",
+      "cchi": "CCHI",
+      "chamber": "Chamber of Commerce",
+      "other": "Other"
+    },
+    "error": {
+      "amount": "Enter the amount in riyals, for example 9700 or 9700.50.",
+      "fileType": "A receipt must be a PDF, JPG or PNG.",
+      "fileSize": "A receipt can be at most 10 MB.",
+      "future": "A fee cannot be paid in the future."
+    },
+    "toast": {
+      "recorded": "{amount} recorded as {ref}.",
+      "notRecorded": "Filed, but the fee was NOT recorded. Add it on the client's Fees tab.",
+      "duplicate": "A fee is already recorded for this.",
+      "receiptFailed": "{ref} recorded, but its receipt could not be attached. Attach it on the client's Fees tab.",
+      "feeVoided": "Its fee, {amount}, was voided.",
+      "feeKept": "Its fee, {amount}, is already on an invoice and stays."
+    }
+  },
+  "money": {
+    "sar": "SAR {amount}"
   }
 }

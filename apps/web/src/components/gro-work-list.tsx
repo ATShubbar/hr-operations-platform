@@ -5,13 +5,22 @@ import { useState, type FormEvent } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Stamp } from 'lucide-react';
 import type { GroProcessResponse, GroProcessStatus } from '@hr/contracts';
+import {
+  FEE_AUTHORITIES,
+  standardProcedureFee,
+  type FeeAuthority,
+} from '@hr/contracts/billing-lists';
 import { formatHijri } from '@hr/dates';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
+import { PROCEDURE_AUTHORITY, recordFee } from '@/lib/fees';
+import { halalasToInput, sarTextToHalalas, useMoney } from '@/lib/money';
 import { useCan } from '@/lib/session';
+import { useStandardFees } from '@/lib/standard-fees';
 import { daysTo } from '@/lib/employee-docs';
 import { GRO_EXPIRY_TYPES, GRO_NEXT } from '@/lib/gro-workflow';
 import type { Locale } from '@/lib/employee-format';
+import { FeeCapture, feeCaptureProblem, type FeeCaptureValue } from '@/components/fee-capture';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -22,7 +31,15 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { StatusAction } from '@/components/ui/status-action';
+import { toastError, toastSuccess } from '@/components/ui/toast';
 
 // Open government procedures as rows, each with "Resolve" (DS-07, shared in
 // DS-11): the Person record lists one person's, the Client record a whole
@@ -86,6 +103,12 @@ export function DueCell({ iso }: { iso: string | null }) {
  * Resolve for ONE procedure: the shared status control, plus the completion
  * dialog that captures the resulting expiry when the type writes one back
  * (GRO-03). Renders nothing for someone without gro.process.
+ *
+ * BILL-02 (ADR-020): for someone who may record fees, completing ANY procedure
+ * opens the dialog, which also asks what was paid — the standard fee for the
+ * type prefilled, who it was paid to, and an optional receipt. The fee is a
+ * second request after the status change: if it fails the procedure stays
+ * completed and the person is told to add the fee on the client's Fees tab.
  */
 export function GroResolve({
   process: p,
@@ -104,6 +127,13 @@ export function GroResolve({
   const tg = useTranslations('gro');
   const router = useRouter();
   const canProcess = useCan('gro.process');
+  const tf = useTranslations('fees');
+  const money = useMoney();
+  const canFee = useCan('fee.create');
+  const standard = useStandardFees();
+  const needsExpiry = GRO_EXPIRY_TYPES.has(p.type);
+  const [paid, setPaid] = useState<FeeCaptureValue>({ amount: '', receipt: null });
+  const [authority, setAuthority] = useState<FeeAuthority>('other');
   const [completing, setCompleting] = useState(false);
   const [expiry, setExpiry] = useState('');
   const [saving, setSaving] = useState(false);
@@ -126,17 +156,23 @@ export function GroResolve({
       setCompleting(false);
       await onChanged();
       if (next === 'completed' && resultingExpiry) onEmployeeChanged?.(p.employeeId);
+      return true;
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
       setError(t('error'));
+      return false;
     } finally {
       setSaving(false);
     }
   }
 
   const choose = (next: GroProcessStatus) => {
-    if (next === 'completed' && GRO_EXPIRY_TYPES.has(p.type)) {
+    // Completing asks for the new expiry (when the type writes one back) and,
+    // from someone who records fees, what was paid.
+    if (next === 'completed' && (needsExpiry || canFee)) {
       setExpiry(p.resultingExpiry ?? '');
+      setPaid({ amount: halalasToInput(standardProcedureFee(standard, p.type)), receipt: null });
+      setAuthority(PROCEDURE_AUTHORITY[p.type] ?? 'other');
       setError('');
       setCompleting(true);
       return;
@@ -146,7 +182,29 @@ export function GroResolve({
 
   async function submitComplete(e: FormEvent) {
     e.preventDefault();
-    if (expiry) await apply('completed', expiry);
+    if (needsExpiry && !expiry) return;
+    const problem = canFee ? feeCaptureProblem(paid) : null;
+    if (problem) return setError(tf(`error.${problem}`));
+    const amountHalalas = canFee ? (sarTextToHalalas(paid.amount) ?? 0) : 0;
+    const done = await apply('completed', needsExpiry ? expiry : null);
+    // The procedure IS completed. The fee is reported on its own.
+    if (!done || amountHalalas === 0) return;
+    const result = await recordFee({
+      source: { kind: 'procedure', processId: p.id },
+      authority,
+      amountHalalas,
+      paidOn: new Date().toISOString().slice(0, 10),
+      receipt: paid.receipt,
+    });
+    if (result.ok) {
+      toastSuccess(
+        tf('toast.recorded', { amount: money(result.fee.amountHalalas), ref: result.fee.ref }),
+      );
+    } else if (result.stage === 'receipt') {
+      toastError(tf('toast.receiptFailed', { ref: result.fee.ref }));
+    } else {
+      toastError(tf(result.duplicate ? 'toast.duplicate' : 'toast.notRecorded'));
+    }
   }
 
   if (!canProcess) return null;
@@ -168,22 +226,54 @@ export function GroResolve({
       </span>
 
       <Dialog open={completing} onOpenChange={(o) => !o && setCompleting(false)}>
-        <DialogContent className="sm:max-w-[440px]">
+        <DialogContent className="sm:max-w-[460px] [&>*]:min-w-0">
           <DialogHeader>
             <DialogTitle>{t('completeTitle', { type: tg(`type.${p.type}`) })}</DialogTitle>
-            <DialogDescription>{t('completeDescription')}</DialogDescription>
+            <DialogDescription>
+              {t(needsExpiry ? 'completeDescription' : 'completeFeeOnly')}
+            </DialogDescription>
           </DialogHeader>
-          <form onSubmit={submitComplete} className="flex flex-col gap-3.5">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor={`expiry-${p.id}`}>{t('resultingExpiry')}</Label>
-              <Input
-                id={`expiry-${p.id}`}
-                type="date"
-                value={expiry}
-                onChange={(e) => setExpiry(e.target.value)}
-                required
-              />
-            </div>
+          <form onSubmit={submitComplete} className="flex flex-col gap-3.5" noValidate>
+            {needsExpiry && (
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor={`expiry-${p.id}`}>{t('resultingExpiry')}</Label>
+                <Input
+                  id={`expiry-${p.id}`}
+                  type="date"
+                  value={expiry}
+                  onChange={(e) => setExpiry(e.target.value)}
+                  required
+                />
+              </div>
+            )}
+            {canFee && (
+              <>
+                <FeeCapture
+                  id={`fee-${p.id}`}
+                  value={paid}
+                  onChange={(next) => (setError(''), setPaid(next))}
+                  standardHalalas={standardProcedureFee(standard, p.type)}
+                />
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor={`fee-${p.id}-authority`}>{tf('authority')}</Label>
+                  <Select
+                    value={authority}
+                    onValueChange={(v) => v && setAuthority(v as FeeAuthority)}
+                  >
+                    <SelectTrigger id={`fee-${p.id}-authority`} className="w-full">
+                      <SelectValue>{(v) => tf(`authorityName.${String(v)}`)}</SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {FEE_AUTHORITIES.map((a) => (
+                        <SelectItem key={a} value={a}>
+                          {tf(`authorityName.${a}`)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
             {error && (
               <p role="alert" className="text-sm text-destructive">
                 {error}
@@ -193,7 +283,7 @@ export function GroResolve({
               <Button type="button" variant="outline" onClick={() => setCompleting(false)}>
                 {t('cancel')}
               </Button>
-              <Button type="submit" disabled={saving || !expiry}>
+              <Button type="submit" disabled={saving || (needsExpiry && !expiry)}>
                 {saving ? t('completing') : t('complete')}
               </Button>
             </div>

@@ -1531,6 +1531,15 @@ procedure; CHECKs for the source shape and the void stamps). `GET/POST /fees`, `
 its company + person FROM THAT RECORD; a step must be filed; corrections only while recorded; void needs a reason. Setting
 `billing.standard-fees` (system, strict + complete, halalas; defaults = the prototype's UNVERIFIED figures; the step defaults
 equal `SEQUENCES[..].fee × 100`, asserted). `@hr/contracts/billing-lists` is the zod-free subpath. API **764/764**.
+**BILL-02 done — fees recorded at the moment of filing.** API: ONE receipt per fee (`POST /fees/:id/receipt` → presigned PUT →
+`…/receipt/confirm` (10 MB, scan, real type) → `GET …/receipt` 300s, `…/receipt/remove`); `matchesSignature` moved to
+Storage's public API (Requests uses it from there). GRO publishes `SequenceStepReopenedEvent` after a reopen commits →
+Billing `StepReopenedHandler` voids that step's fee (`VOID_REASON_STEP_REOPENED`), leaving an INVOICED one. Web:
+`components/fee-capture.tsx` (amount in SAR prefilled from the setting + optional receipt), `lib/money.ts`
+(`sarTextToHalalas` refuses a 3rd decimal — never rounds), `lib/fees.ts` `recordFee` (a SECOND request after the filing; its
+failure is reported, never rolls the filing back), `lib/standard-fees.ts`. Mobilisation tab: filing asks what was paid; filed
+steps show their fee or offer Record fee. `GroResolve`: completing ANY procedure opens the dialog for `fee.create` holders.
+Lesson: two red proofs didn't bite — a test that hits an EARLIER refusal proves nothing about the rule behind it. API **772/772**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
@@ -1590,9 +1599,11 @@ equal `SEQUENCES[..].fee × 100`, asserted). `@hr/contracts/billing-lists` is th
 - Every new client-scoped table follows the checklist in apps/api/src/modules/README.md and registers in the isolation harness (unregistered endpoints fail CI).
 - Local ports: Postgres 5433, Redis 6380, MinIO 9002 (API) / 9003 (console) — non-default because 5432/6379/9000 belong to other local tooling. `docker compose up -d` now includes MinIO; storage e2e (STOR-01) requires it up. StorageService is endpoint-configurable + `forcePathStyle` (MinIO); prod object-store provider is still ADR-006-open. Presigned uploads go browser→object-store DIRECTLY (never through the API); this works on MinIO's default CORS locally — a stricter production object store must have CORS configured for the web origin (DOC-05).
 - Tailwind v4 `@theme` only EMITS a utility when the class appears in scanned source — a new token is not a usable class until something references it. Verify with a real consumer, not by injecting a class at runtime.
-- Switching the Browser pane's viewport (`resize_window` desktop ↔ mobile) can send the tab to the SITE ROOT a few seconds
-  later (web log: `GET /ar 307` → `/ar/overview`, no /login) — it looked like the app redirecting a client record to the
-  Overview, and like a form resetting itself. Set the viewport once, wait, then navigate; don't switch mid-check (PROF-02/06).
+- The Browser pane sometimes sends the tab to the SITE ROOT mid-check (web log: `GET /ar 307` → `/ar/overview`, no /login),
+  and a dialog opened by SCRIPTED clicks can be gone by the next screenshot. Cause unknown — first blamed on viewport
+  switches (PROF-06), but it recurred with the viewport untouched (BILL-02). The app has no navigation to "/". Read the
+  result from the API or the page right after each action; prefer real clicks (`find` → ref) over `element.click()` for
+  menus; keep scripts short.
 - Do NOT run `next build` (prod) while the web dev/preview server is running — it clobbers `.next` and the dev server then throws `Cannot find module './NNN.js'`. Stop the dev server first, or verify only via the dev server (AUTH-08).
 - The Browser pane SCALES an emulated viewport larger than the pane (e.g. 1280 in a ~600px
   pane), and coordinate clicks then drift — a click aimed at one nav row lands on another.
