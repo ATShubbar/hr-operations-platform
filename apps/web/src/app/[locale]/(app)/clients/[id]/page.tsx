@@ -28,6 +28,7 @@ import { StatusPill } from '@/components/ui/status-pill';
 import { Tabs, TabsList, TabsPanel, TabsTab } from '@/components/ui/tabs';
 import { toastSuccess } from '@/components/ui/toast';
 import { StartProcedureDialog } from '../../employees/[id]/start-procedure-dialog';
+import { BandPill, ProfileLine } from '@/components/client-profile-bits';
 import { ClientFormDialog } from '../client-form-dialog';
 import { figuresFor } from '../client-figures';
 import { PortalUsersDialog } from '../portal-users-dialog';
@@ -236,9 +237,12 @@ export default function ClientRecordPage() {
             <h1 className="text-[22px] leading-[30px] font-semibold tracking-[-0.01em]">
               {client.name.en}
             </h1>
-            <StatusPill tone={toneFor('client', client.status)}>
-              {isActive ? t('statusActive') : t('statusInactive')}
-            </StatusPill>
+            {/* The band beside the name, as the prototype has it; an archived
+                company also says so (the card has one slot, the header has room). */}
+            <BandPill band={client.nitaqat?.band} />
+            {!isActive && (
+              <StatusPill tone={toneFor('client', client.status)}>{t('statusInactive')}</StatusPill>
+            )}
           </div>
           {/* The prototype: direction rtl, aligned left — the END of an rtl box. */}
           <span
@@ -247,9 +251,7 @@ export default function ClientRecordPage() {
           >
             {client.name.ar}
           </span>
-          <span className="text-[13px] leading-[18px] text-neutral-400">
-            {t('profileLineSoon')}
-          </span>
+          <ProfileLine client={client} className="text-[13px] leading-[18px]" />
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-2">
           <Button

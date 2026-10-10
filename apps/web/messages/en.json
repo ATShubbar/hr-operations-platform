@@ -260,15 +260,14 @@
     "edit": "Edit details",
     "archive": "Archive",
     "restore": "Restore",
-    "statusActive": "Active",
     "statusInactive": "Archived",
     "empty": "No client companies yet.",
     "error": "Could not load clients.",
     "notFound": "This client company does not exist.",
     "createTitle": "Add a client company",
-    "createDescription": "Its names, as they appear on official documents.",
+    "createDescription": "Its registered names and, if you have them, its registration and Nitaqat band. Everything but the names can be added later.",
     "editTitle": "Edit client details",
-    "editDescription": "Its names, as they appear on official documents.",
+    "editDescription": "Names, registration and the Nitaqat band. Contact, signatories and service details are on the record's tabs.",
     "nameAr": "Name in Arabic",
     "nameEn": "Registered name",
     "save": "Save",
@@ -281,8 +280,6 @@
     "saved": "{name} saved.",
     "archived": "{name} archived.",
     "restored": "{name} restored.",
-    "profileSoon": "Commercial registration, city, sector and importing the staff register are coming soon.",
-    "profileLineSoon": "Sector · city · CR — coming soon",
     "saudiShare": "Saudi share of the register",
     "fig": {
       "headcount": "Headcount",
@@ -411,6 +408,26 @@
         "quarantined": "Quarantined",
         "deleted": "Deleted",
         "available": "Available"
+      }
+    },
+    "form": {
+      "crNumber": "Commercial registration",
+      "crHelper": "Ten digits, as issued by the Ministry of Commerce",
+      "city": "City",
+      "sector": "Sector",
+      "band": "Nitaqat band",
+      "bandHelper": "As Qiwa shows it. The app does not calculate it.",
+      "checkedOn": "Band checked on",
+      "choose": "Not recorded",
+      "contactName": "Main contact",
+      "contactEmail": "Contact email",
+      "registerSoon": "Importing the staff register is coming soon.",
+      "error": {
+        "cr": "A commercial registration is 10 digits.",
+        "crTaken": "Another client already has this commercial registration.",
+        "checkedOn": "Give the day the band was checked — today or earlier.",
+        "email": "That email address doesn't look right.",
+        "invalid": "Some details aren't valid. Check them and try again."
       }
     }
   },
@@ -2345,5 +2362,60 @@
     "nothingWaiting": "Nothing waiting",
     "loading": "Loading…",
     "loadError": "Could not load the sequences in flight."
+  },
+  "clientProfile": {
+    "city": {
+      "riyadh": "Riyadh",
+      "jeddah": "Jeddah",
+      "dammam": "Dammam",
+      "khobar": "Khobar",
+      "jubail": "Jubail",
+      "makkah": "Makkah",
+      "madinah": "Madinah",
+      "abha": "Abha",
+      "tabuk": "Tabuk"
+    },
+    "sector": {
+      "wholesale_retail": "Wholesale & retail",
+      "construction": "Construction",
+      "transport_storage": "Transport & storage",
+      "marine_services": "Marine services",
+      "software": "Software",
+      "facilities": "Facilities",
+      "manufacturing": "Manufacturing",
+      "hospitality": "Hospitality",
+      "healthcare": "Healthcare"
+    },
+    "band": {
+      "red": "Red",
+      "yellow": "Yellow",
+      "low_green": "Low green",
+      "medium_green": "Medium green",
+      "high_green": "High green",
+      "platinum": "Platinum"
+    },
+    "bandNone": "Band not recorded",
+    "bandLabel": "Nitaqat band: {band}",
+    "portal": {
+      "qiwa": "Qiwa",
+      "muqeem": "Muqeem",
+      "gosi": "GOSI",
+      "absher": "Absher",
+      "mudad": "Mudad",
+      "balady": "Balady"
+    },
+    "tier": {
+      "essential": "Essential",
+      "professional": "Professional",
+      "enterprise": "Enterprise"
+    },
+    "commitment": {
+      "same_working_day": "Same working day",
+      "one_working_day": "One working day",
+      "two_working_days": "Two working days"
+    },
+    "cr": "CR {number}",
+    "notRecorded": "Not recorded",
+    "lineNone": "Sector, city and commercial registration not recorded"
   }
 }

@@ -129,6 +129,18 @@ const AUDIT_SEVERITY: Record<string, StatusTone> = {
   critical: 'critical',
 };
 
+// The Nitaqat band (ADR-019) — STORED on the client, what staff read off Qiwa.
+// Red blocks permits and transfers, yellow restricts new permits, the greens
+// are unrestricted, platinum is the top band (the prototype's own tones).
+const NITAQAT: Record<string, StatusTone> = {
+  red: 'critical',
+  yellow: 'warning',
+  low_green: 'ok',
+  medium_green: 'ok',
+  high_green: 'ok',
+  platinum: 'info',
+};
+
 const DOMAINS = {
   vacancy: VACANCY,
   client: CLIENT,
@@ -142,6 +154,7 @@ const DOMAINS = {
   candidate: CANDIDATE,
   leave: LEAVE,
   auditSeverity: AUDIT_SEVERITY,
+  nitaqat: NITAQAT,
 } as const;
 
 export type StatusDomain = keyof typeof DOMAINS;

@@ -1485,6 +1485,12 @@ it through ONE mapper `clients/domain/client-view.ts` `toClientResponse(row, off
 (+1 day slack), term end vs the STORED start on a partial change, officer = `isActiveStaffWith(…, 'gro.process')`, duplicate
 CR → 409 from the unique index. Write schemas are STRICT at every level (a portal entry carrying a password is a 400). API
 **750/750**.
+**PROF-02 done — Add/Edit client, cards, record header.** `client-form-dialog.tsx` = the prototype's form (names, CR, city,
+sector, band + "Band checked on" once a band is chosen; contact name + email on ADD only); only the names are required; an
+edit sends ONLY what changed; 409/400 mapped to our words. `components/client-profile-bits.tsx`: `BandPill` (no band =
+"Band not recorded", never a colour) + `ProfileLine` (sector · city · CR, one `<bdi>` run). Cards: band in the badge slot
+(archived companies show "Archived" there); `SaudiShare` bar coloured by the STORED band (red/amber/ink), never by a
+percentage threshold. `toneFor('nitaqat', band)`. Lists translated under the `clientProfile` namespace. No API change.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

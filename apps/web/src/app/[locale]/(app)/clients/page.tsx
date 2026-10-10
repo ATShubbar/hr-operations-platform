@@ -19,6 +19,7 @@ import { LoadError, NoAccess } from '@/components/ui/load-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StatusPill } from '@/components/ui/status-pill';
 import { toastSuccess } from '@/components/ui/toast';
+import { BandPill, ProfileLine } from '@/components/client-profile-bits';
 import { ClientFormDialog } from './client-form-dialog';
 import { figuresFor, type ClientFigures } from './client-figures';
 import { SaudiShare } from './saudi-share';
@@ -26,12 +27,11 @@ import { SaudiShare } from './saudi-share';
 // Clients (DS-10) — the prototype's Clients screen (ADR-012): one card per
 // company, opening its record.
 //
-// A client stores only its two names and a status, so the card's figures are
-// computed from what the screen can read: the employee records, GRO processes and
-// requests (see client-figures.ts for what each one counts). The prototype's
-// Nitaqat band badge becomes the company's status; its sector · city · CR line is
-// the client profile feature's and says "coming soon". Edit, archive and portal
-// users moved from this list's rows into the record's header.
+// The card's figures are computed from what the screen can read: the employee records, GRO processes and
+// requests (see client-figures.ts for what each one counts). Since PROF-02
+// (ADR-019) the card carries the company's STORED Nitaqat band in the badge slot
+// and its sector · city · CR line; an archived company shows "Archived" there
+// instead. Edit, archive and portal users are in the record's header.
 //
 // The figures are computed in the browser from every employee, process and
 // request — right at today's size, and the place a server-side summary goes the
@@ -160,12 +160,18 @@ export default function ClientsPage() {
                       {c.name.ar}
                     </span>
                   </div>
-                  <StatusPill tone={toneFor('client', c.status)} className="shrink-0">
-                    {c.status === 'active' ? t('statusActive') : t('statusInactive')}
-                  </StatusPill>
+                  {/* The band's slot. An archived company says so instead: its
+                      band is history, and "archived" is what a reader needs. */}
+                  {c.status === 'active' ? (
+                    <BandPill band={c.nitaqat?.band} className="shrink-0" />
+                  ) : (
+                    <StatusPill tone={toneFor('client', c.status)} className="shrink-0">
+                      {t('statusInactive')}
+                    </StatusPill>
+                  )}
                 </div>
-                <span className="text-xs leading-4 text-neutral-400">{t('profileLineSoon')}</span>
-                <SaudiShare pct={f?.saudiPct ?? 0} label={t('saudiShare')} />
+                <ProfileLine client={c} className="text-xs leading-4" />
+                <SaudiShare pct={f?.saudiPct ?? 0} label={t('saudiShare')} band={c.nitaqat?.band} />
                 <dl className="grid grid-cols-3 gap-2 border-t pt-3">
                   {(
                     [
