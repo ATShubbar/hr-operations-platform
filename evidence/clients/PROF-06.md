@@ -74,3 +74,10 @@ It happened again here and the web server's log shows what it is: `GET /ar 307` 
 
 - The warning is not shown on the Work queue or anywhere a procedure is advanced, only where one is started (the ADR's rule).
 - No warning when a band is on file but old. The note states the date and leaves the judgement to the reader.
+
+## Deploy
+
+- The CI run for `a89341f` **failed** at "Seed the test database", so the deploy was skipped. I had told the owner it was deploying; that was corrected as soon as the watcher reported.
+- PROF-06 changed nothing in the seed or the API, and the seed had passed in CI one commit earlier. I could not read the CI log (it needs a GitHub sign-in).
+- Locally, on a fresh scratch database migrated and then seeded (also under `TZ=UTC`), the seed completed. The scratch database was dropped; the dev database was not touched.
+- An empty commit, `701f847`, re-ran the pipeline with identical code: **CI passed and UAT reports `701f847`**. So the first failure was a one-off in the CI environment, cause unknown. Filed as CI-01.
