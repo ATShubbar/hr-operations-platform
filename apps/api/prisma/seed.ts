@@ -1033,6 +1033,83 @@ async function seedSequences(prisma: PrismaClient): Promise<number> {
   return runs.length;
 }
 
+// PROF-05 (ADR-019): a PROFILE for every sample company, so the Clients cards,
+// the record's Nitaqat / Service panels and Records tab, and the Reports band
+// open on something. Every value is invented sample data: the registration
+// numbers are sequences, not real companies'.
+//
+// The bands are chosen to be useful, not typical: Beta is RED and Najd YELLOW —
+// both have open roles with non-Saudi candidates, so the band warnings (PROF-06)
+// have something to warn about — Alpha is medium green, Gulf Medical platinum.
+// Al Waha, the archived company, has NO band and almost no profile on purpose:
+// "not recorded" has to be reviewable too.
+//
+// Runs AFTER the users (the named officer is a staff account) and sets EVERY
+// profile column on every run, nulls included — a seed that leaves a column
+// alone cannot undo what a walk-through did to it (the THREAD-03 landmine).
+interface ProfileSpec {
+  id: string;
+  cr: string | null;
+  city: string | null;
+  sector: string | null;
+  band: 'red' | 'yellow' | 'low_green' | 'medium_green' | 'high_green' | 'platinum' | null;
+  /** Days ago the band was checked. */
+  checked: number;
+  contact: { en: string; ar: string; role: string; email: string; phone: string } | null;
+  signatories: Array<{ name: string; role: string }>;
+  portals: string[];
+  officer: 'staff-gro_officer' | 'staff-hr_officer' | null;
+  tier: 'essential' | 'professional' | 'enterprise' | null;
+  commitment: 'same_working_day' | 'one_working_day' | 'two_working_days' | null;
+  /** Term: started N years ago, ends in N days (negative = already ended). */
+  term: { startedYearsAgo: number; endsInDays: number } | null;
+}
+
+const CLIENT_PROFILES: readonly ProfileSpec[] = [
+  { id: SEED_CLIENT_A, cr: '1010000001', city: 'riyadh', sector: 'wholesale_retail', band: 'medium_green', checked: 4, contact: { en: 'Hana Bin Turki', ar: 'هناء بنت تركي', role: 'HR Director', email: 'hana.t@alpha.example', phone: '+966 55 000 0101' }, signatories: [{ name: 'Hana Bin Turki', role: 'HR Director' }, { name: 'Abdulaziz Al Faisal', role: 'General Manager' }], portals: ['qiwa', 'muqeem', 'gosi', 'absher', 'mudad'], officer: 'staff-gro_officer', tier: 'professional', commitment: 'same_working_day', term: { startedYearsAgo: 2, endsInDays: 141 } },
+  { id: SEED_CLIENT_B, cr: '2050000002', city: 'dammam', sector: 'construction', band: 'red', checked: 12, contact: { en: 'Saleh Al-Dossari', ar: 'صالح الدوسري', role: 'Head of Administration', email: 's.dossari@beta.example', phone: '+966 50 000 0202' }, signatories: [{ name: 'Saleh Al-Dossari', role: 'Head of Administration' }, { name: 'Mansour Al-Najdi', role: 'Managing Director' }, { name: 'Fahad Bin Saleh', role: 'Finance Director' }], portals: ['qiwa', 'muqeem', 'gosi', 'absher', 'mudad', 'balady'], officer: 'staff-gro_officer', tier: 'enterprise', commitment: 'same_working_day', term: { startedYearsAgo: 3, endsInDays: 48 } },
+  { id: SEED_CLIENT_C, cr: '4030000003', city: 'jeddah', sector: 'transport_storage', band: 'yellow', checked: 1, contact: { en: 'Nawaf Al-Zahrani', ar: 'نواف الزهراني', role: 'Operations Manager', email: 'nawaf@najd.example', phone: '+966 56 000 0303' }, signatories: [{ name: 'Nawaf Al-Zahrani', role: 'Operations Manager' }, { name: 'Rania Al-Harthi', role: 'Finance Manager' }], portals: ['qiwa', 'muqeem', 'gosi', 'absher'], officer: 'staff-hr_officer', tier: 'professional', commitment: 'one_working_day', term: { startedYearsAgo: 1, endsInDays: 310 } },
+  { id: SEED_CLIENT_D, cr: '2051000004', city: 'jubail', sector: 'healthcare', band: 'platinum', checked: 30, contact: { en: 'Ibrahim Al-Qahtani', ar: 'إبراهيم القحطاني', role: 'Administration Director', email: 'i.qahtani@gulfmedical.example', phone: '+966 53 000 0404' }, signatories: [{ name: 'Ibrahim Al-Qahtani', role: 'Administration Director' }], portals: ['qiwa', 'gosi', 'mudad'], officer: 'staff-gro_officer', tier: 'essential', commitment: 'two_working_days', term: { startedYearsAgo: 1, endsInDays: 22 } },
+  // Archived, and deliberately thin: a registration and nothing else.
+  { id: SEED_CLIENT_E, cr: '1010000005', city: 'riyadh', sector: 'wholesale_retail', band: null, checked: 0, contact: null, signatories: [], portals: [], officer: null, tier: null, commitment: null, term: null },
+];
+
+async function seedClientProfiles(prisma: PrismaClient): Promise<number> {
+  const officerId = async (local: ProfileSpec['officer']) =>
+    local
+      ? ((await prisma.authUser.findUnique({ where: { email: seedEmail(local) } }))?.id ?? null)
+      : null;
+  for (const p of CLIENT_PROFILES) {
+    await prisma.client.update({
+      where: { id: p.id },
+      data: {
+        crNumber: p.cr,
+        city: p.city,
+        sector: p.sector,
+        nitaqatBand: p.band,
+        nitaqatCheckedOn: p.band ? daysFromNow(-p.checked) : null,
+        qiwaEstablishment: p.contact && p.cr ? `1-${p.cr}` : null,
+        gosiEstablishment: p.contact && p.cr ? `${p.cr.slice(0, 3)}-${p.cr.slice(3, 6)}-${p.cr.slice(6)}` : null,
+        // Fifteen digits; a sequence, not a real VAT number.
+        vatNumber: p.contact && p.cr ? `3${p.cr}0003` : null,
+        contactNameEn: p.contact?.en ?? null,
+        contactNameAr: p.contact?.ar ?? null,
+        contactRole: p.contact?.role ?? null,
+        contactEmail: p.contact?.email ?? null,
+        contactPhone: p.contact?.phone ?? null,
+        signatories: p.signatories,
+        portals: p.portals,
+        officerUserId: await officerId(p.officer),
+        serviceTier: p.tier,
+        responseCommitment: p.commitment,
+        termStart: p.term ? yearsAgo(p.term.startedYearsAgo) : null,
+        termEnd: p.term ? daysFromNow(p.term.endsInDays) : null,
+      },
+    });
+  }
+  return CLIENT_PROFILES.length;
+}
+
 async function main(): Promise<void> {
   const prisma = new PrismaClient({
     adapter: new PrismaPg(process.env.DATABASE_URL ?? ''),
@@ -1061,6 +1138,7 @@ async function main(): Promise<void> {
     await prisma.coreScopeCheck.createMany({ data: fixtures });
 
     const userCount = await seedUsers(prisma);
+    const profileCount = await seedClientProfiles(prisma);
     const requestCount = await seedRequests(prisma);
     const attachmentCount = await seedRequestAttachments(prisma, files);
     const taskCount = await seedTasks(prisma);
@@ -1079,7 +1157,7 @@ async function main(): Promise<void> {
     });
     const rolesCovered = new Set(STAFF_ACCOUNTS.map((a) => a.role)).size + 1 + 1; // + client_manager + employee
     process.stdout.write(
-      `Seed complete: ${clientCount} client companies; ${employeeCount} employees; ${dependantCount} dependants; ${documentCount} documents (with files); ${requestCount} requests; ${attachmentCount} request files; ${taskCount} tasks; ${vacancyCount} vacancies; ${candidateCount} candidates; ${groCount} GRO processes; ${sequenceCount} sequences in flight (+${SEED_MOBILISING.length} hires onboarding, each with a candidate in mobilisation); ${calendarCount} calendar events; ${leaveCount} leave requests; ${rowCount} scope-check rows ` +
+      `Seed complete: ${clientCount} client companies (${profileCount} profiles); ${employeeCount} employees; ${dependantCount} dependants; ${documentCount} documents (with files); ${requestCount} requests; ${attachmentCount} request files; ${taskCount} tasks; ${vacancyCount} vacancies; ${candidateCount} candidates; ${groCount} GRO processes; ${sequenceCount} sequences in flight (+${SEED_MOBILISING.length} hires onboarding, each with a candidate in mobilisation); ${calendarCount} calendar events; ${leaveCount} leave requests; ${rowCount} scope-check rows ` +
         `${notificationCount} notifications (purged ${purgedNotifications} orphans); ` +
         `across clients A (${SEED_CLIENT_A}) and B (${SEED_CLIENT_B}); ${userCount} auth users ` +
         `(${STAFF_ACCOUNTS.length} staff + ${CLIENT_REP_ASSIGNMENTS.length} client managers + 1 employee, ` +

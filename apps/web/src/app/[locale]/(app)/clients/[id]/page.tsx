@@ -313,7 +313,7 @@ export default function ClientRecordPage() {
         </TabsList>
 
         <TabsPanel value="overview">
-          <OverviewTab client={client} figures={figures} staff={staff} />
+          <OverviewTab client={client} onClientSaved={setClient} figures={figures} staff={staff} />
         </TabsPanel>
 
         <TabsPanel value="people">

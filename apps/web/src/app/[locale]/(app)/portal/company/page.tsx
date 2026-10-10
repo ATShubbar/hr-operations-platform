@@ -11,12 +11,19 @@ import { LoadError } from '@/components/ui/load-state';
 import { Skeleton, SkeletonRegion } from '@/components/ui/skeleton';
 import { StatusPill } from '@/components/ui/status-pill';
 import { toneFor } from '@/lib/status-tone';
+import { BandPill, ProfileLine } from '@/components/client-profile-bits';
+import { ProfileRecords } from '../../clients/[id]/profile-records';
+import { ServicePanel } from '../../clients/service-panel';
 
 // Client portal — company profile (PORTAL-04) over GET /portal/company. A rep
-// sees only their OWN company. When self-service is disabled for the client the
+// sees only their OWN company — since PROF-05 (ADR-019) its whole profile,
+// read-only: the Nitaqat band and what it means, the service facts, the main
+// contact, signatories, registrations and portals. They change something by
+// raising a request. When self-service is disabled for the client the
 // API returns 403 — shown here as a calm "not enabled" state, not an error.
 export default function PortalCompanyPage() {
   const t = useTranslations('portal');
+  const tc = useTranslations('clients');
   // Skeleton and error-state copy lives in one shared namespace: a per-screen
   // `loading` key silently announced "calendar.loading" to screen readers when
   // the namespace happened not to define one (UX-06).
@@ -67,27 +74,46 @@ export default function PortalCompanyPage() {
       )}
 
       {company && (
-        <div className="max-w-md rounded-lg border p-6">
-          <dl className="space-y-4">
-            <div>
-              <dt className="text-sm text-muted-foreground">{t('company.name')}</dt>
-              <dd className="text-lg font-medium">
-                {locale === 'ar' ? company.name.ar : company.name.en}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-sm text-muted-foreground">{t('company.status')}</dt>
-              <dd className="mt-1">
+        <div className="flex max-w-[1040px] flex-col gap-4">
+          <div className="flex flex-col gap-[3px] rounded-xl bg-card px-5 py-[18px] ring-1 ring-foreground/10">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h2 className="text-[22px] leading-[30px] font-semibold tracking-[-0.01em]">
+                {company.name.en}
+              </h2>
+              <BandPill band={company.nitaqat?.band} />
+              {company.status !== 'active' && (
                 <StatusPill tone={toneFor('client', company.status)}>
                   {t(`company.statusValue.${company.status}`)}
                 </StatusPill>
-              </dd>
+              )}
             </div>
-            <div>
-              <dt className="text-sm text-muted-foreground">{t('company.since')}</dt>
-              <dd className="text-sm">{dualDate(company.createdAt, locale)}</dd>
-            </div>
-          </dl>
+            <span
+              dir="rtl"
+              className="w-fit text-end text-[13px] leading-[18px] text-muted-foreground"
+            >
+              {company.name.ar}
+            </span>
+            <ProfileLine client={company} className="text-[13px] leading-[18px]" />
+            {company.nitaqat && (
+              <p className="pt-2 text-[13px] leading-[18px] text-pretty text-muted-foreground">
+                {tc(
+                  `nitaqatNote.${
+                    company.nitaqat.band === 'red' || company.nitaqat.band === 'yellow'
+                      ? company.nitaqat.band
+                      : 'clear'
+                  }`,
+                )}
+              </p>
+            )}
+            <p className="pt-1 text-xs leading-4 text-muted-foreground">
+              {t('company.since')}: {dualDate(company.createdAt, locale)}
+            </p>
+          </div>
+          {/* Read-only here: a client manager holds no `client.update`, so the
+              cards offer no Edit, and the panel is given nothing to save to. */}
+          <ServicePanel client={company} />
+          <ProfileRecords client={company} onSaved={setCompany} />
+          <p className="text-xs leading-4 text-muted-foreground">{t('company.changeNote')}</p>
         </div>
       )}
 

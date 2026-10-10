@@ -8,6 +8,7 @@ import { BandPill } from '@/components/client-profile-bits';
 import type { ClientFigures } from '../client-figures';
 import { RunwayTable } from '../runway-table';
 import { SaudiShare } from '../saudi-share';
+import { ServicePanel } from '../service-panel';
 
 // The Client record's Overview (DS-10): five tiles, the Nitaqat and Service panels,
 // and the expiry runway (runway-table.tsx, shared with the Overview) — the
@@ -18,16 +19,18 @@ import { SaudiShare } from '../saudi-share';
 // and the bands one step up and down the ladder. Nothing here is calculated: the
 // Saudi share bar beside it is a count by nationality and says so, and it takes
 // its colour from the stored band, never from the percentage. No band on file is
-// said plainly. Everything in Service still reads "Soon" (PROF-05).
+// said plainly. The Service panel beside it is service-panel.tsx (PROF-05).
 
 const TILES = ['headcount', 'saudi', 'expiring30', 'openItems', 'waiting'] as const;
 
 export function OverviewTab({
   client,
+  onClientSaved,
   figures,
   staff,
 }: {
   client: ClientResponse;
+  onClientSaved: (saved: ClientResponse) => void;
   figures: ClientFigures;
   staff: readonly EmployeeResponse[];
 }) {
@@ -65,13 +68,6 @@ export function OverviewTab({
   );
   const tileValue = (k: (typeof TILES)[number]) =>
     k === 'saudi' ? `${figures.saudiPct}%` : String(figures[k]);
-
-  const soonField = (label: string) => (
-    <div className="flex flex-col gap-px">
-      <span className="text-xs leading-4 text-muted-foreground">{label}</span>
-      <span className="text-[13px] leading-[18px] text-neutral-400">{t('soon.value')}</span>
-    </div>
-  );
 
   return (
     <div className="flex flex-col gap-4">
@@ -126,23 +122,7 @@ export function OverviewTab({
           </div>
         </section>
 
-        <section
-          aria-labelledby="service"
-          className="flex flex-col gap-3 rounded-xl bg-card px-5 py-[18px] ring-1 ring-foreground/10"
-        >
-          <h2 id="service" className="text-base leading-6 font-medium">
-            {t('service')}
-          </h2>
-          <div className="flex flex-col gap-px">
-            <span className="text-xs leading-4 text-muted-foreground">{t('namedOfficer')}</span>
-            <span className="text-[13px] leading-[18px] text-neutral-400">{t('soon.value')}</span>
-          </div>
-          <div className="grid grid-cols-2 gap-3 border-t pt-3 sm:grid-cols-3">
-            {soonField(t('tier'))}
-            {soonField(t('responseCommitment'))}
-            {soonField(t('termEnds'))}
-          </div>
-        </section>
+        <ServicePanel client={client} onSaved={onClientSaved} />
       </div>
 
       <RunwayTable id="runway" hint={t('runwayHint')} staff={staff} />

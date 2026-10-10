@@ -1501,6 +1501,13 @@ contact · Authorised signatories · Registrations · Portals we hold credential
 Administrator gets an Edit per card; each dialog saves ONLY its own group and only what changed (unchanged = no request).
 Portals = six checkboxes, nothing to type, saved in the fixed list's order; the card says the app never stores a portal's
 username or password. The Client record does NOT honour `?tab=` (the Person record does). No API change.
+**PROF-05 done — Service panel, the client manager's My company, seed profiles.** `clients/service-panel.tsx` (officer ·
+tier · response commitment · term end + a fixed "recorded for reference" line; Administrator Edit sends only changed
+`service` fields; officer picker = staff directory limited to administrator/hr_officer/gro_officer). The SAME panel + the
+four Records cards render read-only on `portal/company` (0 buttons, 0 staff-endpoint calls — all from `/portal/company`).
+Seed `seedClientProfiles` (after users; sets EVERY profile column each run): Alpha medium_green · **Beta red** · **Najd
+yellow** · Gulf platinum · Al Waha none. The seed does NOT turn `flag.client-self-service` on (`configuration-flags.e2e`
+expects the default for seed company A) — an Administrator switches it in Settings for a client manager to see the page.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

@@ -482,6 +482,15 @@
         "cr": "A commercial registration is 10 digits.",
         "vat": "A VAT number is 15 digits."
       }
+    },
+    "officerRole": "{role} · named officer",
+    "officerUnnamed": "Unnamed account",
+    "serviceNote": "Recorded for reference. Request due dates follow the service levels set for each request type.",
+    "serviceForm": {
+      "hint": "Who looks after this company and what was agreed. These are recorded facts: they do not change how requests are handled.",
+      "termStart": "Term starts",
+      "termEnd": "Term ends",
+      "termOrder": "The term cannot end before it starts."
     }
   },
   "audit": {
@@ -889,7 +898,8 @@
       "statusValue": {
         "active": "Active",
         "inactive": "Inactive"
-      }
+      },
+      "changeNote": "To change any of this, raise a request and the PEOPLE&GRO team will update it."
     },
     "employees": {
       "title": "My employees",
