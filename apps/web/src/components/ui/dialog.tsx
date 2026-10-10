@@ -131,7 +131,10 @@ function DialogTitle({ className, ...props }: DialogPrimitive.Title.Props) {
     <DialogPrimitive.Title
       data-slot="dialog-title"
       className={cn(
-        "text-base leading-6 font-medium",
+        // `pe-8`: the close button sits over the header's end corner — without
+        // room kept for it, a title whose first line reaches the edge runs
+        // underneath it (PROF-06: "…for Imran Khan?" lost its last letters).
+        "pe-8 text-base leading-6 font-medium",
         className
       )}
       {...props}

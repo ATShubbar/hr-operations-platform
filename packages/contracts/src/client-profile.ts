@@ -75,3 +75,38 @@ export type ResponseCommitment = (typeof RESPONSE_COMMITMENTS)[number];
 
 /** How many authorised signatories a client may list. */
 export const MAX_SIGNATORIES = 10;
+
+// ---------------------------------------------------------------------------
+// The band warning (PROF-06, ADR-019) — ONE rule for every screen that warns,
+// so they cannot disagree. A warning NEVER blocks: the stored band may be out
+// of date and Qiwa is the authority, so the server refuses nothing. This only
+// decides whether a line of text is shown, and which band it names.
+//
+//   Red    ("work permits and transfers are blocked… every hire must be Saudi")
+//          → a non-Saudi hire; a work-permit renewal; a sponsorship transfer.
+//   Yellow ("renewals still pass, but new permits are restricted")
+//          → a non-Saudi hire only.
+//   Greens, Platinum, or no band on file → never.
+// ---------------------------------------------------------------------------
+
+/** The procedure types a RED band warns about. */
+export const RED_BAND_PROCEDURES: readonly string[] = [
+  'work_permit_renewal',
+  'sponsorship_transfer',
+];
+
+export type BandCheck =
+  /** Moving a candidate to Visa & mobilisation, or onboarding them directly. */
+  | { kind: 'hire'; saudi: boolean }
+  /** Starting a government procedure of this type. */
+  | { kind: 'procedure'; type: string };
+
+/** The band to warn about for this action, or null when nothing should be said. */
+export function bandWarning(
+  band: NitaqatBand | null | undefined,
+  check: BandCheck,
+): 'red' | 'yellow' | null {
+  if (band !== 'red' && band !== 'yellow') return null;
+  if (check.kind === 'hire') return check.saudi ? null : band;
+  return band === 'red' && RED_BAND_PROCEDURES.includes(check.type) ? 'red' : null;
+}

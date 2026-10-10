@@ -1508,6 +1508,13 @@ four Records cards render read-only on `portal/company` (0 buttons, 0 staff-endp
 Seed `seedClientProfiles` (after users; sets EVERY profile column each run): Alpha medium_green · **Beta red** · **Najd
 yellow** · Gulf platinum · Al Waha none. The seed does NOT turn `flag.client-self-service` on (`configuration-flags.e2e`
 expects the default for seed company A) — an Administrator switches it in Settings for a client manager to see the page.
+**PROF-06 done — the band warnings; the client profile + Nitaqat epic (ADR-019, PROF-00..06) is COMPLETE.** ONE rule,
+`bandWarning(band, check)` in `@hr/contracts/client-profile`: Red → a non-Saudi hire, `work_permit_renewal`,
+`sponsorship_transfer`; Yellow → a non-Saudi hire only; greens/platinum/no band → never; a Saudi hire never. It decides only
+whether `components/band-warning.tsx` renders — NOTHING is blocked and the server is unchanged. Shown in the Hiring
+confirmation (both employee-creating moves) and in `StartProcedureDialog` via a new `bandFor(employeeId)` prop (Person
+record, Client record — before a person is picked — and Overview). `DialogTitle` gained `pe-8` (a long title ran under the
+close button). Contracts 18/18; API **750/750**. Follow-up PROF-07 (client record `?tab=`, CR in search).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
@@ -1567,6 +1574,9 @@ expects the default for seed company A) — an Administrator switches it in Sett
 - Every new client-scoped table follows the checklist in apps/api/src/modules/README.md and registers in the isolation harness (unregistered endpoints fail CI).
 - Local ports: Postgres 5433, Redis 6380, MinIO 9002 (API) / 9003 (console) — non-default because 5432/6379/9000 belong to other local tooling. `docker compose up -d` now includes MinIO; storage e2e (STOR-01) requires it up. StorageService is endpoint-configurable + `forcePathStyle` (MinIO); prod object-store provider is still ADR-006-open. Presigned uploads go browser→object-store DIRECTLY (never through the API); this works on MinIO's default CORS locally — a stricter production object store must have CORS configured for the web origin (DOC-05).
 - Tailwind v4 `@theme` only EMITS a utility when the class appears in scanned source — a new token is not a usable class until something references it. Verify with a real consumer, not by injecting a class at runtime.
+- Switching the Browser pane's viewport (`resize_window` desktop ↔ mobile) can send the tab to the SITE ROOT a few seconds
+  later (web log: `GET /ar 307` → `/ar/overview`, no /login) — it looked like the app redirecting a client record to the
+  Overview, and like a form resetting itself. Set the viewport once, wait, then navigate; don't switch mid-check (PROF-02/06).
 - Do NOT run `next build` (prod) while the web dev/preview server is running — it clobbers `.next` and the dev server then throws `Cannot find module './NNN.js'`. Stop the dev server first, or verify only via the dev server (AUTH-08).
 - The Browser pane SCALES an emulated viewport larger than the pane (e.g. 1280 in a ~600px
   pane), and coordinate clicks then drift — a click aimed at one nav row lands on another.

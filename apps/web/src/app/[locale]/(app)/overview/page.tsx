@@ -416,6 +416,11 @@ function StaffOverview() {
           onOpenChange={setProcOpen}
           description={t('procDescription')}
           onStarted={() => void load()}
+          bandFor={(employeeId) => {
+            const e = data.employees.find((x) => x.id === employeeId);
+            const c = e && data.clients.find((x) => x.id === e.clientId);
+            return c ? { client: clientName(c), nitaqat: c.nitaqat } : null;
+          }}
           choices={people
             .map((e) => {
               const c = data.clients.find((x) => x.id === e.clientId);

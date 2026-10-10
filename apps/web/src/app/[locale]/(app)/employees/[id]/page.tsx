@@ -286,6 +286,7 @@ export default function PersonRecordPage() {
           onOpenChange={setProcOpen}
           employeeId={emp.id}
           employeeName={name}
+          bandFor={() => (client ? { client: clientName, nitaqat: client.nitaqat } : null)}
         />
       )}
     </div>

@@ -16,6 +16,7 @@ import type {
 } from '@hr/contracts';
 import { Link, useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
+import { BandWarning, type BandSource } from '@/components/band-warning';
 import { useCan } from '@/lib/session';
 import { toneFor } from '@/lib/status-tone';
 import { useNationalityName } from '@/lib/nationality';
@@ -39,7 +40,7 @@ import { toastSuccess } from '@/components/ui/toast';
 import { AddCandidateDialog, type RoleSummary } from './add-candidate-dialog';
 import { CandidateDialog, type CandidateView } from './candidate-dialog';
 import { OpenRoleDialog } from './open-role-dialog';
-import { COLUMNS, canDrop, forwardOf, isActive, type Column } from './stages';
+import { COLUMNS, canDrop, forwardOf, isActive, isSaudi, type Column } from './stages';
 
 // Hiring (DS-09) — the prototype's Hiring screen (ADR-012): the open roles above
 // the candidate board. It replaces REC-06's two screens (/vacancies, /candidates),
@@ -175,6 +176,10 @@ export default function HiringPage() {
       .catch(() => setClients([]));
   }, []);
 
+  const bandSourceOf = (id: string): BandSource | null => {
+    const c = clients.find((x) => x.id === id);
+    return c ? { client: locale === 'ar' ? c.name.ar : c.name.en, nitaqat: c.nitaqat } : null;
+  };
   const clientName = (id: string) => {
     const c = clients.find((x) => x.id === id);
     return c ? (locale === 'ar' ? c.name.ar : c.name.en) : '';
@@ -681,7 +686,7 @@ export default function HiringPage() {
         }}
       />
       <Dialog open={hireCandidate !== null} onOpenChange={(o) => !o && setConfirmMove(null)}>
-        <DialogContent className="sm:max-w-[440px]">
+        <DialogContent className="sm:max-w-[440px] [&>*]:min-w-0">
           {hireCandidate && (
             <>
               <DialogHeader>
@@ -699,6 +704,15 @@ export default function HiringPage() {
                     : t('hireNeedsNationality')}
                 </DialogDescription>
               </DialogHeader>
+              {/* PROF-06: a Red or Yellow band at the employer warns about a
+                  non-Saudi hire — here, where the move is confirmed — and
+                  never blocks it. */}
+              {hireCandidate.nationality && (
+                <BandWarning
+                  source={bandSourceOf(hireCandidate.clientId)}
+                  check={{ kind: 'hire', saudi: isSaudi(hireCandidate.nationality) }}
+                />
+              )}
               {moveError && <p className="text-sm text-destructive">{moveError}</p>}
               <DialogFooter>
                 <Button variant="outline" onClick={() => setConfirmMove(null)}>

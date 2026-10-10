@@ -35,9 +35,9 @@
 | Arabic cards at 375px | «المقاولات · الدمام · س.ت 1010224417». Measured positions: sector at x 179–222, city 141–169, number 34–100, so it reads sector, city, CR from the right. 0px overflow. |
 | HR officer | Sees the band and line on the card and the header. No "Add a client" button; the header has only View register and Start a procedure (no menu, so no Edit). |
 
-## One thing I could not explain
+## A stray redirect during the check (explained in PROF-06)
 
-On the first HR-officer visit to the client record, the tab ended up on the Overview a few seconds after the record's data had loaded (every request in the log was 200). The only code that navigates to the Overview is the sign-in page, which means something sent the tab to sign-in first. It did not happen again in two further visits, one at the same 375px size. I have no cause for it and no evidence it is related to this card; I am recording it rather than leaving it out.
+On the first HR-officer visit to the client record, the tab ended up on the Overview a few seconds after the record had loaded. When this was written I had no cause. It recurred in PROF-06, where the web server's log showed the tab being sent to the site's root (`GET /ar 307`, no sign-in request) shortly after the test browser's viewport was switched; without that switch it does not happen. It is the test browser, not the product. See `PROF-06.md`.
 
 ## Gates
 

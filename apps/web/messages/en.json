@@ -2479,5 +2479,16 @@
     "cr": "CR {number}",
     "notRecorded": "Not recorded",
     "lineNone": "Sector, city and commercial registration not recorded"
+  },
+  "bandWarning": {
+    "title": "{client}'s Nitaqat band is {band}",
+    "checked": "Recorded from Qiwa, last checked {date}. The band may have changed since. You can still go ahead.",
+    "hire": {
+      "red": "While the band is red, work permits are blocked and every hire must be Saudi. This candidate is not a Saudi national.",
+      "yellow": "While the band is yellow, new work permits are restricted. This candidate is not a Saudi national."
+    },
+    "procedure": {
+      "red": "While the band is red, work permits and transfers are blocked. Qiwa may refuse this procedure."
+    }
   }
 }

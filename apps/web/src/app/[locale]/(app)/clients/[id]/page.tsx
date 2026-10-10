@@ -380,6 +380,7 @@ export default function ClientRecordPage() {
           open={procOpen}
           onOpenChange={setProcOpen}
           context={name}
+          bandFor={() => ({ client: name, nitaqat: client.nitaqat })}
           onStarted={() => void load()}
           choices={staff.map((e) => ({
             id: e.id,

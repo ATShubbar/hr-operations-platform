@@ -6,6 +6,7 @@ import type { GroProcessType } from '@hr/contracts';
 
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
+import { BandWarning, type BandSource } from '@/components/band-warning';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -58,6 +59,7 @@ export function StartProcedureDialog({
   context,
   description,
   onStarted,
+  bandFor,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -69,6 +71,11 @@ export function StartProcedureDialog({
   description?: string;
   /** Called after the procedure is opened (the Client record recounts its open items). */
   onStarted?: () => void;
+  /**
+   * The employer's Nitaqat band for an employee (PROF-06): the dialog warns —
+   * and never blocks — when a RED band bears on the chosen procedure type.
+   */
+  bandFor?: (employeeId: string) => BandSource | null | undefined;
 }) {
   const t = useTranslations('person.proc');
   const tg = useTranslations('gro');
@@ -105,7 +112,7 @@ export function StartProcedureDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px]">
+      <DialogContent className="sm:max-w-[480px] [&>*]:min-w-0">
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>
@@ -155,6 +162,9 @@ export function StartProcedureDialog({
             <Label htmlFor="sp-due">{t('dueDate')}</Label>
             <Input id="sp-due" type="date" value={due} onChange={(e) => setDue(e.target.value)} />
           </div>
+          {/* Asked even before a person is picked: on a Client record the
+              employer is already known (an empty id is simply not found). */}
+          <BandWarning source={bandFor?.(forId)} check={{ kind: 'procedure', type }} />
           {error && (
             <p role="alert" className="text-sm text-destructive">
               {error}
