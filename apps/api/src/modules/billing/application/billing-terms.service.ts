@@ -13,6 +13,7 @@ import { AuditService } from '../../audit/public-api';
 import { UsersService } from '../../auth/public-api';
 import { ClientsService } from '../../clients/public-api';
 import { EmployeesService } from '../../employees/public-api';
+import { InvoicesService } from './invoices.service';
 
 // A client's commercial terms and what they come to (BILL-04, ADR-020).
 //
@@ -42,12 +43,13 @@ export class BillingTermsService {
     private readonly users: UsersService,
     private readonly clients: ClientsService,
     private readonly employees: EmployeesService,
+    private readonly invoices: InvoicesService,
   ) {}
 
   async summary(clientId: string): Promise<BillingSummaryResponse> {
     const client = await this.clients.getById(clientId);
     if (!client) throw new NotFoundException('Client not found');
-    const [row, people, owed] = await Promise.all([
+    const [row, people, owed, standing] = await Promise.all([
       this.prisma.billingTerms.findUnique({ where: { clientId } }),
       this.employees.list(clientId),
       // Every fee still `recorded`, whatever its age: not void, not on an invoice.
@@ -55,6 +57,8 @@ export class BillingTermsService {
         where: { clientId, status: 'recorded' },
         _sum: { amountHalalas: true },
       }),
+      // BILL-05: derived from the invoice records, never set by hand.
+      this.invoices.standingOf(clientId),
     ]);
     const unrecoveredFeesHalalas = owed._sum.amountHalalas ?? 0;
     if (!row) {
@@ -63,6 +67,7 @@ export class BillingTermsService {
         terms: null,
         estimate: null,
         unrecoveredFeesHalalas,
+        standing,
         termsUpdatedBy: null,
         termsUpdatedAt: null,
       };
@@ -80,6 +85,7 @@ export class BillingTermsService {
       terms,
       estimate: { ...estimate, nextInvoiceHalalas: estimate.cycleHalalas + unrecoveredFeesHalalas },
       unrecoveredFeesHalalas,
+      standing,
       termsUpdatedBy: row.updatedByUserId ? (names.get(row.updatedByUserId) ?? null) : null,
       termsUpdatedAt: row.updatedAt.toISOString(),
     };

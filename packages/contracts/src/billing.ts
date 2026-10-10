@@ -6,8 +6,12 @@ import {
   FEE_RECEIPT_MAX_BYTES,
   FEE_RECEIPT_STATUSES,
   FEE_RECEIPT_TYPES,
+  ACCOUNT_STANDINGS,
   FEE_STATUSES,
+  INVOICE_STATUSES,
   MAX_FEE_HALALAS,
+  MAX_INVOICE_FEES,
+  MAX_INVOICE_HALALAS,
   MAX_TERM_HALALAS,
 } from './billing-lists.js';
 
@@ -197,10 +201,76 @@ export const billingSummaryResponseSchema = z.object({
     .nullable(),
   // Every fee still `recorded`, whatever its age — what is owed for fees.
   unrecoveredFeesHalalas: z.number().int(),
+  // BILL-05: derived from the invoice records, never set by hand.
+  standing: z.object({
+    state: z.enum(ACCOUNT_STANDINGS),
+    outstandingHalalas: z.number().int(), // every unpaid invoice
+    overdueHalalas: z.number().int(), // the unpaid ones past their due date
+    overdueCount: z.number().int(),
+  }),
   termsUpdatedBy: z.string().nullable(), // a display name
   termsUpdatedAt: z.string().nullable(), // ISO 8601
 });
 
+// ---------------------------------------------------------------------------
+// Invoice records (BILL-05). `billing.update` writes, `billing.read` reads.
+// The number, dates and amount are entered AS ISSUED — nothing is numbered,
+// rendered or taxed here. The fees an invoice recovers become `invoiced`.
+// ---------------------------------------------------------------------------
+
+export const invoiceStatusSchema = z.enum(INVOICE_STATUSES);
+const invoiceNumber = z.string().trim().min(1).max(40);
+const invoiceAmount = z.number().int().min(1).max(MAX_INVOICE_HALALAS);
+const invoiceFeeIds = z
+  .array(z.uuid())
+  .max(MAX_INVOICE_FEES)
+  .refine((ids) => new Set(ids).size === ids.length, 'A fee is listed twice');
+
+export const createInvoiceRequestSchema = z.strictObject({
+  number: invoiceNumber,
+  issuedOn: dateOnly,
+  dueOn: dateOnly,
+  amountHalalas: invoiceAmount,
+  feeIds: invoiceFeeIds.default([]),
+});
+
+// A correction, while the invoice is unpaid. `feeIds` REPLACES the set: a fee
+// left out goes back to `recorded`.
+export const updateInvoiceRequestSchema = z
+  .strictObject({
+    number: invoiceNumber.optional(),
+    issuedOn: dateOnly.optional(),
+    dueOn: dateOnly.optional(),
+    amountHalalas: invoiceAmount.optional(),
+    feeIds: invoiceFeeIds.optional(),
+  })
+  .refine((v) => Object.values(v).some((x) => x !== undefined), 'Nothing to change');
+
+export const markInvoicePaidRequestSchema = z.strictObject({ paidOn: dateOnly });
+
+export const invoiceResponseSchema = z.object({
+  id: z.uuid(),
+  clientId: z.uuid(),
+  number: z.string(),
+  issuedOn: z.string(), // YYYY-MM-DD
+  dueOn: z.string(),
+  amountHalalas: z.number().int(),
+  status: invoiceStatusSchema,
+  paidOn: z.string().nullable(),
+  // Derived at the moment of asking: unpaid and past its due date.
+  overdue: z.boolean(),
+  fees: z.array(z.object({ id: z.uuid(), ref: z.string(), amountHalalas: z.number().int() })),
+  feesHalalas: z.number().int(),
+  recordedBy: z.string().nullable(), // a display name, never an id
+  recordedAt: z.string(), // ISO 8601
+});
+export const invoiceListResponseSchema = z.object({ invoices: z.array(invoiceResponseSchema) });
+
+export type CreateInvoiceRequest = z.infer<typeof createInvoiceRequestSchema>;
+export type UpdateInvoiceRequest = z.infer<typeof updateInvoiceRequestSchema>;
+export type MarkInvoicePaidRequest = z.infer<typeof markInvoicePaidRequestSchema>;
+export type InvoiceResponse = z.infer<typeof invoiceResponseSchema>;
+export type InvoiceListResponse = z.infer<typeof invoiceListResponseSchema>;
 export type BillingTerms = z.infer<typeof billingTermsSchema>;
 export type BillingSummaryResponse = z.infer<typeof billingSummaryResponseSchema>;
 export type CreateFeeRequest = z.infer<typeof createFeeRequestSchema>;

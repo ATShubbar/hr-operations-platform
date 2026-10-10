@@ -38,6 +38,10 @@ const RULES: readonly Rule[] = [
   { resource: 'fee', severity: 'notable' },
   // BILL-04: what a client is charged changed.
   { resource: 'billing-terms', severity: 'notable' },
+  // BILL-05: an invoice record. Removing one takes an amount out of what a
+  // client is shown to owe — the act a reviewer reads first.
+  { resource: 'invoice', action: 'remove', severity: 'critical' },
+  { resource: 'invoice', severity: 'notable' },
   { resource: 'request', action: 'process', severity: 'notable' },
   { resource: 'leave', action: 'approve', severity: 'notable' },
   { resource: 'leave', action: 'decline', severity: 'notable' },

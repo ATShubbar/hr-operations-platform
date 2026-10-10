@@ -145,6 +145,7 @@ describe('Fee receipts and reopened steps (BILL-02, e2e)', () => {
       await owner.groSequence.findMany({ where: { clientId: { in: cos } }, select: { id: true } })
     ).map((r) => r.id);
     await owner.fee.deleteMany({ where: { clientId: { in: cos } } });
+    await owner.invoice.deleteMany({ where: { clientId: { in: cos } } });
     await owner.groSequenceStep.deleteMany({ where: { sequenceId: { in: runs } } });
     await owner.groSequence.deleteMany({ where: { id: { in: runs } } });
     await owner.auditEntry.deleteMany({ where: { clientId: { in: cos } } });
@@ -301,8 +302,20 @@ describe('Fee receipts and reopened steps (BILL-02, e2e)', () => {
     it('leaves a fee that is already on an invoice exactly as it is', async () => {
       await file('visa-auth').expect(200);
       const fee = (await stepFee('visa-auth', 5_000).expect(201)).body as Fee;
-      // An invoice record recovers it (BILL-05 does this through the API).
-      await owner.fee.update({ where: { id: fee.id }, data: { status: 'invoiced' } });
+      // An invoice record recovers it ("invoiced" always means ON an invoice — BILL-05).
+      const invoice = await owner.invoice.create({
+        data: {
+          clientId: ids.co,
+          number: 'INV-REOPEN-1',
+          issuedOn: new Date(),
+          dueOn: new Date(),
+          amountHalalas: 5_000,
+        },
+      });
+      await owner.fee.update({
+        where: { id: fee.id },
+        data: { status: 'invoiced', invoiceId: invoice.id },
+      });
       await reopen('visa-auth').expect(200);
       const row = await owner.fee.findUniqueOrThrow({ where: { id: fee.id } });
       expect(row).toMatchObject({ status: 'invoiced', voidedAt: null, amountHalalas: 5_000 });

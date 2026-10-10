@@ -412,7 +412,8 @@ export const ModelName = {
   LeaveRequest: 'LeaveRequest',
   LeaveEntry: 'LeaveEntry',
   Fee: 'Fee',
-  BillingTerms: 'BillingTerms'
+  BillingTerms: 'BillingTerms',
+  Invoice: 'Invoice'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -428,7 +429,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "authUser" | "authAccountToken" | "coreScopeCheck" | "auditEntry" | "systemSetting" | "clientSetting" | "userSetting" | "client" | "employee" | "dependant" | "document" | "notification" | "expiryAlert" | "notificationPreference" | "request" | "requestComment" | "requestAttachment" | "task" | "vacancy" | "candidate" | "groProcess" | "groSequence" | "groSequenceStep" | "gcalInvitation" | "calendarEvent" | "leaveRequest" | "leaveEntry" | "fee" | "billingTerms"
+    modelProps: "authUser" | "authAccountToken" | "coreScopeCheck" | "auditEntry" | "systemSetting" | "clientSetting" | "userSetting" | "client" | "employee" | "dependant" | "document" | "notification" | "expiryAlert" | "notificationPreference" | "request" | "requestComment" | "requestAttachment" | "task" | "vacancy" | "candidate" | "groProcess" | "groSequence" | "groSequenceStep" | "gcalInvitation" | "calendarEvent" | "leaveRequest" | "leaveEntry" | "fee" | "billingTerms" | "invoice"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2578,6 +2579,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Invoice: {
+      payload: Prisma.$InvoicePayload<ExtArgs>
+      fields: Prisma.InvoiceFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.InvoiceFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoicePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.InvoiceFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoicePayload>
+        }
+        findFirst: {
+          args: Prisma.InvoiceFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoicePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.InvoiceFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoicePayload>
+        }
+        findMany: {
+          args: Prisma.InvoiceFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoicePayload>[]
+        }
+        create: {
+          args: Prisma.InvoiceCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoicePayload>
+        }
+        createMany: {
+          args: Prisma.InvoiceCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.InvoiceCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoicePayload>[]
+        }
+        delete: {
+          args: Prisma.InvoiceDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoicePayload>
+        }
+        update: {
+          args: Prisma.InvoiceUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoicePayload>
+        }
+        deleteMany: {
+          args: Prisma.InvoiceDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.InvoiceUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.InvoiceUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoicePayload>[]
+        }
+        upsert: {
+          args: Prisma.InvoiceUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$InvoicePayload>
+        }
+        aggregate: {
+          args: Prisma.InvoiceAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateInvoice>
+        }
+        groupBy: {
+          args: Prisma.InvoiceGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InvoiceGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.InvoiceCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.InvoiceCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -3124,7 +3199,8 @@ export const FeeScalarFieldEnum = {
   receiptContentType: 'receiptContentType',
   receiptStatus: 'receiptStatus',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  invoiceId: 'invoiceId'
 } as const
 
 export type FeeScalarFieldEnum = (typeof FeeScalarFieldEnum)[keyof typeof FeeScalarFieldEnum]
@@ -3143,6 +3219,25 @@ export const BillingTermsScalarFieldEnum = {
 } as const
 
 export type BillingTermsScalarFieldEnum = (typeof BillingTermsScalarFieldEnum)[keyof typeof BillingTermsScalarFieldEnum]
+
+
+export const InvoiceScalarFieldEnum = {
+  id: 'id',
+  clientId: 'clientId',
+  number: 'number',
+  issuedOn: 'issuedOn',
+  dueOn: 'dueOn',
+  amountHalalas: 'amountHalalas',
+  status: 'status',
+  paidOn: 'paidOn',
+  recordedByUserId: 'recordedByUserId',
+  removedAt: 'removedAt',
+  removedByUserId: 'removedByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InvoiceScalarFieldEnum = (typeof InvoiceScalarFieldEnum)[keyof typeof InvoiceScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -3851,6 +3946,20 @@ export type ListEnumBillingCycleFieldRefInput<$PrismaModel> = FieldRefInputType<
 
 
 /**
+ * Reference to a field of type 'InvoiceStatus'
+ */
+export type EnumInvoiceStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InvoiceStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'InvoiceStatus[]'
+ */
+export type ListEnumInvoiceStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InvoiceStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -4002,6 +4111,7 @@ export type GlobalOmitConfig = {
   leaveEntry?: Prisma.LeaveEntryOmit
   fee?: Prisma.FeeOmit
   billingTerms?: Prisma.BillingTermsOmit
+  invoice?: Prisma.InvoiceOmit
 }
 
 /* Types for Logging */

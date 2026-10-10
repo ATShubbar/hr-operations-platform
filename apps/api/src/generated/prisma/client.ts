@@ -184,3 +184,8 @@ export type Fee = Prisma.FeeModel
  * 
  */
 export type BillingTerms = Prisma.BillingTermsModel
+/**
+ * Model Invoice
+ * 
+ */
+export type Invoice = Prisma.InvoiceModel

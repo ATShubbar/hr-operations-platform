@@ -411,3 +411,11 @@ export const BillingCycle = {
 } as const
 
 export type BillingCycle = (typeof BillingCycle)[keyof typeof BillingCycle]
+
+
+export const InvoiceStatus = {
+  sent: 'sent',
+  paid: 'paid'
+} as const
+
+export type InvoiceStatus = (typeof InvoiceStatus)[keyof typeof InvoiceStatus]

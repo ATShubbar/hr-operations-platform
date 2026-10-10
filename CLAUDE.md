@@ -1555,6 +1555,17 @@ with the client's status) + every fee still `recorded`. Web `clients/[id]/commer
 (term dates + tier come from the PROFILE) / tier inclusions (prototype wording, "switches nothing on") / Invoices + account
 standing "Soon" (BILL-05); officers get the locked state and NO request is made. Every Client-record tab is now built.
 Arabic values that open with a digit (dates, day counts) need isolating under the LTR layout. API **780/780**.
+**BILL-05 done — invoice RECORDS (the invoice is issued from the accounting system).** `bil_invoices` (number as issued,
+issue/due dates, amount, `sent`|`paid` + paid_on, soft `removed_at`; partial unique `(client_id, lower(number))` among live
+rows; staff-owned, no delete) + `bil_fees.invoice_id` (real FK; CHECK: `invoiced` ⇔ has an invoice — tests can no longer
+mark a fee invoiced by SQL alone). `InvoicesService`: create/update link fees ALL-OR-NOTHING (this client's, still
+`recorded`; `feeIds` on update REPLACES the set), `paid`/`unpaid` (a paid record is settled — un-mark to correct),
+`remove` only while unpaid AND recovering no fee; every write row-locks the invoice (`FOR UPDATE`); audited `invoice`
+(remove = critical). **Overdue and the client's `standing` (none/current/overdue) are DERIVED** — `isOverdue` in
+`@hr/contracts/billing-lists` against today in the system timezone (Billing imports ConfigurationModule for it) — and ride
+on `GET /billing/clients/:id`. Web: `clients/[id]/invoices-card.tsx` (list, Record/Correct with a fee tick list, Mark
+paid/unpaid, Remove), overdue banner + standing pill on the Commercial tab, `lib/fee-what.ts` (shared with the Fees tab),
+`toneFor('invoice'|'standing')`. API **790/790**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
@@ -1574,6 +1585,11 @@ Arabic values that open with a digit (dates, day counts) need isolating under th
 - A seed that UPSERTS rows back to a seeded status must also reset every column a CHECK ties to that status — the
   seed left `info_returns_to` set and re-seeding failed on any request someone had put in `info_needed`, which would
   have broken Seed UAT the first time it was used (THREAD-03).
+- A test that compares a date with "today" must count its days in the SAME timezone as the service. Riyadh's day starts
+  three hours before UTC's: a test using UTC dates against a service using the system timezone fails only between 21:00
+  and 24:00 UTC — i.e. in CI at night, never at a desk (BILL-05: "due today is not overdue"). Use `dayIn(new Date(), tz)`.
+- The browser harness's `form_input` on a React-controlled CHECKBOX sets `.checked` without firing React's change: the box
+  looks ticked and the state is not. Tick with a real click (the box or its label) (BILL-05).
 - A WITH CHECK red proof can be MASKED by the read policy: an INSERT … RETURNING row the caller can't SELECT fails anyway,
   so loosening the write policy changes nothing for that forgery. Test a forgery the read policy WOULD let back out
   (THREAD-01: a colleague's request labelled with my own employee id).

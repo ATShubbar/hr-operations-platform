@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { Check, Lock } from 'lucide-react';
+import { Check, Lock, TriangleAlert } from 'lucide-react';
 import type { BillingSummaryResponse, ClientResponse } from '@hr/contracts';
 import { BILLING_CYCLES, type BillingCycle } from '@hr/contracts/billing-lists';
 import { formatHijri } from '@hr/dates';
@@ -10,6 +10,7 @@ import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { halalasToInput, sarTextToHalalas, useMoney } from '@/lib/money';
 import { useCan } from '@/lib/session';
+import { toneFor } from '@/lib/status-tone';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -32,7 +33,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { SkeletonRegion } from '@/components/ui/skeleton';
+import { StatusPill } from '@/components/ui/status-pill';
 import { toastSuccess } from '@/components/ui/toast';
+import { InvoicesCard } from './invoices-card';
 
 // The Client record's Commercial tab, first half (BILL-04, ADR-020) — the
 // prototype's Subscription and Agreement cards and what the tier includes.
@@ -47,7 +50,9 @@ import { toastSuccess } from '@/components/ui/toast';
 //     is issued from the accounting system, and no VAT is calculated here;
 //   · the tier and the term dates come from the client's profile (ADR-019) and
 //     are changed there, in the Service panel on Overview.
-// Account standing and the invoice list are BILL-05 and say so.
+// BILL-05: the account standing (derived from the invoice records, never set)
+// and the invoice records themselves (`invoices-card.tsx`). An overdue account
+// shows the prototype's banner.
 //
 // A viewer without `billing.read` (HR and GRO officers) gets the prototype's
 // locked state, and NO request is made for the figures.
@@ -200,7 +205,7 @@ export function CommercialTab({ client }: { client: ClientResponse }) {
     }).format(new Date(`${iso}T00:00:00Z`));
   const hijri = (iso: string) => formatHijri(new Date(`${iso}T00:00:00Z`), locale);
 
-  const { terms, estimate } = data;
+  const { terms, estimate, standing } = data;
   const s = client.service;
   const renewIn = s.termEnd ? daysBetween(todayIso(), s.termEnd) : null;
   const notRecorded = (
@@ -253,6 +258,24 @@ export function CommercialTab({ client }: { client: ClientResponse }) {
   return (
     <div className="flex flex-col gap-4">
       {error && <LoadError message={error} onRetry={() => void load()} hasContent />}
+
+      {standing.state === 'overdue' && (
+        <div
+          role="status"
+          className="flex items-start gap-2.5 rounded-lg bg-status-critical-surface px-4 py-3 text-status-critical"
+        >
+          <TriangleAlert className="mt-px size-4 shrink-0" aria-hidden />
+          <p className="text-[13px] leading-[18px] text-pretty">
+            {whole(
+              t('overdueBanner', {
+                count: standing.overdueCount,
+                overdue: money(standing.overdueHalalas),
+                outstanding: money(standing.outstandingHalalas),
+              }),
+            )}
+          </p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.1fr_1fr]">
         <section
@@ -381,8 +404,15 @@ export function CommercialTab({ client }: { client: ClientResponse }) {
               <dt className="min-w-0 grow text-xs leading-4 text-muted-foreground">
                 {t('standing')}
               </dt>
-              <dd className="shrink-0">
-                <Badge variant="outline">{ts('soon')}</Badge>
+              <dd className="flex shrink-0 flex-col items-end gap-0.5">
+                <StatusPill tone={toneFor('standing', standing.state)}>
+                  {t(`standingState.${standing.state}`)}
+                </StatusPill>
+                {standing.outstandingHalalas > 0 && (
+                  <span className="text-[11px] leading-[15px] text-muted-foreground">
+                    {whole(t('outstanding', { amount: money(standing.outstandingHalalas) }))}
+                  </span>
+                )}
               </dd>
             </div>
           </dl>
@@ -404,51 +434,39 @@ export function CommercialTab({ client }: { client: ClientResponse }) {
         </section>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1.2fr]">
-        <section
-          aria-labelledby="cm-inc"
-          className={cn(card, 'flex flex-col gap-3 px-5 py-[18px]')}
-        >
-          <h2 id="cm-inc" className="text-base leading-6 font-medium">
-            {s.tier ? t('includes', { tier: tp(`tier.${s.tier}`) }) : t('includesNoTier')}
-          </h2>
-          {s.tier ? (
-            <ul className="flex flex-col gap-2">
-              {(t.raw(`tierIncludes.${s.tier}`) as string[]).map((item) => (
-                <li
-                  key={item}
-                  className="flex items-start gap-2 text-[13px] leading-[18px] text-pretty"
-                >
-                  <Check className="mt-0.5 size-3.5 shrink-0 text-status-ok" aria-hidden />
-                  <span>
-                    <bdi>{item}</bdi>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-[13px] leading-[18px] text-muted-foreground">{whole(t('noTier'))}</p>
-          )}
-          <p className="text-xs leading-4 text-neutral-500">{whole(t('includesNote'))}</p>
-        </section>
+      {/* The prototype sets the tier list beside the invoices. A record here
+          carries more than its four columns (the due date, the fees it
+          recovers, its actions), so the list takes the full width and the
+          tier list follows it. */}
+      <InvoicesCard
+        clientId={client.id}
+        paymentTermsDays={terms?.paymentTermsDays ?? null}
+        onChanged={() => void load()}
+      />
 
-        <section
-          aria-labelledby="cm-inv"
-          className={cn(card, 'flex flex-col gap-2 px-5 py-[18px]')}
-        >
-          <div className="flex items-center gap-2">
-            <h2 id="cm-inv" className="min-w-0 grow text-base leading-6 font-medium">
-              {t('invoices')}
-            </h2>
-            <Badge variant="outline" className="shrink-0">
-              {ts('soon')}
-            </Badge>
-          </div>
-          <p className="text-[13px] leading-[18px] text-muted-foreground">
-            {whole(t('invoicesSoon'))}
-          </p>
-        </section>
-      </div>
+      <section aria-labelledby="cm-inc" className={cn(card, 'flex flex-col gap-3 px-5 py-[18px]')}>
+        <h2 id="cm-inc" className="text-base leading-6 font-medium">
+          {s.tier ? t('includes', { tier: tp(`tier.${s.tier}`) }) : t('includesNoTier')}
+        </h2>
+        {s.tier ? (
+          <ul className="flex flex-col gap-2">
+            {(t.raw(`tierIncludes.${s.tier}`) as string[]).map((item) => (
+              <li
+                key={item}
+                className="flex items-start gap-2 text-[13px] leading-[18px] text-pretty"
+              >
+                <Check className="mt-0.5 size-3.5 shrink-0 text-status-ok" aria-hidden />
+                <span>
+                  <bdi>{item}</bdi>
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-[13px] leading-[18px] text-muted-foreground">{whole(t('noTier'))}</p>
+        )}
+        <p className="text-xs leading-4 text-neutral-500">{whole(t('includesNote'))}</p>
+      </section>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[520px] [&>*]:min-w-0">

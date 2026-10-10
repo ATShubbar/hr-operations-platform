@@ -1073,9 +1073,15 @@ model Fee {
   createdAt        DateTime      @default(now()) @map("created_at")
   updatedAt        DateTime      @updatedAt @map("updated_at")
 
+  // BILL-05: the invoice record that recovers this fee. Present exactly when
+  // the status is `invoiced` (a CHECK) — "invoiced" always means ON an invoice.
+  invoiceId        String?       @map("invoice_id") @db.Uuid
+  invoice          Invoice?      @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+
   @@index([clientId, paidOn])
   @@index([employeeId])
   @@index([status])
+  @@index([invoiceId])
   @@map("bil_fees")
 }
 
@@ -1121,4 +1127,34 @@ enum BillingCycle {
   monthly
   quarterly
   annual
+}
+
+// BILL-05 (ADR-020): the RECORD of an invoice issued from the accounting
+// system — its number as issued, its dates, its amount, and whether it was
+// paid. Nothing is numbered, rendered or taxed here. STAFF-OWNED, behind
+// `billing.*`. "Overdue" is never stored: it is an unpaid record past its due
+// date. Removal is soft, and only for an unpaid record that recovers no fee.
+model Invoice {
+  id               String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clientId         String        @map("client_id") @db.Uuid
+  number           String
+  issuedOn         DateTime      @map("issued_on") @db.Date
+  dueOn            DateTime      @map("due_on") @db.Date
+  amountHalalas    Int           @map("amount_halalas")
+  status           InvoiceStatus @default(sent)
+  paidOn           DateTime?     @map("paid_on") @db.Date
+  recordedByUserId String?       @map("recorded_by_user_id") @db.Uuid
+  removedAt        DateTime?     @map("removed_at")
+  removedByUserId  String?       @map("removed_by_user_id") @db.Uuid
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+  fees             Fee[]
+
+  @@index([clientId, issuedOn])
+  @@map("bil_invoices")
+}
+
+enum InvoiceStatus {
+  sent
+  paid
 }

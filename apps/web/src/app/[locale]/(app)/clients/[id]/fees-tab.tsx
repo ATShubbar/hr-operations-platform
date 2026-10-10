@@ -9,6 +9,7 @@ import { formatHijri } from '@hr/dates';
 import { FeeCapture, feeCaptureProblem, type FeeCaptureValue } from '@/components/fee-capture';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
+import { useFeeWhat } from '@/lib/fee-what';
 import { attachReceipt, receiptProblem, recordFee } from '@/lib/fees';
 import { halalasToInput, sarTextToHalalas, useMoney } from '@/lib/money';
 import { useCan } from '@/lib/session';
@@ -68,8 +69,6 @@ export function FeesTab({
 }) {
   const t = useTranslations('clients.fees');
   const tf = useTranslations('fees');
-  const tm = useTranslations('person.mob');
-  const tg = useTranslations('gro');
   const tc = useTranslations('clients');
   const ts = useTranslations('states');
   const locale = useLocale() as 'ar' | 'en';
@@ -111,13 +110,7 @@ export function FeesTab({
     }).format(new Date(`${iso}T00:00:00Z`));
   const hijri = (iso: string) => formatHijri(new Date(`${iso}T00:00:00Z`), locale);
 
-  /** What the fee was for, in the viewer's language. */
-  const what = (f: FeeResponse): string =>
-    f.source.kind === 'manual'
-      ? f.source.label
-      : f.source.kind === 'sequence_step'
-        ? `${tm(`step.${f.source.stepKey}.title`)} · ${tm(`kind.${f.source.sequenceKind}.label`)}`
-        : tg(`type.${f.source.procedureType}`);
+  const what = useFeeWhat();
 
   const figures = useMemo(() => {
     const live = (fees ?? []).filter((f) => f.status !== 'void');

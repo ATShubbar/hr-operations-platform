@@ -593,7 +593,7 @@
       "paymentTerms": "Payment terms",
       "paymentDays": "{count, plural, =0 {Due on receipt} one {# day} other {# days}}",
       "standing": "Account standing",
-      "agreementNote": "Tier and term dates come from the client's profile — change them in the Service panel on Overview. Account standing comes with invoice records.",
+      "agreementNote": "Tier and term dates come from the client's profile — change them in the Service panel on Overview. Account standing is worked out from the invoice records below.",
       "updatedBy": "Terms last changed by {name} on {date}",
       "updatedOn": "Terms last changed on {date}",
       "includes": "What {tier} includes",
@@ -622,8 +622,6 @@
           "Custom service levels"
         ]
       },
-      "invoices": "Invoices",
-      "invoicesSoon": "Invoice records — the number as issued, the amount, the fees each one recovers and whether it has been paid — are coming next.",
       "recordTitle": "Record commercial terms",
       "editTitle": "Edit commercial terms",
       "formHint": "Amounts are in Saudi riyals, per month, before any tax.",
@@ -647,7 +645,83 @@
         "days": "Payment terms are a number of days from 0 to 365.",
         "invalid": "These terms were not accepted. Check the amounts and the purchase order.",
         "save": "Could not save the terms. Try again."
-      }
+      },
+      "inv": {
+        "title": "Invoices",
+        "sub": "The invoices issued to this client from the accounting system, as recorded here.",
+        "loadError": "Could not load the invoice records.",
+        "add": "Record an invoice",
+        "empty": "No invoice is recorded for this client yet. Record each one after it is issued.",
+        "emptyReadOnly": "No invoice is recorded for this client yet.",
+        "note": "These are records of invoices issued elsewhere. Nothing here issues, numbers or taxes an invoice, and \"overdue\" is worked out from the due date.",
+        "recovers": "{count, plural, one {Recovers # fee} other {Recovers # fees}} · {amount}",
+        "recoversNone": "Recovers no fees",
+        "dueOn": "Due {date}",
+        "paidOn": "Paid {date}",
+        "status": {
+          "sent": "Sent",
+          "paid": "Paid",
+          "overdue": "Overdue"
+        },
+        "actionsFor": "Actions for invoice {number}",
+        "action": {
+          "paid": "Mark as paid",
+          "unpaid": "Mark as unpaid",
+          "correct": "Correct",
+          "remove": "Remove"
+        },
+        "addTitle": "Record an invoice",
+        "correctTitle": "Correct the invoice record",
+        "formHint": "Enter the invoice as it was issued. The amount is the total on the invoice.",
+        "form": {
+          "number": "Invoice number",
+          "amount": "Amount (SAR)",
+          "issuedOn": "Issued on",
+          "dueOn": "Due on",
+          "paidOn": "Paid on",
+          "dueHint": "{count, plural, =0 {The due date follows the issue date: payment is due on receipt.} one {The due date follows the issue date by # day, from the payment terms.} other {The due date follows the issue date by # days, from the payment terms.}}",
+          "dueHintNoTerms": "No payment terms are recorded, so the due date starts 30 days after the issue date. Change it to match the invoice.",
+          "fees": "Government fees this invoice recovers",
+          "noFees": "No fee is waiting to be invoiced for this client.",
+          "feesTotal": "{count, plural, =0 {No fee ticked} one {# fee ticked} other {# fees ticked}} · {amount}"
+        },
+        "paidTitle": "Mark as paid",
+        "paidHint": "Invoice {number}, {amount}. Enter the day the payment was received.",
+        "paidConfirm": "Mark as paid",
+        "removeTitle": "Remove this invoice record?",
+        "removeHint": "Invoice {number} will leave every list and figure. Use this only for a record entered in error; the removal is kept in the audit trail.",
+        "removeKeep": "Keep it",
+        "removeConfirm": "Remove",
+        "toast": {
+          "recorded": "Invoice {number} recorded",
+          "corrected": "Invoice {number} corrected",
+          "paid": "Invoice {number} marked as paid",
+          "unpaid": "Invoice {number} marked as unpaid",
+          "removed": "Invoice {number} removed"
+        },
+        "error": {
+          "number": "Enter the invoice number as issued.",
+          "dates": "Enter the issue date and the due date.",
+          "future": "An invoice cannot be issued in the future.",
+          "dueBeforeIssue": "The due date cannot be before the issue date.",
+          "amount": "Enter the invoice amount in riyals, with at most two decimal places.",
+          "invalid": "This record was not accepted. Check the number, the dates and the amount.",
+          "conflict": "Not saved. Either this number is already recorded for this client, or one of the fees is no longer waiting to be invoiced. Reload and try again.",
+          "save": "Could not save. Try again.",
+          "paidOn": "Enter the day the payment was received.",
+          "paidFuture": "The payment date cannot be in the future.",
+          "paidBeforeIssue": "The payment date cannot be before the issue date.",
+          "alreadyPaid": "This invoice is already marked as paid.",
+          "cannotRemove": "This record can no longer be removed: it is paid, or it recovers a fee."
+        }
+      },
+      "standingState": {
+        "none": "No invoices recorded",
+        "current": "Up to date",
+        "overdue": "Overdue"
+      },
+      "outstanding": "{amount} awaiting payment",
+      "overdueBanner": "{count, plural, one {Payment overdue — # invoice past its due date} other {Payment overdue — # invoices past their due date}}, {overdue}. {outstanding} outstanding in all."
     }
   },
   "audit": {

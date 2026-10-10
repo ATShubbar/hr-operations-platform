@@ -150,6 +150,22 @@ const FEE: Record<string, StatusTone> = {
   void: 'neutral',
 };
 
+// BILL-05: an invoice record. `overdue` is derived (unpaid, past its due date)
+// and is the one state that asks for action; `sent` is simply waiting.
+const INVOICE: Record<string, StatusTone> = {
+  paid: 'ok',
+  sent: 'info',
+  overdue: 'critical',
+};
+
+// A client's standing, derived from its invoice records. `none` — nothing is
+// recorded — is not good news and not bad: neutral.
+const STANDING: Record<string, StatusTone> = {
+  current: 'ok',
+  overdue: 'critical',
+  none: 'neutral',
+};
+
 const DOMAINS = {
   vacancy: VACANCY,
   client: CLIENT,
@@ -165,6 +181,8 @@ const DOMAINS = {
   auditSeverity: AUDIT_SEVERITY,
   nitaqat: NITAQAT,
   fee: FEE,
+  invoice: INVOICE,
+  standing: STANDING,
 } as const;
 
 export type StatusDomain = keyof typeof DOMAINS;

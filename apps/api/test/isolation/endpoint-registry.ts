@@ -211,6 +211,13 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   // BILL-04: commercial terms + the estimate — staff only (`billing.*`).
   'GET /billing/clients/:clientId': 'staff',
   'PUT /billing/clients/:clientId/terms': 'staff',
+  // BILL-05: invoice records — staff only (`billing.*`).
+  'GET /billing/clients/:clientId/invoices': 'staff',
+  'POST /billing/clients/:clientId/invoices': 'staff',
+  'PATCH /billing/invoices/:id': 'staff',
+  'POST /billing/invoices/:id/paid': 'staff',
+  'POST /billing/invoices/:id/unpaid': 'staff',
+  'POST /billing/invoices/:id/remove': 'staff',
   'POST /employees/:id/sequences': 'staff',
   'POST /gro-sequences/:id/steps/:key/file': 'staff',
   'POST /gro-sequences/:id/steps/:key/reopen': 'staff',

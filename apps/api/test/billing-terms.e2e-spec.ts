@@ -41,6 +41,7 @@ const TERMS = {
 const SUMMARY_KEYS = [
   'clientId',
   'estimate',
+  'standing',
   'terms',
   'termsUpdatedAt',
   'termsUpdatedBy',
@@ -122,6 +123,7 @@ describe('Commercial terms and the estimate (BILL-04, e2e)', () => {
       await owner.client.findMany({ where: { nameEn: { startsWith: MARK } }, select: { id: true } })
     ).map((c) => c.id);
     await owner.fee.deleteMany({ where: { clientId: { in: cos } } });
+    await owner.invoice.deleteMany({ where: { clientId: { in: cos } } });
     await owner.billingTerms.deleteMany({ where: { clientId: { in: cos } } });
     await owner.auditEntry.deleteMany({ where: { clientId: { in: cos } } });
     await owner.employee.deleteMany({ where: { clientId: { in: cos } } });
@@ -143,6 +145,8 @@ describe('Commercial terms and the estimate (BILL-04, e2e)', () => {
       terms: null,
       estimate: null,
       unrecoveredFeesHalalas: 0,
+      // BILL-05: no invoice is recorded — "none", not "paid up".
+      standing: { state: 'none', outstandingHalalas: 0, overdueHalalas: 0, overdueCount: 0 },
       termsUpdatedBy: null,
       termsUpdatedAt: null,
     });
@@ -201,7 +205,18 @@ describe('Commercial terms and the estimate (BILL-04, e2e)', () => {
       .send({ reason: 'Recorded twice' })
       .expect(200);
     const invoiced = await fee(10_000);
-    await owner.fee.update({ where: { id: invoiced }, data: { status: 'invoiced' } });
+    // An invoice record recovers it (BILL-05) — through the API, as it happens.
+    await http()
+      .post(`/billing/clients/${ids.co}/invoices`)
+      .set('Cookie', admin.cookie)
+      .send({
+        number: 'INV-TERMS-1',
+        issuedOn: day(-1),
+        dueOn: day(29),
+        amountHalalas: 10_000,
+        feeIds: [invoiced],
+      })
+      .expect(201);
 
     const res = await summary(ids.co, admin).expect(200);
     const cycle = (350_000 + 3 * 6_500) * 3;

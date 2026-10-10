@@ -162,3 +162,34 @@ export function estimateSubscription(
     annualHalalas: monthlyHalalas * 12,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Invoice records (BILL-05). The invoice itself is issued from the accounting
+// system; this is the RECORD of it — its number as issued, its dates and its
+// amount — and of whether it has been paid.
+// ---------------------------------------------------------------------------
+
+/** `sent` until an Administrator marks it `paid`. "Overdue" is never stored. */
+export const INVOICE_STATUSES = ['sent', 'paid'] as const;
+export type InvoiceStatus = (typeof INVOICE_STATUSES)[number];
+
+/** SAR 20,000,000 — an invoice can carry a year of terms plus fees. */
+export const MAX_INVOICE_HALALAS = 2_000_000_000;
+/** How many fees one invoice record may recover. */
+export const MAX_INVOICE_FEES = 200;
+
+/**
+ * A client's standing, DERIVED from its invoice records and never set by hand:
+ * `none` — no invoice is recorded; `current` — nothing unpaid is past its due
+ * date; `overdue` — at least one unpaid invoice is.
+ */
+export const ACCOUNT_STANDINGS = ['none', 'current', 'overdue'] as const;
+export type AccountStanding = (typeof ACCOUNT_STANDINGS)[number];
+
+/** An unpaid invoice is overdue from the day AFTER its due date. Dates are YYYY-MM-DD. */
+export function isOverdue(
+  invoice: { status: InvoiceStatus; dueOn: string },
+  today: string,
+): boolean {
+  return invoice.status === 'sent' && invoice.dueOn < today;
+}

@@ -104,6 +104,12 @@ export const AUDITED_WRITES: Record<string, string> = {
   'POST /fees/:id/receipt/remove': 'fee.receipt-remove',
   // BILL-04: saving terms is `create` the first time, `update` after.
   'PUT /billing/clients/:clientId/terms': 'billing-terms.update',
+  // BILL-05: invoice records.
+  'POST /billing/clients/:clientId/invoices': 'invoice.create',
+  'PATCH /billing/invoices/:id': 'invoice.update',
+  'POST /billing/invoices/:id/paid': 'invoice.paid',
+  'POST /billing/invoices/:id/unpaid': 'invoice.unpaid',
+  'POST /billing/invoices/:id/remove': 'invoice.remove',
   'POST /calendar/events': 'calendar-event.create',
   'PATCH /calendar/events/:id': 'calendar-event.update',
   'DELETE /calendar/events/:id': 'calendar-event.delete',

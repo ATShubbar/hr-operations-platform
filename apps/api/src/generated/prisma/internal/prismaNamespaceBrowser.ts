@@ -79,7 +79,8 @@ export const ModelName = {
   LeaveRequest: 'LeaveRequest',
   LeaveEntry: 'LeaveEntry',
   Fee: 'Fee',
-  BillingTerms: 'BillingTerms'
+  BillingTerms: 'BillingTerms',
+  Invoice: 'Invoice'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -605,7 +606,8 @@ export const FeeScalarFieldEnum = {
   receiptContentType: 'receiptContentType',
   receiptStatus: 'receiptStatus',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  invoiceId: 'invoiceId'
 } as const
 
 export type FeeScalarFieldEnum = (typeof FeeScalarFieldEnum)[keyof typeof FeeScalarFieldEnum]
@@ -624,6 +626,25 @@ export const BillingTermsScalarFieldEnum = {
 } as const
 
 export type BillingTermsScalarFieldEnum = (typeof BillingTermsScalarFieldEnum)[keyof typeof BillingTermsScalarFieldEnum]
+
+
+export const InvoiceScalarFieldEnum = {
+  id: 'id',
+  clientId: 'clientId',
+  number: 'number',
+  issuedOn: 'issuedOn',
+  dueOn: 'dueOn',
+  amountHalalas: 'amountHalalas',
+  status: 'status',
+  paidOn: 'paidOn',
+  recordedByUserId: 'recordedByUserId',
+  removedAt: 'removedAt',
+  removedByUserId: 'removedByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InvoiceScalarFieldEnum = (typeof InvoiceScalarFieldEnum)[keyof typeof InvoiceScalarFieldEnum]
 
 
 export const SortOrder = {
