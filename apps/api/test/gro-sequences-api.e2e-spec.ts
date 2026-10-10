@@ -262,6 +262,32 @@ describe('Sequences API (MOB-02, e2e)', () => {
     ).toBe(false);
   });
 
+  // ---- MOB-05 ----------------------------------------------------------------
+
+  it('GET /gro-sequences lists the RUNNING sequences with the person named — staff only, names not ids', async () => {
+    const res = await http().get('/gro-sequences').set('Cookie', p.auditor.cookie).expect(200);
+    const rows = res.body.sequences as Array<
+      Record<string, unknown> & { status: string; employee: { id: string; name: { en: string } } }
+    >;
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows.every((r) => r.status === 'running')).toBe(true);
+    // b's onboarding is running; a's final exit was cancelled above, so it is absent.
+    const mine = rows.filter((r) => r.employee.id === ids.b || r.employee.id === ids.a);
+    expect(mine.map((r) => r.employee.id)).toEqual([ids.b]);
+    expect(mine[0]!.employee.name.en).toBe(`${MARK} b`);
+    expect(Object.keys(mine[0]!).sort()).toEqual([...RUN_KEYS, 'clientId', 'employee'].sort());
+    expect(Object.keys(mine[0]!.employee).sort()).toEqual(['id', 'name']);
+
+    await http().get('/gro-sequences').set('Cookie', p.manager.cookie).expect(403);
+    await http().get('/gro-sequences').set('Cookie', me.cookie).expect(403);
+    await http().get('/gro-sequences').expect(401);
+    await http()
+      .get('/gro-sequences')
+      .query({ status: 'nonsense' })
+      .set('Cookie', p.gro.cookie)
+      .expect(400);
+  });
+
   it('every change is audited against the employee', async () => {
     const actions = (
       await owner.auditEntry.findMany({
@@ -278,5 +304,32 @@ describe('Sequences API (MOB-02, e2e)', () => {
       'file-step',
       'cancel',
     ]);
+  });
+
+  // Last on purpose: it ends employee a's employment and their session.
+  it('completing a FINAL EXIT terminates the employee — and their self-service account stops working', async () => {
+    // `me` is employee a, signed in: their session works now…
+    await http().get('/me').set('Cookie', me.cookie).expect(200);
+    const run = (await start(p.gro, ids.a).expect(201)).body as {
+      id: string;
+      steps: Array<{ key: string }>;
+    };
+    for (const s of run.steps) await file(p.gro, run.id, s.key).expect(200);
+
+    const emp = await owner.employee.findUniqueOrThrow({ where: { id: ids.a } });
+    expect(emp.employmentStatus).toBe('terminated');
+    expect(
+      await owner.auditEntry.count({
+        where: { resource: 'employee', resourceId: ids.a, action: 'terminate' },
+      }),
+    ).toBe(1);
+    // …and not after: the termination closed the account and ended the session (SS-06a).
+    await http().get('/me').set('Cookie', me.cookie).expect(401);
+    // The completed exit is final, and no longer listed as running.
+    await reopen(p.gro, run.id, 'depart').expect(409);
+    const running = await http().get('/gro-sequences').set('Cookie', p.gro.cookie).expect(200);
+    expect((running.body.sequences as Array<{ id: string }>).some((r) => r.id === run.id)).toBe(
+      false,
+    );
   });
 });

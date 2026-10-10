@@ -21,6 +21,7 @@ import type {
 } from '@hr/contracts';
 import { formatHijri } from '@hr/dates';
 import { Link, useRouter } from '@/i18n/navigation';
+import { SequencesPanel } from '@/components/sequences-panel';
 import { apiFetch, ApiError } from '@/lib/api';
 import { datedDocs, daysTo, type DocKey } from '@/lib/employee-docs';
 import { useCan, useSession } from '@/lib/session';
@@ -396,20 +397,10 @@ function StaffOverview() {
             />
           </section>
 
-          <section
-            aria-labelledby="ov-mob"
-            className="overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10"
-          >
-            <div className="flex flex-col gap-0.5 px-5 py-4">
-              <h2 id="ov-mob" className="text-base leading-6 font-medium">
-                {t('mob')}
-              </h2>
-              <p className="text-[13px] leading-[18px] text-muted-foreground">{t('mobHint')}</p>
-            </div>
-            <p className="border-t px-5 py-6 text-center text-[13px] leading-[18px] text-neutral-400">
-              {t('mobSoon')}
-            </p>
-          </section>
+          <SequencesPanel
+            id="ov-mob"
+            clientNames={new Map(data.clients.map((c) => [c.id, clientName(c)]))}
+          />
         </>
       )}
 

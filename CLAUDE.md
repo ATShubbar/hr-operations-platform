@@ -1457,6 +1457,17 @@ hand; a non-Saudi may still be onboarded directly; a COMPLETED sequence is final
 the ADR's GRO-published completion event would have closed an import loop (gro → employees → recruitment → gro). Board:
 `forwardOf(stage, nationality)`, both employee-creating moves ask first, mobilising cards show "N of 11 filed" + Open
 onboarding. Live: hire via the board → 36→37 in post on the last step. API **738/738**.
+**MOB-05 done — the onboarding / final-exit epic (ADR-018, MOB-00..05) is COMPLETE.** Filing a final exit's last step
+TERMINATES the employee: `SequencesService.afterCompletion` calls `EmployeesService.update(…, 'terminate')` directly (the
+onboarding-completion call's twin), and the existing termination event closes any self-service account (test: the same
+session's `/me` goes 200 → 401). The Mark-filed dialog warns before that step. **`GET /gro-sequences?status=`** (`gro.read`,
+staff only via `scopeOf`, default `running`, 400 on an unknown status): runs + `clientId` + `employee {id, name}`. Shared
+**`components/sequences-panel.tsx`** = the prototype's "Mobilisations and exits" panel on the Overview and Reports (loads its
+own list, nothing without `gro.read`, rows link to `?tab=mob`, exit bar amber). Each panel LINE is one `<bdi>` run — isolating
+only the name cut an Arabic line into left-to-right pieces. Seed: 3 runs in flight (`seedSequences`: two NEW hires in
+`onboarding` — Bilal Ahmed, Maria Santos — each with a `mobilisation` candidate, + Kamal Uddin's final exit); employees 39 →
+41, headcount still 35; a re-seed replaces the seeded runs. MOB-01's completion test now asserts the termination. API
+**740/740**. Follow-up MOB-06 (ready steps in queue/calendar).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

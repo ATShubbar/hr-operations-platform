@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { TriangleAlert } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import type {
   SequenceKind,
@@ -51,10 +52,13 @@ const tone = (status: SequenceResponse['status']) =>
 
 export function MobilisationTab({
   employeeId,
+  employeeName,
   terminated,
   onEmployeeChanged,
 }: {
   employeeId: string;
+  /** As the record's header shows it — named in the last-step warning. */
+  employeeName: string;
   terminated: boolean;
   /** A sequence COMPLETED — the person's status may have changed (MOB-04b/05). */
   onEmployeeChanged?: () => void;
@@ -146,6 +150,12 @@ export function MobilisationTab({
 
   // ---- mark filed ----
   const [filing, setFiling] = useState<{ run: SequenceResponse; step: SequenceStep } | null>(null);
+  // MOB-05: filing the step that COMPLETES a final exit ends the employment —
+  // say so before the click, not after.
+  const endsEmployment =
+    filing !== null &&
+    filing.run.kind === 'final_exit' &&
+    filing.run.steps.every((s) => s.key === filing.step.key || s.state === 'filed');
   const [filedOn, setFiledOn] = useState('');
   const [fileError, setFileError] = useState('');
   const openFile = (run: SequenceResponse, step: SequenceStep) => {
@@ -164,9 +174,13 @@ export function MobilisationTab({
         { method: 'POST', body: JSON.stringify({ filedOn }) },
       );
       replace(updated);
-      toastSuccess(t('toast.filed', { title: title(filing.step.key) }));
+      const exited = updated.status === 'completed' && updated.kind === 'final_exit';
+      toastSuccess(
+        t(exited ? 'toast.exitComplete' : 'toast.filed', { title: title(filing.step.key) }),
+      );
       setFiling(null);
-      // Completing an onboarding makes the person active: let the record refresh.
+      // A completion changes the person — onboarding makes them active, a final
+      // exit ends their employment (MOB-05): let the record refresh.
       if (updated.status === 'completed') onEmployeeChanged?.();
     } catch (err) {
       setFiling(null);
@@ -348,6 +362,17 @@ export function MobilisationTab({
                   ? t('feeNote', { portal: filing.step.portal, amount: sar(filing.step.fee) })
                   : t('noFeeNote')}
               </p>
+              {endsEmployment && (
+                <p className="flex items-start gap-2.5 rounded-md bg-status-warning-surface px-3.5 py-3 text-[13px] leading-[18px] font-medium ring-1 ring-status-warning-line">
+                  <TriangleAlert
+                    className="mt-0.5 size-4 shrink-0 text-status-warning"
+                    aria-hidden
+                  />
+                  <span className="min-w-0">
+                    <bdi>{t('endsEmployment', { name: employeeName })}</bdi>
+                  </span>
+                </p>
+              )}
               {fileError && (
                 <p role="alert" className="text-sm text-destructive">
                   {fileError}

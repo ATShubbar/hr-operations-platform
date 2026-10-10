@@ -4,6 +4,7 @@ import { PrismaClient, Prisma } from '../src/generated/prisma/client';
 import { SEED_USER_DOMAIN, seedEmailFor, seedPasswordFor, seedStorageFor, UAT_SEED_EMAILS } from './seed-guard';
 import { buildSamplePdf, SeedFiles } from './seed-files';
 import { leaveEndDate, splitByYear } from '../src/modules/leave/public-api';
+import { SEQUENCES } from '../src/modules/gro/public-api';
 import {
   CLIENT_ROLES,
   PasswordService,
@@ -596,7 +597,13 @@ async function seedCandidates(prisma: PrismaClient): Promise<number> {
     },
   });
   for (const { id, ...rest } of candidates) {
-    await prisma.candidate.upsert({ where: { id }, create: { id, ...rest }, update: rest });
+    // `employeeId: null` — none of these is mobilising; a re-seed must clear the
+    // link a walk-through left behind (the mobilising pair is seedSequences').
+    await prisma.candidate.upsert({
+      where: { id },
+      create: { id, ...rest },
+      update: { ...rest, employeeId: null },
+    });
   }
   return candidates.length;
 }
@@ -890,6 +897,142 @@ async function seedDependants(prisma: PrismaClient): Promise<number> {
   return SEED_DEPENDANTS.length;
 }
 
+// MOB-05 (ADR-018): sequences IN FLIGHT, so the "Mobilisations and exits" panels,
+// the Hiring board's Visa & mobilisation column and the Mobilisation tab open on
+// real files instead of an empty state:
+//   · two onboardings mid-flight, each a NEW sample hire in status `onboarding`
+//     (not under management — the seeded headcount is unchanged) with their
+//     candidate in `mobilisation`, the pair the board creates (MOB-04b);
+//   · one final exit, three steps in, for someone already on file.
+// Every date is relative to seed day. Step rows are written for EVERY step of a
+// run, as `SequencesService.start` does; a filed step carries its date and filer.
+const SEED_MOBILISING: ReadonlyArray<{
+  sequenceId: string;
+  employeeId: string;
+  candidateId: string;
+  clientId: string;
+  vacancyId: string;
+  ar: string;
+  en: string;
+  nat: string;
+  gender: 'male' | 'female';
+  dept: string;
+  jobAr: string;
+  jobEn: string;
+  salary: number;
+  email: string;
+  startedDaysAgo: number;
+  /** Step key → days ago it was filed. */
+  filed: Readonly<Record<string, number>>;
+}> = [
+  // Arrived and through the in-Kingdom medical: the iqama is next.
+  { sequenceId: 'a5000001-0000-4000-8000-000000000001', employeeId: 'e0000003-0000-4000-8000-000000000009', candidateId: 'd1000003-0000-4000-8000-000000000002', clientId: SEED_CLIENT_C, vacancyId: 'c0000003-0000-4000-8000-000000000001', ar: 'بلال أحمد', en: 'Bilal Ahmed', nat: 'PK', gender: 'male', dept: 'Logistics', jobAr: 'سائق شاحنة', jobEn: 'Truck Driver', salary: 3900, email: 'bilal.a@example.com', startedDaysAgo: 34, filed: { 'block-visa': 34, 'visa-auth': 27, gamca: 21, enjaz: 14, travel: 8, 'medical-ksa': 4 } },
+  // Still abroad: visa authorised, medical not yet cleared.
+  { sequenceId: 'a5000001-0000-4000-8000-000000000002', employeeId: 'e0000004-0000-4000-8000-000000000008', candidateId: 'd1000004-0000-4000-8000-000000000003', clientId: SEED_CLIENT_D, vacancyId: 'c0000004-0000-4000-8000-000000000001', ar: 'ماريا سانتوس', en: 'Maria Santos', nat: 'PH', gender: 'female', dept: 'Clinical', jobAr: 'ممرضة', jobEn: 'Registered Nurse', salary: 9000, email: 'maria.s@example.com', startedDaysAgo: 9, filed: { 'block-visa': 9, 'visa-auth': 2 } },
+];
+
+// Kamal Uddin (client B) is leaving: notice, clearance and settlement are filed.
+const SEED_FINAL_EXIT = {
+  sequenceId: 'a5000001-0000-4000-8000-000000000003',
+  employeeId: 'e0000002-0000-4000-8000-000000000006',
+  clientId: SEED_CLIENT_B,
+  startedDaysAgo: 12,
+  filed: { notice: 12, clearance: 6, settlement: 2 } as Readonly<Record<string, number>>,
+};
+
+async function seedSequences(prisma: PrismaClient): Promise<number> {
+  const gro = await prisma.authUser.findUnique({
+    where: { email: seedEmail('staff-gro_officer') },
+  });
+  const by = gro?.id ?? null;
+
+  // The new hires and their candidates. Not arrived or only just: no hire date
+  // (onboarding's completion sets it — the arrival date), no iqama, no GOSI yet.
+  for (const m of SEED_MOBILISING) {
+    const employee = {
+      clientId: m.clientId,
+      nameAr: m.ar,
+      nameEn: m.en,
+      nationality: m.nat,
+      gender: m.gender,
+      department: m.dept,
+      jobTitleAr: m.jobAr,
+      jobTitleEn: m.jobEn,
+      hireDate: null,
+      contractType: 'unlimited' as const,
+      employmentStatus: 'onboarding' as const,
+      countsTowardSaudization: false,
+      basicSalary: m.salary,
+      housingAllowance: Math.round(m.salary * 0.25),
+      gosiRegistrationStatus: 'not_registered' as const,
+      wpsStatus: 'pending' as const,
+    };
+    await prisma.employee.upsert({
+      where: { id: m.employeeId },
+      create: { id: m.employeeId, ...employee },
+      update: employee,
+    });
+    const candidate = {
+      clientId: m.clientId,
+      vacancyId: m.vacancyId,
+      nameAr: m.ar,
+      nameEn: m.en,
+      nationality: m.nat,
+      email: m.email,
+      stage: 'mobilisation' as const,
+      employeeId: m.employeeId,
+    };
+    await prisma.candidate.upsert({
+      where: { id: m.candidateId },
+      create: { id: m.candidateId, ...candidate },
+      update: candidate,
+    });
+  }
+
+  const runs = [
+    ...SEED_MOBILISING.map((m) => ({ ...m, kind: 'onboarding' as const })),
+    { ...SEED_FINAL_EXIT, kind: 'final_exit' as const },
+  ];
+  // Idempotency: replace the seeded runs — and any other RUNNING run of the same
+  // kind for the same person, which the one-running-per-kind index would refuse
+  // to sit beside. Finished runs started by hand are history and are left alone.
+  const stale = await prisma.groSequence.findMany({
+    where: {
+      OR: [
+        { id: { in: runs.map((r) => r.sequenceId) } },
+        ...runs.map((r) => ({ employeeId: r.employeeId, kind: r.kind, status: 'running' as const })),
+      ],
+    },
+    select: { id: true },
+  });
+  const staleIds = stale.map((r) => r.id);
+  await prisma.groSequenceStep.deleteMany({ where: { sequenceId: { in: staleIds } } });
+  await prisma.groSequence.deleteMany({ where: { id: { in: staleIds } } });
+
+  for (const r of runs) {
+    await prisma.groSequence.create({
+      data: {
+        id: r.sequenceId,
+        employeeId: r.employeeId,
+        clientId: r.clientId,
+        kind: r.kind,
+        status: 'running',
+        startedOn: daysFromNow(-r.startedDaysAgo),
+        startedByUserId: by,
+        steps: {
+          create: SEQUENCES[r.kind].steps.map((step) => {
+            const ago = r.filed[step.key];
+            return ago === undefined
+              ? { stepKey: step.key }
+              : { stepKey: step.key, filedOn: daysFromNow(-ago), filedByUserId: by };
+          }),
+        },
+      },
+    });
+  }
+  return runs.length;
+}
+
 async function main(): Promise<void> {
   const prisma = new PrismaClient({
     adapter: new PrismaPg(process.env.DATABASE_URL ?? ''),
@@ -924,6 +1067,7 @@ async function main(): Promise<void> {
     const vacancyCount = await seedVacancies(prisma);
     const candidateCount = await seedCandidates(prisma);
     const groCount = await seedGroProcesses(prisma);
+    const sequenceCount = await seedSequences(prisma);
     const calendarCount = await seedCalendarEvents(prisma);
     const leaveCount = await seedLeave(prisma);
     await seedSelfServiceFlag(prisma);
@@ -935,7 +1079,7 @@ async function main(): Promise<void> {
     });
     const rolesCovered = new Set(STAFF_ACCOUNTS.map((a) => a.role)).size + 1 + 1; // + client_manager + employee
     process.stdout.write(
-      `Seed complete: ${clientCount} client companies; ${employeeCount} employees; ${dependantCount} dependants; ${documentCount} documents (with files); ${requestCount} requests; ${attachmentCount} request files; ${taskCount} tasks; ${vacancyCount} vacancies; ${candidateCount} candidates; ${groCount} GRO processes; ${calendarCount} calendar events; ${leaveCount} leave requests; ${rowCount} scope-check rows ` +
+      `Seed complete: ${clientCount} client companies; ${employeeCount} employees; ${dependantCount} dependants; ${documentCount} documents (with files); ${requestCount} requests; ${attachmentCount} request files; ${taskCount} tasks; ${vacancyCount} vacancies; ${candidateCount} candidates; ${groCount} GRO processes; ${sequenceCount} sequences in flight (+${SEED_MOBILISING.length} hires onboarding, each with a candidate in mobilisation); ${calendarCount} calendar events; ${leaveCount} leave requests; ${rowCount} scope-check rows ` +
         `${notificationCount} notifications (purged ${purgedNotifications} orphans); ` +
         `across clients A (${SEED_CLIENT_A}) and B (${SEED_CLIENT_B}); ${userCount} auth users ` +
         `(${STAFF_ACCOUNTS.length} staff + ${CLIENT_REP_ASSIGNMENTS.length} client managers + 1 employee, ` +

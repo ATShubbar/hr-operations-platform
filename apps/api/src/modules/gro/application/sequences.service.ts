@@ -95,6 +95,17 @@ export class SequencesService {
     return rows.map(toView);
   }
 
+  // Every sequence in one status — the "in flight" lists (MOB-05). Oldest first:
+  // the file that has been open longest leads.
+  async listByStatus(status: SequenceView['status']): Promise<SequenceView[]> {
+    const rows = await this.prisma.groSequence.findMany({
+      where: { status },
+      include: { steps: true },
+      orderBy: { startedOn: 'asc' },
+    });
+    return rows.map(toView);
+  }
+
   async get(id: string): Promise<SequenceView | null> {
     const row = await this.prisma.groSequence.findUnique({
       where: { id },
@@ -200,25 +211,38 @@ export class SequencesService {
   //     subscribing to a GRO event would be a cycle (the GRO-03 reasoning;
   //     ADR-018 rev. 1). An onboarding started by hand for someone already active
   //     changes nothing here.
+  //   final exit (MOB-05) — the person has LEFT: they become `terminated`, by the
+  //     same direct call. The termination event closes their account.
   private async afterCompletion(view: SequenceView): Promise<void> {
-    if (view.kind !== 'onboarding') return;
     try {
       const employee = await this.employees.getById(view.employeeId);
-      if (employee?.employmentStatus !== 'onboarding') return;
-      const arrival = view.steps.find((s) => s.key === 'travel')?.filedOn;
-      await this.employees.update(
-        view.employeeId,
-        {
-          employmentStatus: 'active',
-          ...(employee.hireDate === null && arrival
-            ? { hireDate: new Date(`${arrival}T00:00:00.000Z`) }
-            : {}),
-        },
-        'onboarding-complete',
-      );
+      if (!employee) return;
+      if (view.kind === 'onboarding') {
+        if (employee.employmentStatus !== 'onboarding') return;
+        const arrival = view.steps.find((s) => s.key === 'travel')?.filedOn;
+        await this.employees.update(
+          view.employeeId,
+          {
+            employmentStatus: 'active',
+            ...(employee.hireDate === null && arrival
+              ? { hireDate: new Date(`${arrival}T00:00:00.000Z`) }
+              : {}),
+          },
+          'onboarding-complete',
+        );
+      } else if (employee.employmentStatus !== 'terminated') {
+        // MOB-05 (owner decision): the last step of a final exit — "Departure
+        // confirmed, iqama cancelled" — ENDS the employment. Employees then
+        // publishes the termination, which closes any self-service account.
+        await this.employees.update(
+          view.employeeId,
+          { employmentStatus: 'terminated' },
+          'terminate',
+        );
+      }
     } catch (err) {
       this.logger.error(
-        `Onboarding ${view.id} completed but its employee ${view.employeeId} was not activated`,
+        `Sequence ${view.id} (${view.kind}) completed but its effect on employee ${view.employeeId} failed`,
         err instanceof Error ? err.stack : String(err),
       );
     }

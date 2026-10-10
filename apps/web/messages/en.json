@@ -1086,9 +1086,6 @@
     },
     "portfolioEmpty": "No active client companies yet.",
     "portfolioNote": "Saudisation here is the share of Saudi nationals on the register, not the Nitaqat-weighted figure. Open items are active government procedures.",
-    "mob": "Mobilisations and exits",
-    "mobHint": "Sequenced files in flight. Each step waits on the one before it.",
-    "mobSoon": "Mobilisation and exit tracking is coming soon.",
     "client": {
       "raise": "Raise a request",
       "raised": "Request sent to the team.",
@@ -1776,7 +1773,8 @@
         "started": "{label} started.",
         "filed": "{title} — filed.",
         "reopened": "{title} reopened.",
-        "cancelled": "{label} cancelled."
+        "cancelled": "{label} cancelled.",
+        "exitComplete": "{title} — filed. The final exit is complete and the employment has ended."
       },
       "error": {
         "future": "A step cannot be filed in the future.",
@@ -1864,7 +1862,8 @@
           "title": "Departure confirmed, iqama cancelled",
           "note": "Failure to confirm leaves the file open with fines."
         }
-      }
+      },
+      "endsEmployment": "Filing this ends {name}'s employment. Their record stays as history and any self-service account is closed."
     },
     "statusFollowsOnboarding": "Follows the onboarding sequence — it becomes Active when the sequence completes."
   },
@@ -2337,5 +2336,14 @@
     "notAttachedCheck": "Not attached — not a valid PDF, JPG or PNG under 10 MB",
     "sizeKb": "{n} KB",
     "sizeMb": "{n} MB"
+  },
+  "inFlight": {
+    "title": "Mobilisations and exits",
+    "hint": "Sequenced files in flight. Each step waits on the one before it.",
+    "empty": "Nothing in flight. Start one from a person's record.",
+    "next": "next: {title}",
+    "nothingWaiting": "Nothing waiting",
+    "loading": "Loading…",
+    "loadError": "Could not load the sequences in flight."
   }
 }

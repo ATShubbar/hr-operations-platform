@@ -8,10 +8,13 @@ import {
   NotFoundException,
   Param,
   Post,
+  Query,
 } from '@nestjs/common';
 import {
   fileSequenceStepSchema,
+  sequenceStatusQuerySchema,
   startSequenceSchema,
+  type SequenceInFlightListResponse,
   type SequenceListResponse,
   type SequenceResponse,
 } from '@hr/contracts';
@@ -40,6 +43,31 @@ export class SequencesController {
     private readonly employees: EmployeesService,
     private readonly users: UsersService,
   ) {}
+
+  // Sequences in flight (MOB-05) — the Overview's and Reports' "Mobilisations and
+  // exits" panels. Running ones by default; each run names its person.
+  @RequirePermission('gro.read')
+  @Get('gro-sequences')
+  async inFlight(@Query() query: unknown): Promise<SequenceInFlightListResponse> {
+    this.staffOnly();
+    const parsed = sequenceStatusQuerySchema.safeParse(query);
+    if (!parsed.success) throw new BadRequestException('Invalid status');
+    const views = await this.sequences.listByStatus(parsed.data.status ?? 'running');
+    const [presented, names] = await Promise.all([
+      this.present(views),
+      this.employees.namesOf(views.map((v) => v.employeeId)),
+    ]);
+    return {
+      sequences: presented.map((p, i) => {
+        const n = names.get(p.employeeId);
+        return {
+          ...p,
+          clientId: views[i]!.clientId,
+          employee: { id: p.employeeId, name: { ar: n?.nameAr ?? '', en: n?.nameEn ?? '' } },
+        };
+      }),
+    };
+  }
 
   @RequirePermission('gro.read')
   @Get('employees/:id/sequences')

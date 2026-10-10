@@ -262,8 +262,14 @@ describe('Sequences service (MOB-01, e2e)', () => {
       status: 409,
     });
     await expect(asStaff(() => seq.file(run.id, 'depart'))).rejects.toMatchObject({ status: 409 });
-    // A finished run frees the slot: another final exit may start.
-    await asStaff(() => seq.start(ids.a, 'final_exit'));
+    // MOB-05: the person has LEFT — the completion terminated them, so nothing
+    // further can be started for them (the freed slot is proven on onboarding below).
+    expect(
+      (await owner.employee.findUniqueOrThrow({ where: { id: ids.a } })).employmentStatus,
+    ).toBe('terminated');
+    await expect(asStaff(() => seq.start(ids.a, 'final_exit'))).rejects.toMatchObject({
+      status: 400,
+    });
   });
 
   // MOB-04b (owner decision): a completed onboarding is FINAL too. MOB-01 had

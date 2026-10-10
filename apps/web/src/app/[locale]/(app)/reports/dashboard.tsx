@@ -18,6 +18,7 @@ import type {
   TaskResponse,
 } from '@hr/contracts';
 import { Link } from '@/i18n/navigation';
+import { SequencesPanel } from '@/components/sequences-panel';
 import { apiFetch } from '@/lib/api';
 import { datedDocs, daysTo, isSaudi } from '@/lib/employee-docs';
 import { Avatar } from '@/components/ui/avatar';
@@ -402,6 +403,11 @@ export function ReportsDashboard() {
           ),
         )}
       </div>
+
+      <SequencesPanel
+        id="r-mob"
+        clientNames={new Map((data?.clients ?? []).map((c) => [c.id, name(c)]))}
+      />
     </div>
   );
 }

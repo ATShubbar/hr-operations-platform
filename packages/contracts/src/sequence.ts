@@ -57,9 +57,26 @@ export const sequenceResponseSchema = z.strictObject({
 
 export const sequenceListResponseSchema = z.object({ sequences: z.array(sequenceResponseSchema) });
 
+// Sequences in flight across everyone (MOB-05) — the Overview's and Reports'
+// "Mobilisations and exits" panels: each run with the person NAMED and their
+// company's id (the screens already hold company names).
+export const sequenceStatusQuerySchema = z.object({ status: sequenceStatusSchema.optional() });
+export const sequenceInFlightSchema = sequenceResponseSchema.extend({
+  clientId: z.uuid(),
+  employee: z.strictObject({
+    id: z.uuid(),
+    name: z.object({ ar: z.string(), en: z.string() }),
+  }),
+});
+export const sequenceInFlightListResponseSchema = z.object({
+  sequences: z.array(sequenceInFlightSchema),
+});
+
 export type SequenceKind = z.infer<typeof sequenceKindSchema>;
 export type SequenceStatus = z.infer<typeof sequenceStatusSchema>;
 export type SequenceStepState = z.infer<typeof sequenceStepStateSchema>;
 export type SequenceStep = z.infer<typeof sequenceStepSchema>;
 export type SequenceResponse = z.infer<typeof sequenceResponseSchema>;
 export type SequenceListResponse = z.infer<typeof sequenceListResponseSchema>;
+export type SequenceInFlight = z.infer<typeof sequenceInFlightSchema>;
+export type SequenceInFlightListResponse = z.infer<typeof sequenceInFlightListResponseSchema>;

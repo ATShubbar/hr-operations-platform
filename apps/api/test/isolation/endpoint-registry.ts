@@ -199,6 +199,7 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   // MOB-02 (ADR-018): onboarding / final-exit sequences — staff only (client
   // managers hold gro.read but are refused by scopeOf).
   'GET /employees/:id/sequences': 'staff',
+  'GET /gro-sequences': 'staff',
   'POST /employees/:id/sequences': 'staff',
   'POST /gro-sequences/:id/steps/:key/file': 'staff',
   'POST /gro-sequences/:id/steps/:key/reopen': 'staff',
