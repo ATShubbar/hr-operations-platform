@@ -26,8 +26,8 @@ build contract. Changes go through ADRs (adr/), never through drift.
 
 | File | What |
 |---|---|
-| architecture.md | Frozen build contract — **v1.14** (ADR-011 self-service · ADR-012 LTR/prototype fidelity · ADR-013 six roles · ADR-014 leave · ADR-015 search · ADR-016 request thread · ADR-017 dependants · ADR-018 onboarding/final exit · ADR-019 client profile + Nitaqat · ADR-020 billing) |
-| adr/README.md | Decision index (ADR-001..020, statuses) |
+| architecture.md | Frozen build contract — **v1.15** (ADR-011 self-service · ADR-012 LTR/prototype fidelity · ADR-013 six roles · ADR-014 leave · ADR-015 search · ADR-016 request thread · ADR-017 dependants · ADR-018 onboarding/final exit · ADR-019 client profile + Nitaqat · ADR-020 billing · ADR-021 notification centre) |
+| adr/README.md | Decision index (ADR-001..021, statuses) |
 | BACKLOG.md | Task board + cards + working rules |
 | ACTION-PLAN.md | Phased plan, DoD checklists with evidence rule |
 | evidence/skeleton/ | Per-task proof (WS-01..) |
@@ -1574,6 +1574,17 @@ not a payment). Settings → System → **Standard fees** (`settings/standard-fe
 doesn't burn the real sequence; one 130 days old and still owed, one void, three on Bilal Ahmed's onboarding steps), 4
 invoice records (Alpha paid, **Beta overdue**, Najd sent, Gulf none). Smoke check: 4 read-only billing checks. No API
 change. Still "coming soon" on the Client record: nothing — every tab is real.
+**NC-00 done — the notification centre is IN the architecture (ADR-021, v1.15).** The prototype's panel is NOT a feed: it
+is an ESCALATION LADDER derived from the register — document expiry (person + dependants, from the RECORD's dates),
+queue deadlines (procedures + tasks), request service levels (`open` requests vs their own due date) — through Notice →
+Reminder → Escalated → Breach (only the highest stage shown; each stage widens the audience: owner → HR officers →
+Administrators → the client at Breach). Owner: today's events STAY as a 4th tab "Updates" · IN-APP ONLY (no email; the old
+daily expiry scan untouched, so TWO sets of expiry thresholds exist until stage emails are built) · the owner of an expiry
+= the client's NAMED OFFICER (fallback by document type) · client managers (breaches) + employees (`/me`) in a later card.
+Derived per viewer on the server, NOTHING stored but read marks (item + stage + date → climbing a stage = unread again);
+nobody is shown an item they could not already open; the Auditor is in no audience. New delivery module `escalations`
+(Notifications can't hold it: GRO + Self-Service import Notifications → loop), permission `escalation.read`, thresholds =
+a system setting. Build NC-01..06 — AWAITING APPROVAL.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

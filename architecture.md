@@ -1,10 +1,11 @@
 # HR Operations Platform — Architecture
 
 ## Version
-**v1.14 — FROZEN (v1.4 frozen 2026-07-18; v1.5 amended by ADR-011, v1.6 by ADR-012, v1.7 by ADR-013 — all 2026-10-03; v1.8 by ADR-014, v1.9 by ADR-015 and v1.10 by ADR-016, 2026-10-04; v1.11 by ADR-017, 2026-10-05; v1.12 by ADR-018, 2026-10-07; v1.13 by ADR-019 and v1.14 by ADR-020, 2026-10-10).**
+**v1.15 — FROZEN (v1.4 frozen 2026-07-18; v1.5 amended by ADR-011, v1.6 by ADR-012, v1.7 by ADR-013 — all 2026-10-03; v1.8 by ADR-014, v1.9 by ADR-015 and v1.10 by ADR-016, 2026-10-04; v1.11 by ADR-017, 2026-10-05; v1.12 by ADR-018, 2026-10-07; v1.13 by ADR-019, v1.14 by ADR-020 and v1.15 by ADR-021, 2026-10-10).**
 This document is the build contract. Changes now require either a new ADR (for decisions) or an explicit unfreeze with a version bump — implementation drift is not a change mechanism. Implementation work is tracked in `BACKLOG.md`.
 
 ### Changelog
+- **v1.15** — **The notification centre is an escalation ladder (ADR-021)**: an `Escalations` delivery module works out, for the signed-in person and at the moment of asking, which obligations have reached which stage — document expiry (people and dependants), queue deadlines (procedures and tasks) and request service levels, through Notice → Reminder → Escalated → Breach. Nothing is stored except read marks. Each stage widens who is told (owner → HR officers → Administrators → the client at Breach); the owner of an expiry is the client's named officer; nobody is shown an item they could not already open. Thresholds are an Administrator setting. Today's event notifications stay, as an "Updates" tab in the same panel. In-app only: no email, and the existing daily expiry scan is unchanged. New permission `escalation.read`; employees are served under `/me`.
 - **v1.14** — **Billing brought into scope (ADR-020)**, reversing "future": a `Billing` domain module owning a ledger of government fees paid on clients' behalf (staff confirm the amount actually paid when a sequence step is filed or a procedure completed; recorded → invoiced, or void — nothing deleted), each client's commercial terms (platform fee, rate per employee, cycle, PO, payment terms), and RECORDS of invoices. **Tax invoices are still issued from the owner's accounting system**: the app records their number, date, amount and payment, and which fees they recovered; it issues no invoice and calculates no VAT, so ZATCA e-invoicing stays out of scope. Standard fees are an Administrator setting. HR and GRO officers keep the fee ledger; only the Administrator sees commercial terms and invoices; the Auditor reads; clients and employees see nothing. New permissions `fee.*` and `billing.*`.
 - **v1.13** — **The client profile and the Nitaqat band (ADR-019)**: a client company carries its identity (commercial registration, city, sector), a Nitaqat band that staff record from Qiwa with the date it was checked (stored, never computed), its Qiwa/GOSI/VAT registrations, a main contact, authorised signatories, the portals PEOPLE&GRO holds credentials for (names only — never the credentials), and service facts (named officer, tier, response commitment, term) with no behaviour attached. Administrators change it (`client.update`, matrix unchanged); other staff read; a client manager reads their own company's through the portal. A Red or Yellow band warns at non-Saudi hiring moves (Red also at work-permit renewals and sponsorship transfers) and blocks nothing. Commercial terms and fees stay with Billing. No new permission.
 - **v1.12** — **Onboarding and final exit as ordered sequences (ADR-018)**: GRO owns sequences — runs of the prototype's fixed step lists (onboarding: 11 steps from block visa to first payroll; final exit: 8 steps from notice to departure), each step ready, blocked on the steps it waits on, or filed; reopen only while nothing filed depends on it; standard fees shown, recorded later by Billing. Staff only (`gro.process` files, the Auditor reads). The Hiring board's new candidate stage `mobilisation` creates the employee with the new employment status `onboarding` (not under management) and starts onboarding; its completion makes them `active` and the candidate `hired`. A final exit's completion terminates the employee. No new permission.
@@ -103,6 +104,7 @@ Every permission follows one pattern: **`resource.action`** — lowercase, dot-s
 | Calendar | `calendar` | `calendar.create` |
 | Government fees | `fee` | `fee.create`, `fee.update`, `fee.delete` (void — nothing is deleted) |
 | Commercial terms & invoice records | `billing` | `billing.read`, `billing.update` |
+| Escalation ladder | `escalation` | `escalation.read` (also marks one's own items read; employees use `/me`) |
 | Reports | `report` | `report.read`, `report.export` |
 | Audit logs | `audit` | `audit.read`, `audit.export` (AUDIT-07: the trail as CSV, itself audited as Critical) |
 | Notification preferences | `notification-pref` | `notification-pref.update` |
@@ -132,6 +134,7 @@ Client manager is always scoped to **their own client company only**; Employee i
 | Calendar | CRUD | CRUD | CRUD | R | – | – |
 | Government fees (ADR-020) | CRU + void | CRU + void | CRU + void | R | – | – |
 | Commercial terms & invoice records (ADR-020; records of invoices issued elsewhere) | CRU | – | – | R | – | – |
+| Escalation ladder (ADR-021; derived, items limited to what each role may already read; thresholds are a system setting) | R | R | R | R (never "needs action") | R (own company, breaches only) | R (self) |
 | Reports | R + export | – | – | R | – | – |
 | Audit logs | R + export | – | – | R + export | – | – |
 | Notification preferences | CRUD (all) | U (own) | U (own) | U (own) | U (own) | U (own) |
@@ -197,6 +200,7 @@ Invariants (not configurable):
 13. Reporting
 14. Search (delivery surface over the other modules — one permission-aware lookup; ADR-015)
 15. Billing (the government-fee ledger, commercial terms and invoice records; invoices themselves are issued outside the app; ADR-020)
+16. Escalations (delivery surface over the other modules — the notification centre's ladder, worked out per viewer and never stored; owns only read marks; ADR-021)
 
 ## Shared Modules
 - Notifications (in-app + email in v1; SMS/WhatsApp via KSA-local provider later)
