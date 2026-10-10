@@ -34,6 +34,15 @@ export class DependantsService {
     return order(await this.prisma.dependant.findMany({ where: { employeeId, removedAt: null } }));
   }
 
+  // The current dependants of MANY sponsors in one read — for the escalation
+  // ladder (NC-01), which watches every dependant's dates.
+  listForEmployees(employeeIds: readonly string[]): Promise<DependantRecord[]> {
+    if (employeeIds.length === 0) return Promise.resolve([]);
+    return this.prisma.dependant.findMany({
+      where: { employeeId: { in: [...employeeIds] }, removedAt: null },
+    });
+  }
+
   // Every dependant this sponsor has ever had, removed ones included — for the
   // Person record's History, which still names a removed dependant (DEP-03).
   allFor(employeeId: string): Promise<DependantRecord[]> {

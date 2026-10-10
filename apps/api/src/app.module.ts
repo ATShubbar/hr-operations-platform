@@ -20,6 +20,7 @@ import { RequestsModule } from './modules/requests/public-api';
 import { TasksModule } from './modules/tasks/public-api';
 import { RecruitmentModule } from './modules/recruitment/public-api';
 import { BillingModule } from './modules/billing/public-api';
+import { EscalationsModule } from './modules/escalations/public-api';
 import { GroModule } from './modules/gro/public-api';
 import { CalendarModule } from './modules/calendar/public-api';
 import { LeaveModule } from './modules/leave/public-api';
@@ -53,6 +54,7 @@ import { ScopeCheckModule } from './modules/scope-check/public-api';
     RecruitmentModule,
     GroModule,
     BillingModule,
+    EscalationsModule,
     CalendarModule,
     LeaveModule,
     SearchModule,

@@ -1,7 +1,10 @@
 import { z } from 'zod';
 import {
+  DEFAULT_ESCALATION_THRESHOLDS,
   DEFAULT_STANDARD_FEES,
+  ESCALATION_THRESHOLDS_KEY,
   STANDARD_FEES_KEY,
+  escalationThresholdsSchema,
   standardFeesSchema,
   type SettingLevel,
 } from '@hr/contracts';
@@ -96,6 +99,17 @@ const SETTING_DEFS: readonly SettingDef[] = [
     default: DEFAULT_STANDARD_FEES,
     levels: ['system'],
     description: 'Standard government fees (halalas) prefilled when a fee is recorded.',
+  },
+  {
+    // NC-01 (ADR-021): the day thresholds of the escalation ladder — when each
+    // stage of each rule starts. Strict and complete, values from a fixed list,
+    // a later stage never earlier than the one before. Breach is not here: it
+    // is fixed at "the date has passed".
+    key: ESCALATION_THRESHOLDS_KEY,
+    schema: escalationThresholdsSchema,
+    default: DEFAULT_ESCALATION_THRESHOLDS,
+    levels: ['system'],
+    description: 'Days before a date at which each escalation stage starts.',
   },
   {
     key: 'timezone',

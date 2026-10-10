@@ -1,6 +1,6 @@
 # ADR-021 — The notification centre: an escalation ladder, derived, not stored
 
-- Status: Accepted
+- Status: Accepted (rev. 1, 2026-10-10: four points settled while building NC-01)
 - Date: 2026-10-10
 - Owner: Ahmed Alshubbar (product decision; NC-00)
 - Amends: **architecture.md**. A new delivery module, one permission and one matrix row. Now **v1.15**.
@@ -46,6 +46,15 @@ Two things shaped the decision:
 - Four stages, in rising order: **Notice → Reminder → Escalated → Breach**. An item is at a stage when the days left are at or below that stage's threshold. **Breach is fixed**: the date has passed. "Today" is the system timezone's date.
 - **Only the highest stage reached is shown.**
 - **Suppression.** An expiring iqama or work permit is quiet while an open procedure that renews it exists for that person (iqama issue or renewal; work-permit renewal). The panel says how many items are quiet for that reason. Passport, contract and dependant documents have no such procedure and are never suppressed.
+
+### Settled while building (rev. 1, NC-01)
+
+Four points the first text left open. Each follows from a rule already above.
+
+- **One obligation is reported once.** A request spawns a task the moment it is raised. While that request still awaits a decision, or is paused on its requester, its task is not in the queue rule: the request's own service-level item speaks for it. Once the request is approved, the task carries the deadline.
+- **A Saudi national's iqama and work permit are not watched.** They have neither; this is the People screen's rule.
+- **An expiry owned by a role is owned by each person in that role.** With no named officer, every GRO officer has the company's iqamas under "Assigned to me".
+- **The count of quiet items is per viewer.** It counts only expiries that person could have read.
 
 ### Who is told at each stage
 

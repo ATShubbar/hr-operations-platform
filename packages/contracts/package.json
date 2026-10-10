@@ -26,6 +26,10 @@
     "./billing-lists": {
       "types": "./dist/billing-lists.d.ts",
       "default": "./dist/billing-lists.js"
+    },
+    "./escalation-rules": {
+      "types": "./dist/escalation-rules.d.ts",
+      "default": "./dist/escalation-rules.js"
     }
   },
   "scripts": {

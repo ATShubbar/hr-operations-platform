@@ -1584,7 +1584,17 @@ daily expiry scan untouched, so TWO sets of expiry thresholds exist until stage 
 Derived per viewer on the server, NOTHING stored but read marks (item + stage + date → climbing a stage = unread again);
 nobody is shown an item they could not already open; the Auditor is in no audience. New delivery module `escalations`
 (Notifications can't hold it: GRO + Self-Service import Notifications → loop), permission `escalation.read`, thresholds =
-a system setting. Build NC-01..06 — AWAITING APPROVAL.
+a system setting. Owner approved NC-01..06 in advance ("approved for all").
+**NC-01 done — the ladder for staff.** Rules in `@hr/contracts/escalation-rules` (zod-free: `stageFor` = highest stage
+reached, Breach only once the date has PASSED; `STAGE_AUDIENCE`; `RENEWED_BY`; `thresholdOrderProblem`). The engine is a
+PURE function, `modules/escalations/domain/ladder.ts` `buildLadder(input, viewer)` — handed plain rows + who is asking, so
+every rule is tested without a database (`test/escalation-ladder.e2e-spec.ts`). `EscalationsService.forStaff` only gathers:
+procedures and requests are read UNNARROWED (an open renewal quiets an expiry for everyone; an undecided request keeps its
+own task out of the queue rule), tasks are narrowed to the reader's task scope. `GET /escalations` (`escalation.read` in
+STAFF_BASE; `scopeOf` staff-only until NC-05) → `{today, thresholds, items, suppressed}`; each item carries `mine` and
+`told`. Setting `escalation.thresholds` (system; fixed day list; later stage never earlier). ADR-021 rev. 1: one obligation
+reported once · a Saudi's iqama/permit not watched · a role-owned expiry is each member's · quiet count per viewer. Seed:
+32–33 items, counts matched SQL, 4–7 ms per call. API **817/817**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
@@ -1604,6 +1614,9 @@ a system setting. Build NC-01..06 — AWAITING APPROVAL.
 - A seed that UPSERTS rows back to a seeded status must also reset every column a CHECK ties to that status — the
   seed left `info_returns_to` set and re-seeding failed on any request someone had put in `info_needed`, which would
   have broken Seed UAT the first time it was used (THREAD-03).
+- A test that asserts an ORDER must not depend on generated ids: two items that tie on the real sort keys were ordered by
+  a key containing random uuids, so the spec passed alone and failed in the full run about half the time (NC-01). Settle
+  ties in the test with the same rule, and assert everything else as written.
 - A test that compares a date with "today" must count its days in the SAME timezone as the service. Riyadh's day starts
   three hours before UTC's: a test using UTC dates against a service using the system timezone fails only between 21:00
   and 24:00 UTC — i.e. in CI at night, never at a desk (BILL-05: "due today is not overdue"). Use `dayIn(new Date(), tz)`.

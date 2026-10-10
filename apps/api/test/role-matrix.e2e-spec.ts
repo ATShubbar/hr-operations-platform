@@ -149,6 +149,14 @@ const MATRIX: Record<string, Row> = {
     client_manager: ['search.read'],
     employee: ['search.read'],
   },
+  // ADR-021 (architecture.md v1.15): the notification centre's ladder. Staff
+  // here; client managers join with NC-05; employees never hold it (/me).
+  'Escalation ladder': {
+    administrator: ['escalation.read'],
+    hr_officer: ['escalation.read'],
+    gro_officer: ['escalation.read'],
+    auditor: ['escalation.read'],
+  },
   // ADR-014 (architecture.md v1.8). Employees reach their own leave through
   // /me/leave under self-service.* (already granted by the Requests row).
   Leave: {

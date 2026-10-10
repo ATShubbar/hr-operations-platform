@@ -211,6 +211,8 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   // BILL-04: commercial terms + the estimate — staff only (`billing.*`).
   'GET /billing/clients/:clientId': 'staff',
   'PUT /billing/clients/:clientId/terms': 'staff',
+  // NC-01 (ADR-021): the escalation ladder — staff for now (client managers: NC-05).
+  'GET /escalations': 'staff',
   // BILL-05: invoice records — staff only (`billing.*`).
   'GET /billing/clients/:clientId/invoices': 'staff',
   'POST /billing/clients/:clientId/invoices': 'staff',

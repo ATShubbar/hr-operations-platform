@@ -142,6 +142,10 @@ export const PERMISSIONS = [
   // records). The Administrator's; the Auditor reads; officers hold neither.
   'billing.read',
   'billing.update',
+  // NC-01 (ADR-021): the notification centre's escalation ladder — derived per
+  // viewer, limited to what they may already read. Staff here; client managers
+  // join in NC-05; employees never hold it (their ladder is under /me).
+  'escalation.read',
   // Leave (ADR-014, LEAVE-02). Client managers raise + APPROVE their own
   // company's; PEOPLE&GRO FILES (writes the ledger); `withdraw` = a pending
   // request the caller raised. Employees never hold these — /me/leave is
@@ -248,6 +252,8 @@ const STAFF_BASE: readonly Permission[] = [
   'calendar.read',
   // ADR-015: the header search box (results gated per source).
   'search.read',
+  // ADR-021: the notification centre's ladder (items gated per kind).
+  'escalation.read',
 ];
 
 // The client manager (one company, mostly read): the scope-check exemplar,
