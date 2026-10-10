@@ -184,6 +184,20 @@
       "unit": "Working days of each company's week (Sunday–Thursday unless changed). Public holidays are not counted out yet.",
       "invalid": "Each type needs a whole number of days from 1 to 60.",
       "save": "Save service levels"
+    },
+    "standardFees": {
+      "title": "Standard fees",
+      "subtitle": "What a filing dialog prefills when a procedure is completed or a step is filed. The person filing still confirms what was actually paid, and a change here never alters a fee already recorded. The starting figures are not checked against the authorities' current tariffs — correct them here.",
+      "group": {
+        "procedures": "Procedures",
+        "onboarding": "Onboarding steps",
+        "finalExit": "Final exit steps",
+        "dependant": "Dependants"
+      },
+      "dependantLabel": "Annual fee per dependant",
+      "unit": "Saudi riyals. 0 means no fee is expected.",
+      "invalid": "Each box needs an amount in riyals from 0 to 1,000,000, with at most two decimal places.",
+      "save": "Save standard fees"
     }
   },
   "employees": {
@@ -1316,7 +1330,6 @@
       "tileOpen": "Open items",
       "tileOpenNote": "{count} past due",
       "tileFees": "Fees · 90 days",
-      "feesSoonNote": "Billing is coming soon",
       "soon": "Soon",
       "saudiTitle": "Saudisation by client",
       "saudiSub": "Saudi share of each register by nationality, beside the Nitaqat band recorded from Qiwa.",
@@ -1334,11 +1347,13 @@
       "slaClean": "Nothing has slipped past its due date.",
       "daysOver": "{count}d over",
       "feesTitle": "Government fees by client",
-      "feesSub": "Paid on their behalf over the last ninety days.",
-      "feesSoon": "Coming soon — fees are recorded with the billing feature.",
+      "feesSub": "Paid on their behalf over the last ninety days. Void fees are left out.",
       "typesTitle": "Open procedures by type",
       "typesSub": "Where the queue's work sits. Grouped by procedure type — the portal each is filed on is not stored yet.",
-      "typesEmpty": "No open procedures."
+      "typesEmpty": "No open procedures.",
+      "tileFeesNote": "{amount} not yet recovered, whatever its age",
+      "feesUnavailable": "The fee ledger could not be read.",
+      "feesEmpty": "No government fee was paid in the last ninety days."
     },
     "exportReport": "Export report",
     "exportOf": "Exports “{name}” as CSV",
@@ -1961,7 +1976,6 @@
     "family": {
       "title": "Dependants",
       "summary": "{count, plural, one {# dependant sponsored} other {# dependants sponsored}}",
-      "feeSoon": "annual dependant fees coming soon",
       "emptySummary": "No dependants on file. Family iqamas are sponsored by the employee and renewed with their own annual fee.",
       "nothing": "Nothing on file.",
       "add": "Add a dependant",
@@ -2025,7 +2039,9 @@
           "generic": "Could not save. Try again.",
           "removed": "This dependant has been removed."
         }
-      }
+      },
+      "feeLine": "{total} a year in dependant fees at the standard {each} each",
+      "dialogFee": "The standard dependant fee is {amount} a year. A payment made is recorded on the client's Fees tab."
     },
     "mob": {
       "noneTitle": "No sequence running",

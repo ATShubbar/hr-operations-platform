@@ -1566,6 +1566,14 @@ mark a fee invoiced by SQL alone). `InvoicesService`: create/update link fees AL
 on `GET /billing/clients/:id`. Web: `clients/[id]/invoices-card.tsx` (list, Record/Correct with a fee tick list, Mark
 paid/unpaid, Remove), overdue banner + standing pill on the Commercial tab, `lib/fee-what.ts` (shared with the Fees tab),
 `toneFor('invoice'|'standing')`. API **790/790**.
+**BILL-06 done — the Billing epic (ADR-020, BILL-00..06) is COMPLETE.** Reports: the "Fees · 90 days" tile + "Government
+fees by client" read the fee ledger (two reads: paid in 90 days, and every `recorded` fee at ANY age = "not yet recovered";
+a failed read shows a dash, never zero). Family tab + dependant dialog show the STANDARD annual dependant fee (information,
+not a payment). Settings → System → **Standard fees** (`settings/standard-fees.tsx`, 28 boxes, whole set saved, then
+`forgetStandardFees()`). Seed `seedBilling`: terms for the 4 active companies, fees `GF-S01..S10` (fixed refs so re-seeding
+doesn't burn the real sequence; one 130 days old and still owed, one void, three on Bilal Ahmed's onboarding steps), 4
+invoice records (Alpha paid, **Beta overdue**, Najd sent, Gulf none). Smoke check: 4 read-only billing checks. No API
+change. Still "coming soon" on the Client record: nothing — every tab is real.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

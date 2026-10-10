@@ -8,6 +8,8 @@ import type {
   ClientResponse,
   EmployeeListResponse,
   EmployeeResponse,
+  FeeListResponse,
+  FeeResponse,
   GroProcessListResponse,
   GroProcessResponse,
   RequestListResponse,
@@ -22,6 +24,7 @@ import { BandPill } from '@/components/client-profile-bits';
 import { SequencesPanel } from '@/components/sequences-panel';
 import { apiFetch } from '@/lib/api';
 import { datedDocs, daysTo, isSaudi } from '@/lib/employee-docs';
+import { useMoney } from '@/lib/money';
 import { Avatar } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { isOpenProcedure } from '@/components/gro-work-list';
@@ -32,14 +35,21 @@ import { figuresFor, underManagement } from '../clients/client-figures';
 // the DS-10 approach). Reports is Administrator + Auditor only, and both see
 // every row (task.read-all), so the figures are the whole picture.
 //
-// What has no data behind it says so (owner decision): government fees (billing)
-// and the Nitaqat band. Two panels are adapted rather than invented — service
+// Two panels are adapted rather than invented — service
 // level is measured against each request's OWN due date (no promised turnaround
 // is stored), and procedures are grouped by TYPE (no portal is stored).
+//
+// Government fees (BILL-06, ADR-020) come from the fee ledger, in two reads:
+// the fees PAID in the last 90 days (the tile's figure and the per-client
+// panel, as the prototype), and every fee still `recorded`, WHATEVER ITS AGE —
+// "not yet recovered" is what is owed, and an old unbilled fee is still owed
+// (the same deliberate change as the client's Fees tab). A void fee is in
+// neither. If the ledger cannot be read the tile says so; it never shows zero.
 
 // Open = not finished — the ONE shared definition (CAL-04).
 const ASSIGNABLE = new Set(['administrator', 'hr_officer', 'gro_officer']);
 const MONTHS = 6;
+const FEE_DAYS = 90;
 
 interface Data {
   clients: ClientResponse[];
@@ -48,6 +58,8 @@ interface Data {
   requests: RequestResponse[];
   tasks: TaskResponse[];
   staff: StaffDirectoryEntry[];
+  /** null = the fee ledger could not be read. */
+  fees: { recent: FeeResponse[]; owed: FeeResponse[] } | null;
 }
 
 const empty =
@@ -68,6 +80,7 @@ export function ReportsDashboard() {
   const tr = useTranslations('roles');
   const treq = useTranslations('requests');
   const locale = useLocale();
+  const money = useMoney();
   const [data, setData] = useState<Data | null>(null);
 
   useEffect(() => {
@@ -78,7 +91,18 @@ export function ReportsDashboard() {
       apiFetch<RequestListResponse>('/requests').catch(empty({ requests: [] })),
       apiFetch<TaskListResponse>('/tasks').catch(empty({ tasks: [] })),
       apiFetch<StaffDirectoryResponse>('/staff-users/directory').catch(empty({ users: [] })),
-    ]).then(([c, e, g, r, k, d]) =>
+      Promise.all([
+        apiFetch<FeeListResponse>(
+          `/fees?from=${new Date(Date.now() - FEE_DAYS * 86_400_000).toISOString().slice(0, 10)}`,
+        ),
+        apiFetch<FeeListResponse>('/fees?status=recorded'),
+      ])
+        .then(([recent, owed]) => ({
+          recent: recent.fees.filter((f) => f.status !== 'void'),
+          owed: owed.fees,
+        }))
+        .catch(empty(null)),
+    ]).then(([c, e, g, r, k, d, fees]) =>
       setData({
         clients: c.clients,
         employees: e.employees,
@@ -86,6 +110,7 @@ export function ReportsDashboard() {
         requests: r.requests,
         tasks: k.tasks,
         staff: d.users,
+        fees,
       }),
     );
   }, []);
@@ -146,7 +171,29 @@ export function ReportsDashboard() {
       .sort((a, b) => b.n - a.n);
 
     const active = data.clients.filter((c) => c.status === 'active');
+
+    // Government fees paid in the last 90 days, by client: every active
+    // company (an empty row is information), plus any other company a fee was
+    // paid for, so the rows always add up to the tile.
+    const sum = (list: FeeResponse[]) => list.reduce((n, f) => n + f.amountHalalas, 0);
+    const feeRows = data.fees
+      ? data.clients
+          .map((c) => {
+            const own = data.fees!.recent.filter((f) => f.clientId === c.id);
+            return { c, amount: sum(own), n: own.length };
+          })
+          .filter((x) => x.c.status === 'active' || x.n > 0)
+          .sort((a, b) => b.amount - a.amount)
+      : [];
     return {
+      fees: data.fees
+        ? {
+            paid: sum(data.fees.recent),
+            owed: sum(data.fees.owed),
+            rows: feeRows,
+            max: Math.max(1, ...feeRows.map((x) => x.amount)),
+          }
+        : null,
       clients: active.length,
       headcount: staffRows.length,
       saudis,
@@ -231,11 +278,17 @@ export function ReportsDashboard() {
         )}
         {tile(t('tileExpiring'), num.format(m.exp30), t('tileExpiringNote', { count: m.exp7 }))}
         {tile(t('tileOpen'), num.format(m.open), t('tileOpenNote', { count: m.pastDue }))}
-        {tile(
-          t('tileFees'),
-          <span className="text-[13px] font-normal text-neutral-400">{t('soon')}</span>,
-          t('feesSoonNote'),
-        )}
+        {m.fees
+          ? tile(
+              t('tileFees'),
+              <bdi>{money(m.fees.paid)}</bdi>,
+              <bdi>{t('tileFeesNote', { amount: money(m.fees.owed) })}</bdi>,
+            )
+          : tile(
+              t('tileFees'),
+              <span className="text-[13px] font-normal text-neutral-400">—</span>,
+              t('feesUnavailable'),
+            )}
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.2fr_1fr]">
@@ -388,9 +441,29 @@ export function ReportsDashboard() {
           'r-fees',
           t('feesTitle'),
           t('feesSub'),
-          <p className="rounded-md bg-neutral-50 px-3.5 py-6 text-center text-[13px] leading-[18px] text-muted-foreground ring-1 ring-foreground/10">
-            {t('feesSoon')}
-          </p>,
+          !m.fees ? (
+            <p className="text-[13px] text-muted-foreground">{t('feesUnavailable')}</p>
+          ) : m.fees.paid === 0 ? (
+            <p className="text-[13px] text-muted-foreground">{t('feesEmpty')}</p>
+          ) : (
+            <ul className="flex flex-col gap-3">
+              {m.fees.rows.map((x) => (
+                <li key={x.c.id} className="flex items-center gap-3">
+                  <Link
+                    href={`/clients/${x.c.id}`}
+                    className="w-[150px] shrink-0 truncate text-xs leading-4 hover:underline"
+                    title={name(x.c)}
+                  >
+                    {name(x.c)}
+                  </Link>
+                  {bar((x.amount / m.fees!.max) * 100, 'bg-neutral-700')}
+                  <span className="w-[92px] shrink-0 text-end font-mono text-xs whitespace-nowrap">
+                    <bdi>{money(x.amount)}</bdi>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ),
         )}
         {panel(
           'r-types',

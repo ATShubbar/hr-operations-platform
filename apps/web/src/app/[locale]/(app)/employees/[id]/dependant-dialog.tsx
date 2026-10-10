@@ -4,6 +4,8 @@ import { useState, type FormEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import type { DependantRelationship, DependantResponse } from '@hr/contracts';
 import { apiFetch, ApiError } from '@/lib/api';
+import { useMoney } from '@/lib/money';
+import { useStandardFees } from '@/lib/standard-fees';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -85,6 +87,9 @@ export function DependantDialog({
   onSaved: (d: DependantResponse, created: boolean) => void;
 }) {
   const t = useTranslations('person.family');
+  const money = useMoney();
+  // The standard annual fee (a setting) — information, not a payment record.
+  const dependantFee = useStandardFees().dependantAnnual;
   const [form, setForm] = useState<Form>(EMPTY);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -231,7 +236,7 @@ export function DependantDialog({
           )}
           <div className="flex items-center gap-2">
             <span className="grow text-[11px] leading-[15px] text-muted-foreground">
-              {t('feeSoon')}
+              {dependantFee > 0 && <bdi>{t('dialogFee', { amount: money(dependantFee) })}</bdi>}
             </span>
             <Button type="button" variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
               {t('cancel')}

@@ -1110,6 +1110,210 @@ async function seedClientProfiles(prisma: PrismaClient): Promise<number> {
   return CLIENT_PROFILES.length;
 }
 
+// BILL-06 (ADR-020): BILLING sample data, so the Commercial and Fees tabs, the
+// Reports fee figures and the overdue banner open on something:
+//   · commercial terms for the four active companies (Al Waha, archived, has
+//     none — "no terms recorded" has to be reviewable too);
+//   · government fees in every state: recorded, on an invoice, void; tied to
+//     a seeded onboarding step, to a completed procedure, and recorded by hand
+//     (for a person, and company-level); one OLD and still owed, because "not
+//     yet recovered" counts a fee whatever its age;
+//   · invoice records in every standing: Alpha paid up, Beta OVERDUE with a
+//     second invoice still within terms, Najd awaiting payment, Gulf Medical
+//     with none recorded.
+// Every figure is invented. Invoice amounts are simply the cycle's subscription
+// plus the fees recovered — no tax — so a reviewer can add them up; a real
+// record carries whatever the issued invoice says. No receipts are seeded.
+// Dates are relative to seed day. Fee references are fixed (`GF-S01…`, S for
+// sample) so re-seeding does not consume the real `GF-0001…` sequence.
+const SEED_TERMS: ReadonlyArray<{
+  clientId: string;
+  platform: number;
+  seat: number;
+  cycle: 'monthly' | 'quarterly' | 'annual';
+  po: string | null;
+  days: number;
+}> = [
+  { clientId: SEED_CLIENT_A, platform: 350_000, seat: 6_500, cycle: 'quarterly', po: 'PO-ALPHA-2026-014', days: 30 },
+  { clientId: SEED_CLIENT_B, platform: 600_000, seat: 5_500, cycle: 'monthly', po: 'PO-BETA-7781', days: 45 },
+  { clientId: SEED_CLIENT_C, platform: 350_000, seat: 6_500, cycle: 'quarterly', po: null, days: 30 },
+  { clientId: SEED_CLIENT_D, platform: 150_000, seat: 4_500, cycle: 'annual', po: 'GMG-PO-2291', days: 60 },
+];
+
+const INV_ALPHA_PAID = 'b1000001-0000-4000-8000-000000000001';
+const INV_BETA_OVERDUE = 'b1000002-0000-4000-8000-000000000001';
+const INV_BETA_SENT = 'b1000002-0000-4000-8000-000000000002';
+const INV_NAJD_SENT = 'b1000003-0000-4000-8000-000000000001';
+const SEED_INVOICES: ReadonlyArray<{
+  id: string;
+  clientId: string;
+  number: string;
+  issuedDaysAgo: number;
+  /** Negative = already past its due date. */
+  dueInDays: number;
+  amount: number;
+  paidDaysAgo: number | null;
+}> = [
+  // A quarter's subscription (SAR 12,645) + the iqama fee it recovers. Paid.
+  { id: INV_ALPHA_PAID, clientId: SEED_CLIENT_A, number: 'INV-2026-0412', issuedDaysAgo: 75, dueInDays: -45, amount: 1_329_500, paidDaysAgo: 50 },
+  // A month's subscription, fifteen days past its 45-day terms: OVERDUE.
+  { id: INV_BETA_OVERDUE, clientId: SEED_CLIENT_B, number: 'INV-2026-0455', issuedDaysAgo: 60, dueInDays: -15, amount: 649_500, paidDaysAgo: null },
+  // The next month + the exit re-entry fee. Still within terms.
+  { id: INV_BETA_SENT, clientId: SEED_CLIENT_B, number: 'INV-2026-0478', issuedDaysAgo: 29, dueInDays: 16, amount: 669_500, paidDaysAgo: null },
+  // A quarter (SAR 12,060) + the block visa for the new driver.
+  { id: INV_NAJD_SENT, clientId: SEED_CLIENT_C, number: 'INV-2026-0481', issuedDaysAgo: 20, dueInDays: 10, amount: 1_406_000, paidDaysAgo: null },
+];
+
+type SeedFeeSource =
+  | { kind: 'manual'; label: string; employeeId?: string }
+  | { kind: 'step'; sequenceId: string; stepKey: string; employeeId: string }
+  | { kind: 'procedure'; processId: string; type: string; employeeId: string };
+const SEED_FEES: ReadonlyArray<{
+  n: number;
+  clientId: string;
+  source: SeedFeeSource;
+  authority: string;
+  amount: number;
+  paidDaysAgo: number;
+  invoiceId?: string;
+  voidReason?: string;
+}> = [
+  // Alpha
+  { n: 1, clientId: SEED_CLIENT_A, source: { kind: 'manual', label: 'Iqama renewal fee', employeeId: 'e0000001-0000-4000-8000-000000000004' }, authority: 'muqeem', amount: 65_000, paidDaysAgo: 80, invoiceId: INV_ALPHA_PAID },
+  { n: 2, clientId: SEED_CLIENT_A, source: { kind: 'manual', label: 'Chamber of Commerce attestation' }, authority: 'chamber', amount: 15_000, paidDaysAgo: 12 },
+  // Old, and still owed: outside every 90-day figure, inside "not yet recovered".
+  { n: 3, clientId: SEED_CLIENT_A, source: { kind: 'manual', label: 'Work permit levy', employeeId: 'e0000001-0000-4000-8000-000000000006' }, authority: 'qiwa', amount: 970_000, paidDaysAgo: 130 },
+  { n: 4, clientId: SEED_CLIENT_A, source: { kind: 'manual', label: 'Medical insurance top-up' }, authority: 'cchi', amount: 30_000, paidDaysAgo: 6, voidReason: 'Recorded twice' },
+  // Beta
+  { n: 5, clientId: SEED_CLIENT_B, source: { kind: 'procedure', processId: 'e1000002-0000-4000-8000-000000000003', type: 'exit_reentry', employeeId: 'e0000002-0000-4000-8000-000000000004' }, authority: 'muqeem', amount: 20_000, paidDaysAgo: 20, invoiceId: INV_BETA_SENT },
+  { n: 6, clientId: SEED_CLIENT_B, source: { kind: 'manual', label: 'Municipality licence renewal' }, authority: 'balady', amount: 120_000, paidDaysAgo: 35 },
+  // Najd — Bilal Ahmed's onboarding (the steps the sequence seed files).
+  { n: 7, clientId: SEED_CLIENT_C, source: { kind: 'step', sequenceId: 'a5000001-0000-4000-8000-000000000001', stepKey: 'block-visa', employeeId: 'e0000003-0000-4000-8000-000000000009' }, authority: 'qiwa', amount: 200_000, paidDaysAgo: 34, invoiceId: INV_NAJD_SENT },
+  { n: 8, clientId: SEED_CLIENT_C, source: { kind: 'step', sequenceId: 'a5000001-0000-4000-8000-000000000001', stepKey: 'enjaz', employeeId: 'e0000003-0000-4000-8000-000000000009' }, authority: 'enjaz', amount: 20_000, paidDaysAgo: 14 },
+  { n: 9, clientId: SEED_CLIENT_C, source: { kind: 'step', sequenceId: 'a5000001-0000-4000-8000-000000000001', stepKey: 'medical-ksa', employeeId: 'e0000003-0000-4000-8000-000000000009' }, authority: 'seha', amount: 30_000, paidDaysAgo: 4 },
+  // Gulf Medical — Maria Santos' onboarding.
+  { n: 10, clientId: SEED_CLIENT_D, source: { kind: 'step', sequenceId: 'a5000001-0000-4000-8000-000000000002', stepKey: 'block-visa', employeeId: 'e0000004-0000-4000-8000-000000000008' }, authority: 'qiwa', amount: 200_000, paidDaysAgo: 9 },
+];
+const seedFeeId = (n: number) => `b2000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
+const seedFeeRef = (n: number) => `GF-S${String(n).padStart(2, '0')}`;
+
+async function seedBilling(prisma: PrismaClient): Promise<{ fees: number; invoices: number }> {
+  const [gro, hr, admin] = await Promise.all(
+    ['staff-gro_officer', 'staff-hr_officer', 'staff-administrator'].map((key) =>
+      prisma.authUser.findUnique({ where: { email: seedEmail(key) } }),
+    ),
+  );
+
+  // Terms: one row per client — written whole, so a walk-through's edit is undone.
+  for (const t of SEED_TERMS) {
+    const terms = {
+      platformFeeHalalas: t.platform,
+      seatRateHalalas: t.seat,
+      cycle: t.cycle,
+      poNumber: t.po,
+      paymentTermsDays: t.days,
+      updatedByUserId: admin?.id ?? null,
+    };
+    await prisma.billingTerms.upsert({
+      where: { clientId: t.clientId },
+      create: { clientId: t.clientId, ...terms },
+      update: terms,
+    });
+  }
+
+  // Idempotency: replace the seeded fees and invoices — and whatever would
+  // collide with them: a record with a seeded number, a live fee already
+  // recorded for a seeded step or procedure. A fee someone else linked to a
+  // seeded invoice goes back to waiting first (the foreign key would otherwise
+  // refuse the delete). Everything else in the ledger is left alone.
+  const staleInvoices = (
+    await prisma.invoice.findMany({
+      where: {
+        OR: [
+          { id: { in: SEED_INVOICES.map((i) => i.id) } },
+          ...SEED_INVOICES.map((i) => ({
+            clientId: i.clientId,
+            number: { equals: i.number, mode: 'insensitive' as const },
+          })),
+        ],
+      },
+      select: { id: true },
+    })
+  ).map((i) => i.id);
+  await prisma.fee.deleteMany({
+    where: {
+      OR: [
+        { id: { in: SEED_FEES.map((f) => seedFeeId(f.n)) } },
+        { ref: { in: SEED_FEES.map((f) => seedFeeRef(f.n)) } },
+        ...SEED_FEES.flatMap((f) =>
+          f.source.kind === 'step'
+            ? [{ sequenceId: f.source.sequenceId, stepKey: f.source.stepKey, status: { not: 'void' as const } }]
+            : f.source.kind === 'procedure'
+              ? [{ processId: f.source.processId, status: { not: 'void' as const } }]
+              : [],
+        ),
+      ],
+    },
+  });
+  await prisma.fee.updateMany({
+    where: { invoiceId: { in: staleInvoices } },
+    data: { status: 'recorded', invoiceId: null },
+  });
+  await prisma.invoice.deleteMany({ where: { id: { in: staleInvoices } } });
+
+  for (const i of SEED_INVOICES) {
+    await prisma.invoice.create({
+      data: {
+        id: i.id,
+        clientId: i.clientId,
+        number: i.number,
+        issuedOn: daysFromNow(-i.issuedDaysAgo),
+        dueOn: daysFromNow(i.dueInDays),
+        amountHalalas: i.amount,
+        status: i.paidDaysAgo === null ? 'sent' : 'paid',
+        paidOn: i.paidDaysAgo === null ? null : daysFromNow(-i.paidDaysAgo),
+        recordedByUserId: admin?.id ?? null,
+      },
+    });
+  }
+  for (const f of SEED_FEES) {
+    const src = f.source;
+    await prisma.fee.create({
+      data: {
+        id: seedFeeId(f.n),
+        ref: seedFeeRef(f.n),
+        clientId: f.clientId,
+        employeeId: src.employeeId ?? null,
+        ...(src.kind === 'manual'
+          ? { sourceKind: 'manual' as const, label: src.label }
+          : src.kind === 'step'
+            ? {
+                sourceKind: 'sequence_step' as const,
+                sequenceId: src.sequenceId,
+                sequenceKind: 'onboarding',
+                stepKey: src.stepKey,
+              }
+            : { sourceKind: 'procedure' as const, processId: src.processId, procedureType: src.type }),
+        authority: f.authority,
+        amountHalalas: f.amount,
+        paidOn: daysFromNow(-f.paidDaysAgo),
+        recordedByUserId: gro?.id ?? null,
+        ...(f.voidReason
+          ? {
+              status: 'void' as const,
+              voidedAt: daysFromNowAt(-f.paidDaysAgo + 1, 9),
+              voidedByUserId: hr?.id ?? null,
+              voidReason: f.voidReason,
+            }
+          : f.invoiceId
+            ? { status: 'invoiced' as const, invoiceId: f.invoiceId }
+            : {}),
+      },
+    });
+  }
+  return { fees: SEED_FEES.length, invoices: SEED_INVOICES.length };
+}
+
 async function main(): Promise<void> {
   const prisma = new PrismaClient({
     adapter: new PrismaPg(process.env.DATABASE_URL ?? ''),
@@ -1146,6 +1350,7 @@ async function main(): Promise<void> {
     const candidateCount = await seedCandidates(prisma);
     const groCount = await seedGroProcesses(prisma);
     const sequenceCount = await seedSequences(prisma);
+    const billing = await seedBilling(prisma);
     const calendarCount = await seedCalendarEvents(prisma);
     const leaveCount = await seedLeave(prisma);
     await seedSelfServiceFlag(prisma);
@@ -1157,7 +1362,7 @@ async function main(): Promise<void> {
     });
     const rolesCovered = new Set(STAFF_ACCOUNTS.map((a) => a.role)).size + 1 + 1; // + client_manager + employee
     process.stdout.write(
-      `Seed complete: ${clientCount} client companies (${profileCount} profiles); ${employeeCount} employees; ${dependantCount} dependants; ${documentCount} documents (with files); ${requestCount} requests; ${attachmentCount} request files; ${taskCount} tasks; ${vacancyCount} vacancies; ${candidateCount} candidates; ${groCount} GRO processes; ${sequenceCount} sequences in flight (+${SEED_MOBILISING.length} hires onboarding, each with a candidate in mobilisation); ${calendarCount} calendar events; ${leaveCount} leave requests; ${rowCount} scope-check rows ` +
+      `Seed complete: ${clientCount} client companies (${profileCount} profiles); ${employeeCount} employees; ${dependantCount} dependants; ${documentCount} documents (with files); ${requestCount} requests; ${attachmentCount} request files; ${taskCount} tasks; ${vacancyCount} vacancies; ${candidateCount} candidates; ${groCount} GRO processes; ${sequenceCount} sequences in flight (+${SEED_MOBILISING.length} hires onboarding, each with a candidate in mobilisation); commercial terms for ${SEED_TERMS.length} clients, ${billing.fees} government fees, ${billing.invoices} invoice records; ${calendarCount} calendar events; ${leaveCount} leave requests; ${rowCount} scope-check rows ` +
         `${notificationCount} notifications (purged ${purgedNotifications} orphans); ` +
         `across clients A (${SEED_CLIENT_A}) and B (${SEED_CLIENT_B}); ${userCount} auth users ` +
         `(${STAFF_ACCOUNTS.length} staff + ${CLIENT_REP_ASSIGNMENTS.length} client managers + 1 employee, ` +

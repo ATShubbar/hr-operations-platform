@@ -7,7 +7,9 @@ import type { DependantListResponse, DependantResponse } from '@hr/contracts';
 import { formatHijri } from '@hr/dates';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
+import { useMoney } from '@/lib/money';
 import { useCan } from '@/lib/session';
+import { useStandardFees } from '@/lib/standard-fees';
 import type { Locale } from '@/lib/employee-format';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/avatar';
@@ -95,6 +97,10 @@ export function FamilyTab({
   const t = useTranslations('person.family');
   const tp = useTranslations('people');
   const ts = useTranslations('states');
+  const money = useMoney();
+  // BILL-06 (ADR-020): the STANDARD annual fee per dependant — a setting, shown
+  // as information. A payment actually made is recorded on the client's Fees tab.
+  const dependantFee = useStandardFees().dependantAnnual;
   const locale = useLocale() as Locale;
   const router = useRouter();
   const canWrite = useCan('govdata.update') && !terminated;
@@ -235,7 +241,12 @@ export function FamilyTab({
                 ? ts('loading')
                 : rows.length === 0
                   ? t('emptySummary')
-                  : `${t('summary', { count: rows.length })} · ${t('feeSoon')}`}
+                  : dependantFee > 0
+                    ? `${t('summary', { count: rows.length })} · ${t('feeLine', {
+                        total: money(rows.length * dependantFee),
+                        each: money(dependantFee),
+                      })}`
+                    : t('summary', { count: rows.length })}
             </bdi>
           </span>
         </span>

@@ -32,6 +32,7 @@ const UAT_EMAILS = {
 };
 const emailOf = (user) => (UAT ? UAT_EMAILS[user] : `${user}@${DOMAIN}`);
 const CLIENT_A = '11111111-1111-4111-8111-111111111111';
+const CLIENT_B = '22222222-2222-4222-8222-222222222222';
 
 let failures = 0;
 const check = (ok, label, detail = '') => {
@@ -234,6 +235,32 @@ async function main() {
         check(filed.json?.status === 'filed', 'leave: filed by HR', `HTTP ${filed.status}`);
       }
     }
+  }
+
+  // Billing (BILL-06, ADR-020) — read-only: the seeded ledger is there for the
+  // officers, the commercial side is closed to them and to clients, and the
+  // Administrator sees the seeded overdue standing (derived, never set).
+  if (hr) {
+    const fees = await call(`/fees?clientId=${CLIENT_A}`, { cookie: hr });
+    check(
+      fees.status === 200 && fees.json?.fees?.some((f) => f.ref === 'GF-S02'),
+      'billing: HR reads the seeded fee ledger',
+      `HTTP ${fees.status}`,
+    );
+    const closed = await call(`/billing/clients/${CLIENT_A}`, { cookie: hr });
+    check(closed.status === 403, 'billing: commercial terms refused to HR', `HTTP ${closed.status}`);
+  }
+  if (cm) {
+    const none = await call('/fees', { cookie: cm });
+    check(none.status === 403, 'billing: the fee ledger is refused to a client manager', `HTTP ${none.status}`);
+  }
+  if (sessions.administrator) {
+    const beta = await call(`/billing/clients/${CLIENT_B}`, { cookie: sessions.administrator });
+    check(
+      beta.json?.standing?.state === 'overdue' && beta.json?.terms?.cycle === 'monthly',
+      'billing: the Administrator sees the seeded terms and the overdue standing',
+      `HTTP ${beta.status} ${beta.json?.standing?.state}`,
+    );
   }
 
   for (const cookie of Object.values(sessions)) {

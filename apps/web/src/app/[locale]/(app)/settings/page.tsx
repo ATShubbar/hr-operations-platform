@@ -10,14 +10,17 @@ import type {
   ConfigFlagsResponse,
   ConfigSettingDescriptor,
 } from '@hr/contracts';
+import type { StandardFees } from '@hr/contracts/billing-lists';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useCan } from '@/lib/session';
+import { forgetStandardFees } from '@/lib/standard-fees';
 import { NotificationPreferences } from '@/components/notification-preferences';
 import { AccessTable } from './access-table';
 import { ExpiryScanSection } from './expiry-scan';
 import { LeaveCarryOverSection } from './leave-carry-over';
 import { SERVICE_LEVEL_KEY, ServiceLevelsSection } from './service-levels';
+import { STANDARD_FEES_KEY, StandardFeesSection } from './standard-fees';
 import { GoogleCalendarSection } from './google-calendar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -334,6 +337,17 @@ export default function SettingsPage() {
                 value={system[SERVICE_LEVEL_KEY] as Record<string, number> | undefined}
                 busy={busy}
                 onSave={(next) => void patchSystem(SERVICE_LEVEL_KEY, next)}
+              />
+            )}
+            {canWriteSystem && system && (
+              <StandardFeesSection
+                value={system[STANDARD_FEES_KEY] as StandardFees | undefined}
+                busy={busy}
+                onSave={(next) =>
+                  // The filing dialogs cache the figures for the page: drop the
+                  // cache so the next one prefills what was just saved.
+                  void patchSystem(STANDARD_FEES_KEY, next).then(forgetStandardFees)
+                }
               />
             )}
             {/* ---- System settings (Administrator only) ---- */}
