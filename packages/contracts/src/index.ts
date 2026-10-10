@@ -6,6 +6,14 @@ export {
   updateClientRequestSchema,
   clientResponseSchema,
   clientListResponseSchema,
+  clientCitySchema,
+  clientSectorSchema,
+  nitaqatBandSchema,
+  clientPortalSchema,
+  serviceTierSchema,
+  responseCommitmentSchema,
+  clientSignatorySchema,
+  type ClientSignatory,
   type BilingualText,
   type ClientStatus,
   type ClientCompany,
@@ -396,6 +404,23 @@ export {
 
 export { FINISHED, isFinished, type WorkKind } from './work-status.js';
 export { hasJoined, isUnderManagement } from './headcount.js';
+export {
+  CLIENT_CITIES,
+  CLIENT_SECTORS,
+  NITAQAT_BANDS,
+  CLIENT_PORTALS,
+  SERVICE_TIERS,
+  RESPONSE_COMMITMENTS,
+  MAX_SIGNATORIES,
+  bandAbove,
+  bandBelow,
+  type ClientCity,
+  type ClientSector,
+  type NitaqatBand,
+  type ClientPortal,
+  type ServiceTier,
+  type ResponseCommitment,
+} from './client-profile.js';
 export {
   dependantRelationshipSchema,
   createDependantSchema,

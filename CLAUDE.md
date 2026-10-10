@@ -1476,6 +1476,15 @@ commitment, term) with NO behaviour. Owner: Administrator edits (`client.update`
 their own through the portal's company view (follows `flag.client-self-service`) · Red/Yellow **warn, never block** (non-Saudi
 hiring moves; Red also work-permit renewal + sponsorship transfer) from one shared rule · money stays with Billing. All fields
 optional (existing clients predate them). Owner approved PROF-01..06 IN ADVANCE ("approved for all 6").
+**PROF-01 done — the profile's data + API.** Migration `client_profile`: 20 optional columns on `cli_clients` + enums
+`NitaqatBand`/`ServiceTier`/`ResponseCommitment`; unique CR; CHECKs (CR 10 digits, VAT 15, band ⇔ checked-on, term order,
+signatories a JSON list); city/sector/portals are TEXT keys validated by the contract. `@hr/contracts/client-profile` (zod-free
+subpath): the lists, `bandAbove`/`bandBelow` (ladder is WORST FIRST). NO new route — `/clients*` and `/portal/company` carry
+it through ONE mapper `clients/domain/client-view.ts` `toClientResponse(row, officers, audience)`; audience `client` nulls
+`officerUserId` (officer = name + role via `UsersService.staffIdentities`). Service-side rules: checked-on not in the future
+(+1 day slack), term end vs the STORED start on a partial change, officer = `isActiveStaffWith(…, 'gro.process')`, duplicate
+CR → 409 from the unique index. Write schemas are STRICT at every level (a portal entry carrying a password is a 400). API
+**750/750**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

@@ -213,6 +213,20 @@ export class UsersService {
     return new Map(rows.map((r) => [r.id, { name: r.displayName, kind: KIND[r.principalType] }]));
   }
 
+  // Staff accounts by id, as a reader may see them (PROF-01: a client's named
+  // officer): the display name and the role — the directory's two facts, never
+  // the email or status. Non-staff ids are simply absent.
+  async staffIdentities(
+    ids: readonly string[],
+  ): Promise<Map<string, { name: string | null; role: string }>> {
+    if (ids.length === 0) return new Map();
+    const rows = await this.prisma.authUser.findMany({
+      where: { id: { in: [...new Set(ids)] }, principalType: 'staff' },
+      select: { id: true, displayName: true, role: true },
+    });
+    return new Map(rows.map((r) => [r.id, { name: r.displayName, role: r.role }]));
+  }
+
   // How many ACTIVE accounts hold each role (DS-19, the Roles and permissions
   // screen). Invited and disabled accounts cannot sign in, so they do not count.
   async activeCountsByRole(): Promise<Map<string, number>> {

@@ -189,7 +189,27 @@ export const ClientScalarFieldEnum = {
   nameEn: 'nameEn',
   status: 'status',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  crNumber: 'crNumber',
+  city: 'city',
+  sector: 'sector',
+  nitaqatBand: 'nitaqatBand',
+  nitaqatCheckedOn: 'nitaqatCheckedOn',
+  qiwaEstablishment: 'qiwaEstablishment',
+  gosiEstablishment: 'gosiEstablishment',
+  vatNumber: 'vatNumber',
+  contactNameEn: 'contactNameEn',
+  contactNameAr: 'contactNameAr',
+  contactRole: 'contactRole',
+  contactEmail: 'contactEmail',
+  contactPhone: 'contactPhone',
+  signatories: 'signatories',
+  portals: 'portals',
+  officerUserId: 'officerUserId',
+  serviceTier: 'serviceTier',
+  responseCommitment: 'responseCommitment',
+  termStart: 'termStart',
+  termEnd: 'termEnd'
 } as const
 
 export type ClientScalarFieldEnum = (typeof ClientScalarFieldEnum)[keyof typeof ClientScalarFieldEnum]

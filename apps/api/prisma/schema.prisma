@@ -203,7 +203,59 @@ model Client {
   createdAt DateTime     @default(now()) @map("created_at")
   updatedAt DateTime     @updatedAt @map("updated_at")
 
+  // The client profile (PROF-01, ADR-019). All optional: existing clients
+  // predate them. City / sector / portals are KEYS from the fixed lists in
+  // @hr/contracts (text, so a list grows without a migration); the band, tier
+  // and commitment are enums. CHECKs in the migration: CR is 10 digits, VAT 15,
+  // a band travels with its checked-on date, the term cannot end before it
+  // starts, signatories is a JSON list.
+  crNumber           String?             @unique @map("cr_number")
+  city               String?
+  sector             String?
+  // STORED, never computed: what staff read off Qiwa, and the day they read it.
+  nitaqatBand        NitaqatBand?        @map("nitaqat_band")
+  nitaqatCheckedOn   DateTime?           @map("nitaqat_checked_on") @db.Date
+  qiwaEstablishment  String?             @map("qiwa_establishment")
+  gosiEstablishment  String?             @map("gosi_establishment")
+  vatNumber          String?             @map("vat_number")
+  contactNameEn      String?             @map("contact_name_en")
+  contactNameAr      String?             @map("contact_name_ar")
+  contactRole        String?             @map("contact_role")
+  contactEmail       String?             @map("contact_email")
+  contactPhone       String?             @map("contact_phone")
+  // [{ name, role }] — up to ten; replaced whole, its history is the audit trail.
+  signatories        Json                @default("[]")
+  // Portal NAMES only — the app never stores a portal credential.
+  portals            String[]            @default([])
+  // Service facts with no behaviour attached. The officer is a bare auth user id.
+  officerUserId      String?             @map("officer_user_id") @db.Uuid
+  serviceTier        ServiceTier?        @map("service_tier")
+  responseCommitment ResponseCommitment? @map("response_commitment")
+  termStart          DateTime?           @map("term_start") @db.Date
+  termEnd            DateTime?           @map("term_end") @db.Date
+
   @@map("cli_clients")
+}
+
+enum NitaqatBand {
+  red
+  yellow
+  low_green
+  medium_green
+  high_green
+  platinum
+}
+
+enum ServiceTier {
+  essential
+  professional
+  enterprise
+}
+
+enum ResponseCommitment {
+  same_working_day
+  one_working_day
+  two_working_days
 }
 
 enum ClientStatus {

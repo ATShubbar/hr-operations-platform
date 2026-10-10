@@ -9,11 +9,8 @@ import type {
 } from '@hr/contracts';
 import { RequirePermission } from '../../../auth/permissions.decorator';
 import { requestContext } from '../../../context/request-context';
-import type {
-  ClientModel as ClientRecord,
-  DocumentModel as DocumentRecord,
-} from '../../../generated/prisma/models';
-import { ClientsService } from '../../clients/public-api';
+import type { DocumentModel as DocumentRecord } from '../../../generated/prisma/models';
+import { ClientsService, toClientResponse } from '../../clients/public-api';
 import { ConfigService } from '../../configuration/public-api';
 import { DocumentsService, toDocumentResponse } from '../../documents/public-api';
 import {
@@ -58,7 +55,9 @@ export class PortalController {
     await this.assertPortalAccess(clientId);
     const row = await this.clients.getById(clientId);
     if (!row) throw new NotFoundException('Company not found');
-    return toResponse(row);
+    // PROF-01 (ADR-019): their own company's whole profile, read-only — the
+    // named officer by name and role, never a staff account id.
+    return toClientResponse(row, await this.clients.officersOf([row]), 'client');
   }
 
   // The caller's own employees, redacted to core + govdata:status (no salary,
@@ -140,14 +139,4 @@ export class PortalController {
       throw new ForbiddenException('Client self-service is not enabled');
     }
   }
-}
-
-function toResponse(row: ClientRecord): ClientResponse {
-  return {
-    id: row.id,
-    name: { ar: row.nameAr, en: row.nameEn },
-    status: row.status,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
-  };
 }

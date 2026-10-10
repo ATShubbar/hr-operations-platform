@@ -18,6 +18,10 @@
     "./headcount": {
       "types": "./dist/headcount.d.ts",
       "default": "./dist/headcount.js"
+    },
+    "./client-profile": {
+      "types": "./dist/client-profile.d.ts",
+      "default": "./dist/client-profile.js"
     }
   },
   "scripts": {

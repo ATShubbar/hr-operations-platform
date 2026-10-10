@@ -2560,7 +2560,27 @@ export const ClientScalarFieldEnum = {
   nameEn: 'nameEn',
   status: 'status',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  crNumber: 'crNumber',
+  city: 'city',
+  sector: 'sector',
+  nitaqatBand: 'nitaqatBand',
+  nitaqatCheckedOn: 'nitaqatCheckedOn',
+  qiwaEstablishment: 'qiwaEstablishment',
+  gosiEstablishment: 'gosiEstablishment',
+  vatNumber: 'vatNumber',
+  contactNameEn: 'contactNameEn',
+  contactNameAr: 'contactNameAr',
+  contactRole: 'contactRole',
+  contactEmail: 'contactEmail',
+  contactPhone: 'contactPhone',
+  signatories: 'signatories',
+  portals: 'portals',
+  officerUserId: 'officerUserId',
+  serviceTier: 'serviceTier',
+  responseCommitment: 'responseCommitment',
+  termStart: 'termStart',
+  termEnd: 'termEnd'
 } as const
 
 export type ClientScalarFieldEnum = (typeof ClientScalarFieldEnum)[keyof typeof ClientScalarFieldEnum]
@@ -3120,6 +3140,48 @@ export type EnumClientStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pri
  * Reference to a field of type 'ClientStatus[]'
  */
 export type ListEnumClientStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ClientStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'NitaqatBand'
+ */
+export type EnumNitaqatBandFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NitaqatBand'>
+    
+
+
+/**
+ * Reference to a field of type 'NitaqatBand[]'
+ */
+export type ListEnumNitaqatBandFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NitaqatBand[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ServiceTier'
+ */
+export type EnumServiceTierFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ServiceTier'>
+    
+
+
+/**
+ * Reference to a field of type 'ServiceTier[]'
+ */
+export type ListEnumServiceTierFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ServiceTier[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ResponseCommitment'
+ */
+export type EnumResponseCommitmentFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ResponseCommitment'>
+    
+
+
+/**
+ * Reference to a field of type 'ResponseCommitment[]'
+ */
+export type ListEnumResponseCommitmentFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ResponseCommitment[]'>
     
 
 

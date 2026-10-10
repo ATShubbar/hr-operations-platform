@@ -31,6 +31,24 @@ export type ClientMinAggregateOutputType = {
   status: $Enums.ClientStatus | null
   createdAt: Date | null
   updatedAt: Date | null
+  crNumber: string | null
+  city: string | null
+  sector: string | null
+  nitaqatBand: $Enums.NitaqatBand | null
+  nitaqatCheckedOn: Date | null
+  qiwaEstablishment: string | null
+  gosiEstablishment: string | null
+  vatNumber: string | null
+  contactNameEn: string | null
+  contactNameAr: string | null
+  contactRole: string | null
+  contactEmail: string | null
+  contactPhone: string | null
+  officerUserId: string | null
+  serviceTier: $Enums.ServiceTier | null
+  responseCommitment: $Enums.ResponseCommitment | null
+  termStart: Date | null
+  termEnd: Date | null
 }
 
 export type ClientMaxAggregateOutputType = {
@@ -40,6 +58,24 @@ export type ClientMaxAggregateOutputType = {
   status: $Enums.ClientStatus | null
   createdAt: Date | null
   updatedAt: Date | null
+  crNumber: string | null
+  city: string | null
+  sector: string | null
+  nitaqatBand: $Enums.NitaqatBand | null
+  nitaqatCheckedOn: Date | null
+  qiwaEstablishment: string | null
+  gosiEstablishment: string | null
+  vatNumber: string | null
+  contactNameEn: string | null
+  contactNameAr: string | null
+  contactRole: string | null
+  contactEmail: string | null
+  contactPhone: string | null
+  officerUserId: string | null
+  serviceTier: $Enums.ServiceTier | null
+  responseCommitment: $Enums.ResponseCommitment | null
+  termStart: Date | null
+  termEnd: Date | null
 }
 
 export type ClientCountAggregateOutputType = {
@@ -49,6 +85,26 @@ export type ClientCountAggregateOutputType = {
   status: number
   createdAt: number
   updatedAt: number
+  crNumber: number
+  city: number
+  sector: number
+  nitaqatBand: number
+  nitaqatCheckedOn: number
+  qiwaEstablishment: number
+  gosiEstablishment: number
+  vatNumber: number
+  contactNameEn: number
+  contactNameAr: number
+  contactRole: number
+  contactEmail: number
+  contactPhone: number
+  signatories: number
+  portals: number
+  officerUserId: number
+  serviceTier: number
+  responseCommitment: number
+  termStart: number
+  termEnd: number
   _all: number
 }
 
@@ -60,6 +116,24 @@ export type ClientMinAggregateInputType = {
   status?: true
   createdAt?: true
   updatedAt?: true
+  crNumber?: true
+  city?: true
+  sector?: true
+  nitaqatBand?: true
+  nitaqatCheckedOn?: true
+  qiwaEstablishment?: true
+  gosiEstablishment?: true
+  vatNumber?: true
+  contactNameEn?: true
+  contactNameAr?: true
+  contactRole?: true
+  contactEmail?: true
+  contactPhone?: true
+  officerUserId?: true
+  serviceTier?: true
+  responseCommitment?: true
+  termStart?: true
+  termEnd?: true
 }
 
 export type ClientMaxAggregateInputType = {
@@ -69,6 +143,24 @@ export type ClientMaxAggregateInputType = {
   status?: true
   createdAt?: true
   updatedAt?: true
+  crNumber?: true
+  city?: true
+  sector?: true
+  nitaqatBand?: true
+  nitaqatCheckedOn?: true
+  qiwaEstablishment?: true
+  gosiEstablishment?: true
+  vatNumber?: true
+  contactNameEn?: true
+  contactNameAr?: true
+  contactRole?: true
+  contactEmail?: true
+  contactPhone?: true
+  officerUserId?: true
+  serviceTier?: true
+  responseCommitment?: true
+  termStart?: true
+  termEnd?: true
 }
 
 export type ClientCountAggregateInputType = {
@@ -78,6 +170,26 @@ export type ClientCountAggregateInputType = {
   status?: true
   createdAt?: true
   updatedAt?: true
+  crNumber?: true
+  city?: true
+  sector?: true
+  nitaqatBand?: true
+  nitaqatCheckedOn?: true
+  qiwaEstablishment?: true
+  gosiEstablishment?: true
+  vatNumber?: true
+  contactNameEn?: true
+  contactNameAr?: true
+  contactRole?: true
+  contactEmail?: true
+  contactPhone?: true
+  signatories?: true
+  portals?: true
+  officerUserId?: true
+  serviceTier?: true
+  responseCommitment?: true
+  termStart?: true
+  termEnd?: true
   _all?: true
 }
 
@@ -160,6 +272,26 @@ export type ClientGroupByOutputType = {
   status: $Enums.ClientStatus
   createdAt: Date
   updatedAt: Date
+  crNumber: string | null
+  city: string | null
+  sector: string | null
+  nitaqatBand: $Enums.NitaqatBand | null
+  nitaqatCheckedOn: Date | null
+  qiwaEstablishment: string | null
+  gosiEstablishment: string | null
+  vatNumber: string | null
+  contactNameEn: string | null
+  contactNameAr: string | null
+  contactRole: string | null
+  contactEmail: string | null
+  contactPhone: string | null
+  signatories: runtime.JsonValue
+  portals: string[]
+  officerUserId: string | null
+  serviceTier: $Enums.ServiceTier | null
+  responseCommitment: $Enums.ResponseCommitment | null
+  termStart: Date | null
+  termEnd: Date | null
   _count: ClientCountAggregateOutputType | null
   _min: ClientMinAggregateOutputType | null
   _max: ClientMaxAggregateOutputType | null
@@ -190,6 +322,26 @@ export type ClientWhereInput = {
   status?: Prisma.EnumClientStatusFilter<"Client"> | $Enums.ClientStatus
   createdAt?: Prisma.DateTimeFilter<"Client"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Client"> | Date | string
+  crNumber?: Prisma.StringNullableFilter<"Client"> | string | null
+  city?: Prisma.StringNullableFilter<"Client"> | string | null
+  sector?: Prisma.StringNullableFilter<"Client"> | string | null
+  nitaqatBand?: Prisma.EnumNitaqatBandNullableFilter<"Client"> | $Enums.NitaqatBand | null
+  nitaqatCheckedOn?: Prisma.DateTimeNullableFilter<"Client"> | Date | string | null
+  qiwaEstablishment?: Prisma.StringNullableFilter<"Client"> | string | null
+  gosiEstablishment?: Prisma.StringNullableFilter<"Client"> | string | null
+  vatNumber?: Prisma.StringNullableFilter<"Client"> | string | null
+  contactNameEn?: Prisma.StringNullableFilter<"Client"> | string | null
+  contactNameAr?: Prisma.StringNullableFilter<"Client"> | string | null
+  contactRole?: Prisma.StringNullableFilter<"Client"> | string | null
+  contactEmail?: Prisma.StringNullableFilter<"Client"> | string | null
+  contactPhone?: Prisma.StringNullableFilter<"Client"> | string | null
+  signatories?: Prisma.JsonFilter<"Client">
+  portals?: Prisma.StringNullableListFilter<"Client">
+  officerUserId?: Prisma.UuidNullableFilter<"Client"> | string | null
+  serviceTier?: Prisma.EnumServiceTierNullableFilter<"Client"> | $Enums.ServiceTier | null
+  responseCommitment?: Prisma.EnumResponseCommitmentNullableFilter<"Client"> | $Enums.ResponseCommitment | null
+  termStart?: Prisma.DateTimeNullableFilter<"Client"> | Date | string | null
+  termEnd?: Prisma.DateTimeNullableFilter<"Client"> | Date | string | null
 }
 
 export type ClientOrderByWithRelationInput = {
@@ -199,10 +351,31 @@ export type ClientOrderByWithRelationInput = {
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  crNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  city?: Prisma.SortOrderInput | Prisma.SortOrder
+  sector?: Prisma.SortOrderInput | Prisma.SortOrder
+  nitaqatBand?: Prisma.SortOrderInput | Prisma.SortOrder
+  nitaqatCheckedOn?: Prisma.SortOrderInput | Prisma.SortOrder
+  qiwaEstablishment?: Prisma.SortOrderInput | Prisma.SortOrder
+  gosiEstablishment?: Prisma.SortOrderInput | Prisma.SortOrder
+  vatNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  contactNameEn?: Prisma.SortOrderInput | Prisma.SortOrder
+  contactNameAr?: Prisma.SortOrderInput | Prisma.SortOrder
+  contactRole?: Prisma.SortOrderInput | Prisma.SortOrder
+  contactEmail?: Prisma.SortOrderInput | Prisma.SortOrder
+  contactPhone?: Prisma.SortOrderInput | Prisma.SortOrder
+  signatories?: Prisma.SortOrder
+  portals?: Prisma.SortOrder
+  officerUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  serviceTier?: Prisma.SortOrderInput | Prisma.SortOrder
+  responseCommitment?: Prisma.SortOrderInput | Prisma.SortOrder
+  termStart?: Prisma.SortOrderInput | Prisma.SortOrder
+  termEnd?: Prisma.SortOrderInput | Prisma.SortOrder
 }
 
 export type ClientWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  crNumber?: string
   AND?: Prisma.ClientWhereInput | Prisma.ClientWhereInput[]
   OR?: Prisma.ClientWhereInput[]
   NOT?: Prisma.ClientWhereInput | Prisma.ClientWhereInput[]
@@ -211,7 +384,26 @@ export type ClientWhereUniqueInput = Prisma.AtLeast<{
   status?: Prisma.EnumClientStatusFilter<"Client"> | $Enums.ClientStatus
   createdAt?: Prisma.DateTimeFilter<"Client"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Client"> | Date | string
-}, "id">
+  city?: Prisma.StringNullableFilter<"Client"> | string | null
+  sector?: Prisma.StringNullableFilter<"Client"> | string | null
+  nitaqatBand?: Prisma.EnumNitaqatBandNullableFilter<"Client"> | $Enums.NitaqatBand | null
+  nitaqatCheckedOn?: Prisma.DateTimeNullableFilter<"Client"> | Date | string | null
+  qiwaEstablishment?: Prisma.StringNullableFilter<"Client"> | string | null
+  gosiEstablishment?: Prisma.StringNullableFilter<"Client"> | string | null
+  vatNumber?: Prisma.StringNullableFilter<"Client"> | string | null
+  contactNameEn?: Prisma.StringNullableFilter<"Client"> | string | null
+  contactNameAr?: Prisma.StringNullableFilter<"Client"> | string | null
+  contactRole?: Prisma.StringNullableFilter<"Client"> | string | null
+  contactEmail?: Prisma.StringNullableFilter<"Client"> | string | null
+  contactPhone?: Prisma.StringNullableFilter<"Client"> | string | null
+  signatories?: Prisma.JsonFilter<"Client">
+  portals?: Prisma.StringNullableListFilter<"Client">
+  officerUserId?: Prisma.UuidNullableFilter<"Client"> | string | null
+  serviceTier?: Prisma.EnumServiceTierNullableFilter<"Client"> | $Enums.ServiceTier | null
+  responseCommitment?: Prisma.EnumResponseCommitmentNullableFilter<"Client"> | $Enums.ResponseCommitment | null
+  termStart?: Prisma.DateTimeNullableFilter<"Client"> | Date | string | null
+  termEnd?: Prisma.DateTimeNullableFilter<"Client"> | Date | string | null
+}, "id" | "crNumber">
 
 export type ClientOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -220,6 +412,26 @@ export type ClientOrderByWithAggregationInput = {
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  crNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  city?: Prisma.SortOrderInput | Prisma.SortOrder
+  sector?: Prisma.SortOrderInput | Prisma.SortOrder
+  nitaqatBand?: Prisma.SortOrderInput | Prisma.SortOrder
+  nitaqatCheckedOn?: Prisma.SortOrderInput | Prisma.SortOrder
+  qiwaEstablishment?: Prisma.SortOrderInput | Prisma.SortOrder
+  gosiEstablishment?: Prisma.SortOrderInput | Prisma.SortOrder
+  vatNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  contactNameEn?: Prisma.SortOrderInput | Prisma.SortOrder
+  contactNameAr?: Prisma.SortOrderInput | Prisma.SortOrder
+  contactRole?: Prisma.SortOrderInput | Prisma.SortOrder
+  contactEmail?: Prisma.SortOrderInput | Prisma.SortOrder
+  contactPhone?: Prisma.SortOrderInput | Prisma.SortOrder
+  signatories?: Prisma.SortOrder
+  portals?: Prisma.SortOrder
+  officerUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  serviceTier?: Prisma.SortOrderInput | Prisma.SortOrder
+  responseCommitment?: Prisma.SortOrderInput | Prisma.SortOrder
+  termStart?: Prisma.SortOrderInput | Prisma.SortOrder
+  termEnd?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.ClientCountOrderByAggregateInput
   _max?: Prisma.ClientMaxOrderByAggregateInput
   _min?: Prisma.ClientMinOrderByAggregateInput
@@ -235,6 +447,26 @@ export type ClientScalarWhereWithAggregatesInput = {
   status?: Prisma.EnumClientStatusWithAggregatesFilter<"Client"> | $Enums.ClientStatus
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Client"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Client"> | Date | string
+  crNumber?: Prisma.StringNullableWithAggregatesFilter<"Client"> | string | null
+  city?: Prisma.StringNullableWithAggregatesFilter<"Client"> | string | null
+  sector?: Prisma.StringNullableWithAggregatesFilter<"Client"> | string | null
+  nitaqatBand?: Prisma.EnumNitaqatBandNullableWithAggregatesFilter<"Client"> | $Enums.NitaqatBand | null
+  nitaqatCheckedOn?: Prisma.DateTimeNullableWithAggregatesFilter<"Client"> | Date | string | null
+  qiwaEstablishment?: Prisma.StringNullableWithAggregatesFilter<"Client"> | string | null
+  gosiEstablishment?: Prisma.StringNullableWithAggregatesFilter<"Client"> | string | null
+  vatNumber?: Prisma.StringNullableWithAggregatesFilter<"Client"> | string | null
+  contactNameEn?: Prisma.StringNullableWithAggregatesFilter<"Client"> | string | null
+  contactNameAr?: Prisma.StringNullableWithAggregatesFilter<"Client"> | string | null
+  contactRole?: Prisma.StringNullableWithAggregatesFilter<"Client"> | string | null
+  contactEmail?: Prisma.StringNullableWithAggregatesFilter<"Client"> | string | null
+  contactPhone?: Prisma.StringNullableWithAggregatesFilter<"Client"> | string | null
+  signatories?: Prisma.JsonWithAggregatesFilter<"Client">
+  portals?: Prisma.StringNullableListFilter<"Client">
+  officerUserId?: Prisma.UuidNullableWithAggregatesFilter<"Client"> | string | null
+  serviceTier?: Prisma.EnumServiceTierNullableWithAggregatesFilter<"Client"> | $Enums.ServiceTier | null
+  responseCommitment?: Prisma.EnumResponseCommitmentNullableWithAggregatesFilter<"Client"> | $Enums.ResponseCommitment | null
+  termStart?: Prisma.DateTimeNullableWithAggregatesFilter<"Client"> | Date | string | null
+  termEnd?: Prisma.DateTimeNullableWithAggregatesFilter<"Client"> | Date | string | null
 }
 
 export type ClientCreateInput = {
@@ -244,6 +476,26 @@ export type ClientCreateInput = {
   status?: $Enums.ClientStatus
   createdAt?: Date | string
   updatedAt?: Date | string
+  crNumber?: string | null
+  city?: string | null
+  sector?: string | null
+  nitaqatBand?: $Enums.NitaqatBand | null
+  nitaqatCheckedOn?: Date | string | null
+  qiwaEstablishment?: string | null
+  gosiEstablishment?: string | null
+  vatNumber?: string | null
+  contactNameEn?: string | null
+  contactNameAr?: string | null
+  contactRole?: string | null
+  contactEmail?: string | null
+  contactPhone?: string | null
+  signatories?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  portals?: Prisma.ClientCreateportalsInput | string[]
+  officerUserId?: string | null
+  serviceTier?: $Enums.ServiceTier | null
+  responseCommitment?: $Enums.ResponseCommitment | null
+  termStart?: Date | string | null
+  termEnd?: Date | string | null
 }
 
 export type ClientUncheckedCreateInput = {
@@ -253,6 +505,26 @@ export type ClientUncheckedCreateInput = {
   status?: $Enums.ClientStatus
   createdAt?: Date | string
   updatedAt?: Date | string
+  crNumber?: string | null
+  city?: string | null
+  sector?: string | null
+  nitaqatBand?: $Enums.NitaqatBand | null
+  nitaqatCheckedOn?: Date | string | null
+  qiwaEstablishment?: string | null
+  gosiEstablishment?: string | null
+  vatNumber?: string | null
+  contactNameEn?: string | null
+  contactNameAr?: string | null
+  contactRole?: string | null
+  contactEmail?: string | null
+  contactPhone?: string | null
+  signatories?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  portals?: Prisma.ClientCreateportalsInput | string[]
+  officerUserId?: string | null
+  serviceTier?: $Enums.ServiceTier | null
+  responseCommitment?: $Enums.ResponseCommitment | null
+  termStart?: Date | string | null
+  termEnd?: Date | string | null
 }
 
 export type ClientUpdateInput = {
@@ -262,6 +534,26 @@ export type ClientUpdateInput = {
   status?: Prisma.EnumClientStatusFieldUpdateOperationsInput | $Enums.ClientStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  crNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sector?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nitaqatBand?: Prisma.NullableEnumNitaqatBandFieldUpdateOperationsInput | $Enums.NitaqatBand | null
+  nitaqatCheckedOn?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  qiwaEstablishment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  gosiEstablishment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vatNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactNameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactNameAr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signatories?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  portals?: Prisma.ClientUpdateportalsInput | string[]
+  officerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  serviceTier?: Prisma.NullableEnumServiceTierFieldUpdateOperationsInput | $Enums.ServiceTier | null
+  responseCommitment?: Prisma.NullableEnumResponseCommitmentFieldUpdateOperationsInput | $Enums.ResponseCommitment | null
+  termStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termEnd?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ClientUncheckedUpdateInput = {
@@ -271,6 +563,26 @@ export type ClientUncheckedUpdateInput = {
   status?: Prisma.EnumClientStatusFieldUpdateOperationsInput | $Enums.ClientStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  crNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sector?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nitaqatBand?: Prisma.NullableEnumNitaqatBandFieldUpdateOperationsInput | $Enums.NitaqatBand | null
+  nitaqatCheckedOn?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  qiwaEstablishment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  gosiEstablishment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vatNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactNameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactNameAr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signatories?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  portals?: Prisma.ClientUpdateportalsInput | string[]
+  officerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  serviceTier?: Prisma.NullableEnumServiceTierFieldUpdateOperationsInput | $Enums.ServiceTier | null
+  responseCommitment?: Prisma.NullableEnumResponseCommitmentFieldUpdateOperationsInput | $Enums.ResponseCommitment | null
+  termStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termEnd?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ClientCreateManyInput = {
@@ -280,6 +592,26 @@ export type ClientCreateManyInput = {
   status?: $Enums.ClientStatus
   createdAt?: Date | string
   updatedAt?: Date | string
+  crNumber?: string | null
+  city?: string | null
+  sector?: string | null
+  nitaqatBand?: $Enums.NitaqatBand | null
+  nitaqatCheckedOn?: Date | string | null
+  qiwaEstablishment?: string | null
+  gosiEstablishment?: string | null
+  vatNumber?: string | null
+  contactNameEn?: string | null
+  contactNameAr?: string | null
+  contactRole?: string | null
+  contactEmail?: string | null
+  contactPhone?: string | null
+  signatories?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  portals?: Prisma.ClientCreateportalsInput | string[]
+  officerUserId?: string | null
+  serviceTier?: $Enums.ServiceTier | null
+  responseCommitment?: $Enums.ResponseCommitment | null
+  termStart?: Date | string | null
+  termEnd?: Date | string | null
 }
 
 export type ClientUpdateManyMutationInput = {
@@ -289,6 +621,26 @@ export type ClientUpdateManyMutationInput = {
   status?: Prisma.EnumClientStatusFieldUpdateOperationsInput | $Enums.ClientStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  crNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sector?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nitaqatBand?: Prisma.NullableEnumNitaqatBandFieldUpdateOperationsInput | $Enums.NitaqatBand | null
+  nitaqatCheckedOn?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  qiwaEstablishment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  gosiEstablishment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vatNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactNameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactNameAr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signatories?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  portals?: Prisma.ClientUpdateportalsInput | string[]
+  officerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  serviceTier?: Prisma.NullableEnumServiceTierFieldUpdateOperationsInput | $Enums.ServiceTier | null
+  responseCommitment?: Prisma.NullableEnumResponseCommitmentFieldUpdateOperationsInput | $Enums.ResponseCommitment | null
+  termStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termEnd?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type ClientUncheckedUpdateManyInput = {
@@ -298,6 +650,34 @@ export type ClientUncheckedUpdateManyInput = {
   status?: Prisma.EnumClientStatusFieldUpdateOperationsInput | $Enums.ClientStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  crNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  sector?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nitaqatBand?: Prisma.NullableEnumNitaqatBandFieldUpdateOperationsInput | $Enums.NitaqatBand | null
+  nitaqatCheckedOn?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  qiwaEstablishment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  gosiEstablishment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  vatNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactNameEn?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactNameAr?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactRole?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactEmail?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  contactPhone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  signatories?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  portals?: Prisma.ClientUpdateportalsInput | string[]
+  officerUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  serviceTier?: Prisma.NullableEnumServiceTierFieldUpdateOperationsInput | $Enums.ServiceTier | null
+  responseCommitment?: Prisma.NullableEnumResponseCommitmentFieldUpdateOperationsInput | $Enums.ResponseCommitment | null
+  termStart?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termEnd?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+}
+
+export type StringNullableListFilter<$PrismaModel = never> = {
+  equals?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel> | null
+  has?: string | Prisma.StringFieldRefInput<$PrismaModel> | null
+  hasEvery?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  hasSome?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
+  isEmpty?: boolean
 }
 
 export type ClientCountOrderByAggregateInput = {
@@ -307,6 +687,26 @@ export type ClientCountOrderByAggregateInput = {
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  crNumber?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  sector?: Prisma.SortOrder
+  nitaqatBand?: Prisma.SortOrder
+  nitaqatCheckedOn?: Prisma.SortOrder
+  qiwaEstablishment?: Prisma.SortOrder
+  gosiEstablishment?: Prisma.SortOrder
+  vatNumber?: Prisma.SortOrder
+  contactNameEn?: Prisma.SortOrder
+  contactNameAr?: Prisma.SortOrder
+  contactRole?: Prisma.SortOrder
+  contactEmail?: Prisma.SortOrder
+  contactPhone?: Prisma.SortOrder
+  signatories?: Prisma.SortOrder
+  portals?: Prisma.SortOrder
+  officerUserId?: Prisma.SortOrder
+  serviceTier?: Prisma.SortOrder
+  responseCommitment?: Prisma.SortOrder
+  termStart?: Prisma.SortOrder
+  termEnd?: Prisma.SortOrder
 }
 
 export type ClientMaxOrderByAggregateInput = {
@@ -316,6 +716,24 @@ export type ClientMaxOrderByAggregateInput = {
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  crNumber?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  sector?: Prisma.SortOrder
+  nitaqatBand?: Prisma.SortOrder
+  nitaqatCheckedOn?: Prisma.SortOrder
+  qiwaEstablishment?: Prisma.SortOrder
+  gosiEstablishment?: Prisma.SortOrder
+  vatNumber?: Prisma.SortOrder
+  contactNameEn?: Prisma.SortOrder
+  contactNameAr?: Prisma.SortOrder
+  contactRole?: Prisma.SortOrder
+  contactEmail?: Prisma.SortOrder
+  contactPhone?: Prisma.SortOrder
+  officerUserId?: Prisma.SortOrder
+  serviceTier?: Prisma.SortOrder
+  responseCommitment?: Prisma.SortOrder
+  termStart?: Prisma.SortOrder
+  termEnd?: Prisma.SortOrder
 }
 
 export type ClientMinOrderByAggregateInput = {
@@ -325,10 +743,49 @@ export type ClientMinOrderByAggregateInput = {
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  crNumber?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  sector?: Prisma.SortOrder
+  nitaqatBand?: Prisma.SortOrder
+  nitaqatCheckedOn?: Prisma.SortOrder
+  qiwaEstablishment?: Prisma.SortOrder
+  gosiEstablishment?: Prisma.SortOrder
+  vatNumber?: Prisma.SortOrder
+  contactNameEn?: Prisma.SortOrder
+  contactNameAr?: Prisma.SortOrder
+  contactRole?: Prisma.SortOrder
+  contactEmail?: Prisma.SortOrder
+  contactPhone?: Prisma.SortOrder
+  officerUserId?: Prisma.SortOrder
+  serviceTier?: Prisma.SortOrder
+  responseCommitment?: Prisma.SortOrder
+  termStart?: Prisma.SortOrder
+  termEnd?: Prisma.SortOrder
+}
+
+export type ClientCreateportalsInput = {
+  set: string[]
 }
 
 export type EnumClientStatusFieldUpdateOperationsInput = {
   set?: $Enums.ClientStatus
+}
+
+export type NullableEnumNitaqatBandFieldUpdateOperationsInput = {
+  set?: $Enums.NitaqatBand | null
+}
+
+export type ClientUpdateportalsInput = {
+  set?: string[]
+  push?: string | string[]
+}
+
+export type NullableEnumServiceTierFieldUpdateOperationsInput = {
+  set?: $Enums.ServiceTier | null
+}
+
+export type NullableEnumResponseCommitmentFieldUpdateOperationsInput = {
+  set?: $Enums.ResponseCommitment | null
 }
 
 
@@ -340,6 +797,26 @@ export type ClientSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  crNumber?: boolean
+  city?: boolean
+  sector?: boolean
+  nitaqatBand?: boolean
+  nitaqatCheckedOn?: boolean
+  qiwaEstablishment?: boolean
+  gosiEstablishment?: boolean
+  vatNumber?: boolean
+  contactNameEn?: boolean
+  contactNameAr?: boolean
+  contactRole?: boolean
+  contactEmail?: boolean
+  contactPhone?: boolean
+  signatories?: boolean
+  portals?: boolean
+  officerUserId?: boolean
+  serviceTier?: boolean
+  responseCommitment?: boolean
+  termStart?: boolean
+  termEnd?: boolean
 }, ExtArgs["result"]["client"]>
 
 export type ClientSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -349,6 +826,26 @@ export type ClientSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  crNumber?: boolean
+  city?: boolean
+  sector?: boolean
+  nitaqatBand?: boolean
+  nitaqatCheckedOn?: boolean
+  qiwaEstablishment?: boolean
+  gosiEstablishment?: boolean
+  vatNumber?: boolean
+  contactNameEn?: boolean
+  contactNameAr?: boolean
+  contactRole?: boolean
+  contactEmail?: boolean
+  contactPhone?: boolean
+  signatories?: boolean
+  portals?: boolean
+  officerUserId?: boolean
+  serviceTier?: boolean
+  responseCommitment?: boolean
+  termStart?: boolean
+  termEnd?: boolean
 }, ExtArgs["result"]["client"]>
 
 export type ClientSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -358,6 +855,26 @@ export type ClientSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  crNumber?: boolean
+  city?: boolean
+  sector?: boolean
+  nitaqatBand?: boolean
+  nitaqatCheckedOn?: boolean
+  qiwaEstablishment?: boolean
+  gosiEstablishment?: boolean
+  vatNumber?: boolean
+  contactNameEn?: boolean
+  contactNameAr?: boolean
+  contactRole?: boolean
+  contactEmail?: boolean
+  contactPhone?: boolean
+  signatories?: boolean
+  portals?: boolean
+  officerUserId?: boolean
+  serviceTier?: boolean
+  responseCommitment?: boolean
+  termStart?: boolean
+  termEnd?: boolean
 }, ExtArgs["result"]["client"]>
 
 export type ClientSelectScalar = {
@@ -367,9 +884,29 @@ export type ClientSelectScalar = {
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  crNumber?: boolean
+  city?: boolean
+  sector?: boolean
+  nitaqatBand?: boolean
+  nitaqatCheckedOn?: boolean
+  qiwaEstablishment?: boolean
+  gosiEstablishment?: boolean
+  vatNumber?: boolean
+  contactNameEn?: boolean
+  contactNameAr?: boolean
+  contactRole?: boolean
+  contactEmail?: boolean
+  contactPhone?: boolean
+  signatories?: boolean
+  portals?: boolean
+  officerUserId?: boolean
+  serviceTier?: boolean
+  responseCommitment?: boolean
+  termStart?: boolean
+  termEnd?: boolean
 }
 
-export type ClientOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nameAr" | "nameEn" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["client"]>
+export type ClientOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nameAr" | "nameEn" | "status" | "createdAt" | "updatedAt" | "crNumber" | "city" | "sector" | "nitaqatBand" | "nitaqatCheckedOn" | "qiwaEstablishment" | "gosiEstablishment" | "vatNumber" | "contactNameEn" | "contactNameAr" | "contactRole" | "contactEmail" | "contactPhone" | "signatories" | "portals" | "officerUserId" | "serviceTier" | "responseCommitment" | "termStart" | "termEnd", ExtArgs["result"]["client"]>
 
 export type $ClientPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Client"
@@ -381,6 +918,26 @@ export type $ClientPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     status: $Enums.ClientStatus
     createdAt: Date
     updatedAt: Date
+    crNumber: string | null
+    city: string | null
+    sector: string | null
+    nitaqatBand: $Enums.NitaqatBand | null
+    nitaqatCheckedOn: Date | null
+    qiwaEstablishment: string | null
+    gosiEstablishment: string | null
+    vatNumber: string | null
+    contactNameEn: string | null
+    contactNameAr: string | null
+    contactRole: string | null
+    contactEmail: string | null
+    contactPhone: string | null
+    signatories: runtime.JsonValue
+    portals: string[]
+    officerUserId: string | null
+    serviceTier: $Enums.ServiceTier | null
+    responseCommitment: $Enums.ResponseCommitment | null
+    termStart: Date | null
+    termEnd: Date | null
   }, ExtArgs["result"]["client"]>
   composites: {}
 }
@@ -810,6 +1367,26 @@ export interface ClientFieldRefs {
   readonly status: Prisma.FieldRef<"Client", 'ClientStatus'>
   readonly createdAt: Prisma.FieldRef<"Client", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Client", 'DateTime'>
+  readonly crNumber: Prisma.FieldRef<"Client", 'String'>
+  readonly city: Prisma.FieldRef<"Client", 'String'>
+  readonly sector: Prisma.FieldRef<"Client", 'String'>
+  readonly nitaqatBand: Prisma.FieldRef<"Client", 'NitaqatBand'>
+  readonly nitaqatCheckedOn: Prisma.FieldRef<"Client", 'DateTime'>
+  readonly qiwaEstablishment: Prisma.FieldRef<"Client", 'String'>
+  readonly gosiEstablishment: Prisma.FieldRef<"Client", 'String'>
+  readonly vatNumber: Prisma.FieldRef<"Client", 'String'>
+  readonly contactNameEn: Prisma.FieldRef<"Client", 'String'>
+  readonly contactNameAr: Prisma.FieldRef<"Client", 'String'>
+  readonly contactRole: Prisma.FieldRef<"Client", 'String'>
+  readonly contactEmail: Prisma.FieldRef<"Client", 'String'>
+  readonly contactPhone: Prisma.FieldRef<"Client", 'String'>
+  readonly signatories: Prisma.FieldRef<"Client", 'Json'>
+  readonly portals: Prisma.FieldRef<"Client", 'String[]'>
+  readonly officerUserId: Prisma.FieldRef<"Client", 'String'>
+  readonly serviceTier: Prisma.FieldRef<"Client", 'ServiceTier'>
+  readonly responseCommitment: Prisma.FieldRef<"Client", 'ResponseCommitment'>
+  readonly termStart: Prisma.FieldRef<"Client", 'DateTime'>
+  readonly termEnd: Prisma.FieldRef<"Client", 'DateTime'>
 }
     
 

@@ -47,6 +47,36 @@ export const UserStatus = {
 export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus]
 
 
+export const NitaqatBand = {
+  red: 'red',
+  yellow: 'yellow',
+  low_green: 'low_green',
+  medium_green: 'medium_green',
+  high_green: 'high_green',
+  platinum: 'platinum'
+} as const
+
+export type NitaqatBand = (typeof NitaqatBand)[keyof typeof NitaqatBand]
+
+
+export const ServiceTier = {
+  essential: 'essential',
+  professional: 'professional',
+  enterprise: 'enterprise'
+} as const
+
+export type ServiceTier = (typeof ServiceTier)[keyof typeof ServiceTier]
+
+
+export const ResponseCommitment = {
+  same_working_day: 'same_working_day',
+  one_working_day: 'one_working_day',
+  two_working_days: 'two_working_days'
+} as const
+
+export type ResponseCommitment = (typeof ResponseCommitment)[keyof typeof ResponseCommitment]
+
+
 export const ClientStatus = {
   active: 'active',
   inactive: 'inactive'

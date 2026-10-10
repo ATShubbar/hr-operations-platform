@@ -420,6 +420,27 @@ export type EnumClientStatusFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumClientStatusFilter<$PrismaModel> | $Enums.ClientStatus
 }
 
+export type EnumNitaqatBandNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.NitaqatBand | Prisma.EnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  in?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumNitaqatBandNullableFilter<$PrismaModel> | $Enums.NitaqatBand | null
+}
+
+export type EnumServiceTierNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.ServiceTier | Prisma.EnumServiceTierFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ServiceTier[] | Prisma.ListEnumServiceTierFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ServiceTier[] | Prisma.ListEnumServiceTierFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumServiceTierNullableFilter<$PrismaModel> | $Enums.ServiceTier | null
+}
+
+export type EnumResponseCommitmentNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.ResponseCommitment | Prisma.EnumResponseCommitmentFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ResponseCommitment[] | Prisma.ListEnumResponseCommitmentFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ResponseCommitment[] | Prisma.ListEnumResponseCommitmentFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumResponseCommitmentNullableFilter<$PrismaModel> | $Enums.ResponseCommitment | null
+}
+
 export type EnumClientStatusWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.ClientStatus | Prisma.EnumClientStatusFieldRefInput<$PrismaModel>
   in?: $Enums.ClientStatus[] | Prisma.ListEnumClientStatusFieldRefInput<$PrismaModel>
@@ -428,6 +449,36 @@ export type EnumClientStatusWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumClientStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumClientStatusFilter<$PrismaModel>
+}
+
+export type EnumNitaqatBandNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.NitaqatBand | Prisma.EnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  in?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumNitaqatBandNullableWithAggregatesFilter<$PrismaModel> | $Enums.NitaqatBand | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumNitaqatBandNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumNitaqatBandNullableFilter<$PrismaModel>
+}
+
+export type EnumServiceTierNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ServiceTier | Prisma.EnumServiceTierFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ServiceTier[] | Prisma.ListEnumServiceTierFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ServiceTier[] | Prisma.ListEnumServiceTierFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumServiceTierNullableWithAggregatesFilter<$PrismaModel> | $Enums.ServiceTier | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumServiceTierNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumServiceTierNullableFilter<$PrismaModel>
+}
+
+export type EnumResponseCommitmentNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ResponseCommitment | Prisma.EnumResponseCommitmentFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ResponseCommitment[] | Prisma.ListEnumResponseCommitmentFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ResponseCommitment[] | Prisma.ListEnumResponseCommitmentFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumResponseCommitmentNullableWithAggregatesFilter<$PrismaModel> | $Enums.ResponseCommitment | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumResponseCommitmentNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumResponseCommitmentNullableFilter<$PrismaModel>
 }
 
 export type EnumGenderNullableFilter<$PrismaModel = never> = {
@@ -1364,6 +1415,27 @@ export type NestedEnumClientStatusFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumClientStatusFilter<$PrismaModel> | $Enums.ClientStatus
 }
 
+export type NestedEnumNitaqatBandNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.NitaqatBand | Prisma.EnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  in?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumNitaqatBandNullableFilter<$PrismaModel> | $Enums.NitaqatBand | null
+}
+
+export type NestedEnumServiceTierNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.ServiceTier | Prisma.EnumServiceTierFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ServiceTier[] | Prisma.ListEnumServiceTierFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ServiceTier[] | Prisma.ListEnumServiceTierFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumServiceTierNullableFilter<$PrismaModel> | $Enums.ServiceTier | null
+}
+
+export type NestedEnumResponseCommitmentNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.ResponseCommitment | Prisma.EnumResponseCommitmentFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ResponseCommitment[] | Prisma.ListEnumResponseCommitmentFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ResponseCommitment[] | Prisma.ListEnumResponseCommitmentFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumResponseCommitmentNullableFilter<$PrismaModel> | $Enums.ResponseCommitment | null
+}
+
 export type NestedEnumClientStatusWithAggregatesFilter<$PrismaModel = never> = {
   equals?: $Enums.ClientStatus | Prisma.EnumClientStatusFieldRefInput<$PrismaModel>
   in?: $Enums.ClientStatus[] | Prisma.ListEnumClientStatusFieldRefInput<$PrismaModel>
@@ -1372,6 +1444,36 @@ export type NestedEnumClientStatusWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumClientStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumClientStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumNitaqatBandNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.NitaqatBand | Prisma.EnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  in?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.NitaqatBand[] | Prisma.ListEnumNitaqatBandFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumNitaqatBandNullableWithAggregatesFilter<$PrismaModel> | $Enums.NitaqatBand | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumNitaqatBandNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumNitaqatBandNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumServiceTierNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ServiceTier | Prisma.EnumServiceTierFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ServiceTier[] | Prisma.ListEnumServiceTierFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ServiceTier[] | Prisma.ListEnumServiceTierFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumServiceTierNullableWithAggregatesFilter<$PrismaModel> | $Enums.ServiceTier | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumServiceTierNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumServiceTierNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumResponseCommitmentNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ResponseCommitment | Prisma.EnumResponseCommitmentFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ResponseCommitment[] | Prisma.ListEnumResponseCommitmentFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.ResponseCommitment[] | Prisma.ListEnumResponseCommitmentFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumResponseCommitmentNullableWithAggregatesFilter<$PrismaModel> | $Enums.ResponseCommitment | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumResponseCommitmentNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumResponseCommitmentNullableFilter<$PrismaModel>
 }
 
 export type NestedEnumGenderNullableFilter<$PrismaModel = never> = {

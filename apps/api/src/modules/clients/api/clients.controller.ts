@@ -19,6 +19,8 @@ import {
 import { RequirePermission } from '../../../auth/permissions.decorator';
 import type { ClientModel as ClientRecord } from '../../../generated/prisma/models';
 import { ClientsService } from '../application/clients.service';
+import type { ClientProfileInput } from '../domain/client';
+import { toClientResponse } from '../domain/client-view';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -27,6 +29,12 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 // create/update/delete by the Administrator only — enforced by the
 // deny-by-default guard, so no role checks here. Client-rep "read own"
 // (scoped) is a separate concern (CLIENT-03).
+//
+// PROF-01 (ADR-019): the same routes carry the client PROFILE — identity, the
+// stored Nitaqat band, registrations, contact, signatories, portals and service
+// facts. Who changes it is the matrix as it stands (`client.update`, the
+// Administrator); every staff role reads it. A client manager reads their own
+// company's through the portal, never here (they hold no `client.read`).
 @Controller('clients')
 export class ClientsController {
   constructor(private readonly clients: ClientsService) {}
@@ -35,13 +43,14 @@ export class ClientsController {
   @Get()
   async list(): Promise<ClientListResponse> {
     const rows = await this.clients.list();
-    return { clients: rows.map(toResponse) };
+    const officers = await this.clients.officersOf(rows);
+    return { clients: rows.map((r) => toClientResponse(r, officers, 'staff')) };
   }
 
   @RequirePermission('client.read')
   @Get(':id')
   async get(@Param('id') id: string): Promise<ClientResponse> {
-    return toResponse(await this.require(id));
+    return this.present(await this.require(id));
   }
 
   @RequirePermission('client.create')
@@ -50,12 +59,14 @@ export class ClientsController {
   async create(@Body() body: unknown): Promise<ClientResponse> {
     const parsed = createClientRequestSchema.safeParse(body);
     if (!parsed.success) throw new BadRequestException('Invalid client payload');
+    const { name, status, ...profile } = parsed.data;
     const row = await this.clients.create({
-      nameAr: parsed.data.name.ar,
-      nameEn: parsed.data.name.en,
-      status: parsed.data.status,
+      nameAr: name.ar,
+      nameEn: name.en,
+      status,
+      ...(profile satisfies ClientProfileInput),
     });
-    return toResponse(row);
+    return this.present(row);
   }
 
   @RequirePermission('client.update')
@@ -64,13 +75,15 @@ export class ClientsController {
     this.assertUuid(id);
     const parsed = updateClientRequestSchema.safeParse(body);
     if (!parsed.success) throw new BadRequestException('Invalid client payload');
+    const { name, status, ...profile } = parsed.data;
     const row = await this.clients.update(id, {
-      nameAr: parsed.data.name?.ar,
-      nameEn: parsed.data.name?.en,
-      status: parsed.data.status,
+      nameAr: name?.ar,
+      nameEn: name?.en,
+      status,
+      ...(profile satisfies ClientProfileInput),
     });
     if (!row) throw new NotFoundException('Client not found');
-    return toResponse(row);
+    return this.present(row);
   }
 
   @RequirePermission('client.delete')
@@ -79,7 +92,11 @@ export class ClientsController {
     this.assertUuid(id);
     const row = await this.clients.archive(id);
     if (!row) throw new NotFoundException('Client not found');
-    return toResponse(row);
+    return this.present(row);
+  }
+
+  private async present(row: ClientRecord): Promise<ClientResponse> {
+    return toClientResponse(row, await this.clients.officersOf([row]), 'staff');
   }
 
   private async require(id: string): Promise<ClientRecord> {
@@ -92,14 +109,4 @@ export class ClientsController {
   private assertUuid(id: string): void {
     if (!UUID_RE.test(id)) throw new NotFoundException('Client not found');
   }
-}
-
-function toResponse(row: ClientRecord): ClientResponse {
-  return {
-    id: row.id,
-    name: { ar: row.nameAr, en: row.nameEn },
-    status: row.status,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
-  };
 }
