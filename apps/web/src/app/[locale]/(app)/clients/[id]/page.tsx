@@ -342,7 +342,7 @@ export default function ClientRecordPage() {
         </TabsPanel>
 
         <TabsPanel value="records">
-          <RecordsTab clientId={client.id} />
+          <RecordsTab client={client} onClientSaved={setClient} />
         </TabsPanel>
 
         {TABS.filter((k) => !BUILT.has(k)).map((k) => (

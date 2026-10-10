@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Download, FileText, Trash2 } from 'lucide-react';
 import type {
+  ClientResponse,
   DocumentCategory,
   DocumentListResponse,
   DocumentResponse,
@@ -25,7 +26,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -37,6 +37,7 @@ import {
 } from '@/components/ui/select';
 import { StatusPill } from '@/components/ui/status-pill';
 import { toastSuccess } from '@/components/ui/toast';
+import { ProfileRecords } from './profile-records';
 
 // The Client record's Records tab (DS-22a). Its first built part is the
 // company's OWN documents — those attached to no person (the documents registry
@@ -44,8 +45,9 @@ import { toastSuccess } from '@/components/ui/toast';
 // the retired /documents screen's company files went (owner decision).
 //
 // The prototype's Records content — main contact, signatories, registrations,
-// portal credentials — needs the client profile feature, so it stays shown and
-// "coming soon" below (owner rule).
+// the portals we hold credentials for — is real since PROF-04 (ADR-019) and
+// comes FIRST, as in the prototype (profile-records.tsx); the company's
+// documents follow.
 //
 // Upload is the DOC-02 presigned flow with no employee: issue → PUT straight to
 // the object store → confirm (the virus-scan hook decides available vs
@@ -65,12 +67,18 @@ const CATEGORIES: readonly DocumentCategory[] = [
 
 type Locale = 'ar' | 'en';
 
-export function RecordsTab({ clientId }: { clientId: string }) {
+export function RecordsTab({
+  client,
+  onClientSaved,
+}: {
+  client: ClientResponse;
+  onClientSaved: (saved: ClientResponse) => void;
+}) {
+  const clientId = client.id;
   const t = useTranslations('clients.records');
   const tc = useTranslations('documents.category');
   const ts = useTranslations('states');
   const tp = useTranslations('people');
-  const tSoon = useTranslations('clients.soon');
   const locale = useLocale() as Locale;
   const router = useRouter();
   const canUpload = useCan('document.upload');
@@ -190,6 +198,7 @@ export function RecordsTab({ clientId }: { clientId: string }) {
 
   return (
     <div className="flex flex-col gap-4">
+      <ProfileRecords client={client} onSaved={onClientSaved} />
       <section
         aria-labelledby="company-docs"
         className="overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10"
@@ -304,16 +313,6 @@ export function RecordsTab({ clientId }: { clientId: string }) {
             })}
           </ul>
         )}
-      </section>
-
-      <section
-        aria-labelledby="company-profile-soon"
-        className="rounded-xl bg-card p-6 ring-1 ring-foreground/10"
-      >
-        <h2 id="company-profile-soon" className="sr-only">
-          {t('profileTitle')}
-        </h2>
-        <EmptyState variant="first-run" title={ts('comingSoon')} description={tSoon('records')} />
       </section>
 
       <Dialog open={addOpen} onOpenChange={setAddOpen}>

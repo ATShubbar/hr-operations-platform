@@ -1496,6 +1496,11 @@ per band (`clients.nitaqatNote.red|yellow|clear`), "As shown on Qiwa · checked 
 Next band up / Band below from the ladder; no band = said plainly. A fixed line says the share is a count by nationality,
 not the official figure. Overview portfolio band column (staff AND the client manager's own row — it already reads
 `/portal/company`), Reports "Saudisation by client" band in a fixed 124px slot so bars align. NOTHING is calculated.
+**PROF-04 done — the Records tab's profile half.** `clients/[id]/profile-records.tsx`: the prototype's four cards (Main
+contact · Authorised signatories · Registrations · Portals we hold credentials for) FIRST, company documents after. An
+Administrator gets an Edit per card; each dialog saves ONLY its own group and only what changed (unchanged = no request).
+Portals = six checkboxes, nothing to type, saved in the fixed list's order; the card says the app never stores a portal's
+username or password. The Client record does NOT honour `?tab=` (the Person record does). No API change.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

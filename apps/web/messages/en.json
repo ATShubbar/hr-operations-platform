@@ -308,7 +308,6 @@
       "commercial": "Commercial"
     },
     "soon": {
-      "records": "Main contact, authorised signatories, registrations (Qiwa, GOSI, VAT) and the portals we hold credentials for.",
       "fees": "Government fees paid on this company's behalf.",
       "commercial": "Service tier, pricing, term, invoices and payment status.",
       "value": "Soon"
@@ -401,7 +400,6 @@
       "cancel": "Cancel",
       "noExpiry": "No expiry",
       "legalHold": "On legal hold",
-      "profileTitle": "Company profile",
       "status": {
         "pending": "Being scanned",
         "quarantined": "Quarantined",
@@ -438,7 +436,53 @@
     "nitaqatChecked": "As shown on Qiwa · checked {date} · {hijri}",
     "shareNote": "The share counts Saudis on the register by nationality. Nitaqat weights some people differently, so it is not the official figure.",
     "bandTop": "Already at the top band",
-    "bandBottom": "Nothing below this band"
+    "bandBottom": "Nothing below this band",
+    "profile": {
+      "edit": "Edit",
+      "editGroup": "Edit — {group}",
+      "saved": "Saved.",
+      "contact": {
+        "title": "Main contact",
+        "hint": "The person PEOPLE&GRO deals with at this company.",
+        "none": "No main contact recorded.",
+        "nameEn": "Name",
+        "nameAr": "Name in Arabic",
+        "role": "Role",
+        "email": "Email",
+        "phone": "Phone"
+      },
+      "signatories": {
+        "title": "Authorised signatories",
+        "hint": "People who may sign for the company, up to ten. The list is saved as you leave it.",
+        "none": "None recorded yet.",
+        "name": "Name",
+        "role": "Role",
+        "add": "Add a signatory",
+        "remove": "Remove signatory {n}",
+        "removeTitle": "Remove"
+      },
+      "registrations": {
+        "title": "Registrations",
+        "hint": "The company's numbers with each authority, as they appear on its certificates.",
+        "cr": "Commercial registration",
+        "qiwa": "Qiwa establishment",
+        "gosi": "GOSI establishment",
+        "vat": "VAT number"
+      },
+      "portals": {
+        "title": "Portals we hold credentials for",
+        "hint": "Tick the portals PEOPLE&GRO can sign in to for this company. Names only.",
+        "none": "None recorded.",
+        "namesOnly": "Names only. The app never stores a portal's username or password."
+      },
+      "error": {
+        "email": "That email address doesn't look right.",
+        "phone": "That phone number doesn't look right.",
+        "signatory": "Give each signatory both a name and a role, or remove the row.",
+        "cr": "A commercial registration is 10 digits.",
+        "vat": "A VAT number is 15 digits."
+      }
+    }
   },
   "audit": {
     "title": "Audit trail",
