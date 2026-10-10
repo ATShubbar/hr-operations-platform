@@ -1032,3 +1032,55 @@ enum LeaveEntryKind {
   taken
   carried
 }
+
+// BILL-01 (ADR-020): the ledger of government fees PEOPLE&GRO paid on a
+// client's behalf. STAFF-OWNED (app_client / app_employee get no grant — the
+// owner's decision: clients see nothing of this yet). Money is WHOLE HALALAS.
+// Nothing is deleted: a fee is voided, with who, when and why (app_staff has
+// no DELETE grant). A fee tied to a sequence step or a procedure is recorded
+// once — partial unique indexes over the non-void rows, in the migration.
+// client_id / employee_id / sequence_id / process_id are bare cross-module
+// refs (no FK), as everywhere else.
+model Fee {
+  id               String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ref              String        @unique @default(dbgenerated("('GF-'::text || lpad((nextval('bil_fees_ref_seq'::regclass))::text, 4, '0'::text))"))
+  clientId         String        @map("client_id") @db.Uuid
+  employeeId       String?       @map("employee_id") @db.Uuid
+  sourceKind       FeeSourceKind @map("source_kind")
+  // source_kind = sequence_step
+  sequenceId       String?       @map("sequence_id") @db.Uuid
+  sequenceKind     String?       @map("sequence_kind")
+  stepKey          String?       @map("step_key")
+  // source_kind = procedure
+  processId        String?       @map("process_id") @db.Uuid
+  procedureType    String?       @map("procedure_type")
+  // source_kind = manual: what was paid, in words
+  label            String?
+  authority        String
+  amountHalalas    Int           @map("amount_halalas")
+  paidOn           DateTime      @map("paid_on") @db.Date
+  status           FeeStatus     @default(recorded)
+  recordedByUserId String?       @map("recorded_by_user_id") @db.Uuid
+  voidedAt         DateTime?     @map("voided_at")
+  voidedByUserId   String?       @map("voided_by_user_id") @db.Uuid
+  voidReason       String?       @map("void_reason")
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+
+  @@index([clientId, paidOn])
+  @@index([employeeId])
+  @@index([status])
+  @@map("bil_fees")
+}
+
+enum FeeSourceKind {
+  manual
+  sequence_step
+  procedure
+}
+
+enum FeeStatus {
+  recorded
+  invoiced
+  void
+}

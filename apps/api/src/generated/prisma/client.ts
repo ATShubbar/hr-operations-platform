@@ -174,3 +174,8 @@ export type LeaveRequest = Prisma.LeaveRequestModel
  * 
  */
 export type LeaveEntry = Prisma.LeaveEntryModel
+/**
+ * Model Fee
+ * 
+ */
+export type Fee = Prisma.FeeModel

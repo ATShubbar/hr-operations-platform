@@ -374,3 +374,21 @@ export const LeaveEntryKind = {
 } as const
 
 export type LeaveEntryKind = (typeof LeaveEntryKind)[keyof typeof LeaveEntryKind]
+
+
+export const FeeSourceKind = {
+  manual: 'manual',
+  sequence_step: 'sequence_step',
+  procedure: 'procedure'
+} as const
+
+export type FeeSourceKind = (typeof FeeSourceKind)[keyof typeof FeeSourceKind]
+
+
+export const FeeStatus = {
+  recorded: 'recorded',
+  invoiced: 'invoiced',
+  void: 'void'
+} as const
+
+export type FeeStatus = (typeof FeeStatus)[keyof typeof FeeStatus]

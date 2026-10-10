@@ -19,6 +19,7 @@ import { DocumentExpiryModule } from './modules/document-expiry/public-api';
 import { RequestsModule } from './modules/requests/public-api';
 import { TasksModule } from './modules/tasks/public-api';
 import { RecruitmentModule } from './modules/recruitment/public-api';
+import { BillingModule } from './modules/billing/public-api';
 import { GroModule } from './modules/gro/public-api';
 import { CalendarModule } from './modules/calendar/public-api';
 import { LeaveModule } from './modules/leave/public-api';
@@ -51,6 +52,7 @@ import { ScopeCheckModule } from './modules/scope-check/public-api';
     TasksModule,
     RecruitmentModule,
     GroModule,
+    BillingModule,
     CalendarModule,
     LeaveModule,
     SearchModule,

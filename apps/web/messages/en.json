@@ -1272,7 +1272,8 @@
       "portal": "Client portal",
       "self-service": "Self-service",
       "employee-user": "Employee accounts",
-      "session": "Sign-in session"
+      "session": "Sign-in session",
+      "fee": "Government fees"
     },
     "action": {
       "read": "Read",

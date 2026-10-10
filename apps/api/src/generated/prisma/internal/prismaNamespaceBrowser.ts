@@ -77,7 +77,8 @@ export const ModelName = {
   GcalInvitation: 'GcalInvitation',
   CalendarEvent: 'CalendarEvent',
   LeaveRequest: 'LeaveRequest',
-  LeaveEntry: 'LeaveEntry'
+  LeaveEntry: 'LeaveEntry',
+  Fee: 'Fee'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -576,6 +577,33 @@ export const LeaveEntryScalarFieldEnum = {
 } as const
 
 export type LeaveEntryScalarFieldEnum = (typeof LeaveEntryScalarFieldEnum)[keyof typeof LeaveEntryScalarFieldEnum]
+
+
+export const FeeScalarFieldEnum = {
+  id: 'id',
+  ref: 'ref',
+  clientId: 'clientId',
+  employeeId: 'employeeId',
+  sourceKind: 'sourceKind',
+  sequenceId: 'sequenceId',
+  sequenceKind: 'sequenceKind',
+  stepKey: 'stepKey',
+  processId: 'processId',
+  procedureType: 'procedureType',
+  label: 'label',
+  authority: 'authority',
+  amountHalalas: 'amountHalalas',
+  paidOn: 'paidOn',
+  status: 'status',
+  recordedByUserId: 'recordedByUserId',
+  voidedAt: 'voidedAt',
+  voidedByUserId: 'voidedByUserId',
+  voidReason: 'voidReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type FeeScalarFieldEnum = (typeof FeeScalarFieldEnum)[keyof typeof FeeScalarFieldEnum]
 
 
 export const SortOrder = {

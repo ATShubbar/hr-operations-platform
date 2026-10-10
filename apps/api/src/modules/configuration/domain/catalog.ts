@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import type { SettingLevel } from '@hr/contracts';
+import {
+  DEFAULT_STANDARD_FEES,
+  STANDARD_FEES_KEY,
+  standardFeesSchema,
+  type SettingLevel,
+} from '@hr/contracts';
 
 // The settings CATALOG (CONF-01; architecture.md §Localization) — the single
 // source of truth for what every setting is: which of the three levels
@@ -80,6 +85,17 @@ const SETTING_DEFS: readonly SettingDef[] = [
     default: { letter: 2, certificate: 2, document: 3, gro_service: 5, general: 1 },
     levels: ['system'],
     description: 'Turnaround per request type, in working days; sets a new request\'s due date.',
+  },
+  {
+    // BILL-01 (ADR-020): what a filing dialog PREFILLS — the person filing
+    // confirms the amount actually paid. In halalas; every procedure type and
+    // every sequence step is present. Seeded with the prototype's figures,
+    // which are NOT verified: the Administrator corrects them here.
+    key: STANDARD_FEES_KEY,
+    schema: standardFeesSchema,
+    default: DEFAULT_STANDARD_FEES,
+    levels: ['system'],
+    description: 'Standard government fees (halalas) prefilled when a fee is recorded.',
   },
   {
     key: 'timezone',

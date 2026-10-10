@@ -131,6 +131,13 @@ export const PERMISSIONS = [
   // only; `gro.process` — create/update/advance. No delete verb (cancel via status).
   'gro.read',
   'gro.process',
+  // Billing (ADR-020, BILL-01): the ledger of government fees paid on clients'
+  // behalf. Officers keep it; `fee.delete` is VOID (nothing is ever deleted).
+  // Staff only — clients and employees see nothing of the money.
+  'fee.read',
+  'fee.create',
+  'fee.update',
+  'fee.delete',
   // Leave (ADR-014, LEAVE-02). Client managers raise + APPROVE their own
   // company's; PEOPLE&GRO FILES (writes the ledger); `withdraw` = a pending
   // request the caller raised. Employees never hold these — /me/leave is
@@ -337,6 +344,10 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'leave.withdraw',
     'leave.carry-over',
     'request.comment',
+    'fee.read',
+    'fee.create',
+    'fee.update',
+    'fee.delete',
   ],
   // People files end to end — pay, contracts, hiring (prototype `hr`: employees
   // RWC, procedures RWC, documents RWCD, requests RWCD, payroll RW, hiring RWC,
@@ -379,6 +390,10 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'leave.file',
     'leave.withdraw',
     'request.comment',
+    'fee.read',
+    'fee.create',
+    'fee.update',
+    'fee.delete',
   ],
   // Government portals and procedures; no pay (prototype `gro`: employees R,
   // procedures RWCD, documents RWC — government categories only, requests RW,
@@ -406,6 +421,10 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'leave.read',
     'leave.file',
     'request.comment',
+    'fee.read',
+    'fee.create',
+    'fee.update',
+    'fee.delete',
   ],
   // Reads everything, changes nothing (prototype `auditor`: R on all nine
   // resources). Reads reports but does not EXPORT them — a bulk extraction is
@@ -426,6 +445,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'calendar.read-all',
     'report.read',
     'leave.read',
+    'fee.read',
   ],
   client_manager: CLIENT_MANAGER,
   // `session.end` (SS-01 — logout is permission-gated, and an account that

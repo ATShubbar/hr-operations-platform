@@ -32,6 +32,10 @@ const RULES: readonly Rule[] = [
   { resource: 'govdata', action: 'update', severity: 'notable' },
   // DEP-01 (ADR-017): a dependant carries an iqama number — graded like govdata.
   { resource: 'dependant', severity: 'notable' },
+  // BILL-01 (ADR-020): money. Recording or correcting a fee is notable; a void
+  // takes an amount out of what is owed, so it is what a reviewer reads first.
+  { resource: 'fee', action: 'void', severity: 'critical' },
+  { resource: 'fee', severity: 'notable' },
   { resource: 'request', action: 'process', severity: 'notable' },
   { resource: 'leave', action: 'approve', severity: 'notable' },
   { resource: 'leave', action: 'decline', severity: 'notable' },

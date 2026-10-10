@@ -1523,6 +1523,14 @@ invoices (`billing.read/update`), Auditor reads, clients/employees nothing · st
 with the prototype's UNVERIFIED figures. Rules: nothing deleted (void); an invoiced fee is never voided (reopening its step
 leaves it); amounts in whole HALALAS; overdue is DERIVED; Billing reads GRO, GRO never imports Billing. Owner approved
 BILL-01..06 in advance ("approved for all").
+**BILL-01 done — the fee ledger.** `modules/billing` (imports Clients/Employees/GRO/Audit/Auth; nothing imports it).
+`bil_fees` (STAFF-OWNED: app_staff SELECT/INSERT/UPDATE, NO DELETE for anyone, app_client/app_employee nothing; `GF-0001`
+ref; amount in whole HALALAS; `recorded|invoiced|void`; partial unique indexes = one LIVE fee per sequence step / per
+procedure; CHECKs for the source shape and the void stamps). `GET/POST /fees`, `PATCH /fees/:id`, `POST /fees/:id/void`
+(`fee.read/create/update/delete`; every route also asks `scopeOf` — proven with a WIDENED policy). A step/procedure fee takes
+its company + person FROM THAT RECORD; a step must be filed; corrections only while recorded; void needs a reason. Setting
+`billing.standard-fees` (system, strict + complete, halalas; defaults = the prototype's UNVERIFIED figures; the step defaults
+equal `SEQUENCES[..].fee × 100`, asserted). `@hr/contracts/billing-lists` is the zod-free subpath. API **764/764**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

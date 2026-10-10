@@ -202,6 +202,14 @@ const MATRIX: Record<string, Row> = {
     ],
     auditor: ['calendar.read', 'calendar.read-all'],
   },
+  // ADR-020 (architecture.md v1.14): officers keep the ledger of government
+  // fees; `fee.delete` is void. The Auditor reads. Clients and employees: nothing.
+  'Government fees': {
+    administrator: ['fee.read', 'fee.create', 'fee.update', 'fee.delete'],
+    hr_officer: ['fee.read', 'fee.create', 'fee.update', 'fee.delete'],
+    gro_officer: ['fee.read', 'fee.create', 'fee.update', 'fee.delete'],
+    auditor: ['fee.read'],
+  },
   Reports: {
     administrator: ['report.read', 'report.export'],
     auditor: ['report.read'], // reads, never exports

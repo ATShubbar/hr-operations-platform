@@ -200,6 +200,10 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   // managers hold gro.read but are refused by scopeOf).
   'GET /employees/:id/sequences': 'staff',
   'GET /gro-sequences': 'staff',
+  'GET /fees': 'staff',
+  'POST /fees': 'staff',
+  'PATCH /fees/:id': 'staff',
+  'POST /fees/:id/void': 'staff',
   'POST /employees/:id/sequences': 'staff',
   'POST /gro-sequences/:id/steps/:key/file': 'staff',
   'POST /gro-sequences/:id/steps/:key/reopen': 'staff',

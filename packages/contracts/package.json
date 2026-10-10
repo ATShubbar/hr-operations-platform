@@ -22,6 +22,10 @@
     "./client-profile": {
       "types": "./dist/client-profile.d.ts",
       "default": "./dist/client-profile.js"
+    },
+    "./billing-lists": {
+      "types": "./dist/billing-lists.d.ts",
+      "default": "./dist/billing-lists.js"
     }
   },
   "scripts": {

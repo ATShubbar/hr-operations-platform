@@ -461,3 +461,37 @@ export {
   type SequenceInFlight,
   type SequenceInFlightListResponse,
 } from './sequence.js';
+
+export {
+  FEE_AUTHORITIES,
+  FEE_STATUSES,
+  MAX_FEE_HALALAS,
+  DEFAULT_STANDARD_FEES,
+  authorityOfPortal,
+  standardStepFee,
+  standardProcedureFee,
+  type FeeAuthority,
+  type FeeStatus,
+  type StandardFees,
+} from './billing-lists.js';
+export {
+  feeAuthoritySchema,
+  feeStatusSchema,
+  feeAmountSchema,
+  feeSourceSchema,
+  createFeeRequestSchema,
+  updateFeeRequestSchema,
+  voidFeeRequestSchema,
+  feeQuerySchema,
+  feeResponseSchema,
+  feeListResponseSchema,
+  standardFeesSchema,
+  STANDARD_FEES_KEY,
+  type CreateFeeRequest,
+  type UpdateFeeRequest,
+  type VoidFeeRequest,
+  type FeeQuery,
+  type FeeResponse,
+  type FeeListResponse,
+  type FeeSource,
+} from './billing.js';
