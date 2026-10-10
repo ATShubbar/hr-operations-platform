@@ -26,8 +26,8 @@ build contract. Changes go through ADRs (adr/), never through drift.
 
 | File | What |
 |---|---|
-| architecture.md | Frozen build contract — **v1.12** (ADR-011 self-service · ADR-012 LTR/prototype fidelity · ADR-013 six roles · ADR-014 leave · ADR-015 search · ADR-016 request thread · ADR-017 dependants · ADR-018 onboarding/final exit) |
-| adr/README.md | Decision index (ADR-001..018, statuses) |
+| architecture.md | Frozen build contract — **v1.13** (ADR-011 self-service · ADR-012 LTR/prototype fidelity · ADR-013 six roles · ADR-014 leave · ADR-015 search · ADR-016 request thread · ADR-017 dependants · ADR-018 onboarding/final exit · ADR-019 client profile + Nitaqat) |
+| adr/README.md | Decision index (ADR-001..019, statuses) |
 | BACKLOG.md | Task board + cards + working rules |
 | ACTION-PLAN.md | Phased plan, DoD checklists with evidence rule |
 | evidence/skeleton/ | Per-task proof (WS-01..) |
@@ -1468,6 +1468,14 @@ only the name cut an Arabic line into left-to-right pieces. Seed: 3 runs in flig
 `onboarding` — Bilal Ahmed, Maria Santos — each with a `mobilisation` candidate, + Kamal Uddin's final exit); employees 39 →
 41, headcount still 35; a re-seed replaces the seeded runs. MOB-01's completion test now asserts the termination. API
 **740/740**. Follow-up MOB-06 (ready steps in queue/calendar).
+**PROF-00 done — the client profile + Nitaqat band are IN the architecture (ADR-019, v1.13).** In the prototype the band is a
+STORED client field (picked in Add client), so it rides with the profile: identity (CR 10 digits, city, sector — fixed lists
+as keys), band (red…platinum) + REQUIRED checked-on date, registrations (Qiwa/GOSI establishment, VAT), main contact,
+signatories (≤10, a list on the row), portals (NAMES only — never credentials), service facts (named officer, tier, response
+commitment, term) with NO behaviour. Owner: Administrator edits (`client.update`, matrix unchanged) · client managers read
+their own through the portal's company view (follows `flag.client-self-service`) · Red/Yellow **warn, never block** (non-Saudi
+hiring moves; Red also work-permit renewal + sponsorship transfer) from one shared rule · money stays with Billing. All fields
+optional (existing clients predate them). Owner approved PROF-01..06 IN ADVANCE ("approved for all 6").
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
