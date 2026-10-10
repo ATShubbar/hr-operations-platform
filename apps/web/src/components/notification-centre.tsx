@@ -20,6 +20,7 @@ import { apiFetch, ApiError } from '@/lib/api';
 import { chipClass } from '@/lib/employee-docs';
 import { useCan, useSession } from '@/lib/session';
 import { cn } from '@/lib/utils';
+import { EscalationRulesDialog } from '@/components/escalation-rules-dialog';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Skeleton, SkeletonRegion } from '@/components/ui/skeleton';
@@ -118,6 +119,7 @@ export function NotificationCentre() {
   const [needsAction, setNeedsAction] = useState(0);
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [rulesOpen, setRulesOpen] = useState(false);
 
   const signedOut = useCallback(
     (err: unknown) => {
@@ -512,14 +514,38 @@ export function NotificationCentre() {
           )}
         </div>
 
-        {hasLadder && tab !== 'updates' && ladder && ladder.suppressed > 0 && (
-          <p className="border-t bg-neutral-50 px-3.5 py-2.5 text-[11px] leading-[15px] text-pretty text-muted-foreground">
-            <span>
-              <bdi>{tc('quiet', { count: ladder.suppressed })}</bdi>
-            </span>
-          </p>
+        {hasLadder && tab !== 'updates' && ladder && (
+          <div className="flex items-center gap-2.5 border-t bg-neutral-50 px-3.5 py-2.5">
+            <p className="min-w-0 grow text-[11px] leading-[15px] text-pretty text-muted-foreground">
+              {ladder.suppressed > 0 && (
+                <span>
+                  <bdi>{tc('quiet', { count: ladder.suppressed })}</bdi>
+                </span>
+              )}
+            </p>
+            <Button
+              variant="outline"
+              size="xs"
+              className="shrink-0"
+              onClick={() => {
+                setOpen(false);
+                setRulesOpen(true);
+              }}
+            >
+              {tc('rules')}
+            </Button>
+          </div>
         )}
       </PopoverContent>
+      {ladder && (
+        <EscalationRulesDialog
+          open={rulesOpen}
+          onOpenChange={setRulesOpen}
+          thresholds={ladder.thresholds}
+          // The thresholds move what the ladder shows: work it out again.
+          onSaved={() => void Promise.all([load(), refreshCount()])}
+        />
+      )}
     </Popover>
   );
 }

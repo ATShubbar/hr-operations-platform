@@ -1610,6 +1610,11 @@ sponsor `?tab=family`, `/requests?r=`, and **`/queue?open=<kind>-<id>`** — the
 `OpenFromQuery` child using `useSearchParams` INSIDE `<Suspense>`, so it also reacts when already on the queue; closing
 drops the parameter). Without `escalation.read` (clients/employees until NC-05): the Updates list alone, no ladder request.
 No API change.
+**NC-04 done — the Escalation rules dialog.** `components/escalation-rules-dialog.tsx`, opened from the panel's footer by
+anyone with the ladder: per rule, each stage's start and who it tells (`STAGE_AUDIENCE`, shown not editable). `config.write`
+(Administrator) gets day pickers + Reset to standard + **Save** — NOT the prototype's apply-on-pick (a system-wide setting,
+and two stages of one rule must change together or pass through an order the server refuses); `thresholdOrderProblem`
+names the offending stage and disables Save. Others see text + Done. No API change.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

@@ -942,7 +942,62 @@
       },
       "more": "{count} more at this stage · open the work queue to see them all",
       "quiet": "{count, plural, one {# expiry is already being renewed in the work queue, so the ladder stays quiet on it.} other {# expiries are already being renewed in the work queue, so the ladder stays quiet on them.}}",
-      "unread": "Unread"
+      "unread": "Unread",
+      "rules": "Escalation rules",
+      "stageName": {
+        "breach": "Breach",
+        "escalation": "Escalated",
+        "reminder": "Reminder",
+        "notice": "Notice"
+      }
+    },
+    "rules": {
+      "title": "Escalation rules",
+      "noteAdmin": "Thresholds apply across every client. Saving a change re-derives everyone's notifications at once.",
+      "noteReadOnly": "Only an administrator can change the ladder. This is what is currently in force.",
+      "rule": {
+        "expiry": {
+          "label": "Document expiry",
+          "watches": "Every dated document on a person's record, and on their dependants · days before expiry",
+          "owner": "Owned by the client's named officer. Where none is named: GRO officers for iqama, work permit and passport; HR officers for contracts and dependants' insurance."
+        },
+        "queue": {
+          "label": "Queue deadline",
+          "watches": "Open procedures and tasks in the work queue · days before the deadline"
+        },
+        "sla": {
+          "label": "Request service level",
+          "watches": "Requests waiting on a decision · days before the due date"
+        }
+      },
+      "breach": {
+        "expiry": "once it has lapsed",
+        "queue": "once the deadline has passed",
+        "sla": "once the due date has passed"
+      },
+      "days": "{count, plural, one {# day} other {# days}}",
+      "daysBefore": "{count, plural, one {# day before} other {# days before}}",
+      "daysFor": "{stage} starts, days before · {rule}",
+      "tells": "Tells {who}",
+      "audience": {
+        "officer": "the owning officer",
+        "owner": "the assignee",
+        "hr": "HR officers",
+        "admin": "Administrators",
+        "client": "the client manager"
+      },
+      "listSeparator": ", ",
+      "reset": "Reset to standard",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…",
+      "done": "Done",
+      "saved": "Escalation rules saved",
+      "error": {
+        "order": "{rule}: {stage} starts earlier than the stage before it. A later stage cannot start earlier.",
+        "invalid": "These thresholds were not accepted.",
+        "save": "Could not save. Try again."
+      }
     }
   },
   "requests": {
