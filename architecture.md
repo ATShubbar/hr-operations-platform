@@ -1,10 +1,11 @@
 # HR Operations Platform — Architecture
 
 ## Version
-**v1.13 — FROZEN (v1.4 frozen 2026-07-18; v1.5 amended by ADR-011, v1.6 by ADR-012, v1.7 by ADR-013 — all 2026-10-03; v1.8 by ADR-014, v1.9 by ADR-015 and v1.10 by ADR-016, 2026-10-04; v1.11 by ADR-017, 2026-10-05; v1.12 by ADR-018, 2026-10-07; v1.13 by ADR-019, 2026-10-10).**
+**v1.14 — FROZEN (v1.4 frozen 2026-07-18; v1.5 amended by ADR-011, v1.6 by ADR-012, v1.7 by ADR-013 — all 2026-10-03; v1.8 by ADR-014, v1.9 by ADR-015 and v1.10 by ADR-016, 2026-10-04; v1.11 by ADR-017, 2026-10-05; v1.12 by ADR-018, 2026-10-07; v1.13 by ADR-019 and v1.14 by ADR-020, 2026-10-10).**
 This document is the build contract. Changes now require either a new ADR (for decisions) or an explicit unfreeze with a version bump — implementation drift is not a change mechanism. Implementation work is tracked in `BACKLOG.md`.
 
 ### Changelog
+- **v1.14** — **Billing brought into scope (ADR-020)**, reversing "future": a `Billing` domain module owning a ledger of government fees paid on clients' behalf (staff confirm the amount actually paid when a sequence step is filed or a procedure completed; recorded → invoiced, or void — nothing deleted), each client's commercial terms (platform fee, rate per employee, cycle, PO, payment terms), and RECORDS of invoices. **Tax invoices are still issued from the owner's accounting system**: the app records their number, date, amount and payment, and which fees they recovered; it issues no invoice and calculates no VAT, so ZATCA e-invoicing stays out of scope. Standard fees are an Administrator setting. HR and GRO officers keep the fee ledger; only the Administrator sees commercial terms and invoices; the Auditor reads; clients and employees see nothing. New permissions `fee.*` and `billing.*`.
 - **v1.13** — **The client profile and the Nitaqat band (ADR-019)**: a client company carries its identity (commercial registration, city, sector), a Nitaqat band that staff record from Qiwa with the date it was checked (stored, never computed), its Qiwa/GOSI/VAT registrations, a main contact, authorised signatories, the portals PEOPLE&GRO holds credentials for (names only — never the credentials), and service facts (named officer, tier, response commitment, term) with no behaviour attached. Administrators change it (`client.update`, matrix unchanged); other staff read; a client manager reads their own company's through the portal. A Red or Yellow band warns at non-Saudi hiring moves (Red also at work-permit renewals and sponsorship transfers) and blocks nothing. Commercial terms and fees stay with Billing. No new permission.
 - **v1.12** — **Onboarding and final exit as ordered sequences (ADR-018)**: GRO owns sequences — runs of the prototype's fixed step lists (onboarding: 11 steps from block visa to first payroll; final exit: 8 steps from notice to departure), each step ready, blocked on the steps it waits on, or filed; reopen only while nothing filed depends on it; standard fees shown, recorded later by Billing. Staff only (`gro.process` files, the Auditor reads). The Hiring board's new candidate stage `mobilisation` creates the employee with the new employment status `onboarding` (not under management) and starts onboarding; its completion makes them `active` and the candidate `hired`. A final exit's completion terminates the employee. No new permission.
 - **v1.11** — **Dependants brought into scope (ADR-017)**, reversing the v1.1–v1.10 exclusion: the family on an employee's sponsorship (spouse, son, daughter) as records owned by the Employees module, each with its own iqama number and iqama/passport/insurance expiries. Staff read them (iqama number only with `govdata.read`); `govdata.update` holders (Administrator, HR officer, GRO officer) add, edit and remove them (soft); the employee sees their own, numbers included, through self-service; client managers see nothing. Expiries are shown on the record only, not yet in alerts or the runway; dependant fees wait for Billing. No new permission.
@@ -100,6 +101,8 @@ Every permission follows one pattern: **`resource.action`** — lowercase, dot-s
 | Global search | `search` | `search.read` |
 | Tasks | `task` | `task.update` |
 | Calendar | `calendar` | `calendar.create` |
+| Government fees | `fee` | `fee.create`, `fee.update`, `fee.delete` (void — nothing is deleted) |
+| Commercial terms & invoice records | `billing` | `billing.read`, `billing.update` |
 | Reports | `report` | `report.read`, `report.export` |
 | Audit logs | `audit` | `audit.read`, `audit.export` (AUDIT-07: the trail as CSV, itself audited as Critical) |
 | Notification preferences | `notification-pref` | `notification-pref.update` |
@@ -127,6 +130,8 @@ Client manager is always scoped to **their own client company only**; Employee i
 | Global search (ADR-015; results limited to what each role may already see) | R | R | R | R | R | R |
 | Tasks (internal) | CRUD | CRU (own/assigned) | CRU (own/assigned) | R | – | – |
 | Calendar | CRUD | CRUD | CRUD | R | – | – |
+| Government fees (ADR-020) | CRU + void | CRU + void | CRU + void | R | – | – |
+| Commercial terms & invoice records (ADR-020; records of invoices issued elsewhere) | CRU | – | – | R | – | – |
 | Reports | R + export | – | – | R | – | – |
 | Audit logs | R + export | – | – | R + export | – | – |
 | Notification preferences | CRUD (all) | U (own) | U (own) | U (own) | U (own) | U (own) |
@@ -191,7 +196,7 @@ Invariants (not configurable):
 12. Employee Self-Service — "Me" (delivery surface over Employees, Documents, Requests and — since v1.8 — Leave; one employee's own record, no business logic of its own; ADR-011, ADR-014)
 13. Reporting
 14. Search (delivery surface over the other modules — one permission-aware lookup; ADR-015)
-15. Billing (future)
+15. Billing (the government-fee ledger, commercial terms and invoice records; invoices themselves are issued outside the app; ADR-020)
 
 ## Shared Modules
 - Notifications (in-app + email in v1; SMS/WhatsApp via KSA-local provider later)
@@ -232,7 +237,7 @@ The data model must mirror these platforms' concepts so future integration is a 
 | **Muqeem** | Iqama number/expiry, border number, exit-reentry visa data |
 | **Mudad / WPS** | Wage Protection payroll compliance fields |
 | **Absher Business** | Government service reference identifiers |
-| **ZATCA (Fatoora)** | E-invoicing-compliant invoice fields (activates with Billing) |
+| **ZATCA (Fatoora)** | E-invoicing-compliant invoice fields — activates only if the app ever ISSUES invoices; ADR-020 keeps issuing in the owner's accounting system |
 
 All integrations — current and future — pass a KSA data-residency and PDPL review before adoption.
 
@@ -329,7 +334,7 @@ graph TD
 | 9 | **Calendar + Google Calendar integration** | Depends on Tasks/Requests/GRO deadlines being real; integration guardrails per Integrations section |
 | 10 | **Reporting** | Reads everything; v1 = transactional queries + materialized views on the primary — no warehouse, no ETL |
 | 11 | **Employee self-service** (ADR-011) | Needs Employees, Documents, Requests and the client-portal isolation pattern proven in production first; a password-reset flow and a real email transport are prerequisites |
-| — | **Future**: Billing (ZATCA-ready), government connectors, SMS/WhatsApp notifications, AI & automation | Explicitly out of current scope |
+| — | **Future**: issuing tax invoices (ZATCA), government connectors, SMS/WhatsApp notifications, AI & automation | Explicitly out of current scope |
 
 ## AI Master Prompt
 

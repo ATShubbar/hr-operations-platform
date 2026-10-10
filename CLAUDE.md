@@ -26,8 +26,8 @@ build contract. Changes go through ADRs (adr/), never through drift.
 
 | File | What |
 |---|---|
-| architecture.md | Frozen build contract — **v1.13** (ADR-011 self-service · ADR-012 LTR/prototype fidelity · ADR-013 six roles · ADR-014 leave · ADR-015 search · ADR-016 request thread · ADR-017 dependants · ADR-018 onboarding/final exit · ADR-019 client profile + Nitaqat) |
-| adr/README.md | Decision index (ADR-001..019, statuses) |
+| architecture.md | Frozen build contract — **v1.14** (ADR-011 self-service · ADR-012 LTR/prototype fidelity · ADR-013 six roles · ADR-014 leave · ADR-015 search · ADR-016 request thread · ADR-017 dependants · ADR-018 onboarding/final exit · ADR-019 client profile + Nitaqat · ADR-020 billing) |
+| adr/README.md | Decision index (ADR-001..020, statuses) |
 | BACKLOG.md | Task board + cards + working rules |
 | ACTION-PLAN.md | Phased plan, DoD checklists with evidence rule |
 | evidence/skeleton/ | Per-task proof (WS-01..) |
@@ -1515,6 +1515,14 @@ whether `components/band-warning.tsx` renders — NOTHING is blocked and the ser
 confirmation (both employee-creating moves) and in `StartProcedureDialog` via a new `bandFor(employeeId)` prop (Person
 record, Client record — before a person is picked — and Overview). `DialogTitle` gained `pe-8` (a long title ran under the
 close button). Contracts 18/18; API **750/750**. Follow-up PROF-07 (client record `?tab=`, CR in search).
+**BILL-00 done — Billing is IN the architecture (ADR-020, v1.14).** Owner: tax invoices stay in the owner's ACCOUNTING
+SYSTEM — the app RECORDS them (number, date, amount, paid) and which fees they recovered; it issues nothing, computes NO
+VAT, no ZATCA (not verified, deliberately out) · staff CONFIRM the amount paid when filing (standard fee prefilled, optional
+receipt) · HR/GRO officers keep the fee ledger (`fee.read/create/update/delete`=void), ONLY the Administrator sees terms +
+invoices (`billing.read/update`), Auditor reads, clients/employees nothing · standard fees = an Administrator SETTING seeded
+with the prototype's UNVERIFIED figures. Rules: nothing deleted (void); an invoiced fee is never voided (reopening its step
+leaves it); amounts in whole HALALAS; overdue is DERIVED; Billing reads GRO, GRO never imports Billing. Owner approved
+BILL-01..06 in advance ("approved for all").
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
