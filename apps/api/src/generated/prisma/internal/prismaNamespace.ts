@@ -3044,6 +3044,10 @@ export const FeeScalarFieldEnum = {
   voidedAt: 'voidedAt',
   voidedByUserId: 'voidedByUserId',
   voidReason: 'voidReason',
+  receiptKey: 'receiptKey',
+  receiptFileName: 'receiptFileName',
+  receiptContentType: 'receiptContentType',
+  receiptStatus: 'receiptStatus',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -3725,6 +3729,20 @@ export type EnumFeeStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Prisma
  * Reference to a field of type 'FeeStatus[]'
  */
 export type ListEnumFeeStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FeeStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'FeeReceiptStatus'
+ */
+export type EnumFeeReceiptStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FeeReceiptStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'FeeReceiptStatus[]'
+ */
+export type ListEnumFeeReceiptStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FeeReceiptStatus[]'>
     
 
 

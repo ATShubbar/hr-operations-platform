@@ -392,3 +392,13 @@ export const FeeStatus = {
 } as const
 
 export type FeeStatus = (typeof FeeStatus)[keyof typeof FeeStatus]
+
+
+export const FeeReceiptStatus = {
+  pending: 'pending',
+  available: 'available',
+  quarantined: 'quarantined',
+  rejected: 'rejected'
+} as const
+
+export type FeeReceiptStatus = (typeof FeeReceiptStatus)[keyof typeof FeeReceiptStatus]

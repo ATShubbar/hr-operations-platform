@@ -26,8 +26,12 @@ import type {
 import { AuditService } from '../../audit/public-api';
 import { UsersService } from '../../auth/public-api';
 import { EventBus } from '../../events/public-api';
-import { FILE_SCANNER, StorageService, type FileScanner } from '../../storage/public-api';
-import { matchesSignature } from '../domain/file-signature';
+import {
+  FILE_SCANNER,
+  matchesSignature,
+  StorageService,
+  type FileScanner,
+} from '../../storage/public-api';
 import { RequestAttachmentAddedEvent } from '../domain/request-attachment-added.event';
 import { returnIfWaiting } from './requester-reply';
 import { ServiceLevelService } from './service-level.service';
@@ -90,7 +94,8 @@ export class RequestAttachmentsService {
   async download(path: AttachmentPath, requestId: string, fileId: string): Promise<string | null> {
     const row = await this.run(path, (tx) => this.findFile(tx, requestId, fileId));
     if (!row || !visibleTo(row, this.actor())) return null;
-    if (row.status !== 'available') throw new ConflictException(`This file is ${row.status}, not downloadable`);
+    if (row.status !== 'available')
+      throw new ConflictException(`This file is ${row.status}, not downloadable`);
     return this.storage.presignDownload(row.storageKey, DOWNLOAD_TTL_SECONDS, row.fileName);
   }
 
@@ -119,7 +124,9 @@ export class RequestAttachmentsService {
         },
       });
       if (held >= REQUEST_ATTACHMENT_MAX_FILES) {
-        throw new ConflictException(`A request can carry at most ${REQUEST_ATTACHMENT_MAX_FILES} files`);
+        throw new ConflictException(
+          `A request can carry at most ${REQUEST_ATTACHMENT_MAX_FILES} files`,
+        );
       }
       const id = randomUUID();
       const created = await tx.requestAttachment.create({
@@ -145,7 +152,11 @@ export class RequestAttachmentsService {
       return created;
     });
     if (!row) return null;
-    const url = await this.storage.presignUpload(row.storageKey, row.contentType, UPLOAD_TTL_SECONDS);
+    const url = await this.storage.presignUpload(
+      row.storageKey,
+      row.contentType,
+      UPLOAD_TTL_SECONDS,
+    );
     return {
       attachment: (await this.present([row]))[0]!,
       upload: {
@@ -162,7 +173,11 @@ export class RequestAttachmentsService {
    * `available`, `quarantined` (infected) or `rejected` (over 10 MB, or not the
    * type it claimed); a refused blob is deleted. null → 404.
    */
-  async confirm(path: AttachmentPath, requestId: string, fileId: string): Promise<RequestAttachment | null> {
+  async confirm(
+    path: AttachmentPath,
+    requestId: string,
+    fileId: string,
+  ): Promise<RequestAttachment | null> {
     const actor = this.actor();
     const found = await this.run(path, async (tx) => {
       const request = await this.findRequest(tx, requestId);
@@ -171,8 +186,10 @@ export class RequestAttachmentsService {
     });
     if (!found || !visibleTo(found.file, actor)) return null;
     const { request, file } = found;
-    if (file.uploadedByUserId !== actor) throw new ForbiddenException('Only the person who uploaded a file confirms it');
-    if (file.status !== 'pending') throw new ConflictException(`This file is already ${file.status}`);
+    if (file.uploadedByUserId !== actor)
+      throw new ForbiddenException('Only the person who uploaded a file confirms it');
+    if (file.status !== 'pending')
+      throw new ConflictException(`This file is already ${file.status}`);
 
     const stat = await this.storage.statObject(file.storageKey);
     if (!stat) throw new BadRequestException('The file has not arrived in storage');
@@ -184,7 +201,9 @@ export class RequestAttachmentsService {
         where: { id: file.id, status: 'pending' },
         data: {
           status: verdict.status,
-          ...(verdict.status === 'available' ? { sizeBytes: stat.size, confirmedAt: new Date() } : {}),
+          ...(verdict.status === 'available'
+            ? { sizeBytes: stat.size, confirmedAt: new Date() }
+            : {}),
         },
       });
       if (moved.count !== 1) throw new ConflictException('This file was already confirmed');
@@ -193,7 +212,12 @@ export class RequestAttachmentsService {
         resourceId: file.id,
         action: 'confirm',
         clientId: file.clientId,
-        after: { requestId, status: verdict.status, sizeBytes: stat.size, ...(verdict.reason ? { reason: verdict.reason } : {}) },
+        after: {
+          requestId,
+          status: verdict.status,
+          sizeBytes: stat.size,
+          ...(verdict.reason ? { reason: verdict.reason } : {}),
+        },
       });
       // THREAD-03: a file from the requester's side that passed its checks
       // answers a request waiting on them. Re-read on this connection — the
@@ -203,7 +227,10 @@ export class RequestAttachmentsService {
         const current = await this.findRequest(tx, requestId);
         if (current) waited = await returnIfWaiting(tx, this.audit, current);
       }
-      return { row: await tx.requestAttachment.findUniqueOrThrow({ where: { id: file.id } }), waited };
+      return {
+        row: await tx.requestAttachment.findUniqueOrThrow({ where: { id: file.id } }),
+        waited,
+      };
     }).then(async ({ row, waited }) => {
       // THREAD-04: the wait is over — the service-level clock resumes later.
       if (waited) await this.sla.extendAfterReturn(request, waited);
@@ -214,17 +241,23 @@ export class RequestAttachmentsService {
   }
 
   /** The uploader removes their own available file (soft). null → 404. */
-  async remove(path: AttachmentPath, requestId: string, fileId: string): Promise<RequestAttachment | null> {
+  async remove(
+    path: AttachmentPath,
+    requestId: string,
+    fileId: string,
+  ): Promise<RequestAttachment | null> {
     const actor = this.actor();
     const updated = await this.run(path, async (tx) => {
       const file = await this.findFile(tx, requestId, fileId);
       if (!file || !visibleTo(file, actor)) return null;
-      if (file.uploadedByUserId !== actor) throw new ForbiddenException('Only the person who uploaded a file removes it');
+      if (file.uploadedByUserId !== actor)
+        throw new ForbiddenException('Only the person who uploaded a file removes it');
       const moved = await tx.requestAttachment.updateMany({
         where: { id: file.id, status: 'available' },
         data: { status: 'removed', removedAt: new Date() },
       });
-      if (moved.count !== 1) throw new ConflictException(`This file is ${file.status}, not removable`);
+      if (moved.count !== 1)
+        throw new ConflictException(`This file is ${file.status}, not removable`);
       await this.audit.record(tx, {
         resource: 'request-attachment',
         resourceId: file.id,
@@ -254,7 +287,8 @@ export class RequestAttachmentsService {
     // A virus is a virus whatever it claims to be — scan before the type check.
     const scan = await this.scanner.scan(bytes);
     if (!scan.clean) return { status: 'quarantined', reason: scan.signature ?? 'infected' };
-    if (!matchesSignature(file.contentType, bytes)) return { status: 'rejected', reason: 'type-mismatch' };
+    if (!matchesSignature(file.contentType, bytes))
+      return { status: 'rejected', reason: 'type-mismatch' };
     return { status: 'available' };
   }
 
@@ -285,7 +319,11 @@ export class RequestAttachmentsService {
     return actor;
   }
 
-  private async publish(request: RequestRecord, row: AttachmentRecord, byStaff: boolean): Promise<void> {
+  private async publish(
+    request: RequestRecord,
+    row: AttachmentRecord,
+    byStaff: boolean,
+  ): Promise<void> {
     await this.events.publish(
       new RequestAttachmentAddedEvent(
         request.id,

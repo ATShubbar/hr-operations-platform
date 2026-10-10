@@ -40,6 +40,7 @@ const FEE_KEYS = [
   'employee',
   'id',
   'paidOn',
+  'receipt',
   'recordedAt',
   'recordedBy',
   'ref',

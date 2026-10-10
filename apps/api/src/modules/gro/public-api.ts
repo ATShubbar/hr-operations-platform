@@ -12,3 +12,4 @@ export {
   type StepView,
 } from './domain/sequence-engine';
 export type { CreateGroProcessInput, UpdateGroProcessInput } from './domain/gro-process';
+export { SequenceStepReopenedEvent } from './domain/sequence-step-reopened.event';

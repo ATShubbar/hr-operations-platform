@@ -46,6 +46,10 @@ export function toFeeResponse(row: FeeRecord, names: FeeNames): FeeResponse {
     amountHalalas: row.amountHalalas,
     paidOn: dateOnly(row.paidOn),
     status: row.status,
+    receipt:
+      row.receiptStatus && row.receiptFileName
+        ? { fileName: row.receiptFileName, status: row.receiptStatus }
+        : null,
     recordedBy: row.recordedByUserId ? (names.users.get(row.recordedByUserId) ?? null) : null,
     recordedAt: row.createdAt.toISOString(),
     voided:

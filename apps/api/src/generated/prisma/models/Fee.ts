@@ -54,6 +54,10 @@ export type FeeMinAggregateOutputType = {
   voidedAt: Date | null
   voidedByUserId: string | null
   voidReason: string | null
+  receiptKey: string | null
+  receiptFileName: string | null
+  receiptContentType: string | null
+  receiptStatus: $Enums.FeeReceiptStatus | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -78,6 +82,10 @@ export type FeeMaxAggregateOutputType = {
   voidedAt: Date | null
   voidedByUserId: string | null
   voidReason: string | null
+  receiptKey: string | null
+  receiptFileName: string | null
+  receiptContentType: string | null
+  receiptStatus: $Enums.FeeReceiptStatus | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -102,6 +110,10 @@ export type FeeCountAggregateOutputType = {
   voidedAt: number
   voidedByUserId: number
   voidReason: number
+  receiptKey: number
+  receiptFileName: number
+  receiptContentType: number
+  receiptStatus: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -136,6 +148,10 @@ export type FeeMinAggregateInputType = {
   voidedAt?: true
   voidedByUserId?: true
   voidReason?: true
+  receiptKey?: true
+  receiptFileName?: true
+  receiptContentType?: true
+  receiptStatus?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -160,6 +176,10 @@ export type FeeMaxAggregateInputType = {
   voidedAt?: true
   voidedByUserId?: true
   voidReason?: true
+  receiptKey?: true
+  receiptFileName?: true
+  receiptContentType?: true
+  receiptStatus?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -184,6 +204,10 @@ export type FeeCountAggregateInputType = {
   voidedAt?: true
   voidedByUserId?: true
   voidReason?: true
+  receiptKey?: true
+  receiptFileName?: true
+  receiptContentType?: true
+  receiptStatus?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -295,6 +319,10 @@ export type FeeGroupByOutputType = {
   voidedAt: Date | null
   voidedByUserId: string | null
   voidReason: string | null
+  receiptKey: string | null
+  receiptFileName: string | null
+  receiptContentType: string | null
+  receiptStatus: $Enums.FeeReceiptStatus | null
   createdAt: Date
   updatedAt: Date
   _count: FeeCountAggregateOutputType | null
@@ -342,6 +370,10 @@ export type FeeWhereInput = {
   voidedAt?: Prisma.DateTimeNullableFilter<"Fee"> | Date | string | null
   voidedByUserId?: Prisma.UuidNullableFilter<"Fee"> | string | null
   voidReason?: Prisma.StringNullableFilter<"Fee"> | string | null
+  receiptKey?: Prisma.StringNullableFilter<"Fee"> | string | null
+  receiptFileName?: Prisma.StringNullableFilter<"Fee"> | string | null
+  receiptContentType?: Prisma.StringNullableFilter<"Fee"> | string | null
+  receiptStatus?: Prisma.EnumFeeReceiptStatusNullableFilter<"Fee"> | $Enums.FeeReceiptStatus | null
   createdAt?: Prisma.DateTimeFilter<"Fee"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Fee"> | Date | string
 }
@@ -366,6 +398,10 @@ export type FeeOrderByWithRelationInput = {
   voidedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   voidedByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   voidReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  receiptKey?: Prisma.SortOrderInput | Prisma.SortOrder
+  receiptFileName?: Prisma.SortOrderInput | Prisma.SortOrder
+  receiptContentType?: Prisma.SortOrderInput | Prisma.SortOrder
+  receiptStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -393,6 +429,10 @@ export type FeeWhereUniqueInput = Prisma.AtLeast<{
   voidedAt?: Prisma.DateTimeNullableFilter<"Fee"> | Date | string | null
   voidedByUserId?: Prisma.UuidNullableFilter<"Fee"> | string | null
   voidReason?: Prisma.StringNullableFilter<"Fee"> | string | null
+  receiptKey?: Prisma.StringNullableFilter<"Fee"> | string | null
+  receiptFileName?: Prisma.StringNullableFilter<"Fee"> | string | null
+  receiptContentType?: Prisma.StringNullableFilter<"Fee"> | string | null
+  receiptStatus?: Prisma.EnumFeeReceiptStatusNullableFilter<"Fee"> | $Enums.FeeReceiptStatus | null
   createdAt?: Prisma.DateTimeFilter<"Fee"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Fee"> | Date | string
 }, "id" | "ref">
@@ -417,6 +457,10 @@ export type FeeOrderByWithAggregationInput = {
   voidedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   voidedByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   voidReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  receiptKey?: Prisma.SortOrderInput | Prisma.SortOrder
+  receiptFileName?: Prisma.SortOrderInput | Prisma.SortOrder
+  receiptContentType?: Prisma.SortOrderInput | Prisma.SortOrder
+  receiptStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.FeeCountOrderByAggregateInput
@@ -449,6 +493,10 @@ export type FeeScalarWhereWithAggregatesInput = {
   voidedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Fee"> | Date | string | null
   voidedByUserId?: Prisma.UuidNullableWithAggregatesFilter<"Fee"> | string | null
   voidReason?: Prisma.StringNullableWithAggregatesFilter<"Fee"> | string | null
+  receiptKey?: Prisma.StringNullableWithAggregatesFilter<"Fee"> | string | null
+  receiptFileName?: Prisma.StringNullableWithAggregatesFilter<"Fee"> | string | null
+  receiptContentType?: Prisma.StringNullableWithAggregatesFilter<"Fee"> | string | null
+  receiptStatus?: Prisma.EnumFeeReceiptStatusNullableWithAggregatesFilter<"Fee"> | $Enums.FeeReceiptStatus | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Fee"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Fee"> | Date | string
 }
@@ -473,6 +521,10 @@ export type FeeCreateInput = {
   voidedAt?: Date | string | null
   voidedByUserId?: string | null
   voidReason?: string | null
+  receiptKey?: string | null
+  receiptFileName?: string | null
+  receiptContentType?: string | null
+  receiptStatus?: $Enums.FeeReceiptStatus | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -497,6 +549,10 @@ export type FeeUncheckedCreateInput = {
   voidedAt?: Date | string | null
   voidedByUserId?: string | null
   voidReason?: string | null
+  receiptKey?: string | null
+  receiptFileName?: string | null
+  receiptContentType?: string | null
+  receiptStatus?: $Enums.FeeReceiptStatus | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -521,6 +577,10 @@ export type FeeUpdateInput = {
   voidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   voidedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   voidReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptContentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptStatus?: Prisma.NullableEnumFeeReceiptStatusFieldUpdateOperationsInput | $Enums.FeeReceiptStatus | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -545,6 +605,10 @@ export type FeeUncheckedUpdateInput = {
   voidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   voidedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   voidReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptContentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptStatus?: Prisma.NullableEnumFeeReceiptStatusFieldUpdateOperationsInput | $Enums.FeeReceiptStatus | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -569,6 +633,10 @@ export type FeeCreateManyInput = {
   voidedAt?: Date | string | null
   voidedByUserId?: string | null
   voidReason?: string | null
+  receiptKey?: string | null
+  receiptFileName?: string | null
+  receiptContentType?: string | null
+  receiptStatus?: $Enums.FeeReceiptStatus | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -593,6 +661,10 @@ export type FeeUpdateManyMutationInput = {
   voidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   voidedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   voidReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptContentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptStatus?: Prisma.NullableEnumFeeReceiptStatusFieldUpdateOperationsInput | $Enums.FeeReceiptStatus | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -617,6 +689,10 @@ export type FeeUncheckedUpdateManyInput = {
   voidedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   voidedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   voidReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptFileName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptContentType?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  receiptStatus?: Prisma.NullableEnumFeeReceiptStatusFieldUpdateOperationsInput | $Enums.FeeReceiptStatus | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -641,6 +717,10 @@ export type FeeCountOrderByAggregateInput = {
   voidedAt?: Prisma.SortOrder
   voidedByUserId?: Prisma.SortOrder
   voidReason?: Prisma.SortOrder
+  receiptKey?: Prisma.SortOrder
+  receiptFileName?: Prisma.SortOrder
+  receiptContentType?: Prisma.SortOrder
+  receiptStatus?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -669,6 +749,10 @@ export type FeeMaxOrderByAggregateInput = {
   voidedAt?: Prisma.SortOrder
   voidedByUserId?: Prisma.SortOrder
   voidReason?: Prisma.SortOrder
+  receiptKey?: Prisma.SortOrder
+  receiptFileName?: Prisma.SortOrder
+  receiptContentType?: Prisma.SortOrder
+  receiptStatus?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -693,6 +777,10 @@ export type FeeMinOrderByAggregateInput = {
   voidedAt?: Prisma.SortOrder
   voidedByUserId?: Prisma.SortOrder
   voidReason?: Prisma.SortOrder
+  receiptKey?: Prisma.SortOrder
+  receiptFileName?: Prisma.SortOrder
+  receiptContentType?: Prisma.SortOrder
+  receiptStatus?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -707,6 +795,10 @@ export type EnumFeeSourceKindFieldUpdateOperationsInput = {
 
 export type EnumFeeStatusFieldUpdateOperationsInput = {
   set?: $Enums.FeeStatus
+}
+
+export type NullableEnumFeeReceiptStatusFieldUpdateOperationsInput = {
+  set?: $Enums.FeeReceiptStatus | null
 }
 
 
@@ -731,6 +823,10 @@ export type FeeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = ru
   voidedAt?: boolean
   voidedByUserId?: boolean
   voidReason?: boolean
+  receiptKey?: boolean
+  receiptFileName?: boolean
+  receiptContentType?: boolean
+  receiptStatus?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["fee"]>
@@ -755,6 +851,10 @@ export type FeeSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extension
   voidedAt?: boolean
   voidedByUserId?: boolean
   voidReason?: boolean
+  receiptKey?: boolean
+  receiptFileName?: boolean
+  receiptContentType?: boolean
+  receiptStatus?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["fee"]>
@@ -779,6 +879,10 @@ export type FeeSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extension
   voidedAt?: boolean
   voidedByUserId?: boolean
   voidReason?: boolean
+  receiptKey?: boolean
+  receiptFileName?: boolean
+  receiptContentType?: boolean
+  receiptStatus?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["fee"]>
@@ -803,11 +907,15 @@ export type FeeSelectScalar = {
   voidedAt?: boolean
   voidedByUserId?: boolean
   voidReason?: boolean
+  receiptKey?: boolean
+  receiptFileName?: boolean
+  receiptContentType?: boolean
+  receiptStatus?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type FeeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "ref" | "clientId" | "employeeId" | "sourceKind" | "sequenceId" | "sequenceKind" | "stepKey" | "processId" | "procedureType" | "label" | "authority" | "amountHalalas" | "paidOn" | "status" | "recordedByUserId" | "voidedAt" | "voidedByUserId" | "voidReason" | "createdAt" | "updatedAt", ExtArgs["result"]["fee"]>
+export type FeeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "ref" | "clientId" | "employeeId" | "sourceKind" | "sequenceId" | "sequenceKind" | "stepKey" | "processId" | "procedureType" | "label" | "authority" | "amountHalalas" | "paidOn" | "status" | "recordedByUserId" | "voidedAt" | "voidedByUserId" | "voidReason" | "receiptKey" | "receiptFileName" | "receiptContentType" | "receiptStatus" | "createdAt" | "updatedAt", ExtArgs["result"]["fee"]>
 
 export type $FeePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Fee"
@@ -832,6 +940,10 @@ export type $FeePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
     voidedAt: Date | null
     voidedByUserId: string | null
     voidReason: string | null
+    receiptKey: string | null
+    receiptFileName: string | null
+    receiptContentType: string | null
+    receiptStatus: $Enums.FeeReceiptStatus | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["fee"]>
@@ -1276,6 +1388,10 @@ export interface FeeFieldRefs {
   readonly voidedAt: Prisma.FieldRef<"Fee", 'DateTime'>
   readonly voidedByUserId: Prisma.FieldRef<"Fee", 'String'>
   readonly voidReason: Prisma.FieldRef<"Fee", 'String'>
+  readonly receiptKey: Prisma.FieldRef<"Fee", 'String'>
+  readonly receiptFileName: Prisma.FieldRef<"Fee", 'String'>
+  readonly receiptContentType: Prisma.FieldRef<"Fee", 'String'>
+  readonly receiptStatus: Prisma.FieldRef<"Fee", 'FeeReceiptStatus'>
   readonly createdAt: Prisma.FieldRef<"Fee", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Fee", 'DateTime'>
 }

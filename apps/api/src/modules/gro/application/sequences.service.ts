@@ -11,7 +11,9 @@ import type { GroSequenceModel, GroSequenceStepModel } from '../../../generated/
 import { requestContext } from '../../../context/request-context';
 import { AuditService } from '../../audit/public-api';
 import { EmployeesService } from '../../employees/public-api';
+import { EventBus } from '../../events/public-api';
 import { SEQUENCES, type SequenceKind } from '../domain/sequence-definitions';
+import { SequenceStepReopenedEvent } from '../domain/sequence-step-reopened.event';
 import {
   filedDependents,
   isComplete,
@@ -84,6 +86,7 @@ export class SequencesService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly employees: EmployeesService,
+    private readonly events: EventBus,
   ) {}
 
   async listForEmployee(employeeId: string): Promise<SequenceView[]> {
@@ -250,7 +253,7 @@ export class SequencesService {
 
   async reopen(id: string, stepKey: string): Promise<SequenceView> {
     this.actor();
-    return this.prisma.$transaction(async (tx) => {
+    const view = await this.prisma.$transaction(async (tx) => {
       const row = await this.load(tx, id);
       if (row.status === 'cancelled') throw new ConflictException('This sequence is cancelled');
       // A completed sequence is FINAL — both kinds (MOB-01 for the final exit;
@@ -276,6 +279,18 @@ export class SequencesService {
       await this.record(tx, row, 'reopen-step', { step: stepKey });
       return toView(await this.load(tx, id));
     });
+    // After the commit (ADR-004): Billing voids the step's fee, if it recorded
+    // one. A failure there is isolated by the bus and never undoes the reopen.
+    await this.events.publish(
+      new SequenceStepReopenedEvent(
+        view.id,
+        stepKey,
+        view.employeeId,
+        view.clientId,
+        requestContext.get()?.requestId ?? null,
+      ),
+    );
+    return view;
   }
 
   async cancel(id: string): Promise<SequenceView> {

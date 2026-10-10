@@ -1064,6 +1064,12 @@ model Fee {
   voidedAt         DateTime?     @map("voided_at")
   voidedByUserId   String?       @map("voided_by_user_id") @db.Uuid
   voidReason       String?       @map("void_reason")
+  // BILL-02: ONE receipt per fee. `pending` until its upload is confirmed
+  // (size, virus scan, real type); only `available` is ever served.
+  receiptKey         String?           @map("receipt_key")
+  receiptFileName    String?           @map("receipt_file_name")
+  receiptContentType String?           @map("receipt_content_type")
+  receiptStatus      FeeReceiptStatus? @map("receipt_status")
   createdAt        DateTime      @default(now()) @map("created_at")
   updatedAt        DateTime      @updatedAt @map("updated_at")
 
@@ -1083,4 +1089,11 @@ enum FeeStatus {
   recorded
   invoiced
   void
+}
+
+enum FeeReceiptStatus {
+  pending
+  available
+  quarantined
+  rejected
 }

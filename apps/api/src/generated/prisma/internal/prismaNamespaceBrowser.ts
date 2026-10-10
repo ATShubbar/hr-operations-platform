@@ -599,6 +599,10 @@ export const FeeScalarFieldEnum = {
   voidedAt: 'voidedAt',
   voidedByUserId: 'voidedByUserId',
   voidReason: 'voidReason',
+  receiptKey: 'receiptKey',
+  receiptFileName: 'receiptFileName',
+  receiptContentType: 'receiptContentType',
+  receiptStatus: 'receiptStatus',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

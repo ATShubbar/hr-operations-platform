@@ -2,6 +2,9 @@ import { z } from 'zod';
 import {
   DEFAULT_STANDARD_FEES,
   FEE_AUTHORITIES,
+  FEE_RECEIPT_MAX_BYTES,
+  FEE_RECEIPT_STATUSES,
+  FEE_RECEIPT_TYPES,
   FEE_STATUSES,
   MAX_FEE_HALALAS,
 } from './billing-lists.js';
@@ -108,12 +111,35 @@ export const feeResponseSchema = z.object({
   amountHalalas: z.number().int(),
   paidOn: z.string(), // YYYY-MM-DD
   status: feeStatusSchema,
+  // BILL-02: the one receipt, if any. Only an `available` one can be opened.
+  receipt: z.object({ fileName: z.string(), status: z.enum(FEE_RECEIPT_STATUSES) }).nullable(),
   recordedBy: z.string().nullable(), // a display name, never an id
   recordedAt: z.string(), // ISO 8601
   voided: z.object({ at: z.string(), by: z.string().nullable(), reason: z.string() }).nullable(),
 });
 
 export const feeListResponseSchema = z.object({ fees: z.array(feeResponseSchema) });
+
+// A receipt (BILL-02): declare the file, PUT it straight to storage with the
+// returned URL, then confirm — the server checks what actually arrived.
+export const feeReceiptUploadRequestSchema = z.strictObject({
+  fileName: z.string().trim().min(1).max(200),
+  contentType: z.enum(FEE_RECEIPT_TYPES),
+  sizeBytes: z.number().int().min(1).max(FEE_RECEIPT_MAX_BYTES),
+});
+export const feeReceiptUploadResponseSchema = z.object({
+  fee: feeResponseSchema,
+  upload: z.object({
+    url: z.string(),
+    method: z.literal('PUT'),
+    headers: z.record(z.string(), z.string()),
+    expiresInSeconds: z.number().int(),
+  }),
+});
+export const feeReceiptDownloadResponseSchema = z.object({
+  url: z.string(),
+  expiresInSeconds: z.number().int(),
+});
 
 // The standard-fee SETTING (`billing.standard-fees`, system level). Strict and
 // complete: every procedure type and every step is present, so a missing key
@@ -139,3 +165,6 @@ export type FeeQuery = z.infer<typeof feeQuerySchema>;
 export type FeeResponse = z.infer<typeof feeResponseSchema>;
 export type FeeListResponse = z.infer<typeof feeListResponseSchema>;
 export type FeeSource = z.infer<typeof feeSourceSchema>;
+export type FeeReceiptUploadRequest = z.infer<typeof feeReceiptUploadRequestSchema>;
+export type FeeReceiptUploadResponse = z.infer<typeof feeReceiptUploadResponseSchema>;
+export type FeeReceiptDownloadResponse = z.infer<typeof feeReceiptDownloadResponseSchema>;

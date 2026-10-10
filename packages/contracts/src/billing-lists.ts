@@ -33,6 +33,18 @@ export function authorityOfPortal(portal: string): FeeAuthority {
 /** The largest single fee the ledger accepts: SAR 1,000,000. */
 export const MAX_FEE_HALALAS = 100_000_000;
 
+// A fee's receipt (BILL-02): the same types and size every upload accepts.
+export const FEE_RECEIPT_TYPES = ['application/pdf', 'image/jpeg', 'image/png'] as const;
+export const FEE_RECEIPT_MAX_BYTES = 10 * 1024 * 1024;
+export const FEE_RECEIPT_STATUSES = ['pending', 'available', 'quarantined', 'rejected'] as const;
+export type FeeReceiptStatus = (typeof FEE_RECEIPT_STATUSES)[number];
+
+/**
+ * The reason stored on a fee the SYSTEM voided because its step was reopened.
+ * A key, not a sentence: screens translate it.
+ */
+export const VOID_REASON_STEP_REOPENED = 'system:step-reopened';
+
 export const FEE_STATUSES = ['recorded', 'invoiced', 'void'] as const;
 export type FeeStatus = (typeof FEE_STATUSES)[number];
 

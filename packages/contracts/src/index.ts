@@ -465,6 +465,10 @@ export {
 export {
   FEE_AUTHORITIES,
   FEE_STATUSES,
+  FEE_RECEIPT_TYPES,
+  FEE_RECEIPT_MAX_BYTES,
+  FEE_RECEIPT_STATUSES,
+  VOID_REASON_STEP_REOPENED,
   MAX_FEE_HALALAS,
   DEFAULT_STANDARD_FEES,
   authorityOfPortal,
@@ -472,6 +476,7 @@ export {
   standardProcedureFee,
   type FeeAuthority,
   type FeeStatus,
+  type FeeReceiptStatus,
   type StandardFees,
 } from './billing-lists.js';
 export {
@@ -487,6 +492,12 @@ export {
   feeListResponseSchema,
   standardFeesSchema,
   STANDARD_FEES_KEY,
+  feeReceiptUploadRequestSchema,
+  feeReceiptUploadResponseSchema,
+  feeReceiptDownloadResponseSchema,
+  type FeeReceiptUploadRequest,
+  type FeeReceiptUploadResponse,
+  type FeeReceiptDownloadResponse,
   type CreateFeeRequest,
   type UpdateFeeRequest,
   type VoidFeeRequest,

@@ -211,6 +211,22 @@ export class FeesService {
     });
   }
 
+  // The live fee of a step that was just reopened (BILL-02): void it if it is
+  // still `recorded`; leave it if an invoice already recovers it.
+  async voidForReopenedStep(
+    sequenceId: string,
+    stepKey: string,
+    reason: string,
+  ): Promise<'voided' | 'invoiced' | 'none'> {
+    const fee = await this.prisma.fee.findFirst({
+      where: { sourceKind: 'sequence_step', sequenceId, stepKey, status: { not: 'void' } },
+    });
+    if (!fee) return 'none';
+    if (fee.status === 'invoiced') return 'invoiced';
+    await this.void(fee.id, reason);
+    return 'voided';
+  }
+
   // What the fee is for → whose it is, and who was paid.
   private async resolve(input: CreateFeeInput): Promise<Resolved> {
     const source = input.source;
