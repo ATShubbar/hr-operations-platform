@@ -8,7 +8,7 @@ import { HeaderLocation, HeaderLocationProvider } from '@/components/header-loca
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { MobileNav } from '@/components/mobile-nav';
 import { NavCountsProvider } from '@/components/nav-counts';
-import { NotificationBell } from '@/components/notification-bell';
+import { NotificationCentre } from '@/components/notification-centre';
 import { GlobalSearch } from './global-search';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import { useSession } from '@/lib/session';
@@ -93,7 +93,7 @@ function ShellFrame({ children }: { children: ReactNode }) {
             {/* The prototype's global search (264×28), placed where it sits —
                 live since SEARCH-01 (ADR-015). On phones, a search icon. */}
             <GlobalSearch />
-            <NotificationBell />
+            <NotificationCentre />
             <LanguageSwitcher className="inline-flex h-8 items-center rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground" />
           </div>
         </header>

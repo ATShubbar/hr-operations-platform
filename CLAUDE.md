@@ -1602,6 +1602,14 @@ UNCHANGED, as the days run down). `GET /escalations/count` → `{needsAction}` (
 records), then clears their marks for items that left the ladder. Not audited (exempt list, like bell read marks). Lesson
 again: 3 of 13 red proofs didn't bite — the "climb" test moved the date, and the count was checked only for the one role
 where looser rules give the same number. Check a rule for a viewer who can tell it apart. API **826/826**.
+**NC-03 done — the panel.** `components/notification-centre.tsx` REPLACES `notification-bell.tsx` (deleted): bell count =
+unread Needs action (`/escalations/count`) + unread updates; panel 428px with tabs Needs action · Assigned to me ·
+Everything · Updates, ladder items grouped by stage (12 per stage, then "N more"), stage-coloured side rule, unread dot,
+days chip (`people.left/over` — NOT `employees.*`), the quiet-items footer. Click = mark read + go: person `?tab=docs`,
+sponsor `?tab=family`, `/requests?r=`, and **`/queue?open=<kind>-<id>`** — the queue now opens a named item (an
+`OpenFromQuery` child using `useSearchParams` INSIDE `<Suspense>`, so it also reacts when already on the queue; closing
+drops the parameter). Without `escalation.read` (clients/employees until NC-05): the Updates list alone, no ladder request.
+No API change.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import type {
   ClientListResponse,
@@ -134,6 +135,13 @@ export default function WorkQueuePage() {
   const [newOpen, setNewOpen] = useState(false);
   // The open work item, by kind + id, so a reload hands the dialog fresh data.
   const [openKey, setOpenKey] = useState<string | null>(null);
+  // NC-03: the notification centre links straight to a work item
+  // (`/queue?open=procedure-<id>`). Closing drops the parameter, so the same
+  // link opens the item again the next time it is followed.
+  function closeItem() {
+    setOpenKey(null);
+    if (new URLSearchParams(window.location.search).has('open')) router.replace('/queue');
+  }
 
   // Each source is optional: a role that cannot read one kind of work simply has
   // none of it here. Only when nothing at all loads is it an error.
@@ -389,11 +397,14 @@ export default function WorkQueuePage() {
         <p className="text-xs leading-4 text-muted-foreground">{t('tasksOwnNote')}</p>
       )}
 
+      <Suspense fallback={null}>
+        <OpenFromQuery onOpen={setOpenKey} />
+      </Suspense>
       <WorkItemDialog
         item={[...all, ...finished].find((i) => `${i.kind}-${i.id}` === openKey) ?? null}
         staff={staff}
         onChanged={load}
-        onClose={() => setOpenKey(null)}
+        onClose={closeItem}
       />
       <NewTaskDialog
         open={newOpen}
@@ -403,4 +414,16 @@ export default function WorkQueuePage() {
       />
     </div>
   );
+}
+
+// Reads `?open=` and opens that item. Its own component, inside a Suspense
+// boundary: `useSearchParams` needs one or the production build fails (the
+// DS-08 landmine), and it must react when the parameter changes while the
+// queue is already on screen.
+function OpenFromQuery({ onOpen }: { onOpen: (key: string) => void }) {
+  const open = useSearchParams().get('open');
+  useEffect(() => {
+    if (open) onOpen(open);
+  }, [open, onOpen]);
+  return null;
 }

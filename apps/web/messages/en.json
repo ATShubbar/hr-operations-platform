@@ -875,7 +875,75 @@
       "general": "General",
       "system": "System"
     },
-    "unreadCount": "{count} unread notifications"
+    "unreadCount": "{count, plural, one {# unread notification} other {# unread notifications}}",
+    "centre": {
+      "sub": "Raised by the escalation ladder, not by activity.",
+      "subUpdates": "What has happened on your requests, tasks and leave.",
+      "tab": {
+        "action": "Needs action",
+        "mine": "Assigned to me",
+        "all": "Everything",
+        "updates": "Updates"
+      },
+      "stage": {
+        "breach": "Breach · acting now",
+        "escalation": "Escalated",
+        "reminder": "Reminder",
+        "notice": "Notice"
+      },
+      "rule": {
+        "expiry": "document expiry",
+        "queue": "queue deadline",
+        "sla": "request service level"
+      },
+      "doc": {
+        "iqama": "Iqama",
+        "work_permit": "Work permit",
+        "passport": "Passport",
+        "contract": "Employment contract"
+      },
+      "dependantDoc": {
+        "iqama": "Dependant's iqama",
+        "passport": "Dependant's passport",
+        "insurance": "Dependant's insurance"
+      },
+      "title": {
+        "document": {
+          "lapsed": "{doc} has lapsed",
+          "today": "{doc} expires today",
+          "ahead": "{count, plural, one {{doc} expires in # day} other {{doc} expires in # days}}"
+        },
+        "dependant": {
+          "lapsed": "{doc} has lapsed for {name}",
+          "today": "{doc} expires today for {name}",
+          "ahead": "{count, plural, one {{doc} expires in # day for {name}} other {{doc} expires in # days for {name}}}"
+        },
+        "work": {
+          "lapsed": "{what} is past its deadline",
+          "today": "{what} is due today",
+          "ahead": "{count, plural, one {{what} is due in # day} other {{what} is due in # days}}"
+        },
+        "request": {
+          "lapsed": "{type} request has breached its service level",
+          "today": "{type} request must be decided today",
+          "ahead": "{count, plural, one {{type} request must be decided in # day} other {{type} request must be decided in # days}}"
+        }
+      },
+      "ownerRole": {
+        "gro_officer": "GRO officers",
+        "hr_officer": "HR officers"
+      },
+      "unassigned": "Unassigned",
+      "unnamed": "A member of staff",
+      "empty": {
+        "action": "Nothing has escalated. Every deadline is still inside its window.",
+        "mine": "Nothing is waiting on you.",
+        "all": "No obligation is inside its notice window."
+      },
+      "more": "{count} more at this stage · open the work queue to see them all",
+      "quiet": "{count, plural, one {# expiry is already being renewed in the work queue, so the ladder stays quiet on it.} other {# expiries are already being renewed in the work queue, so the ladder stays quiet on them.}}",
+      "unread": "Unread"
+    }
   },
   "requests": {
     "title": "Requests",
