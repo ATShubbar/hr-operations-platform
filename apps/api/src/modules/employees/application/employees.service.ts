@@ -6,6 +6,7 @@ import type { Prisma } from '../../../generated/prisma/client';
 import { requestContext } from '../../../context/request-context';
 import { AuditService } from '../../audit/public-api';
 import { EventBus } from '../../events/public-api';
+import { EmployeeJoinedEvent } from '../domain/employee-mobilisation.event';
 import { EmployeeTerminatedEvent } from '../domain/employee-terminated.event';
 
 // Employee registry access (EMP-01/02). Staff path only. Every mutation writes
@@ -71,9 +72,30 @@ export class EmployeesService {
     // fact other modules act on (self-service closes the account). Published
     // after commit, so a consumer never sees an uncommitted termination; the bus
     // is awaited and error-isolated (a failing consumer never undoes it).
-    if (result.before.employmentStatus !== 'terminated' && result.row.employmentStatus === 'terminated') {
+    if (
+      result.before.employmentStatus !== 'terminated' &&
+      result.row.employmentStatus === 'terminated'
+    ) {
       await this.events.publish(
-        new EmployeeTerminatedEvent(result.row.id, result.row.clientId, requestContext.get()?.requestId ?? null),
+        new EmployeeTerminatedEvent(
+          result.row.id,
+          result.row.clientId,
+          requestContext.get()?.requestId ?? null,
+        ),
+      );
+    }
+    // MOB-04b (ADR-018): the transition onboarding → active — the person has
+    // JOINED. Recruitment carries their candidate to `hired` on this.
+    if (
+      result.before.employmentStatus === 'onboarding' &&
+      result.row.employmentStatus === 'active'
+    ) {
+      await this.events.publish(
+        new EmployeeJoinedEvent(
+          result.row.id,
+          result.row.clientId,
+          requestContext.get()?.requestId ?? null,
+        ),
       );
     }
     return result.row;

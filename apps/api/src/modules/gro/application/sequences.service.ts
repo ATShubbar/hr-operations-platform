@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
@@ -27,10 +28,9 @@ import {
 // against the EMPLOYEE (so it reaches the Person record's History), in the same
 // transaction as the write.
 //
-// What completion DOES (onboarding → active + candidate hired, final exit →
-// terminated) is MOB-04/05. One rule is fixed here already: a COMPLETED final exit
-// cannot be reopened — once its completion terminates the employee (MOB-05),
-// reopening would leave a terminated person with a running exit (MOB-01 card).
+// What completion DOES: an onboarding's makes someone mid-mobilisation `active`
+// (MOB-04b — see afterCompletion); a final exit's will terminate (MOB-05). So a
+// COMPLETED sequence is final — neither kind can be reopened.
 
 export interface SequenceView {
   id: string;
@@ -78,6 +78,8 @@ function filedMap(row: Row): Record<string, string | null> {
 
 @Injectable()
 export class SequencesService {
+  private readonly logger = new Logger(SequencesService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
@@ -154,7 +156,7 @@ export class SequencesService {
     }
     if (on > todayIso()) throw new BadRequestException('A step cannot be filed in the future');
     const actorId = this.actor();
-    return this.prisma.$transaction(async (tx) => {
+    const view = await this.prisma.$transaction(async (tx) => {
       const row = await this.load(tx, id);
       if (row.status !== 'running') throw new ConflictException(`This sequence is ${row.status}`);
       const def = stepDefinition(row.kind, stepKey);
@@ -182,6 +184,44 @@ export class SequencesService {
       }
       return toView(after);
     });
+    if (view.status === 'completed') await this.afterCompletion(view);
+    return view;
+  }
+
+  // What a completed sequence DOES (ADR-018). After the commit, like the events
+  // elsewhere: the filing stands even if this fails, and it is logged loudly — a
+  // completed onboarding whose person is still `onboarding` is the sign of it.
+  //
+  //   onboarding (MOB-04b) — someone mid-mobilisation has joined: they become
+  //     `active`, with the ARRIVAL date (the "travel" step) as their hire date
+  //     unless one is already on file (owner decision). Employees then publishes
+  //     EmployeeJoinedEvent, which carries their candidate to `hired`. A DIRECT
+  //     call, not an event: GRO already depends on Employees, and Employees
+  //     subscribing to a GRO event would be a cycle (the GRO-03 reasoning;
+  //     ADR-018 rev. 1). An onboarding started by hand for someone already active
+  //     changes nothing here.
+  private async afterCompletion(view: SequenceView): Promise<void> {
+    if (view.kind !== 'onboarding') return;
+    try {
+      const employee = await this.employees.getById(view.employeeId);
+      if (employee?.employmentStatus !== 'onboarding') return;
+      const arrival = view.steps.find((s) => s.key === 'travel')?.filedOn;
+      await this.employees.update(
+        view.employeeId,
+        {
+          employmentStatus: 'active',
+          ...(employee.hireDate === null && arrival
+            ? { hireDate: new Date(`${arrival}T00:00:00.000Z`) }
+            : {}),
+        },
+        'onboarding-complete',
+      );
+    } catch (err) {
+      this.logger.error(
+        `Onboarding ${view.id} completed but its employee ${view.employeeId} was not activated`,
+        err instanceof Error ? err.stack : String(err),
+      );
+    }
   }
 
   async reopen(id: string, stepKey: string): Promise<SequenceView> {
@@ -189,8 +229,11 @@ export class SequencesService {
     return this.prisma.$transaction(async (tx) => {
       const row = await this.load(tx, id);
       if (row.status === 'cancelled') throw new ConflictException('This sequence is cancelled');
-      if (row.status === 'completed' && row.kind === 'final_exit') {
-        throw new ConflictException('A completed final exit cannot be reopened');
+      // A completed sequence is FINAL — both kinds (MOB-01 for the final exit;
+      // MOB-04b, owner decision, for onboarding: its completion has made the
+      // person active and their candidate hired, which a reopen would not undo).
+      if (row.status === 'completed') {
+        throw new ConflictException('A completed sequence cannot be reopened');
       }
       const def = stepDefinition(row.kind, stepKey);
       if (!def) throw new BadRequestException('Unknown step');
@@ -206,12 +249,6 @@ export class SequencesService {
         where: { sequenceId_stepKey: { sequenceId: id, stepKey } },
         data: { filedOn: null, filedByUserId: null },
       });
-      if (row.status === 'completed') {
-        await tx.groSequence.update({
-          where: { id },
-          data: { status: 'running', completedAt: null },
-        });
-      }
       await this.record(tx, row, 'reopen-step', { step: stepKey });
       return toView(await this.load(tx, id));
     });

@@ -138,12 +138,20 @@ export class VacanciesService {
   }
 }
 
-const PIPELINE_STAGES = ['applied', 'screening', 'interview', 'offer', 'hired'] as const;
+const PIPELINE_STAGES = [
+  'applied',
+  'screening',
+  'interview',
+  'offer',
+  'mobilisation',
+  'hired',
+] as const;
 const emptyPipeline = (): VacancyPipeline => ({
   applied: 0,
   screening: 0,
   interview: 0,
   offer: 0,
+  mobilisation: 0,
   hired: 0,
 });
 

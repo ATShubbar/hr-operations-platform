@@ -13,7 +13,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { nextOf, prevOf } from './stages';
+import { Link } from '@/i18n/navigation';
+import { forwardOf, prevOf } from './stages';
 
 // The candidate's dialog (DS-09) — the prototype's drawer. Facts it has data for
 // are shown; Health, Target and Mobilisation are not stored yet and say so (owner
@@ -33,7 +34,13 @@ export interface CandidateView {
   department: string | null;
   client: string;
   nationality: string;
+  /** ISO code — the workflow asks it (a Saudi national skips mobilisation). */
+  nationalityCode: string | null;
   stage: CandidateStage;
+  /** Set once the candidate entered Visa & mobilisation (MOB-04b). */
+  employeeId: string | null;
+  /** Onboarding steps filed, when it is known to the viewer. */
+  progress: { done: number; total: number } | null;
   notes: string | null;
   added: string;
 }
@@ -54,8 +61,11 @@ export function CandidateDialog({
   const t = useTranslations('hiring');
   const [endOpen, setEndOpen] = useState(false);
   const c = candidate;
-  const next = c ? nextOf(c.stage) : null;
+  const forward = c ? forwardOf(c.stage, c.nationalityCode) : [];
+  const next = forward[0] ?? null;
+  const direct = forward[1] ?? null; // from Offer: straight to Onboarded
   const prev = c ? prevOf(c.stage) : null;
+  const mobilising = c?.stage === 'mobilisation';
 
   const fact = (label: string, value: ReactNode, soon = false) => (
     <div className="flex flex-col gap-px">
@@ -86,7 +96,14 @@ export function CandidateDialog({
                 {fact(t('factNameAr'), <span dir="rtl">{c.nameAr}</span>)}
                 {fact(t('factHealth'), null, true)}
                 {fact(t('factTarget'), null, true)}
-                {fact(t('factMobilisation'), null, true)}
+                {fact(
+                  t('factMobilisation'),
+                  mobilising && c.progress
+                    ? t('progress', { done: c.progress.done, total: c.progress.total })
+                    : mobilising
+                      ? t('mobilisationRunning')
+                      : '—',
+                )}
               </div>
 
               <div className="flex flex-col gap-0.5">
@@ -114,7 +131,7 @@ export function CandidateDialog({
                   {t('backTo', { stage: t(`column.${prev}`) })}
                 </Button>
               )}
-              {canAdvance && next && (
+              {canAdvance && (next || mobilising) && (
                 <Popover open={endOpen} onOpenChange={setEndOpen}>
                   <PopoverTrigger render={<Button variant="ghost" size="sm" disabled={busy} />}>
                     {t('notProgressing')}
@@ -145,9 +162,25 @@ export function CandidateDialog({
                 </Popover>
               )}
               <span className="hidden grow sm:block" />
+              {/* In mobilisation the work is the onboarding sequence, on the person's record. */}
+              {mobilising && c.employeeId && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  nativeButton={false}
+                  render={<Link href={`/employees/${c.employeeId}?tab=mob`} />}
+                >
+                  {t('openOnboarding')}
+                </Button>
+              )}
               <Button variant="outline" size="sm" onClick={onClose}>
                 {t('close')}
               </Button>
+              {canAdvance && direct && (
+                <Button variant="outline" size="sm" disabled={busy} onClick={() => onMove(direct)}>
+                  {t('onboardDirectly')}
+                </Button>
+              )}
               {canAdvance && next && (
                 <Button size="sm" disabled={busy} onClick={() => onMove(next)}>
                   {t('moveTo', { stage: t(`column.${next}`) })}

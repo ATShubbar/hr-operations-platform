@@ -1447,6 +1447,16 @@ balances list + carry-over (single lookup still answers). `manualEmploymentStatu
 `PATCH /employees/:id` refuses clearing it (409). GRO `EmployeeTerminatedHandler` cancels a terminated person's running
 ONBOARDING (a running final exit is left to finish). Live: one person set onboarding → Overview/Reports 35→34, Alpha card
 11→10, list still 39. API **728/728**.
+**MOB-04b done — the Hiring board's Visa & mobilisation column is real (ADR-018 rev. 1).** Candidate stage `mobilisation`
+(own migration) + `rec_candidates.employee_id`. Offer → mobilisation (non-Saudi, nationality required) MINTS the employee id
+in Recruitment, then: `CandidateMobilisingEvent` → Employees creates the record `onboarding` → `EmployeeMobilisingEvent` →
+GRO starts onboarding → on completion GRO CALLS Employees directly (`active`, hire date = the `travel` step's date if none)
+→ `EmployeeJoinedEvent` → Recruitment (subscribed BY NAME) moves the candidate to `hired` with no second employee. Withdraw/
+reject → `CandidateMobilisationEndedEvent` → Employees terminates → MOB-04a cancels the run. Nobody leaves mobilisation by
+hand; a non-Saudi may still be onboarded directly; a COMPLETED sequence is final for BOTH kinds (changes MOB-01). **Rev. 1:**
+the ADR's GRO-published completion event would have closed an import loop (gro → employees → recruitment → gro). Board:
+`forwardOf(stage, nationality)`, both employee-creating moves ask first, mobilising cards show "N of 11 filed" + Open
+onboarding. Live: hire via the board → 36→37 in post on the last step. API **738/738**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
@@ -1484,6 +1494,11 @@ ONBOARDING (a running final exit is left to finish). Live: one person set onboar
 - To limit WHICH COLUMNS a role may update (not just which rows), use a column-level grant
   (`GRANT UPDATE (col, …)`) — RLS can't see columns. Pair it with a RESTRICTIVE policy for the allowed status moves;
   restrictive policies AND with the permissive scope policy (LEAVE-01).
+- Before a module subscribes to ANOTHER module's event class, check the import edges both ways: a handler imports
+  the publisher's `public-api`, which pulls in its module file. Existing edges: `employees → recruitment` (hire
+  events), `gro → employees`. So Recruitment and Employees can NOT import GRO, and Recruitment can NOT import Employees —
+  the loop leaves a module `undefined` at decoration time. Use a direct call down an existing edge (GRO → Employees), or
+  subscribe by NAME with a test pinning the name (Recruitment's `EMPLOYEE_JOINED`) (MOB-04b).
 - Never choose a data path with `principalType === 'client_rep' ? … : staff` — it fails OPEN
   for every other principal. Use `scopeOf(ctx)` from `src/auth/scope.ts`; a test enforces it (SS-01). The scan
   matches the shape ANYWHERE in API src, display mappings included — map with a table (DS-08).

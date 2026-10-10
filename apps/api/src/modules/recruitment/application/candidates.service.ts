@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { requestContext } from '../../../context/request-context';
@@ -6,8 +7,12 @@ import type { CandidateStage, Prisma } from '../../../generated/prisma/client';
 import { AuditService } from '../../audit/public-api';
 import { EventBus } from '../../events/public-api';
 import type { CreateCandidateInput, UpdateCandidateInput } from '../domain/candidate';
-import { canTransition } from '../domain/candidate-stage-workflow';
+import { canSystemTransition, canTransition } from '../domain/candidate-stage-workflow';
 import { CandidateHiredEvent } from '../domain/candidate-hired.event';
+import {
+  CandidateMobilisationEndedEvent,
+  CandidateMobilisingEvent,
+} from '../domain/candidate-mobilising.event';
 import { VacanciesService } from './vacancies.service';
 
 // Candidate registry access (REC-03). STAFF-INTERNAL — no client-rep path (clients
@@ -79,7 +84,7 @@ export class CandidatesService {
   // Employees creates the record (ADR-004). Hiring requires the candidate to have a
   // nationality on file — otherwise the resulting employee would be ill-formed (400).
   async changeStage(id: string, to: CandidateStage): Promise<CandidateRecord | null> {
-    const row = await this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const before = await tx.candidate.findUnique({ where: { id } });
       if (!before) return null;
       if (!canTransition(before.stage, to)) {
@@ -88,7 +93,24 @@ export class CandidatesService {
       if (to === 'hired' && !before.nationality) {
         throw new BadRequestException('Candidate nationality is required before hiring');
       }
-      const updated = await tx.candidate.update({ where: { id }, data: { stage: to } });
+      // MOB-04b (ADR-018): Visa & mobilisation is for someone coming from abroad —
+      // a nationality is needed for the record, and a Saudi national has no visa
+      // steps to take (they are hired directly). Entering it MINTS the employee's
+      // id here, so the candidate points at its employee in the same transaction.
+      if (to === 'mobilisation') {
+        if (!before.nationality) {
+          throw new BadRequestException('Candidate nationality is required before mobilisation');
+        }
+        if (before.nationality.toUpperCase() === 'SA') {
+          throw new BadRequestException(
+            'A Saudi national is hired directly; visa and mobilisation do not apply',
+          );
+        }
+      }
+      const updated = await tx.candidate.update({
+        where: { id },
+        data: { stage: to, ...(to === 'mobilisation' ? { employeeId: randomUUID() } : {}) },
+      });
       await this.audit.record(tx, {
         resource: 'candidate',
         action: 'stage',
@@ -96,13 +118,45 @@ export class CandidatesService {
         before: snapshot(before),
         after: snapshot(updated),
       });
-      return updated;
+      return { updated, from: before.stage };
     });
-    if (!row) return null;
+    if (!result) return null;
+    const { updated: row, from } = result;
+    const correlationId = requestContext.get()?.requestId ?? null;
+
+    // MOB-04b: into mobilisation → Employees creates the record and onboarding
+    // starts; out of it without a hire → Employees terminates the record (which
+    // cancels the onboarding). Published after commit, awaited, error-isolated.
+    if (row.stage === 'mobilisation' && row.employeeId && row.nationality) {
+      await this.events.publish(
+        new CandidateMobilisingEvent(
+          row.id,
+          row.employeeId,
+          row.clientId,
+          row.vacancyId,
+          row.nameAr,
+          row.nameEn,
+          row.nationality,
+          correlationId,
+        ),
+      );
+    }
+    if (
+      from === 'mobilisation' &&
+      row.employeeId &&
+      (row.stage === 'withdrawn' || row.stage === 'rejected')
+    ) {
+      await this.events.publish(
+        new CandidateMobilisationEndedEvent(row.id, row.employeeId, row.clientId, correlationId),
+      );
+    }
 
     // `hired` is terminal, so this publishes at most once per candidate. Awaited
     // in-process and error-isolated by the bus (a failing consumer never rolls back
     // the hire — the stage change is already committed).
+    // (Reached only from `offer` — the direct hire. A candidate who came through
+    // mobilisation is moved to `hired` by completeMobilisation, which publishes
+    // nothing: their employee already exists.)
     if (row.stage === 'hired' && row.nationality) {
       await this.events.publish(
         new CandidateHiredEvent(
@@ -117,6 +171,33 @@ export class CandidatesService {
       );
     }
     return row;
+  }
+
+  // MOB-04b (ADR-018): the employee made for a candidate in Visa & mobilisation
+  // has JOINED (their onboarding completed) — carry the candidate to `hired`. The
+  // one move no person makes; it publishes no CandidateHiredEvent, because the
+  // employee already exists. A no-op for an employee no candidate points at, or
+  // one whose candidate has already moved on (safe to repeat).
+  async completeMobilisation(employeeId: string): Promise<CandidateRecord | null> {
+    return this.prisma.$transaction(async (tx) => {
+      const before = await tx.candidate.findUnique({ where: { employeeId } });
+      if (!before || !canSystemTransition(before.stage, 'hired')) return null;
+      const updated = await tx.candidate.update({
+        where: { id: before.id },
+        data: { stage: 'hired' },
+      });
+      await this.audit.record(tx, {
+        resource: 'candidate',
+        action: 'stage',
+        clientId: updated.clientId,
+        before: snapshot(before),
+        after: {
+          ...(snapshot(updated) as Record<string, unknown>),
+          by: 'onboarding-completed',
+        } as Prisma.InputJsonValue,
+      });
+      return updated;
+    });
   }
 
   async remove(id: string): Promise<CandidateRecord | null> {

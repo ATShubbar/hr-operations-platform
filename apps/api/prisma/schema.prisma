@@ -689,6 +689,9 @@ model Candidate {
   phone           String?
   stage           CandidateStage @default(applied)
   cvDocumentId    String?        @map("cv_document_id") @db.Uuid
+  // MOB-04b: the employee record created when this candidate entered Visa &
+  // mobilisation (a bare cross-module reference, minted by Recruitment).
+  employeeId      String?        @unique @map("employee_id") @db.Uuid
   notes           String?
   createdByUserId String?        @map("created_by_user_id") @db.Uuid
   createdAt       DateTime       @default(now()) @map("created_at")
@@ -708,6 +711,10 @@ enum CandidateStage {
   hired
   rejected
   withdrawn
+  // MOB-04b (ADR-018): Visa & mobilisation — between offer and hired. Entering
+  // it creates the employee record (as `onboarding`) and starts onboarding;
+  // only the onboarding's completion moves the candidate on to `hired`.
+  mobilisation
 }
 
 // GRO government-process workflows (GRO-01, ACTION-PLAN 4.2). Tracks a government

@@ -970,7 +970,8 @@
       "tasksOverdue": "Tasks overdue",
       "tasksUnassigned": "Tasks unassigned",
       "annualTotal": "Annual total",
-      "onboarding": "Onboarding"
+      "onboarding": "Onboarding",
+      "mobilisation": "Visa & mobilisation"
     },
     "value": {
       "iqama": "Iqama",
@@ -1907,11 +1908,10 @@
       "screening": "Screened",
       "interview": "Interview",
       "offer": "Offer",
-      "visa": "Visa & mobilisation",
-      "hired": "Onboarded"
+      "hired": "Onboarded",
+      "mobilisation": "Visa & mobilisation"
     },
     "soon": "Soon",
-    "visaSoon": "Visa and mobilisation tracking is coming soon. Until then an offer moves straight to Onboarded.",
     "dropHere": "Drop a candidate here",
     "nothingHere": "Nothing at this stage",
     "addedAgo": "{days, plural, =0 {Added today} one {Added # day ago} other {Added # days ago}}",
@@ -1974,7 +1974,16 @@
     "nationalityHint": "Drives whether a visa and mobilisation sequence is needed.",
     "fieldSource": "Where they came from",
     "sourcePlaceholder": "Referred by the site manager · CV on file",
-    "candidateAdded": "{name} added to {title} · Applied."
+    "candidateAdded": "{name} added to {title} · Applied.",
+    "toMobilisation": "To visa & mobilisation",
+    "onboardDirectly": "Onboard directly",
+    "mobilised": "{name} moved to Visa & mobilisation — their employee record was created and onboarding has started.",
+    "mobiliseTitle": "Start visa & mobilisation for {name}?",
+    "mobiliseBody": "This creates {name}'s employee record at {client} and starts their onboarding sequence. They are not counted in headcount until onboarding completes. It can't be stepped back — only withdrawn.",
+    "mobiliseConfirm": "Start mobilisation",
+    "progress": "{done} of {total} filed",
+    "mobilisationRunning": "Onboarding running",
+    "openOnboarding": "Open onboarding"
   },
   "queue": {
     "title": "Work queue",

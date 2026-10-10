@@ -18,7 +18,7 @@ import {
 // cannot read a single candidate (REC-03; app_client has no grant on
 // rec_candidates), and these tests pin that the counts carry nothing else.
 
-const STAGES = ['applied', 'hired', 'interview', 'offer', 'screening'];
+const STAGES = ['applied', 'hired', 'interview', 'mobilisation', 'offer', 'screening'];
 const CANDIDATE_FIELDS = [
   'nameEn',
   'nameAr',
@@ -100,13 +100,27 @@ describe('Vacancy pipeline counts (DS-18, e2e)', () => {
   it("a client manager's vacancies carry the counts per active stage", async () => {
     const res = await request(http).get('/vacancies').set('Cookie', repA.cookie).expect(200);
     const a = res.body.vacancies.find((x: { id: string }) => x.id === vacA);
-    expect(a.pipeline).toEqual({ applied: 2, screening: 0, interview: 1, offer: 0, hired: 1 });
+    expect(a.pipeline).toEqual({
+      applied: 2,
+      screening: 0,
+      interview: 1,
+      offer: 0,
+      mobilisation: 0,
+      hired: 1,
+    });
     // A role with nobody on it reads all zeros, not a missing field.
     const empty = res.body.vacancies.find((x: { id: string }) => x.id === vacA2);
-    expect(empty.pipeline).toEqual({ applied: 0, screening: 0, interview: 0, offer: 0, hired: 0 });
+    expect(empty.pipeline).toEqual({
+      applied: 0,
+      screening: 0,
+      interview: 0,
+      offer: 0,
+      mobilisation: 0,
+      hired: 0,
+    });
   });
 
-  it('the pipeline is exactly the five stage counts — rejected/withdrawn are not stages on the board', async () => {
+  it('the pipeline is exactly the six stage counts (MOB-04b added Visa & mobilisation) — rejected/withdrawn are not stages on the board', async () => {
     const res = await request(http)
       .get(`/vacancies/${vacA}`)
       .set('Cookie', repA.cookie)
@@ -141,6 +155,7 @@ describe('Vacancy pipeline counts (DS-18, e2e)', () => {
       screening: 0,
       interview: 0,
       offer: 3,
+      mobilisation: 0,
       hired: 0,
     });
   });
@@ -151,7 +166,14 @@ describe('Vacancy pipeline counts (DS-18, e2e)', () => {
       .set('Cookie', staff.cookie)
       .expect(200);
     const a = res.body.vacancies.find((x: { id: string }) => x.id === vacA);
-    expect(a.pipeline).toEqual({ applied: 2, screening: 0, interview: 1, offer: 0, hired: 1 });
+    expect(a.pipeline).toEqual({
+      applied: 2,
+      screening: 0,
+      interview: 1,
+      offer: 0,
+      mobilisation: 0,
+      hired: 1,
+    });
     const upd = await request(http)
       .patch(`/vacancies/${vacA}`)
       .set('Cookie', staff.cookie)
@@ -162,6 +184,7 @@ describe('Vacancy pipeline counts (DS-18, e2e)', () => {
       screening: 0,
       interview: 1,
       offer: 0,
+      mobilisation: 0,
       hired: 1,
     });
   });

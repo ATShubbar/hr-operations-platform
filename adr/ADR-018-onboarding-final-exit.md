@@ -69,6 +69,10 @@ The app has none of this:
 - A step is **filed**, **ready** (everything it waits on is filed) or **blocked** ("Waiting on …").
 - Only a ready step can be filed.
 - A filed step can be **reopened only while no filed step depends on it**: reopen the later one first.
+- ★ *(MOB-04b, rev. 1)* **A completed sequence is final: neither kind can be reopened.** MOB-01
+  had followed the prototype and let a completed onboarding reopen. Its completion now makes the
+  person active and their candidate Onboarded, which a reopen would not undo. A mistake is
+  corrected by starting a new sequence by hand.
 - Every start, file, reopen, completion and cancellation is audited (resource `gro-sequence`, against the employee, so it appears on the Person record's History).
 - **Target dates** are the start date plus each step's day, shown in Gregorian and Hijri.
 - The run **completes** when its last step is filed.
@@ -93,6 +97,12 @@ The app has none of this:
   - Moving a candidate **Offer → Visa & mobilisation** creates their employee record, as hiring does today (REC-05), and starts onboarding for it.
   - **Filing the last onboarding step moves the candidate to Onboarded (`hired`) by itself.**
 - **A Saudi national skips the column.** The visa steps don't apply, so Offer → Onboarded stays as today, and Offer → Visa & mobilisation is refused for them.
+- ★ *(MOB-04b)* **A non-Saudi at Offer may go either way**: to Visa & mobilisation, or straight to
+  Onboarded for someone already in the Kingdom (a local transfer has no visa steps to take).
+- ★ *(MOB-04b)* **The hire date is the arrival date**: the date the "Ticket booked and arrival
+  logged" step was filed, set when onboarding completes, and only if no hire date is on file.
+- Nobody moves a candidate out of Visa & mobilisation by hand, either to Onboarded or back to
+  Offer. Only the onboarding's completion, or a withdrawal or rejection, does.
 - **New employment status `onboarding`**, for someone mid-mobilisation who has not arrived. They are **not under management**:
   - the shared headcount rule (`isUnderManagement`, REP-06) excludes them;
   - Saudisation and headcount figures leave them out.
@@ -108,18 +118,36 @@ The app has none of this:
 - ★ **Filing the last step ("Departure confirmed, iqama cancelled") terminates the employee.** The existing `EmployeeTerminatedEvent` then closes their self-service account (SS-06a), and the record stays as history.
 - A final exit can be cancelled while running (the employee stays as they were).
 
-### How the modules talk (ADR-004)
+### How the modules talk (ADR-004) — rev. 1
 
-Recruitment, Employees and GRO stay one-way:
-- **Recruitment** publishes **`CandidateMobilisingEvent`** (Offer → Visa & mobilisation).
-- **Employees** subscribes, creates the employee as `onboarding`, and publishes **`EmployeeMobilisingEvent`**.
+*Rev. 1 (MOB-04b, 2026-10-10).* The first version had GRO publish `OnboardingCompletedEvent` for
+Employees and Recruitment to subscribe to. That is **not buildable**. Employees already imports
+Recruitment (for the hire events) and GRO already imports Employees, so either subscription would
+close a loop (GRO → Employees → Recruitment → GRO) that the module loader cannot resolve. The
+behaviour is unchanged; the wiring is:
+
+- **Recruitment** publishes **`CandidateMobilisingEvent`** (Offer → Visa & mobilisation). It carries
+  the **employee id Recruitment minted** and stored on the candidate (`rec_candidates.employee_id`),
+  so no reply is needed.
+- **Employees** subscribes, creates the employee as `onboarding` with that id, and publishes
+  **`EmployeeMobilisingEvent`**.
 - **GRO** subscribes and starts the onboarding sequence.
-- When it completes, **GRO** publishes **`OnboardingCompletedEvent`**:
-  - **Employees** subscribes and sets the employee `active`;
-  - **Recruitment** subscribes and moves the candidate to `hired`.
-  
-  `hired` no longer creates an employee for a candidate who came through mobilisation; it still does for Offer → Onboarded.
-- A **final exit's completion** terminates through `EmployeesService.update`, the direct call GRO already makes for expiry dates (GRO-03). The termination event follows from Employees as for any termination.
+- When it completes, **GRO calls `EmployeesService` directly**. This is the same call it already
+  makes for expiry dates (GRO-03), for the same reason: an event would cycle. The person becomes
+  `active`.
+- **Employees** publishes **`EmployeeJoinedEvent`** on the transition `onboarding → active`.
+- **Recruitment** moves the candidate to `hired`. It subscribes to that event **by name**
+  (`employee.joined`), because it cannot import Employees. The name and the one field it reads are
+  pinned by a test. This move publishes no hire event, since the employee already exists.
+- Withdraw or reject during mobilisation: **Recruitment** publishes
+  **`CandidateMobilisationEndedEvent`**; **Employees** terminates the record. The existing
+  termination event then cancels the onboarding (GRO, MOB-04a) and closes any account
+  (self-service).
+- A **final exit's completion** terminates through `EmployeesService.update`, the same direct call.
+
+Each handler is safe to repeat. The bus isolates failures, so a failed later link leaves the
+earlier ones standing. A completed onboarding whose person is still `onboarding` is the sign of
+that, and it is logged as an error.
 
 ### Where sequences appear
 

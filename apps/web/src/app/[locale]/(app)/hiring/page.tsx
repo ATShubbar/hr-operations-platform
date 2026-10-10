@@ -9,11 +9,12 @@ import type {
   CandidateStage,
   ClientListResponse,
   ClientResponse,
+  SequenceListResponse,
   VacancyListResponse,
   VacancyResponse,
   VacancyStatus,
 } from '@hr/contracts';
-import { useRouter } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useCan } from '@/lib/session';
 import { toneFor } from '@/lib/status-tone';
@@ -38,7 +39,7 @@ import { toastSuccess } from '@/components/ui/toast';
 import { AddCandidateDialog, type RoleSummary } from './add-candidate-dialog';
 import { CandidateDialog, type CandidateView } from './candidate-dialog';
 import { OpenRoleDialog } from './open-role-dialog';
-import { COLUMNS, canDrop, isActive, nextOf, type Column } from './stages';
+import { COLUMNS, canDrop, forwardOf, isActive, type Column } from './stages';
 
 // Hiring (DS-09) — the prototype's Hiring screen (ADR-012): the open roles above
 // the candidate board. It replaces REC-06's two screens (/vacancies, /candidates),
@@ -49,8 +50,16 @@ import { COLUMNS, canDrop, isActive, nextOf, type Column } from './stages';
 // (DS-09) one step back — by button, by the dialog, or by dragging a card onto
 // the next or previous column; any other column refuses the drop. Moving an Offer
 // to Onboarded is the hire (REC-05: it creates the employee record), so it asks
-// first. The prototype's "Visa & mobilisation" column is shown, marked "coming
-// soon": the onboarding feature does not exist yet.
+// first.
+//
+// Visa & mobilisation (MOB-04b, ADR-018) is a real column: an Offer for someone
+// coming from abroad moves there — which creates their employee record as
+// `onboarding` and starts their onboarding sequence, so it asks first too. A card
+// in it shows how far the onboarding has got and links to the person's
+// Mobilisation tab; nobody moves it on by hand — filing the last onboarding step
+// carries the candidate to Onboarded. It can still be withdrawn or not selected
+// (which cancels the onboarding and terminates the record). A Saudi national is
+// never offered the column; anyone at Offer may be onboarded directly instead.
 //
 // Roles: the board needs candidate.read; a client manager holds vacancy.read only
 // (the matrix keeps candidates from clients), so they see their open roles and no
@@ -64,7 +73,7 @@ const DOT: Record<Column, string> = {
   screening: 'bg-neutral-400',
   interview: 'bg-neutral-500',
   offer: 'bg-neutral-700',
-  visa: 'bg-status-warning',
+  mobilisation: 'bg-status-warning',
   hired: 'bg-status-ok',
 };
 
@@ -92,7 +101,14 @@ export default function HiringPage() {
   const [openRole, setOpenRole] = useState(false);
   const [addTo, setAddTo] = useState<RoleSummary | null>(null);
   const [openCand, setOpenCand] = useState<string | null>(null);
-  const [confirmHire, setConfirmHire] = useState<string | null>(null);
+  // The two moves that create an employee record ask first.
+  const [confirmMove, setConfirmMove] = useState<{
+    id: string;
+    to: 'hired' | 'mobilisation';
+  } | null>(null);
+  const canReadGro = useCan('gro.read');
+  // Onboarding progress of the candidates in Visa & mobilisation, by employee id.
+  const [progress, setProgress] = useState<Record<string, { done: number; total: number }>>({});
   const [busy, setBusy] = useState(false);
   const [moveError, setMoveError] = useState('');
   const [dragId, setDragId] = useState<string | null>(null);
@@ -114,6 +130,7 @@ export default function HiringPage() {
       ]);
       setVacancies(v.vacancies);
       setCandidates(c.candidates);
+      void loadProgress(c.candidates);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
       if (err instanceof ApiError && err.status === 403) setForbidden(true);
@@ -121,6 +138,32 @@ export default function HiringPage() {
     } finally {
       setLoaded(true);
     }
+  }
+
+  // How far each mobilising hire's onboarding has got (MOB-04b) — one small read
+  // per card in the column, for those who may read sequences. Best effort: a card
+  // without it still links to the record.
+  async function loadProgress(list: CandidateResponse[]) {
+    if (!canReadGro) return;
+    const mobilising = list.filter((c) => c.stage === 'mobilisation' && c.employeeId);
+    const entries = await Promise.all(
+      mobilising.map(async (c) => {
+        try {
+          const res = await apiFetch<SequenceListResponse>(`/employees/${c.employeeId}/sequences`);
+          const run =
+            res.sequences.find((r) => r.kind === 'onboarding' && r.status === 'running') ??
+            res.sequences.find((r) => r.kind === 'onboarding');
+          if (!run) return null;
+          return [
+            c.employeeId!,
+            { done: run.steps.filter((x) => x.state === 'filed').length, total: run.steps.length },
+          ] as const;
+        } catch {
+          return null;
+        }
+      }),
+    );
+    setProgress(Object.fromEntries(entries.filter((e) => e !== null)));
   }
 
   useEffect(() => {
@@ -169,7 +212,10 @@ export default function HiringPage() {
       department: v?.department ?? null,
       client: clientName(c.clientId),
       nationality: nationalityName(c.nationality),
+      nationalityCode: c.nationality,
       stage: c.stage,
+      employeeId: c.employeeId,
+      progress: c.employeeId ? (progress[c.employeeId] ?? null) : null,
       notes: c.notes,
       added: formatDate(c.createdAt),
     };
@@ -178,8 +224,13 @@ export default function HiringPage() {
 
   // ---- moves ----
   async function move(c: CandidateResponse, to: CandidateStage) {
-    // Onboarding creates the employee record and cannot be undone: ask first.
-    if (to === 'hired' && confirmHire !== c.id) return setConfirmHire(c.id);
+    // Both of these create the employee record and cannot be undone: ask first.
+    if (
+      (to === 'hired' || to === 'mobilisation') &&
+      !(confirmMove?.id === c.id && confirmMove.to === to)
+    ) {
+      return setConfirmMove({ id: c.id, to });
+    }
     setBusy(true);
     setMoveError('');
     const name = locale === 'ar' ? c.name.ar : c.name.en;
@@ -188,19 +239,25 @@ export default function HiringPage() {
         method: 'POST',
         body: JSON.stringify({ stage: to }),
       });
-      setConfirmHire(null);
+      setConfirmMove(null);
       if (!isActive(to)) setOpenCand(null);
       await load();
       toastSuccess(
         to === 'hired'
           ? t('onboarded', { name })
-          : isActive(to)
-            ? t('moved', { name, stage: t(`column.${to}`) })
-            : t(`ended.${to}`, { name }),
+          : to === 'mobilisation'
+            ? t('mobilised', { name })
+            : isActive(to)
+              ? t('moved', { name, stage: t(`column.${to}`) })
+              : t(`ended.${to}`, { name }),
       );
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
-      setMoveError(to === 'hired' && !c.nationality ? t('hireNeedsNationality') : t('moveError'));
+      setMoveError(
+        (to === 'hired' || to === 'mobilisation') && !c.nationality
+          ? t('hireNeedsNationality')
+          : t('moveError'),
+      );
     } finally {
       setBusy(false);
     }
@@ -262,7 +319,8 @@ export default function HiringPage() {
     );
   }
 
-  const hireCandidate = byId(confirmHire);
+  const hireCandidate = byId(confirmMove?.id ?? null);
+  const confirmTo = confirmMove?.to ?? 'hired';
 
   return (
     <div className="flex min-w-0 flex-col gap-4">
@@ -410,13 +468,14 @@ export default function HiringPage() {
               className="flex gap-3 overflow-x-auto pb-2 focus-visible:rounded-xl focus-visible:outline-2 focus-visible:outline-ring"
             >
               {COLUMNS.map((col) => {
-                const items = col === 'visa' ? [] : board.filter((c) => c.stage === col);
+                const items = board.filter((c) => c.stage === col);
                 const visual = byId(dragId);
-                const over = overCol === col && !!visual && canDrop(visual.stage, col);
+                const over =
+                  overCol === col && !!visual && canDrop(visual.stage, col, visual.nationality);
                 const draggedNow = () => byId(dragRef.current);
                 const legalNow = () => {
                   const d = draggedNow();
-                  return !!d && canDrop(d.stage, col);
+                  return !!d && canDrop(d.stage, col, d.nationality);
                 };
                 return (
                   <section
@@ -430,16 +489,12 @@ export default function HiringPage() {
                         id={`col-${col}`}
                         className={cn(
                           'grow truncate text-[13px] leading-[18px] font-medium',
-                          col === 'visa' && 'text-status-warning',
+                          col === 'mobilisation' && 'text-status-warning',
                         )}
                       >
                         {t(`column.${col}`)}
                       </h2>
-                      {col === 'visa' ? (
-                        <Badge variant="outline">{t('soon')}</Badge>
-                      ) : (
-                        <Badge variant="outline">{items.length}</Badge>
-                      )}
+                      <Badge variant="outline">{items.length}</Badge>
                     </div>
                     <div
                       // Only a legal column accepts: cancelling dragenter AND
@@ -469,7 +524,7 @@ export default function HiringPage() {
                         dragRef.current = null;
                         setOverCol(null);
                         setDragId(null);
-                        if (d && ok && col !== 'visa') void move(d, col);
+                        if (d && ok) void move(d, col);
                       }}
                       className={cn(
                         'flex min-h-80 grow flex-col gap-2.5 rounded-xl p-2 transition-colors',
@@ -478,11 +533,15 @@ export default function HiringPage() {
                     >
                       {items.map((c) => {
                         const cv = view(c);
-                        const next = nextOf(c.stage);
+                        const forward = forwardOf(c.stage, c.nationality);
+                        const next = forward[0] ?? null;
+                        const direct = forward[1] ?? null;
+                        // A mobilising hire is moved by their onboarding, not by hand.
+                        const movable = canAdvance && c.stage !== 'mobilisation';
                         return (
                           <article
                             key={c.id}
-                            draggable={canAdvance}
+                            draggable={movable}
                             onDragStart={(e) => {
                               e.dataTransfer.effectAllowed = 'move';
                               e.dataTransfer.setData('text/plain', c.id);
@@ -496,7 +555,7 @@ export default function HiringPage() {
                             }}
                             className={cn(
                               'relative flex flex-col gap-2.5 rounded-xl bg-card p-3 ring-1 ring-foreground/10 transition-shadow hover:ring-foreground/20',
-                              canAdvance && 'cursor-grab',
+                              movable && 'cursor-grab',
                               dragId === c.id && 'opacity-40',
                             )}
                           >
@@ -523,7 +582,7 @@ export default function HiringPage() {
                               </div>
                               <span className="flex shrink-0 items-center gap-1">
                                 <Avatar name={cv.name} size="sm" />
-                                {canAdvance && (
+                                {movable && (
                                   <GripVertical aria-hidden className="size-3.5 text-neutral-300" />
                                 )}
                               </span>
@@ -531,6 +590,28 @@ export default function HiringPage() {
                             <span className="text-[11px] leading-[15px] text-pretty text-muted-foreground">
                               {c.notes || t('addedAgo', { days: daysSince(c.createdAt) })}
                             </span>
+                            {c.stage === 'mobilisation' && c.employeeId && (
+                              // The work happens on the person's record: say how
+                              // far it has got and take the user there.
+                              <span className="relative z-10 flex items-center gap-2">
+                                <span className="grow font-mono text-[11px] leading-[15px] text-neutral-700">
+                                  {cv.progress
+                                    ? t('progress', {
+                                        done: cv.progress.done,
+                                        total: cv.progress.total,
+                                      })
+                                    : t('mobilisationRunning')}
+                                </span>
+                                <Button
+                                  variant="outline"
+                                  size="xs"
+                                  nativeButton={false}
+                                  render={<Link href={`/employees/${c.employeeId}?tab=mob`} />}
+                                >
+                                  {t('openOnboarding')}
+                                </Button>
+                              </span>
+                            )}
                             {canAdvance && next && (
                               <Button
                                 variant="outline"
@@ -540,7 +621,18 @@ export default function HiringPage() {
                                 className="relative z-10 w-full"
                                 onClick={() => void move(c, next)}
                               >
-                                {t('moveForward')}
+                                {next === 'mobilisation' ? t('toMobilisation') : t('moveForward')}
+                              </Button>
+                            )}
+                            {canAdvance && direct && (
+                              <Button
+                                variant="ghost"
+                                size="xs"
+                                disabled={busy}
+                                className="relative z-10 w-full"
+                                onClick={() => void move(c, direct)}
+                              >
+                                {t('onboardDirectly')}
                               </Button>
                             )}
                           </article>
@@ -548,11 +640,7 @@ export default function HiringPage() {
                       })}
                       {items.length === 0 && (
                         <div className="flex min-h-22 items-center justify-center rounded-xl bg-neutral-50 px-3 text-center text-xs leading-4 text-neutral-400">
-                          {col === 'visa'
-                            ? t('visaSoon')
-                            : canAdvance
-                              ? t('dropHere')
-                              : t('nothingHere')}
+                          {canAdvance && col !== 'hired' ? t('dropHere') : t('nothingHere')}
                         </div>
                       )}
                     </div>
@@ -592,15 +680,19 @@ export default function HiringPage() {
           if (c) void move(c, to);
         }}
       />
-      <Dialog open={hireCandidate !== null} onOpenChange={(o) => !o && setConfirmHire(null)}>
+      <Dialog open={hireCandidate !== null} onOpenChange={(o) => !o && setConfirmMove(null)}>
         <DialogContent className="sm:max-w-[440px]">
           {hireCandidate && (
             <>
               <DialogHeader>
-                <DialogTitle>{t('hireTitle', { name: view(hireCandidate).name })}</DialogTitle>
+                <DialogTitle>
+                  {t(confirmTo === 'mobilisation' ? 'mobiliseTitle' : 'hireTitle', {
+                    name: view(hireCandidate).name,
+                  })}
+                </DialogTitle>
                 <DialogDescription>
                   {hireCandidate.nationality
-                    ? t('hireBody', {
+                    ? t(confirmTo === 'mobilisation' ? 'mobiliseBody' : 'hireBody', {
                         name: view(hireCandidate).name,
                         client: view(hireCandidate).client || t('theClient'),
                       })
@@ -609,14 +701,14 @@ export default function HiringPage() {
               </DialogHeader>
               {moveError && <p className="text-sm text-destructive">{moveError}</p>}
               <DialogFooter>
-                <Button variant="outline" onClick={() => setConfirmHire(null)}>
+                <Button variant="outline" onClick={() => setConfirmMove(null)}>
                   {t('cancel')}
                 </Button>
                 <Button
                   disabled={busy || !hireCandidate.nationality}
-                  onClick={() => void move(hireCandidate, 'hired')}
+                  onClick={() => void move(hireCandidate, confirmTo)}
                 >
-                  {t('hireConfirm')}
+                  {t(confirmTo === 'mobilisation' ? 'mobiliseConfirm' : 'hireConfirm')}
                 </Button>
               </DialogFooter>
             </>

@@ -245,7 +245,7 @@ describe('Sequences service (MOB-01, e2e)', () => {
     }); // not filed
   });
 
-  it('filing the last step completes the run (audited); a completed FINAL EXIT cannot be reopened', async () => {
+  it('filing the last step completes the run (audited); a completed final exit cannot be reopened', async () => {
     const run = (await seq.listForEmployee(ids.a)).find(
       (r) => r.kind === 'final_exit' && r.status === 'running',
     )!;
@@ -266,19 +266,23 @@ describe('Sequences service (MOB-01, e2e)', () => {
     await asStaff(() => seq.start(ids.a, 'final_exit'));
   });
 
-  it("a completed ONBOARDING may be reopened (the prototype's behaviour): it runs again", async () => {
+  // MOB-04b (owner decision): a completed onboarding is FINAL too. MOB-01 had
+  // followed the prototype and let it reopen; its completion now makes the person
+  // active and their candidate hired, which a reopen would not undo.
+  it('a completed ONBOARDING is final as well: it cannot be reopened, and frees the slot', async () => {
     const run = (await seq.listForEmployee(ids.b)).find(
       (r) => r.kind === 'onboarding' && r.status === 'running',
     )!;
     for (const s of SEQUENCES.onboarding.steps) await asStaff(() => seq.file(run.id, s.key));
     expect((await seq.get(run.id))!.status).toBe('completed');
-    const reopened = await asStaff(() => seq.reopen(run.id, 'bank'));
-    expect(reopened).toMatchObject({ status: 'running', completedAt: null });
+    await expect(asStaff(() => seq.reopen(run.id, 'bank'))).rejects.toMatchObject({ status: 409 });
+    expect((await seq.get(run.id))!.status).toBe('completed');
     expect(
       await owner.auditEntry.count({
         where: { resource: 'gro-sequence', resourceId: ids.b, action: 'reopen-step' },
       }),
-    ).toBe(1);
+    ).toBe(0);
+    await asStaff(() => seq.start(ids.b, 'onboarding'));
   });
 
   it('cancel ends a running run (audited) and frees the slot; a finished run cannot be cancelled', async () => {

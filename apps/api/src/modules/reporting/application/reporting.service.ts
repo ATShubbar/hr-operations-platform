@@ -252,6 +252,7 @@ export class ReportingService {
         screening: tally.screening ?? 0,
         interview: tally.interview ?? 0,
         offer: tally.offer ?? 0,
+        mobilisation: tally.mobilisation ?? 0,
         hired: tally.hired ?? 0,
         closed,
         candidates: total,
@@ -260,7 +261,8 @@ export class ReportingService {
     rows.sort(byNumberThenLabel('candidates', 'vacancy'));
 
     const inPipeline = candidates.filter((c) =>
-      ['applied', 'screening', 'interview', 'offer'].includes(c.stage),
+      // MOB-04b: someone in Visa & mobilisation is still in the pipeline.
+      ['applied', 'screening', 'interview', 'offer', 'mobilisation'].includes(c.stage),
     ).length;
     return {
       id: 'recruitment-pipeline',
@@ -274,6 +276,7 @@ export class ReportingService {
         count('screening', 'Screening'),
         count('interview', 'Interview'),
         count('offer', 'Offer'),
+        count('mobilisation', 'Visa & mobilisation'),
         count('hired', 'Hired'),
         count('closed', 'Rejected/withdrawn'),
         count('candidates', 'Candidates'),

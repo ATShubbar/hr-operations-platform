@@ -12,6 +12,8 @@ export const candidateStageSchema = z.enum([
   'hired',
   'rejected',
   'withdrawn',
+  // MOB-04b (ADR-018): Visa & mobilisation — between offer and hired.
+  'mobilisation',
 ]);
 
 export const candidateResponseSchema = z.object({
@@ -24,6 +26,9 @@ export const candidateResponseSchema = z.object({
   phone: z.string().nullable(),
   stage: candidateStageSchema,
   cvDocumentId: z.uuid().nullable(),
+  // The employee record made when the candidate entered Visa & mobilisation
+  // (MOB-04b) — null before that, and for a direct hire.
+  employeeId: z.uuid().nullable(),
   notes: z.string().nullable(),
   createdByUserId: z.uuid().nullable(),
   createdAt: z.string(),

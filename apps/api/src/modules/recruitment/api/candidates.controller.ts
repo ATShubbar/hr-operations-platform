@@ -128,6 +128,7 @@ function toResponse(c: CandidateRecord): CandidateResponse {
     phone: c.phone,
     stage: c.stage,
     cvDocumentId: c.cvDocumentId,
+    employeeId: c.employeeId,
     notes: c.notes,
     createdByUserId: c.createdByUserId,
     createdAt: c.createdAt.toISOString(),

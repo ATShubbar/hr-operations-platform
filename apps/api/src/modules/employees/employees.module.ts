@@ -6,6 +6,7 @@ import { AccessController } from './api/access.controller';
 import { DependantsController } from './api/dependants.controller';
 import { EmployeesController } from './api/employees.controller';
 import { CandidateHiredHandler } from './application/candidate-hired.handler';
+import { CandidateMobilisationHandler } from './application/candidate-mobilisation.handler';
 import { DependantsService } from './application/dependants.service';
 import { EmployeesService } from './application/employees.service';
 
@@ -19,7 +20,12 @@ import { EmployeesService } from './application/employees.service';
 @Module({
   imports: [AuditModule, AuthModule, ClientsModule],
   controllers: [EmployeesController, AccessController, DependantsController],
-  providers: [EmployeesService, DependantsService, CandidateHiredHandler],
+  providers: [
+    EmployeesService,
+    DependantsService,
+    CandidateHiredHandler,
+    CandidateMobilisationHandler,
+  ],
   exports: [EmployeesService, DependantsService],
 })
 export class EmployeesModule {}

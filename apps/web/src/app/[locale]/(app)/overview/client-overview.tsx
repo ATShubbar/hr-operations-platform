@@ -58,6 +58,7 @@ const EMPTY_PIPELINE: VacancyPipeline = {
   screening: 0,
   interview: 0,
   offer: 0,
+  mobilisation: 0,
   hired: 0,
 };
 
@@ -205,11 +206,18 @@ export function ClientOverview() {
       screening: sum.screening + v.pipeline.screening,
       interview: sum.interview + v.pipeline.interview,
       offer: sum.offer + v.pipeline.offer,
+      mobilisation: sum.mobilisation + v.pipeline.mobilisation,
       hired: sum.hired + v.pipeline.hired,
     }),
     EMPTY_PIPELINE,
   );
-  const inProgress = pipeline.applied + pipeline.screening + pipeline.interview + pipeline.offer;
+  // Someone in Visa & mobilisation is still on the way in (MOB-04b).
+  const inProgress =
+    pipeline.applied +
+    pipeline.screening +
+    pipeline.interview +
+    pipeline.offer +
+    pipeline.mobilisation;
   const openRoles = data.vacancies.filter((v) => v.status === 'open').length;
   const cleared =
     data.requests.filter((r) => isFinished('request', r.status) && isToday(r.updatedAt)).length +

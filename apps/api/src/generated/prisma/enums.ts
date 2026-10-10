@@ -245,7 +245,8 @@ export const CandidateStage = {
   offer: 'offer',
   hired: 'hired',
   rejected: 'rejected',
-  withdrawn: 'withdrawn'
+  withdrawn: 'withdrawn',
+  mobilisation: 'mobilisation'
 } as const
 
 export type CandidateStage = (typeof CandidateStage)[keyof typeof CandidateStage]

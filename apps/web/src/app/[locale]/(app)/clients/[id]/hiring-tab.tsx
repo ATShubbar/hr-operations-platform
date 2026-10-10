@@ -19,9 +19,9 @@ import { COLUMNS, isActive, type Column } from '../../hiring/stages';
 
 // The Client record's Hiring tab (DS-11): this company's slice of the hiring
 // board (DS-09) — a bar per board column and the candidates in it — with "Open
-// board" to move them. The Visa & mobilisation column is the board's
-// "coming soon" one and counts nothing yet. Rejected and withdrawn candidates
-// have left the board, so they are not counted here either.
+// board" to move them. Visa & mobilisation is a real stage since MOB-04b.
+// Rejected and withdrawn candidates have left the board, so they are not
+// counted here.
 //
 // The parent renders this only for candidate.read holders; a client manager
 // never sees candidates (REC-03, kept in DS-09).

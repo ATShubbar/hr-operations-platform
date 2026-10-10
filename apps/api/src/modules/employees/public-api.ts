@@ -3,6 +3,7 @@ export { EmployeesModule } from './employees.module';
 export { EmployeesService } from './application/employees.service';
 export { DependantsService } from './application/dependants.service';
 export { EmployeeTerminatedEvent } from './domain/employee-terminated.event';
+export { EmployeeJoinedEvent, EmployeeMobilisingEvent } from './domain/employee-mobilisation.event';
 export {
   PORTAL_EMPLOYEE_VISIBILITY,
   staffVisibility,

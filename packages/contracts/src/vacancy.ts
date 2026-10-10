@@ -15,6 +15,8 @@ export const vacancyPipelineSchema = z.object({
   screening: z.number().int(),
   interview: z.number().int(),
   offer: z.number().int(),
+  // MOB-04b: in Visa & mobilisation — the employee exists, onboarding is running.
+  mobilisation: z.number().int(),
   hired: z.number().int(),
 });
 

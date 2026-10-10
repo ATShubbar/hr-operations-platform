@@ -4,6 +4,7 @@ import { ClientsModule } from '../clients/public-api';
 import { CandidatesController } from './api/candidates.controller';
 import { VacanciesController } from './api/vacancies.controller';
 import { CandidatesService } from './application/candidates.service';
+import { EmployeeJoinedHandler } from './application/employee-joined.handler';
 import { VacanciesService } from './application/vacancies.service';
 
 // Recruitment module (ACTION-PLAN 4.1; ADR-003 layout). Vacancies: staff CRUD +
@@ -14,7 +15,7 @@ import { VacanciesService } from './application/vacancies.service';
 @Module({
   imports: [AuditModule, ClientsModule],
   controllers: [VacanciesController, CandidatesController],
-  providers: [VacanciesService, CandidatesService],
+  providers: [VacanciesService, CandidatesService, EmployeeJoinedHandler],
   exports: [VacanciesService, CandidatesService],
 })
 export class RecruitmentModule {}

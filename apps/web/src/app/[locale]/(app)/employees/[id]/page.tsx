@@ -271,7 +271,11 @@ export default function PersonRecordPage() {
         </TabsPanel>
 
         <TabsPanel value="mob">
-          <MobilisationTab employeeId={emp.id} terminated={emp.employmentStatus === 'terminated'} />
+          <MobilisationTab
+            employeeId={emp.id}
+            terminated={emp.employmentStatus === 'terminated'}
+            onEmployeeChanged={() => void refresh()}
+          />
         </TabsPanel>
       </Tabs>
 

@@ -39,7 +39,7 @@ import { toastError, toastSuccess } from '@/components/ui/toast';
 //
 // Staff only (the API refuses everyone else). Starting, filing, reopening and
 // cancelling need gro.process; the Auditor reads. Step titles and notes arrive as
-// KEYS and are translated here. A completed final exit offers no Reopen (MOB-01).
+// KEYS and are translated here. A completed sequence offers no Reopen (MOB-04b).
 // Refusals are explained in the user's language — the reopen rule is checked here
 // first, from the step list's own `needs`, and the server stays the guard.
 
@@ -52,9 +52,12 @@ const tone = (status: SequenceResponse['status']) =>
 export function MobilisationTab({
   employeeId,
   terminated,
+  onEmployeeChanged,
 }: {
   employeeId: string;
   terminated: boolean;
+  /** A sequence COMPLETED — the person's status may have changed (MOB-04b/05). */
+  onEmployeeChanged?: () => void;
 }) {
   const t = useTranslations('person.mob');
   const ts = useTranslations('states');
@@ -163,6 +166,8 @@ export function MobilisationTab({
       replace(updated);
       toastSuccess(t('toast.filed', { title: title(filing.step.key) }));
       setFiling(null);
+      // Completing an onboarding makes the person active: let the record refresh.
+      if (updated.status === 'completed') onEmployeeChanged?.();
     } catch (err) {
       setFiling(null);
       refused(err, t('error.generic'));
@@ -416,9 +421,10 @@ function SequenceCard({
   const next = run.steps.find((s) => s.state === 'ready');
   const pct = Math.round((done / run.steps.length) * 100);
   const live = run.status === 'running';
-  // A completed final exit is final (MOB-01); a cancelled run is closed.
-  const reopenable =
-    canProcess && (live || (run.status === 'completed' && run.kind === 'onboarding'));
+  // Only a RUNNING sequence can have a step reopened: a completed one is final —
+  // both kinds (MOB-04b; its completion has made the person active, or MOB-05
+  // terminated them) — and a cancelled one is closed.
+  const reopenable = canProcess && live;
 
   return (
     <div className="overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10">

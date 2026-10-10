@@ -2789,6 +2789,7 @@ export const CandidateScalarFieldEnum = {
   phone: 'phone',
   stage: 'stage',
   cvDocumentId: 'cvDocumentId',
+  employeeId: 'employeeId',
   notes: 'notes',
   createdByUserId: 'createdByUserId',
   createdAt: 'createdAt',
