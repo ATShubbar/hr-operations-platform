@@ -1627,6 +1627,13 @@ solely to keep a renewing document quiet. `escalation.read` → client_manager t
 `scopeOf` (employee refused even if granted — widened-policy test). Panel: client tabs Needs action · Updates
 ("PEOPLE&GRO team", opens `/portal/employees` or the request); employee tabs Needs action · About me · Updates (opens `/me`
 or `/me/requests?r=`); a 403 on the employee ladder (self-service off) falls back to Updates. API **847/847**.
+**NC-06 done — the notification-centre epic (ADR-021, NC-00..06) is COMPLETE.** Nothing to seed for a derived ladder:
+three seed DATES moved so Reminder is never empty (profession-change procedure due +2, Beta's employment-letter request due
++2, Omar Hassan's iqama +12). Fresh seed, signed in afresh: HR 29 items / 18 need action, GRO 30 / 14, client manager 2
+(portal off → requests only), employee-a 3. Smoke: 7 ladder checks (every stage present, count = items, mark-read round
+trip, thresholds 403, client = breaches only, employee = own, staff route 403 for an employee) — the "every stage" check
+holds on SEED DAY, so run `seed-and-smoke`. Follow-ups: NC-07 (stage emails; must replace the old scan's thresholds),
+SEED-02 (the seed leaves old sessions alive for recreated accounts).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
@@ -1646,6 +1653,12 @@ or `/me/requests?r=`); a 403 on the employee ladder (self-service off) falls bac
 - A seed that UPSERTS rows back to a seeded status must also reset every column a CHECK ties to that status — the
   seed left `info_returns_to` set and re-seeding failed on any request someone had put in `info_needed`, which would
   have broken Seed UAT the first time it was used (THREAD-03).
+- The seed RECREATES the seed accounts (new ids). A session opened before a re-seed still works but carries the old id, so
+  anything keyed on "me" (the ladder's "Assigned to me", own tasks) comes back empty — it looks like a bug in the feature.
+  Sign in again after every re-seed before measuring (NC-06; SEED-02 will end those sessions).
+- Local test runs can leave rows the seed does not remove (auto-opened renewal procedures, `UAT smoke…` requests). They
+  change counts — NC-01 reported nine quiet expiries where a clean seed has five. Before quoting a seed figure, check the
+  table holds only seeded rows (NC-06).
 - A test that asserts an ORDER must not depend on generated ids: two items that tie on the real sort keys were ordered by
   a key containing random uuids, so the spec passed alone and failed in the full run about half the time (NC-01). Settle
   ties in the test with the same rule, and assert everything else as written.

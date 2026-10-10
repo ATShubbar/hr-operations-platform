@@ -475,7 +475,7 @@ async function seedRequests(prisma: PrismaClient): Promise<number> {
     { id: 'a0000001-0000-4000-8000-000000000003', clientId: SEED_CLIENT_A, type: 'document' as const, title: 'Onboarding pack — Noura Alsubaie', priority: 'normal' as const, status: 'resolved' as const, dueDate: daysFromNow(-20), createdByUserId: repA.id },
     { id: 'a0000001-0000-4000-8000-000000000004', clientId: SEED_CLIENT_A, type: 'general' as const, title: 'Payroll correction — August overtime', description: 'Overtime hours for the warehouse team were understated.', priority: 'high' as const, status: 'open' as const, dueDate: daysFromNow(1), createdByUserId: repA.id },
     { id: 'a0000001-0000-4000-8000-000000000005', clientId: SEED_CLIENT_A, type: 'general' as const, title: 'Update commercial registration copy', priority: 'low' as const, status: 'closed' as const, dueDate: daysFromNow(-45), createdByUserId: repA.id },
-    { id: 'a0000002-0000-4000-8000-000000000001', clientId: SEED_CLIENT_B, type: 'certificate' as const, title: 'Employment letter — Rajesh Kumar', priority: 'normal' as const, status: 'open' as const, dueDate: daysFromNow(6), createdByUserId: repB.id },
+    { id: 'a0000002-0000-4000-8000-000000000001', clientId: SEED_CLIENT_B, type: 'certificate' as const, title: 'Employment letter — Rajesh Kumar', priority: 'normal' as const, status: 'open' as const, dueDate: daysFromNow(2), createdByUserId: repB.id },
     { id: 'a0000002-0000-4000-8000-000000000002', clientId: SEED_CLIENT_B, type: 'gro_service' as const, title: 'Exit-reentry visa — Anil Thomas', priority: 'high' as const, status: 'in_progress' as const, dueDate: daysFromNow(-1), createdByUserId: repB.id },
     { id: 'a0000002-0000-4000-8000-000000000003', clientId: SEED_CLIENT_B, type: 'general' as const, title: 'Final settlement — site labourer', priority: 'normal' as const, status: 'cancelled' as const, dueDate: daysFromNow(-30), createdByUserId: repB.id },
     { id: 'a0000002-0000-4000-8000-000000000004', clientId: SEED_CLIENT_B, type: 'letter' as const, title: 'Bank account opening letter — Kamal Uddin', priority: 'low' as const, status: 'open' as const, dueDate: daysFromNow(14), createdByUserId: repB.id },
@@ -608,6 +608,12 @@ async function seedCandidates(prisma: PrismaClient): Promise<number> {
   return candidates.length;
 }
 
+// NC-06 (ADR-021): the notification centre's ladder is DERIVED from the dates
+// seeded here and in the employees, dependants and requests above — there is
+// no ladder data to seed. The dates are spread so that every stage of every
+// rule has something in it on seed day (checked in evidence/escalations/
+// NC-06.md): Reminder in particular needed a procedure due in 2 days, a
+// request due in 2 days and a dependant's iqama 12 days out.
 async function seedGroProcesses(prisma: PrismaClient): Promise<number> {
   // Government processes (GRO-01) across the workflow, INCLUDING overdue ones —
   // a deadline screen with everything comfortably in the future teaches nothing.
@@ -624,7 +630,7 @@ async function seedGroProcesses(prisma: PrismaClient): Promise<number> {
     { id: 'e1000002-0000-4000-8000-000000000002', clientId: SEED_CLIENT_B, employeeId: 'e0000002-0000-4000-8000-000000000003', type: 'iqama_renewal' as const, status: 'rejected' as const, referenceNumber: 'MUQ-2026-00994', dueDate: daysFromNow(-11), assigneeUserId: by },
     { id: 'e1000002-0000-4000-8000-000000000003', clientId: SEED_CLIENT_B, employeeId: 'e0000002-0000-4000-8000-000000000004', type: 'exit_reentry' as const, status: 'completed' as const, referenceNumber: 'MUQ-2026-00512', dueDate: daysFromNow(-18), resultingExpiry: daysFromNow(160), assigneeUserId: by },
     { id: 'e1000003-0000-4000-8000-000000000001', clientId: SEED_CLIENT_C, employeeId: 'e0000003-0000-4000-8000-000000000002', type: 'iqama_renewal' as const, status: 'in_progress' as const, referenceNumber: 'MUQ-2026-01204', dueDate: daysFromNow(1), assigneeUserId: by },
-    { id: 'e1000004-0000-4000-8000-000000000001', clientId: SEED_CLIENT_D, employeeId: 'e0000004-0000-4000-8000-000000000002', type: 'profession_change' as const, status: 'not_started' as const, dueDate: daysFromNow(13), assigneeUserId: by },
+    { id: 'e1000004-0000-4000-8000-000000000001', clientId: SEED_CLIENT_D, employeeId: 'e0000004-0000-4000-8000-000000000002', type: 'profession_change' as const, status: 'not_started' as const, dueDate: daysFromNow(2), assigneeUserId: by },
   ];
   for (const { id, ...rest } of processes) {
     await prisma.groProcess.upsert({ where: { id }, create: { id, ...rest }, update: rest });
@@ -868,7 +874,7 @@ const SEED_DEPENDANTS: ReadonlyArray<{
 }> = [
   // Ahmed Hassan (EG, client A)
   { id: 'f2000001-0000-4000-8000-000000000001', employeeId: 'e0000001-0000-4000-8000-000000000002', relationship: 'spouse', en: 'Yasmin Hassan', ar: 'ياسمين حسن', born: 34, iqama: '2400000101', iqamaExpiry: 45, passportExpiry: 900, insuranceExpiry: 120 },
-  { id: 'f2000001-0000-4000-8000-000000000002', employeeId: 'e0000001-0000-4000-8000-000000000002', relationship: 'son', en: 'Omar Hassan', ar: 'عمر حسن', born: 7, iqama: '2400000102', iqamaExpiry: 45, passportExpiry: 400, insuranceExpiry: 120 },
+  { id: 'f2000001-0000-4000-8000-000000000002', employeeId: 'e0000001-0000-4000-8000-000000000002', relationship: 'son', en: 'Omar Hassan', ar: 'عمر حسن', born: 7, iqama: '2400000102', iqamaExpiry: 12, passportExpiry: 400, insuranceExpiry: 120 },
   // Syed Ali (PK, client A)
   { id: 'f2000001-0000-4000-8000-000000000003', employeeId: 'e0000001-0000-4000-8000-000000000004', relationship: 'spouse', en: 'Sadia Ali', ar: 'سعدية علي', born: 31, iqama: '2400000201', iqamaExpiry: 210, passportExpiry: 1200, insuranceExpiry: 75 },
   // Rajesh Kumar (IN, client B)

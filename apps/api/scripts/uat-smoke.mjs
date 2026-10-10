@@ -263,6 +263,63 @@ async function main() {
     );
   }
 
+  // The notification centre (NC-06, ADR-021): the ladder is DERIVED from the
+  // seeded dates, so this also proves the seed still lands on every stage.
+  const urgent = (i) => i.told && !i.read && (i.stage === 'breach' || i.stage === 'escalation');
+  if (hr) {
+    const ladder = await call('/escalations', { cookie: hr });
+    const items = ladder.json?.items ?? [];
+    const stages = new Set(items.map((i) => i.stage));
+    check(
+      ladder.status === 200 && ['breach', 'escalation', 'reminder', 'notice'].every((st) => stages.has(st)),
+      'ladder: HR sees something at every stage',
+      `HTTP ${ladder.status}, ${items.length} items, stages ${[...stages].join('/')}`,
+    );
+    const count = await call('/escalations/count', { cookie: hr });
+    check(
+      count.json?.needsAction === items.filter(urgent).length,
+      'ladder: the bell count matches the items',
+      `${count.json?.needsAction} vs ${items.filter(urgent).length}`,
+    );
+    const first = items.find((i) => !i.read);
+    if (first) {
+      const marked = await call('/escalations/read', { cookie: hr, method: 'POST', body: { keys: [first.key] } });
+      const again = await call('/escalations', { cookie: hr });
+      check(
+        marked.json?.marked === 1 && again.json?.items?.find((i) => i.key === first.key)?.read === true,
+        'ladder: an item is marked read and stays read',
+        `HTTP ${marked.status}`,
+      );
+    }
+    const refused = await call('/config/system/escalation.thresholds', {
+      cookie: hr,
+      method: 'PATCH',
+      body: { value: ladder.json?.thresholds },
+    });
+    check(refused.status === 403, 'ladder: HR cannot change the thresholds', `HTTP ${refused.status}`);
+  }
+  if (cm) {
+    const ladder = await call('/escalations', { cookie: cm });
+    const items = ladder.json?.items ?? [];
+    check(
+      ladder.status === 200 &&
+        items.every((i) => i.stage === 'breach' && i.owner === null && i.client?.id === CLIENT_A),
+      'ladder: a client manager sees only breaches at their own company, with no staff named',
+      `HTTP ${ladder.status}, ${items.length} items`,
+    );
+  }
+  if (sessions.employee) {
+    const own = await call('/me/escalations', { cookie: sessions.employee });
+    const items = own.json?.items ?? [];
+    check(
+      own.status === 200 && items.length > 0 && items.every((i) => i.mine && i.owner === null),
+      'ladder: an employee sees the items about their own record',
+      `HTTP ${own.status}, ${items.length} items`,
+    );
+    const staffRoute = await call('/escalations', { cookie: sessions.employee });
+    check(staffRoute.status === 403, 'ladder: the staff ladder is refused to an employee', `HTTP ${staffRoute.status}`);
+  }
+
   for (const cookie of Object.values(sessions)) {
     await call('/auth/logout', { cookie, method: 'POST' });
   }
