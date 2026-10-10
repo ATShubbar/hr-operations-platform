@@ -29,6 +29,10 @@ import {
   type SelfRequestListResponse,
   type SelfRequestResponse,
   type SelfDependantListResponse,
+  markEscalationsReadRequestSchema,
+  type EscalationCountResponse,
+  type EscalationLadderResponse,
+  type MarkEscalationsReadResponse,
 } from '@hr/contracts';
 import { RequirePermission } from '../../../auth/permissions.decorator';
 import { requestContext } from '../../../context/request-context';
@@ -36,6 +40,7 @@ import type { EmployeeModel as EmployeeRecord } from '../../../generated/prisma/
 import { ClientsService } from '../../clients/public-api';
 import { ConfigService } from '../../configuration/public-api';
 import { DocumentsService, toSelfDocumentResponse } from '../../documents/public-api';
+import { EscalationsService } from '../../escalations/public-api';
 import {
   DependantsService,
   EmployeesService,
@@ -87,6 +92,7 @@ export class SelfServiceController {
     private readonly thread: RequestThreadService,
     private readonly attachments: RequestAttachmentsService,
     private readonly sla: ServiceLevelService,
+    private readonly escalations: EscalationsService,
   ) {}
 
   @RequirePermission('self-service.read')
@@ -193,11 +199,16 @@ export class SelfServiceController {
   @RequirePermission('self-service.create')
   @Post('requests/:id/comments')
   @HttpCode(201)
-  async addMyRequestComment(@Param('id') id: string, @Body() body: unknown): Promise<RequestComment> {
+  async addMyRequestComment(
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ): Promise<RequestComment> {
     const record = await this.ownRecord();
     const parsed = createRequestCommentSchema.safeParse(body);
     if (!parsed.success) throw new BadRequestException('A comment needs 1 to 4000 characters');
-    const row = UUID_RE.test(id) ? await this.thread.addForEmployee(record.id, id, parsed.data.body) : null;
+    const row = UUID_RE.test(id)
+      ? await this.thread.addForEmployee(record.id, id, parsed.data.body)
+      : null;
     if (!row) throw new NotFoundException('Request not found');
     return row;
   }
@@ -237,7 +248,10 @@ export class SelfServiceController {
     @Param('fileId') fileId: string,
   ): Promise<RequestAttachment> {
     const path = await this.myPath();
-    const row = UUID_RE.test(id) && UUID_RE.test(fileId) ? await this.attachments.confirm(path, id, fileId) : null;
+    const row =
+      UUID_RE.test(id) && UUID_RE.test(fileId)
+        ? await this.attachments.confirm(path, id, fileId)
+        : null;
     if (!row) throw new NotFoundException('File not found');
     return row;
   }
@@ -249,7 +263,10 @@ export class SelfServiceController {
     @Param('fileId') fileId: string,
   ): Promise<DownloadResponse> {
     const path = await this.myPath();
-    const url = UUID_RE.test(id) && UUID_RE.test(fileId) ? await this.attachments.download(path, id, fileId) : null;
+    const url =
+      UUID_RE.test(id) && UUID_RE.test(fileId)
+        ? await this.attachments.download(path, id, fileId)
+        : null;
     if (!url) throw new NotFoundException('File not found');
     return { url, method: 'GET', expiresInSeconds: ATTACHMENT_DOWNLOAD_TTL_SECONDS };
   }
@@ -261,7 +278,10 @@ export class SelfServiceController {
     @Param('fileId') fileId: string,
   ): Promise<RequestAttachment> {
     const path = await this.myPath();
-    const row = UUID_RE.test(id) && UUID_RE.test(fileId) ? await this.attachments.remove(path, id, fileId) : null;
+    const row =
+      UUID_RE.test(id) && UUID_RE.test(fileId)
+        ? await this.attachments.remove(path, id, fileId)
+        : null;
     if (!row) throw new NotFoundException('File not found');
     return row;
   }
@@ -318,6 +338,37 @@ export class SelfServiceController {
   // My own fenced path — the employee id comes from my record (the session), never input.
   private async myPath(): Promise<{ kind: 'employee'; employeeId: string }> {
     return { kind: 'employee', employeeId: (await this.ownRecord()).id };
+  }
+
+  // My notifications (NC-05, ADR-021): the escalation ladder for my own record
+  // — my documents and my dependants' as they near expiry, and the requests I
+  // raised as their service level runs out. Same gates as the rest of /me. The
+  // record handed to the ladder is the fenced, gated one from `ownRecord()`.
+  @RequirePermission('self-service.read')
+  @Get('escalations')
+  async myEscalations(): Promise<EscalationLadderResponse> {
+    return this.escalations.ladder({ kind: 'employee', record: await this.ownRecord() });
+  }
+
+  @RequirePermission('self-service.read')
+  @Get('escalations/count')
+  async myEscalationCount(): Promise<EscalationCountResponse> {
+    const record = await this.ownRecord();
+    return { needsAction: await this.escalations.count({ kind: 'employee', record }) };
+  }
+
+  // Marks my own items read — a read-state toggle on what I am already shown
+  // (like marking a bell item read), so it sits behind `self-service.read`.
+  @RequirePermission('self-service.read')
+  @Post('escalations/read')
+  @HttpCode(200)
+  async markMyEscalationsRead(@Body() body: unknown): Promise<MarkEscalationsReadResponse> {
+    const record = await this.ownRecord();
+    const parsed = markEscalationsReadRequestSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException('Send the keys of the items to mark read');
+    return {
+      marked: await this.escalations.markRead({ kind: 'employee', record }, parsed.data.keys),
+    };
   }
 
   private async ownRecord(): Promise<EmployeeRecord> {

@@ -883,7 +883,8 @@
         "action": "Needs action",
         "mine": "Assigned to me",
         "all": "Everything",
-        "updates": "Updates"
+        "updates": "Updates",
+        "aboutMe": "About me"
       },
       "stage": {
         "breach": "Breach · acting now",
@@ -949,7 +950,10 @@
         "escalation": "Escalated",
         "reminder": "Reminder",
         "notice": "Notice"
-      }
+      },
+      "team": "PEOPLE&GRO team",
+      "footEmployee": "The PEOPLE&GRO team is notified on the same schedule, and acts before anything lapses.",
+      "quietClient": "{count, plural, one {# lapsed document is already being renewed by the PEOPLE&GRO team, so it is not listed.} other {# lapsed documents are already being renewed by the PEOPLE&GRO team, so they are not listed.}}"
     },
     "rules": {
       "title": "Escalation rules",

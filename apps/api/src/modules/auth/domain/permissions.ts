@@ -284,6 +284,9 @@ const CLIENT_MANAGER: readonly Permission[] = [
   'search.read',
   // ADR-016: post on their company's request threads.
   'request.comment',
+  // ADR-021 (NC-05): the ladder — for a client, what has LAPSED or breached
+  // its service level at their own company.
+  'escalation.read',
 ];
 
 // Each bundle is a column of the v1.7 permission matrix; the matrix spec

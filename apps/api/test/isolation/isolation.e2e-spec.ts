@@ -213,7 +213,9 @@ describe('Cross-client isolation harness (e2e)', () => {
       });
       const mk = async (name: string) => {
         const row = await prisma.employee.create({
-          data: { clientId: companyId, nameAr: 'اختبار', nameEn: `ISO-employee ${name}`, nationality: 'EG', contractType: 'unlimited' },
+          // A lapsed passport each (NC-05): GET /me/escalations then carries the
+          // owner's id in its item key, as the `employee` class requires.
+          data: { clientId: companyId, nameAr: 'اختبار', nameEn: `ISO-employee ${name}`, nationality: 'EG', contractType: 'unlimited', passportExpiry: new Date('2020-01-01T00:00:00Z') },
         });
         created.push(row.id);
         return row.id;

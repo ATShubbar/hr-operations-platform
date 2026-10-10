@@ -82,9 +82,19 @@ function relativeTime(iso: string, locale: Locale, justNow: string): string {
   return rtf.format(-Math.round(mon / 12), 'year');
 }
 
-/** Where an item is acted on. */
-function hrefOf(item: EscalationItem): string {
+type Audience = 'staff' | 'client' | 'employee';
+
+/** Where an item is acted on — which differs by who is looking. */
+function hrefOf(item: EscalationItem, audience: Audience): string {
   const s = item.subject;
+  if (audience === 'employee') {
+    // An employee's own screens: their file, or the request they raised.
+    return s.kind === 'request' ? `/me/requests?r=${s.id}` : '/me';
+  }
+  if (audience === 'client') {
+    // A client manager: their register, or the request.
+    return s.kind === 'request' ? `/requests?r=${s.id}` : '/portal/employees';
+  }
   switch (s.kind) {
     case 'document':
       return `/employees/${s.employee.id}?tab=docs`;
@@ -108,11 +118,27 @@ export function NotificationCentre() {
   const locale = useLocale() as Locale;
   const router = useRouter();
   const me = useSession();
-  // The ladder is staff-only until NC-05; `escalation.read` says who has it.
-  const hasLadder = useCan('escalation.read') && me.principalType === 'staff';
+  // Who is looking decides which ladder is asked for (NC-05): staff and client
+  // managers hold `escalation.read`; an employee's is under /me, behind the
+  // same permission as the rest of their file.
+  const canLadder = useCan('escalation.read');
+  const canSelf = useCan('self-service.read');
+  const audience: Audience =
+    me.principalType === 'employee'
+      ? 'employee'
+      : me.principalType === 'client_rep'
+        ? 'client'
+        : 'staff';
+  const base = audience === 'employee' ? '/me/escalations' : '/escalations';
+  // `ladderOff`: the server refused it (an employee whose company has
+  // self-service switched off). The panel then is the Updates list alone.
+  const [ladderOff, setLadderOff] = useState(false);
+  const hasLadder = (audience === 'employee' ? canSelf : canLadder) && !ladderOff;
 
   const [open, setOpen] = useState(false);
-  const [tab, setTab] = useState<Tab>(hasLadder ? 'action' : 'updates');
+  const [picked, setTab] = useState<Tab>('action');
+  // Without a ladder there is one list: the updates.
+  const tab: Tab = hasLadder ? picked : 'updates';
   const [ladder, setLadder] = useState<EscalationLadderResponse | null>(null);
   const [updates, setUpdates] = useState<NotificationResponse[]>([]);
   const [unreadUpdates, setUnreadUpdates] = useState(0);
@@ -134,7 +160,11 @@ export function NotificationCentre() {
       const [n, e] = await Promise.all([
         apiFetch<NotificationListResponse>('/notifications'),
         hasLadder
-          ? apiFetch<EscalationCountResponse>('/escalations/count')
+          ? apiFetch<EscalationCountResponse>(`${base}/count`).catch((err: unknown) => {
+              if (err instanceof ApiError && err.status === 403) setLadderOff(true);
+              else throw err;
+              return { needsAction: 0 };
+            })
           : Promise.resolve({ needsAction: 0 }),
       ]);
       setUnreadUpdates(n.unreadCount);
@@ -142,7 +172,7 @@ export function NotificationCentre() {
     } catch (err) {
       signedOut(err);
     }
-  }, [hasLadder, signedOut]);
+  }, [hasLadder, base, signedOut]);
   useEffect(() => {
     void refreshCount();
     const id = setInterval(() => void refreshCount(), POLL_MS);
@@ -155,7 +185,13 @@ export function NotificationCentre() {
     try {
       const [n, l] = await Promise.all([
         apiFetch<NotificationListResponse>('/notifications'),
-        hasLadder ? apiFetch<EscalationLadderResponse>('/escalations') : Promise.resolve(null),
+        hasLadder
+          ? apiFetch<EscalationLadderResponse>(base).catch((err: unknown) => {
+              if (err instanceof ApiError && err.status === 403) setLadderOff(true);
+              else throw err;
+              return null;
+            })
+          : Promise.resolve(null),
       ]);
       setUpdates(n.notifications);
       setUnreadUpdates(n.unreadCount);
@@ -169,7 +205,7 @@ export function NotificationCentre() {
       signedOut(err);
       setFailed(true);
     }
-  }, [hasLadder, signedOut]);
+  }, [hasLadder, base, signedOut]);
 
   async function onOpenChange(next: boolean) {
     setOpen(next);
@@ -229,6 +265,10 @@ export function NotificationCentre() {
     return name(s.employee.name);
   }
   function metaOf(i: EscalationItem): string {
+    // An employee: just what kind of deadline it is. A client manager: the
+    // work is PEOPLE&GRO's — no member of staff is named to them.
+    if (audience === 'employee') return tc(`rule.${i.rule}`);
+    if (audience === 'client') return `${tc('team')} · ${tc(`rule.${i.rule}`)}`;
     const owner =
       i.owner === null
         ? tc('unassigned')
@@ -242,7 +282,7 @@ export function NotificationCentre() {
 
   async function markKeys(keys: string[]) {
     for (let at = 0; at < keys.length; at += MARK_CHUNK) {
-      await apiFetch('/escalations/read', {
+      await apiFetch(`${base}/read`, {
         method: 'POST',
         body: JSON.stringify({ keys: keys.slice(at, at + MARK_CHUNK) }),
       });
@@ -252,7 +292,7 @@ export function NotificationCentre() {
   // Opening an item marks it read and goes to where it is acted on.
   async function openItem(i: EscalationItem) {
     setOpen(false);
-    router.push(hrefOf(i));
+    router.push(hrefOf(i, audience));
     if (i.read) return;
     try {
       await markKeys([i.key]);
@@ -297,14 +337,25 @@ export function NotificationCentre() {
   }
 
   const total = needsAction + unreadUpdates;
-  const tabs: Array<{ value: Tab; label: string; n: number }> = hasLadder
-    ? [
-        { value: 'action', label: tc('tab.action'), n: pools.action.length },
-        { value: 'mine', label: tc('tab.mine'), n: pools.mine.length },
-        { value: 'all', label: tc('tab.all'), n: pools.all.length },
-        { value: 'updates', label: tc('tab.updates'), n: unreadUpdates },
-      ]
-    : [];
+  // The tabs each audience needs — a tab that could only repeat another, or
+  // could never hold anything, is left out:
+  //   · a client manager is told only at Breach, so "Everything" would repeat
+  //     "Needs action", and nothing is ever assigned to them;
+  //   · for an employee every item is about them, so "About me" IS everything.
+  const tabs: Array<{ value: Tab; label: string; n: number }> = !hasLadder
+    ? []
+    : [
+        { value: 'action' as const, label: tc('tab.action'), n: pools.action.length },
+        ...(audience === 'staff'
+          ? [
+              { value: 'mine' as const, label: tc('tab.mine'), n: pools.mine.length },
+              { value: 'all' as const, label: tc('tab.all'), n: pools.all.length },
+            ]
+          : audience === 'employee'
+            ? [{ value: 'mine' as const, label: tc('tab.aboutMe'), n: pools.mine.length }]
+            : []),
+        { value: 'updates' as const, label: tc('tab.updates'), n: unreadUpdates },
+      ];
 
   const groups = GROUP_ORDER.map((stage) => ({
     stage,
@@ -517,23 +568,35 @@ export function NotificationCentre() {
         {hasLadder && tab !== 'updates' && ladder && (
           <div className="flex items-center gap-2.5 border-t bg-neutral-50 px-3.5 py-2.5">
             <p className="min-w-0 grow text-[11px] leading-[15px] text-pretty text-muted-foreground">
-              {ladder.suppressed > 0 && (
+              {audience === 'employee' ? (
                 <span>
-                  <bdi>{tc('quiet', { count: ladder.suppressed })}</bdi>
+                  <bdi>{tc('footEmployee')}</bdi>
                 </span>
+              ) : (
+                ladder.suppressed > 0 && (
+                  <span>
+                    <bdi>
+                      {tc(audience === 'client' ? 'quietClient' : 'quiet', {
+                        count: ladder.suppressed,
+                      })}
+                    </bdi>
+                  </span>
+                )
               )}
             </p>
-            <Button
-              variant="outline"
-              size="xs"
-              className="shrink-0"
-              onClick={() => {
-                setOpen(false);
-                setRulesOpen(true);
-              }}
-            >
-              {tc('rules')}
-            </Button>
+            {audience !== 'employee' && (
+              <Button
+                variant="outline"
+                size="xs"
+                className="shrink-0"
+                onClick={() => {
+                  setOpen(false);
+                  setRulesOpen(true);
+                }}
+              >
+                {tc('rules')}
+              </Button>
+            )}
           </div>
         )}
       </PopoverContent>

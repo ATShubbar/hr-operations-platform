@@ -1,12 +1,4 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  ForbiddenException,
-  Get,
-  HttpCode,
-  Post,
-} from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, HttpCode, Post } from '@nestjs/common';
 import {
   markEscalationsReadRequestSchema,
   type EscalationCountResponse,
@@ -16,12 +8,13 @@ import {
 import { RequirePermission } from '../../../auth/permissions.decorator';
 import { scopeOf } from '../../../auth/scope';
 import { requestContext } from '../../../context/request-context';
-import { EscalationsService } from '../application/escalations.service';
+import { EscalationsService, type LadderView } from '../application/escalations.service';
 
-// The notification centre's ladder (NC-01, ADR-021): what has reached which
-// stage, for the person asking. STAFF for now — `scopeOf` refuses every other
-// principal, whatever they hold; client managers and employees get their own
-// paths in NC-05.
+// The notification centre's ladder (ADR-021): what has reached which stage,
+// for the person asking. Staff (NC-01) and client managers (NC-05) share these
+// routes; `scopeOf` decides the path from the SESSION — staff see the register
+// they may read, a client manager their own company — and refuses every other
+// principal whatever it holds. Employees have their own routes under `/me`.
 @Controller('escalations')
 export class EscalationsController {
   constructor(private readonly escalations: EscalationsService) {}
@@ -29,16 +22,14 @@ export class EscalationsController {
   @RequirePermission('escalation.read')
   @Get()
   ladder(): Promise<EscalationLadderResponse> {
-    this.staffOnly();
-    return this.escalations.forStaff();
+    return this.escalations.ladder(this.view());
   }
 
   // The bell's number, without the whole ladder.
   @RequirePermission('escalation.read')
   @Get('count')
   async count(): Promise<EscalationCountResponse> {
-    this.staffOnly();
-    return { needsAction: await this.escalations.countForStaff() };
+    return { needsAction: await this.escalations.count(this.view()) };
   }
 
   // Marks the caller's OWN items read. Under `escalation.read`, as marking a
@@ -48,15 +39,18 @@ export class EscalationsController {
   @Post('read')
   @HttpCode(200)
   async markRead(@Body() body: unknown): Promise<MarkEscalationsReadResponse> {
-    this.staffOnly();
+    const view = this.view();
     const parsed = markEscalationsReadRequestSchema.safeParse(body);
     if (!parsed.success) throw new BadRequestException('Send the keys of the items to mark read');
-    return { marked: await this.escalations.markReadForStaff(parsed.data.keys) };
+    return { marked: await this.escalations.markRead(view, parsed.data.keys) };
   }
 
-  private staffOnly(): void {
-    if (scopeOf(requestContext.get()).kind !== 'staff') {
-      throw new ForbiddenException('The ladder is not available to this account yet');
-    }
+  // Staff, or a client manager for their own company. `scopeOf` throws 403 for
+  // anyone else (an employee, a client account with no company).
+  private view(): LadderView {
+    const scope = scopeOf(requestContext.get());
+    return scope.kind === 'client'
+      ? { kind: 'client', clientId: scope.clientId }
+      : { kind: 'staff' };
   }
 }

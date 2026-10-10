@@ -211,10 +211,17 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   // BILL-04: commercial terms + the estimate — staff only (`billing.*`).
   'GET /billing/clients/:clientId': 'staff',
   'PUT /billing/clients/:clientId/terms': 'staff',
-  // NC-01 (ADR-021): the escalation ladder — staff for now (client managers: NC-05).
-  'GET /escalations': 'staff',
-  'GET /escalations/count': 'staff',
-  'POST /escalations/read': 'staff',
+  // ADR-021: the escalation ladder — staff, and (NC-05) a client manager for
+  // their OWN company; own-company scoping is proven in escalation-audiences.e2e.
+  'GET /escalations': 'client-read',
+  'GET /escalations/count': 'client-read',
+  'POST /escalations/read': 'client-write',
+  // NC-05: an employee's own ladder. The list carries their id in its item
+  // keys; the count and the mark carry no id, so they are 401-probed here and
+  // proven per-endpoint.
+  'GET /me/escalations': 'employee',
+  'GET /me/escalations/count': 'employee-read',
+  'POST /me/escalations/read': 'employee-write',
   // BILL-05: invoice records — staff only (`billing.*`).
   'GET /billing/clients/:clientId/invoices': 'staff',
   'POST /billing/clients/:clientId/invoices': 'staff',

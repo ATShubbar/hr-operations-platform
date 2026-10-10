@@ -1615,6 +1615,18 @@ anyone with the ladder: per rule, each stage's start and who it tells (`STAGE_AU
 (Administrator) gets day pickers + Reset to standard + **Save** — NOT the prototype's apply-on-pick (a system-wide setting,
 and two stages of one rule must change together or pass through an order the server refuses); `thresholdOrderProblem`
 names the offending stage and disables Save. Others see text + Done. No API change.
+**NC-05 done — client managers and employees have a ladder (ADR-021 rev. 2).** `ladder.ts`: ONE `reach(input, access)`
+for the rules + three builders — `buildLadder` (staff), `buildClientLadder` (only stages whose audience names "the client":
+Breach of a document or a request; owner NEVER shown; no dependants/procedures/tasks), `buildEmployeeLadder` (every stage
+of own documents, own dependants, own raised requests; owner never shown). `EscalationsService.ladder/count/markRead(view)`
+with `LadderView` staff · client(id) · employee(record). Client reads: people + procedures ONLY while
+`flag.client-self-service` is on (`employees.listByClient`, `processes.listForClient`), requests via `listForClient`
+regardless. Employee: `/me/escalations`, `/count`, `/read` in SelfServiceController behind `ownRecord()` — **Self-Service
+imports EscalationsModule** (the one module that does); the employee's own open procedures are read on the STAFF connection
+solely to keep a renewing document quiet. `escalation.read` → client_manager too; `/escalations*` are dual-path via
+`scopeOf` (employee refused even if granted — widened-policy test). Panel: client tabs Needs action · Updates
+("PEOPLE&GRO team", opens `/portal/employees` or the request); employee tabs Needs action · About me · Updates (opens `/me`
+or `/me/requests?r=`); a 403 on the employee ladder (self-service off) falls back to Updates. API **847/847**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

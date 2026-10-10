@@ -1,6 +1,6 @@
 # ADR-021 — The notification centre: an escalation ladder, derived, not stored
 
-- Status: Accepted (rev. 1, 2026-10-10: four points settled while building NC-01)
+- Status: Accepted (rev. 1, 2026-10-10: four points settled while building NC-01; rev. 2, 2026-10-11: six points settled while building NC-05)
 - Date: 2026-10-10
 - Owner: Ahmed Alshubbar (product decision; NC-00)
 - Amends: **architecture.md**. A new delivery module, one permission and one matrix row. Now **v1.15**.
@@ -55,6 +55,15 @@ Four points the first text left open. Each follows from a rule already above.
 - **A Saudi national's iqama and work permit are not watched.** They have neither; this is the People screen's rule.
 - **An expiry owned by a role is owned by each person in that role.** With no named officer, every GRO officer has the company's iqamas under "Assigned to me".
 - **The count of quiet items is per viewer.** It counts only expiries that person could have read.
+
+### Settled while building (rev. 2, NC-05)
+
+- **Self-Service imports Escalations.** The employee's ladder is served under `/me`, and the gate for `/me` (the session's own record, the company's switch, a live record) lives in the Self-Service module. Rather than copy that gate, Self-Service calls the Escalations service. Escalations imports only domain modules, so the edge closes no loop. "Nothing imports it" above now reads: nothing but Self-Service.
+- **A client manager's tabs are Needs action and Updates.** They are told only at Breach, so "Everything" would repeat "Needs action", and nothing is ever assigned to them.
+- **An employee's tabs are Needs action, About me and Updates.** Every item is about them, so "About me" is everything.
+- **A client manager is never shown an owner.** To them the work is PEOPLE&GRO's.
+- **A client manager sees no dependant.** ADR-017 gives clients no view of dependants; the ladder follows it.
+- **An employee's open procedures are read on the staff connection**, for one purpose: to keep quiet a document that is already being renewed. No procedure is returned to them.
 
 ### Who is told at each stage
 

@@ -121,38 +121,44 @@ type Owner = { userId: string } | { role: OwnerRole } | null;
 /** An item as the rules produce it. Whether the viewer has READ it is added by the service. */
 export type LadderItem = Omit<EscalationItem, 'read'>;
 
-export function buildLadder(
+/** What a viewer's own read access lets the rules produce. */
+interface ReadAccess {
+  employees: boolean;
+  govdata: boolean;
+  dependants: boolean;
+  procedures: boolean;
+  tasks: boolean;
+  requests: boolean;
+}
+
+/** An obligation that has reached a stage, before it is addressed to a viewer. */
+interface Reached {
+  key: string;
+  rule: EscalationRule;
+  stage: EscalationStage;
+  dueOn: string;
+  daysLeft: number;
+  subject: EscalationSubject;
+  clientId: string | null;
+  owner: Owner;
+}
+
+// THE RULES, once, for every kind of viewer: which obligations have reached
+// which stage, among the rows handed in and the kinds `access` allows. Who is
+// then told, and what they are shown of the owner, differs by viewer and is
+// decided by the three builders below.
+function reach(
   input: LadderInput,
-  viewer: LadderViewer,
-): { items: LadderItem[]; suppressed: number } {
+  access: ReadAccess,
+): { reached: Reached[]; quiet: EscalationStage[] } {
   const { today, thresholds } = input;
   const clients = new Map(input.clients.map((c) => [c.id, c]));
   const people = new Map(input.people.map((p) => [p.id, p]));
   const requests = new Map(input.requests.map((r) => [r.id, r]));
-  const items: LadderItem[] = [];
-  let suppressed = 0;
+  const reached: Reached[] = [];
+  // The stage each QUIET expiry would have been at (its renewal is open).
+  const quiet: EscalationStage[] = [];
 
-  const clientOf = (id: string | null): LadderItem['client'] => {
-    const c = id ? clients.get(id) : undefined;
-    return c ? { id: c.id, name: c.name } : null;
-  };
-  const isMine = (owner: Owner): boolean =>
-    owner !== null &&
-    ('userId' in owner ? owner.userId === viewer.userId : owner.role === viewer.role);
-  const isTold = (rule: EscalationRule, stage: EscalationStage, mine: boolean): boolean => {
-    const audience = STAGE_AUDIENCE[rule][stage] ?? [];
-    return (
-      (audience.includes('owner') && mine) ||
-      (audience.includes('hr') && viewer.role === 'hr_officer') ||
-      (audience.includes('admin') && viewer.role === 'administrator')
-    );
-  };
-  const present = (owner: Owner): EscalationOwner | null =>
-    owner === null
-      ? null
-      : 'userId' in owner
-        ? { kind: 'person', name: input.names.get(owner.userId) ?? null }
-        : { kind: 'role', role: owner.role };
   const push = (
     key: string,
     rule: EscalationRule,
@@ -163,20 +169,7 @@ export function buildLadder(
   ): void => {
     const days = daysLeft(today, dueOn);
     const stage = stageFor(rule, days, thresholds);
-    if (!stage) return;
-    const mine = isMine(owner);
-    items.push({
-      key,
-      rule,
-      stage,
-      dueOn,
-      daysLeft: days,
-      subject,
-      client: clientOf(clientId),
-      owner: present(owner),
-      mine,
-      told: isTold(rule, stage, mine),
-    });
+    if (stage) reached.push({ key, rule, stage, dueOn, daysLeft: days, subject, clientId, owner });
   };
 
   // ---- document expiry: people under management, and their dependants ----
@@ -197,7 +190,7 @@ export function buildLadder(
     }
   }
 
-  if (viewer.can('employee.read')) {
+  if (access.employees) {
     for (const p of input.people) {
       if (!watched(p)) continue;
       const employee = { id: p.id, name: p.name };
@@ -205,10 +198,11 @@ export function buildLadder(
         const dueOn = p.dates[doc];
         if (!dueOn) continue;
         if (EXPAT_ONLY.has(doc) && p.nationality.toUpperCase() === 'SA') continue;
-        if (GOVDATA_DOCS.has(doc) && !viewer.can('govdata.read')) continue;
-        if (stageFor('expiry', daysLeft(today, dueOn), thresholds) === null) continue;
+        if (GOVDATA_DOCS.has(doc) && !access.govdata) continue;
+        const stage = stageFor('expiry', daysLeft(today, dueOn), thresholds);
+        if (stage === null) continue;
         if (beingRenewed.has(`${p.id}:${doc}`)) {
-          suppressed += 1;
+          quiet.push(stage);
           continue;
         }
         push(
@@ -221,6 +215,8 @@ export function buildLadder(
         );
       }
     }
+  }
+  if (access.employees && access.dependants) {
     for (const d of input.dependants) {
       const sponsor = people.get(d.employeeId);
       if (!watched(sponsor)) continue;
@@ -248,7 +244,7 @@ export function buildLadder(
   // The assignee owns it; with nobody assigned there is no owner, and the item
   // is first shown at the stage that names a role.
   const assignee = (userId: string | null): Owner => (userId ? { userId } : null);
-  if (viewer.can('gro.read')) {
+  if (access.procedures) {
     for (const proc of input.procedures) {
       if (!proc.dueOn || isFinished('procedure', proc.status)) continue;
       const person = people.get(proc.employeeId);
@@ -268,7 +264,7 @@ export function buildLadder(
       );
     }
   }
-  if (viewer.can('task.read')) {
+  if (access.tasks) {
     for (const task of input.tasks) {
       if (!task.dueOn || isFinished('task', task.status)) continue;
       const source = task.requestId ? requests.get(task.requestId) : undefined;
@@ -288,7 +284,7 @@ export function buildLadder(
   // Against the request's OWN due date, which already counts working days and
   // pauses while more detail is awaited (ADR-016). A request waiting on its
   // requester is not here: its clock is stopped.
-  if (viewer.can('request.read')) {
+  if (access.requests) {
     for (const r of input.requests) {
       if (r.status !== 'open' || !r.dueOn) continue;
       push(
@@ -304,9 +300,120 @@ export function buildLadder(
 
   // Most urgent first: the highest stage, then the fewest days left.
   const rank = (s: EscalationStage) => ESCALATION_STAGES.indexOf(s);
-  items.sort(
+  reached.sort(
     (a, b) =>
       rank(b.stage) - rank(a.stage) || a.daysLeft - b.daysLeft || a.key.localeCompare(b.key),
   );
-  return { items, suppressed };
+  return { reached, quiet };
+}
+
+type ClientOf = (id: string | null) => LadderItem['client'];
+const clientLookup = (input: LadderInput): ClientOf => {
+  const clients = new Map(input.clients.map((c) => [c.id, c]));
+  return (id) => {
+    const c = id ? clients.get(id) : undefined;
+    return c ? { id: c.id, name: c.name } : null;
+  };
+};
+const base = (r: Reached, clientOf: ClientOf) => ({
+  key: r.key,
+  rule: r.rule,
+  stage: r.stage,
+  dueOn: r.dueOn,
+  daysLeft: r.daysLeft,
+  subject: r.subject,
+  client: clientOf(r.clientId),
+});
+
+/** The ladder for a STAFF member: every item they may read, with what it tells them. */
+export function buildLadder(
+  input: LadderInput,
+  viewer: LadderViewer,
+): { items: LadderItem[]; suppressed: number } {
+  const { reached, quiet } = reach(input, {
+    employees: viewer.can('employee.read'),
+    govdata: viewer.can('govdata.read'),
+    dependants: true, // read with the person (ADR-017)
+    procedures: viewer.can('gro.read'),
+    tasks: viewer.can('task.read'),
+    requests: viewer.can('request.read'),
+  });
+  const clientOf = clientLookup(input);
+  const isMine = (owner: Owner): boolean =>
+    owner !== null &&
+    ('userId' in owner ? owner.userId === viewer.userId : owner.role === viewer.role);
+  const isTold = (rule: EscalationRule, stage: EscalationStage, mine: boolean): boolean => {
+    const audience = STAGE_AUDIENCE[rule][stage] ?? [];
+    return (
+      (audience.includes('owner') && mine) ||
+      (audience.includes('hr') && viewer.role === 'hr_officer') ||
+      (audience.includes('admin') && viewer.role === 'administrator')
+    );
+  };
+  const present = (owner: Owner): EscalationOwner | null =>
+    owner === null
+      ? null
+      : 'userId' in owner
+        ? { kind: 'person', name: input.names.get(owner.userId) ?? null }
+        : { kind: 'role', role: owner.role };
+  const items = reached.map((r) => {
+    const mine = isMine(r.owner);
+    return {
+      ...base(r, clientOf),
+      owner: present(r.owner),
+      mine,
+      told: isTold(r.rule, r.stage, mine),
+    };
+  });
+  return { items, suppressed: quiet.length };
+}
+
+// The ladder for a CLIENT MANAGER (NC-05). `input` holds ONLY their own
+// company's rows — the service reads them along the client's own paths — and
+// no dependants, procedures-as-items or tasks: a client has no view of those.
+//
+// A client is in a stage's audience only where ADR-021 names "the client":
+// at Breach, for a lapsed document and for a request past its service level.
+// So their ladder is exactly those. The owner is never shown: to a client the
+// work is PEOPLE&GRO's, not a named member of staff's.
+export function buildClientLadder(input: LadderInput): { items: LadderItem[]; suppressed: number } {
+  const { reached, quiet } = reach(input, {
+    employees: true,
+    govdata: true, // the portal shows a client their people's expiry dates
+    dependants: false,
+    procedures: false,
+    tasks: false,
+    requests: true,
+  });
+  const clientOf = clientLookup(input);
+  const told = (r: Reached) => (STAGE_AUDIENCE[r.rule][r.stage] ?? []).includes('client');
+  const items = reached
+    .filter(told)
+    .map((r) => ({ ...base(r, clientOf), owner: null, mine: false, told: true }));
+  // Quiet items are counted only where the client would have been told: a
+  // lapsed document whose renewal is already open.
+  return { items, suppressed: quiet.filter((stage) => stage === 'breach').length };
+}
+
+// The ladder for an EMPLOYEE (NC-05). `input` holds ONLY their own record,
+// their own dependants and the requests they raised (read along the
+// employee's fenced paths). Every stage is theirs to see — it is about them —
+// and nothing names a member of staff.
+export function buildEmployeeLadder(input: LadderInput): {
+  items: LadderItem[];
+  suppressed: number;
+} {
+  const { reached, quiet } = reach(input, {
+    employees: true,
+    govdata: true, // one's own identifiers and dates (ADR-011)
+    dependants: true,
+    procedures: false, // an employee has no view of procedures
+    tasks: false,
+    requests: true,
+  });
+  const clientOf = clientLookup(input);
+  return {
+    items: reached.map((r) => ({ ...base(r, clientOf), owner: null, mine: true, told: true })),
+    suppressed: quiet.length,
+  };
 }

@@ -5,6 +5,7 @@ import { ClientsModule } from '../clients/public-api';
 import { ConfigurationModule } from '../configuration/public-api';
 import { DocumentsModule } from '../documents/public-api';
 import { EmployeesModule } from '../employees/public-api';
+import { EscalationsModule } from '../escalations/public-api';
 import { LeaveModule } from '../leave/public-api';
 import { NotificationsModule } from '../notifications/public-api';
 import { RequestsModule } from '../requests/public-api';
@@ -31,6 +32,10 @@ import { EmployeeTerminatedHandler } from './application/employee-terminated.han
     StorageModule,
     RequestsModule,
     LeaveModule,
+    // NC-05 (ADR-021 rev. 2): the employee's own ladder is served here, behind
+    // the same gate as the rest of /me. Escalations imports only domain
+    // modules, so this edge closes no loop.
+    EscalationsModule,
     NotificationsModule,
   ],
   controllers: [SelfServiceController, EmployeeAccountsController, PasswordResetController],

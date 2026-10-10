@@ -1,6 +1,8 @@
 import { DEFAULT_ESCALATION_THRESHOLDS } from '@hr/contracts';
 import { describe, expect, it } from 'vitest';
 import {
+  buildClientLadder,
+  buildEmployeeLadder,
   buildLadder,
   type LadderInput,
   type LadderItem,
@@ -537,5 +539,167 @@ describe('order', () => {
       ['reminder', 2],
       ['notice', 25],
     ]);
+  });
+});
+
+// NC-05: the same rules, addressed to the two audiences outside staff. The
+// service hands each builder ONLY that audience's own rows; these tests prove
+// what the builder then does with them — and what it refuses to show even if
+// a row it should never be given were to arrive.
+const DEP = 'd0000000-0000-4000-8000-000000000001';
+const REQ = 'aa000000-0000-4000-8000-000000000001';
+const everything = (over: Partial<LadderInput> = {}): LadderInput =>
+  base({
+    people: [
+      person({
+        dates: { iqama: day(-3), work_permit: day(5), passport: day(12), contract: day(25) },
+      }),
+    ],
+    dependants: [
+      { id: DEP, employeeId: P1, name: { ar: null, en: 'Yasmin' }, dates: { iqama: day(-1) } },
+    ],
+    procedures: [
+      {
+        id: 'f0000000-0000-4000-8000-000000000001',
+        employeeId: P1,
+        clientId: CO,
+        type: 'exit_reentry',
+        status: 'in_progress',
+        dueOn: day(-2),
+        assigneeUserId: GRO_1,
+      },
+    ],
+    tasks: [
+      {
+        id: 'b0000000-0000-4000-8000-000000000001',
+        title: 'T',
+        clientId: CO,
+        status: 'open',
+        dueOn: day(-2),
+        assigneeUserId: HR_1,
+        requestId: null,
+      },
+    ],
+    requests: [
+      {
+        id: REQ,
+        clientId: CO,
+        type: 'letter',
+        title: 'Late',
+        status: 'open',
+        dueOn: day(-1),
+        assigneeUserId: HR_1,
+      },
+      {
+        id: 'aa000000-0000-4000-8000-000000000002',
+        clientId: CO,
+        type: 'letter',
+        title: 'Soon',
+        status: 'open',
+        dueOn: day(1),
+        assigneeUserId: null,
+      },
+    ],
+    ...over,
+  });
+
+describe('a client manager (NC-05)', () => {
+  it('is told only at Breach: a lapsed document and a request past its service level', () => {
+    const { items } = buildClientLadder(everything());
+    expect(items.map((i) => [i.key, i.stage])).toEqual([
+      [`expiry:${P1}:iqama`, 'breach'],
+      [`request:${REQ}`, 'breach'],
+    ]);
+    // Not the permit at Escalated, the passport at Reminder, the contract at
+    // Notice, nor the request due tomorrow: none of those stages names the client.
+  });
+
+  it('never sees a dependant, a procedure or a task — even one that is past due', () => {
+    const kinds = buildClientLadder(everything()).items.map((i) => i.subject.kind);
+    expect(kinds).not.toContain('dependant_document');
+    expect(kinds).not.toContain('procedure');
+    expect(kinds).not.toContain('task');
+  });
+
+  it('is shown no owner: to a client the work is PEOPLE&GRO’s, not a named member of staff’s', () => {
+    const { items } = buildClientLadder(
+      everything({
+        clients: [
+          { id: CO, name: { ar: 'شركة', en: 'Company' }, status: 'active', officerUserId: GRO_1 },
+        ],
+      }),
+    );
+    expect(items.length).toBeGreaterThan(0);
+    for (const i of items) expect(i).toMatchObject({ owner: null, mine: false, told: true });
+    expect(JSON.stringify(items)).not.toContain('Turki');
+    expect(JSON.stringify(items)).not.toContain('Omar');
+  });
+
+  it('counts as quiet only a LAPSED document whose renewal is open', () => {
+    const renewal = (type: string) => ({
+      id: 'f0000000-0000-4000-8000-000000000009',
+      employeeId: P1,
+      clientId: CO,
+      type,
+      status: 'submitted',
+      dueOn: null,
+      assigneeUserId: null,
+    });
+    const lapsed = buildClientLadder(everything({ procedures: [renewal('iqama_renewal')] }));
+    expect(lapsed.items.map((i) => i.key)).toEqual([`request:${REQ}`]);
+    expect(lapsed.suppressed).toBe(1);
+    // The permit is at Escalated: its renewal quiets nothing a client would have seen.
+    const soon = buildClientLadder(everything({ procedures: [renewal('work_permit_renewal')] }));
+    expect(soon.suppressed).toBe(0);
+  });
+});
+
+describe('an employee (NC-05)', () => {
+  it('sees every stage of their own documents, their dependants’ and their own requests', () => {
+    const { items } = buildEmployeeLadder(everything());
+    expect(items.map((i) => [i.key, i.stage])).toEqual([
+      [`expiry:${P1}:iqama`, 'breach'],
+      [`dependant:${DEP}:iqama`, 'breach'],
+      [`request:${REQ}`, 'breach'],
+      ['request:aa000000-0000-4000-8000-000000000002', 'escalation'],
+      [`expiry:${P1}:work_permit`, 'escalation'],
+      [`expiry:${P1}:passport`, 'reminder'],
+      [`expiry:${P1}:contract`, 'notice'],
+    ]);
+  });
+
+  it('everything is about them, and nothing names a member of staff', () => {
+    const { items } = buildEmployeeLadder(
+      everything({
+        clients: [
+          { id: CO, name: { ar: 'شركة', en: 'Company' }, status: 'active', officerUserId: GRO_1 },
+        ],
+      }),
+    );
+    for (const i of items) expect(i).toMatchObject({ owner: null, mine: true, told: true });
+    expect(JSON.stringify(items)).not.toContain('Turki');
+  });
+
+  it('never sees a procedure or a task, and their renewal in progress keeps the expiry quiet', () => {
+    const kinds = buildEmployeeLadder(everything()).items.map((i) => i.subject.kind);
+    expect(kinds).not.toContain('procedure');
+    expect(kinds).not.toContain('task');
+    const quiet = buildEmployeeLadder(
+      everything({
+        procedures: [
+          {
+            id: 'f0000000-0000-4000-8000-000000000009',
+            employeeId: P1,
+            clientId: CO,
+            type: 'work_permit_renewal',
+            status: 'in_progress',
+            dueOn: null,
+            assigneeUserId: null,
+          },
+        ],
+      }),
+    );
+    expect(quiet.items.map((i) => i.key)).not.toContain(`expiry:${P1}:work_permit`);
+    expect(quiet.suppressed).toBe(1);
   });
 });

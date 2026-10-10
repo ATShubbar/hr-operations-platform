@@ -412,24 +412,29 @@ describe('The escalation ladder for staff (NC-01, e2e)', () => {
     expect(await stageOf()).toBe('notice');
   });
 
-  it('who: staff only — a client manager, an employee and a stranger are refused', async () => {
-    await ladder(rep).expect(403);
+  it('who: an employee and a stranger are refused; a client manager gets only their own company', async () => {
+    // NC-05 gave client managers a ladder of their own (escalation-audiences.e2e):
+    // nothing in it comes from the staff view — no owner, nothing below Breach.
+    const asRep = (await ladder(rep).expect(200)).body.items as EscalationItem[];
+    expect(
+      asRep.every((i) => i.client?.id === ids.x && i.owner === null && i.stage === 'breach'),
+    ).toBe(true);
     await ladder(employee).expect(403);
     await http().get('/escalations').expect(401);
   });
 });
 
-// The staff check, proven with a WIDENED policy. NC-05 gives client managers
-// their own path; until then holding the permission must not be enough.
-describe('The ladder — staff only, even for a role that held the permission (NC-01)', () => {
+// `scopeOf`, proven with a WIDENED policy: an employee never holds
+// `escalation.read` (their ladder is under /me), and holding it must not be
+// enough to reach the staff and client routes.
+describe('The ladder — closed to an employee even if the role held the permission (NC-05)', () => {
   let app: INestApplication;
   let owner: PrismaClient;
-  let rep: TestPrincipal;
-  let clientId = '';
+  let employee: TestPrincipal;
 
   class WidenedPolicy extends PolicyService {
     override can(role: string | null | undefined, permission: string): boolean {
-      if (role === 'client_manager' && permission === 'escalation.read') return true;
+      if (role === 'employee' && permission === 'escalation.read') return true;
       return super.can(role, permission);
     }
   }
@@ -442,27 +447,24 @@ describe('The ladder — staff only, even for a role that held the permission (N
     app = moduleRef.createNestApplication();
     await app.listen(0, '127.0.0.1');
     owner = db(process.env.DATABASE_URL);
-    clientId = (await owner.client.create({ data: { nameAr: 'شركة', nameEn: `${MARK} widened` } }))
-      .id;
-    rep = await loginAsClientRep(app, clientId, 'client_manager');
+    employee = await loginAsEmployee(app);
   });
 
   afterAll(async () => {
     await cleanupHelperUsers(app);
-    await owner.client.deleteMany({ where: { id: clientId } });
     await owner.$disconnect();
     await app.close();
   });
 
-  it('a client manager granted escalation.read is still refused — the ladder, its count and read marks', async () => {
+  it('an employee granted escalation.read is still refused — the ladder, its count and read marks', async () => {
     const http = () => request(app.getHttpServer());
-    await http().get('/escalations').set('Cookie', rep.cookie).expect(403);
-    await http().get('/escalations/count').set('Cookie', rep.cookie).expect(403);
+    await http().get('/escalations').set('Cookie', employee.cookie).expect(403);
+    await http().get('/escalations/count').set('Cookie', employee.cookie).expect(403);
     await http()
       .post('/escalations/read')
-      .set('Cookie', rep.cookie)
+      .set('Cookie', employee.cookie)
       .send({ keys: ['expiry:x:iqama'] })
       .expect(403);
-    expect(await owner.escalationRead.count({ where: { userId: rep.userId } })).toBe(0);
+    expect(await owner.escalationRead.count({ where: { userId: employee.userId } })).toBe(0);
   });
 });

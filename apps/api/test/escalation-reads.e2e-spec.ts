@@ -260,16 +260,19 @@ describe('Read marks on the ladder (NC-02, e2e)', () => {
     expect((await markRead([]).expect(200)).body).toEqual({ marked: 0 });
   });
 
-  it('who: staff only for now', async () => {
-    for (const who of [rep, employee]) {
-      await http().get('/escalations/count').set('Cookie', who.cookie).expect(403);
-      await markRead([key.iqama], who).expect(403);
-    }
+  it('who: an employee and a stranger are refused; a client manager has marks of their own', async () => {
+    await http().get('/escalations/count').set('Cookie', employee.cookie).expect(403);
+    await markRead([key.iqama], employee).expect(403);
     await http().get('/escalations/count').expect(401);
     await http()
       .post('/escalations/read')
       .send({ keys: [key.iqama] })
       .expect(401);
+    // NC-05: the client manager may count and mark — but only what THEY are
+    // shown. A staff item's key (an Escalated iqama) is not on their ladder.
+    await http().get('/escalations/count').set('Cookie', rep.cookie).expect(200);
+    expect((await markRead([key.iqama], rep).expect(200)).body).toEqual({ marked: 0 });
+    expect(await marksOf(rep)).toEqual([]);
   });
 
   it('the database: the marks are closed to the client and employee connections', async () => {
