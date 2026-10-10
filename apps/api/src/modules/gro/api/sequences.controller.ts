@@ -135,6 +135,7 @@ export class SequencesController {
         day: s.day,
         target: s.target,
         state: s.state,
+        needs: [...s.needs],
         // Keys, not the engine's English titles — the web translates them.
         waitingOn:
           s.state === 'blocked'

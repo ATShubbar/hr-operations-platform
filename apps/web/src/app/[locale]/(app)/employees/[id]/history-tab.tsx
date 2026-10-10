@@ -40,6 +40,9 @@ function toneOf(e: EmployeeHistoryEntry): Tone {
   if (k === 'document:quarantine') return 'warning';
   if (k === 'document:confirm' || k === 'employee:gro-completion') return 'success';
   if (k === 'gro-process:create' || k === 'employee-user:invite') return 'info';
+  if (k === 'gro-sequence:start') return 'info';
+  if (k === 'gro-sequence:file-step' || k === 'gro-sequence:complete') return 'success';
+  if (k === 'gro-sequence:cancel') return 'warning';
   return 'muted';
 }
 
@@ -47,8 +50,12 @@ export function HistoryTab({ employeeId }: { employeeId: string }) {
   const t = useTranslations('person.history');
   const tg = useTranslations('gro');
   const tr = useTranslations('roles');
+  const tm = useTranslations('person.mob');
   const messages = useMessages() as {
-    person?: { history?: { action?: Record<string, Record<string, string>> } };
+    person?: {
+      history?: { action?: Record<string, Record<string, string>> };
+      mob?: { kind?: Record<string, unknown>; step?: Record<string, unknown> };
+    };
   };
   const locale = useLocale() as Locale;
   const router = useRouter();
@@ -80,6 +87,7 @@ export function HistoryTab({ employeeId }: { employeeId: string }) {
     return `${date} · ${time}`;
   };
   const known = messages.person?.history?.action ?? {};
+  const mobKnown = messages.person?.mob ?? {};
   const title = (e: EmployeeHistoryEntry) => {
     const base = known[e.resource]?.[e.action]
       ? t(`action.${e.resource}.${e.action}`)
@@ -87,6 +95,16 @@ export function HistoryTab({ employeeId }: { employeeId: string }) {
     if (e.subject?.kind === 'document') return `${base} · ${e.subject.title}`;
     if (e.subject?.kind === 'gro-process') return `${base} · ${tg(`type.${e.subject.type}`)}`;
     if (e.subject?.kind === 'dependant') return `${base} · ${e.subject.name}`;
+    if (e.subject?.kind === 'gro-sequence') {
+      const label = mobKnown.kind?.[e.subject.sequence]
+        ? tm(`kind.${e.subject.sequence}.label`)
+        : e.subject.sequence;
+      const step =
+        e.subject.step && mobKnown.step?.[e.subject.step]
+          ? tm(`step.${e.subject.step}.title`)
+          : e.subject.step;
+      return step ? `${base} · ${step} (${label})` : `${base} · ${label}`;
+    }
     return base;
   };
   const roleLabel = (role: string | null) => {
@@ -137,7 +155,11 @@ export function HistoryTab({ employeeId }: { employeeId: string }) {
                 </span>
                 <span className={cn('flex min-w-0 grow flex-col gap-0.5 pt-1', last ? '' : 'pb-3')}>
                   <span className="flex flex-wrap items-baseline gap-x-2">
-                    <span className="text-base leading-[22px] font-medium">{title(e)}</span>
+                    <span className="text-base leading-[22px] font-medium">
+                      {/* Isolated: an Arabic title holding a Latin word or name is
+                          otherwise laid out run by run under the LTR layout. */}
+                      <bdi>{title(e)}</bdi>
+                    </span>
                     <time dateTime={e.at} className="text-sm leading-5 text-muted-foreground">
                       {when(e.at)}
                     </time>

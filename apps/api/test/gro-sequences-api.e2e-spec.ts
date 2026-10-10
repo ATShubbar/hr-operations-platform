@@ -37,6 +37,7 @@ const STEP_KEYS = [
   'filedBy',
   'filedOn',
   'key',
+  'needs',
   'portal',
   'state',
   'target',
@@ -213,6 +214,52 @@ describe('Sequences API (MOB-02, e2e)', () => {
     await start(me, ids.a, { kind: 'onboarding' }).expect(403);
     await file(me, id, 'block-visa').expect(403);
     await cancel(me, id).expect(403);
+  });
+
+  it("sequence changes appear on the person's History, naming the sequence and the step — never on a colleague's", async () => {
+    const mine = await http()
+      .get(`/employees/${ids.a}/history`)
+      .set('Cookie', p.hr.cookie)
+      .expect(200);
+    const entries = (
+      mine.body.entries as Array<{ resource: string; action: string; subject: unknown }>
+    ).filter((e) => e.resource === 'gro-sequence');
+    // Newest first: cancel, file clearance, file notice, reopen notice, file notice, start.
+    expect(entries.map((e) => e.action)).toEqual([
+      'cancel',
+      'file-step',
+      'file-step',
+      'reopen-step',
+      'file-step',
+      'start',
+    ]);
+    expect(entries[0]!.subject).toEqual({
+      kind: 'gro-sequence',
+      sequence: 'final_exit',
+      step: null,
+    });
+    expect(entries[1]!.subject).toEqual({
+      kind: 'gro-sequence',
+      sequence: 'final_exit',
+      step: 'clearance',
+    });
+    expect(entries.at(-1)!.subject).toEqual({
+      kind: 'gro-sequence',
+      sequence: 'final_exit',
+      step: null,
+    });
+    // Curated as ever: no snapshot keys ride along.
+    expect(JSON.stringify(mine.body)).not.toContain('sequenceId');
+
+    const other = await http()
+      .get(`/employees/${ids.c}/history`)
+      .set('Cookie', p.hr.cookie)
+      .expect(200);
+    expect(
+      (other.body.entries as Array<{ resource: string }>).some(
+        (e) => e.resource === 'gro-sequence',
+      ),
+    ).toBe(false);
   });
 
   it('every change is audited against the employee', async () => {

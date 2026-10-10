@@ -1432,6 +1432,13 @@ reopened (owner-approved), a completed onboarding can. 8 red proofs. API **715/7
 `POST /gro-sequences/:id/cancel` (`gro.read` / `gro.process`). CLIENT MANAGERS HOLD gro.read, so every route asks `scopeOf`
 for the staff path — proven with a REAL client manager (skip the check → their read returns 200). Contracts `sequence.ts`:
 strict bodies, whitelisted responses, steps + `waitingOn` as KEYS (web translates), people as names. API **722/722**.
+**MOB-03 done — the Person record's Mobilisation tab.** `mobilisation-tab.tsx` (the prototype's: empty state + Start
+onboarding / Start final exit; the running-or-latest run with progress, Next, per-step target Greg+Hijri, fee shown, Mark
+filed (date ≤ today) / Blocked / Reopen; Cancel; Earlier sequences). Reopen-with-filed-dependents is explained CLIENT-side
+from each step's new `needs` (0 requests; the server stays the guard). API: History now carries `gro-sequence` entries
+(`forRecords` rows expose `sequence {kind, step}` from the snapshot, which stays inside) — the same gap DEP-03 had, named in
+the card this time. Arabic lines holding a Latin word («فحص GAMCA الطبي») were scrambled under the LTR layout → isolated
+with `<bdi>` inside a span; phone: fee + action share a line (`sm:contents` restores the 88+96px columns). API **723/723**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

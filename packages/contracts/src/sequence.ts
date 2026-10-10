@@ -36,6 +36,8 @@ export const sequenceStepSchema = z.strictObject({
   day: z.number(),
   target: z.string(),
   state: sequenceStepStateSchema,
+  /** The steps this one waits on (keys) — the fixed list, so the screen can explain a refusal. */
+  needs: z.array(z.string()),
   waitingOn: z.array(z.string()),
   filedOn: z.string().nullable(),
   filedBy: person.nullable(),

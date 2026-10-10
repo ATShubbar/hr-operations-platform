@@ -16,7 +16,8 @@ const LIMIT = 100;
 
 // GET /employees/:id/history (AUDIT-06) — one person's history: their record,
 // their self-service account, their documents (deleted ones included) and their
-// GRO processes and (DEP-03) their dependants, newest first.
+// GRO processes, (DEP-03) their dependants and (MOB-03) their onboarding / final-exit
+// sequences, newest first.
 //
 // STAFF ONLY and gated by `employee.history`, the curated capability every staff
 // role holds. What it returns is curated on purpose: action, which record, the
@@ -60,6 +61,8 @@ export class EmployeeHistoryController {
         { resource: 'gro-process', ids: processes.map((p) => p.id) },
         // DEP-03 (ADR-017): dependant changes are keyed to the sponsor.
         { resource: 'dependant', ids: [id] },
+        // MOB-03 (ADR-018): onboarding / final-exit sequences are keyed to the employee.
+        { resource: 'gro-sequence', ids: [id] },
       ],
       LIMIT + 1,
     );
@@ -89,7 +92,9 @@ export class EmployeeHistoryController {
             ? { kind: 'gro-process', type: proc.type }
             : dep
               ? { kind: 'dependant', name: dep.nameEn, relationship: dep.relationship }
-              : null,
+              : r.sequence
+                ? { kind: 'gro-sequence', sequence: r.sequence.kind, step: r.sequence.step }
+                : null,
       };
     });
     return { entries, truncated: rows.length > LIMIT };

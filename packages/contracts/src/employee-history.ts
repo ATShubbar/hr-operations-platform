@@ -17,6 +17,8 @@ export const historyResourceSchema = z.enum([
   'request',
   // DEP-03 (ADR-017): a dependant's changes, keyed to the sponsor.
   'dependant',
+  // MOB-03 (ADR-018): onboarding / final-exit sequence changes, keyed to the employee.
+  'gro-sequence',
 ]);
 
 export const employeeHistoryEntrySchema = z.object({
@@ -37,6 +39,12 @@ export const employeeHistoryEntrySchema = z.object({
       z.object({ kind: z.literal('gro-process'), type: z.string() }),
       // The dependant by name and relationship — never their iqama number.
       z.object({ kind: z.literal('dependant'), name: z.string(), relationship: z.string() }),
+      // Which sequence, and — for a step filed or reopened — which step (a key the web translates).
+      z.object({
+        kind: z.literal('gro-sequence'),
+        sequence: z.string(),
+        step: z.string().nullable(),
+      }),
     ])
     .nullable(),
 });

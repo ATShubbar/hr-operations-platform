@@ -28,6 +28,11 @@ export interface RecordHistoryRow {
    * `dependantId`). The snapshot itself never leaves this service.
    */
   subjectId: string | null;
+  /**
+   * For a sequence entry (MOB-03): which sequence it was and, where one was filed
+   * or reopened, which step — again read from the snapshot, which stays here.
+   */
+  sequence: { kind: string; step: string | null } | null;
 }
 
 @Injectable()
@@ -172,6 +177,7 @@ export class AuditQueryService {
       actorRole: r.actorRole,
       at: r.createdAt.toISOString(),
       subjectId: dependantRef(r.after) ?? dependantRef(r.before),
+      sequence: r.resource === 'gro-sequence' ? sequenceRef(r.after) : null,
     }));
   }
 }
@@ -180,4 +186,11 @@ function dependantRef(snapshot: unknown): string | null {
   if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot)) return null;
   const v = (snapshot as Record<string, unknown>).dependantId;
   return typeof v === 'string' ? v : null;
+}
+
+function sequenceRef(snapshot: unknown): { kind: string; step: string | null } | null {
+  if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot)) return null;
+  const { kind, step } = snapshot as Record<string, unknown>;
+  if (typeof kind !== 'string') return null;
+  return { kind, step: typeof step === 'string' ? step : null };
 }

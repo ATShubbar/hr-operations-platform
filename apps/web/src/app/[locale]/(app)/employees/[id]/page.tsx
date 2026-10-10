@@ -22,6 +22,7 @@ import { DocumentsTab } from './documents-tab';
 import { FamilyTab } from './family-tab';
 import { HistoryTab } from './history-tab';
 import { LeaveTab } from './leave-tab';
+import { MobilisationTab } from './mobilisation-tab';
 import { OpenWorkTab } from './open-work-tab';
 import { ProfileTab } from './profile-tab';
 import { SelfServiceAccessCard } from './self-service-access-card';
@@ -32,8 +33,8 @@ import { StartProcedureDialog } from './start-procedure-dialog';
 // department line, Start a procedure), and seven tabs.
 //
 // Built: Profile (DS-06), Documents and Open work (DS-07), Leave (LEAVE-05),
-// Family (DEP-03, ADR-017). Mobilisation has no backend and is shown "coming
-// soon" (owner rule); History is the person's curated audit timeline (AUDIT-06).
+// Family (DEP-03, ADR-017), Mobilisation (MOB-03, ADR-018). History is the
+// person's curated audit timeline (AUDIT-06).
 //
 // Two things the prototype does not show are kept (owner decision): the
 // employee's self-service access, as the last block of Profile, and Terminate,
@@ -268,13 +269,7 @@ export default function PersonRecordPage() {
         </TabsPanel>
 
         <TabsPanel value="mob">
-          <div className="rounded-xl bg-card p-6 ring-1 ring-foreground/10">
-            <EmptyState
-              variant="first-run"
-              title={ts('comingSoon')}
-              description={t('soon.mob')}
-            />
-          </div>
+          <MobilisationTab employeeId={emp.id} terminated={emp.employmentStatus === 'terminated'} />
         </TabsPanel>
       </Tabs>
 

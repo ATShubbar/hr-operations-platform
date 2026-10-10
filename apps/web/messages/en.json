@@ -1447,9 +1447,6 @@
       "mob": "Mobilisation",
       "history": "History"
     },
-    "soon": {
-      "mob": "Onboarding and final-exit steps, in order, with what is blocking each."
-    },
     "redaction": {
       "all": "{role} sees every field on this record.",
       "pay": "{role} cannot see pay on this record.",
@@ -1629,6 +1626,13 @@
           "create": "Dependant added",
           "update": "Dependant updated",
           "remove": "Dependant removed"
+        },
+        "gro-sequence": {
+          "start": "Sequence started",
+          "file-step": "Step filed",
+          "reopen-step": "Step reopened",
+          "complete": "Sequence completed",
+          "cancel": "Sequence cancelled"
         }
       },
       "fallback": "{resource} · {action}",
@@ -1707,6 +1711,155 @@
           "invalid": "Some details aren't valid. Check the dates and the iqama number.",
           "generic": "Could not save. Try again.",
           "removed": "This dependant has been removed."
+        }
+      }
+    },
+    "mob": {
+      "noneTitle": "No sequence running",
+      "noneBody": "Onboarding and final exit are ordered sequences — each step names what it waits on, so a stuck file can say why.",
+      "start": {
+        "onboarding": "Start onboarding",
+        "final_exit": "Start final exit"
+      },
+      "kind": {
+        "onboarding": {
+          "label": "Onboarding",
+          "desc": "From block visa to first payroll."
+        },
+        "final_exit": {
+          "label": "Final exit",
+          "desc": "From notice to departure and cancellation."
+        }
+      },
+      "started": "Started {date}.",
+      "next": "Next: {title}",
+      "nothingWaiting": "Nothing waiting — every step is filed",
+      "filedOf": "{done} of {total} filed",
+      "blockedCount": "{count, plural, =0 {Nothing waiting on something else} one {# waiting on something else} other {# waiting on something else}}",
+      "status": {
+        "running": "Running",
+        "completed": "Completed",
+        "cancelled": "Cancelled"
+      },
+      "target": "Target {date}",
+      "fee": "SAR {amount}",
+      "noFee": "No fee",
+      "markFiled": "Mark filed",
+      "blocked": "Blocked",
+      "reopen": "Reopen",
+      "filedOn": "Filed {date}",
+      "filedBy": "Filed {date} · {name}",
+      "waitingOn": "Waiting on {list}",
+      "and": " and ",
+      "cancel": "Cancel sequence",
+      "cancelTitle": {
+        "onboarding": "Cancel this onboarding?",
+        "final_exit": "Cancel this final exit?"
+      },
+      "cancelBody": "The sequence stops where it is and stays in this person's history. A new one can be started later.",
+      "cancelConfirm": "Cancel sequence",
+      "keep": "Keep it",
+      "cancelling": "Cancelling…",
+      "fileTitle": "Mark as filed",
+      "fileOn": "Filed on",
+      "feeNote": "The standard {portal} fee is SAR {amount}. Shown for information — recording fees comes with billing.",
+      "noFeeNote": "This step carries no government fee.",
+      "saving": "Saving…",
+      "close": "Cancel",
+      "earlier": "Earlier sequences",
+      "earlierLine": "{label} · started {date}",
+      "loadError": "Could not load sequences.",
+      "toast": {
+        "started": "{label} started.",
+        "filed": "{title} — filed.",
+        "reopened": "{title} reopened.",
+        "cancelled": "{label} cancelled."
+      },
+      "error": {
+        "future": "A step cannot be filed in the future.",
+        "dependents": "Reopen {list} first — it was filed on the back of this one.",
+        "duplicate": "A sequence of this kind is already running for this person.",
+        "onboardingRunning": "Onboarding is still running for this person.",
+        "terminated": "This person is terminated.",
+        "changed": "This sequence changed in the meantime. It has been refreshed.",
+        "generic": "Could not save. Try again."
+      },
+      "step": {
+        "block-visa": {
+          "title": "Block visa requested",
+          "note": "One visa drawn against the establishment quota."
+        },
+        "visa-auth": {
+          "title": "Visa authorisation issued",
+          "note": "Authorisation number sent to the embassy."
+        },
+        "gamca": {
+          "title": "GAMCA medical cleared",
+          "note": "Paid by the candidate at an approved centre."
+        },
+        "enjaz": {
+          "title": "Visa stamped",
+          "note": "Stamped in the passport at the consulate."
+        },
+        "travel": {
+          "title": "Ticket booked and arrival logged",
+          "note": "Arrival date drives every deadline below."
+        },
+        "medical-ksa": {
+          "title": "Medical inside the Kingdom",
+          "note": "Required before the iqama can be issued."
+        },
+        "iqama": {
+          "title": "Iqama issued",
+          "note": "Ninety days from arrival is the statutory limit."
+        },
+        "insurance": {
+          "title": "Medical insurance activated",
+          "note": "Class B cover, dependants added separately."
+        },
+        "gosi": {
+          "title": "GOSI registration filed",
+          "note": "Contributions start the month of registration."
+        },
+        "contract": {
+          "title": "Contract authenticated",
+          "note": "Arabic contract uploaded and countersigned."
+        },
+        "bank": {
+          "title": "Salary account and WPS",
+          "note": "IBAN registered so the first pay run clears."
+        },
+        "notice": {
+          "title": "Notice recorded",
+          "note": "Resignation or termination logged with its reason."
+        },
+        "clearance": {
+          "title": "Company clearance and handover",
+          "note": "Tools, accommodation and access returned."
+        },
+        "settlement": {
+          "title": "Final settlement calculated",
+          "note": "End-of-service, unused leave and any deductions."
+        },
+        "gosi-close": {
+          "title": "GOSI deregistration",
+          "note": "Contributions stop the month of deregistration."
+        },
+        "contract-close": {
+          "title": "Contract closed on Qiwa",
+          "note": "Closure reason must match the notice."
+        },
+        "exit-visa": {
+          "title": "Final exit visa issued",
+          "note": "Sixty days to travel once issued."
+        },
+        "ticket": {
+          "title": "Repatriation ticket booked",
+          "note": "To the point of hire, as the contract requires."
+        },
+        "depart": {
+          "title": "Departure confirmed, iqama cancelled",
+          "note": "Failure to confirm leaves the file open with fines."
         }
       }
     }
