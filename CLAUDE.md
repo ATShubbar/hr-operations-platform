@@ -1439,6 +1439,14 @@ from each step's new `needs` (0 requests; the server stays the guard). API: Hist
 (`forRecords` rows expose `sequence {kind, step}` from the snapshot, which stays inside) — the same gap DEP-03 had, named in
 the card this time. Arabic lines holding a Latin word («فحص GAMCA الطبي») were scrambled under the LTR layout → isolated
 with `<bdi>` inside a span; phone: fee + action share a line (`sm:contents` restores the 88+96px columns). API **723/723**.
+**MOB-04a done — employment status `onboarding`, handled everywhere (MOB-04 split, owner-approved; 04b = the Hiring column).**
+Own enum migration. `@hr/contracts/headcount` gains **`hasJoined(status)`** (not terminated, not onboarding);
+`isUnderManagement` = hasJoined && active company → an arrival is in NO headcount/Saudisation figure but stays on People, the
+record and the employer's list. Workforce report + CSV gain an **Onboarding** column. Leave: raise refused, out of the
+balances list + carry-over (single lookup still answers). `manualEmploymentStatusSchema` → can't be set by hand (400);
+`PATCH /employees/:id` refuses clearing it (409). GRO `EmployeeTerminatedHandler` cancels a terminated person's running
+ONBOARDING (a running final exit is left to finish). Live: one person set onboarding → Overview/Reports 35→34, Alpha card
+11→10, list still 39. API **728/728**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

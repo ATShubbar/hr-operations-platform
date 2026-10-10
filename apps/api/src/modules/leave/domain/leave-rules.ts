@@ -41,6 +41,10 @@ export function raiseRefusal(input: {
   if (input.employeeStatus === 'terminated') {
     return 'Leave cannot be raised for an employee who has left';
   }
+  // MOB-04a (ADR-018): mid-mobilisation — not yet arrived, so nothing to take.
+  if (input.employeeStatus === 'onboarding') {
+    return 'Leave cannot be raised for an employee who has not started yet';
+  }
   if (!Number.isInteger(input.days) || input.days < 1 || input.days > MAX_REQUEST_DAYS) {
     return `Days must be a whole number from 1 to ${MAX_REQUEST_DAYS}`;
   }

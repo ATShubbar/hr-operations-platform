@@ -1,5 +1,6 @@
 'use client';
 
+import { hasJoined } from '@hr/contracts/headcount';
 import { isFinished } from '@hr/contracts/work-status';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
@@ -122,7 +123,9 @@ export function ClientOverview() {
   }, []);
 
   const people = useMemo(
-    () => (data?.employees ?? []).filter((x) => x.employmentStatus !== 'terminated'),
+    // In post only (MOB-04a): the headcount and the runway leave out leavers AND
+    // people still on the way in.
+    () => (data?.employees ?? []).filter((x) => hasJoined(x.employmentStatus)),
     [data],
   );
 

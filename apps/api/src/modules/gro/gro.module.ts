@@ -6,6 +6,7 @@ import { NotificationsModule } from '../notifications/public-api';
 import { GroProcessesController } from './api/gro-processes.controller';
 import { SequencesController } from './api/sequences.controller';
 import { DocumentExpiringHandler } from './application/document-expiring.handler';
+import { EmployeeTerminatedHandler } from './application/employee-terminated.handler';
 import { GroProcessesService } from './application/gro-processes.service';
 import { SequencesService } from './application/sequences.service';
 
@@ -22,7 +23,12 @@ import { SequencesService } from './application/sequences.service';
 @Module({
   imports: [AuditModule, AuthModule, EmployeesModule, NotificationsModule],
   controllers: [GroProcessesController, SequencesController],
-  providers: [GroProcessesService, SequencesService, DocumentExpiringHandler],
+  providers: [
+    GroProcessesService,
+    SequencesService,
+    DocumentExpiringHandler,
+    EmployeeTerminatedHandler,
+  ],
   exports: [GroProcessesService, SequencesService],
 })
 export class GroModule {}

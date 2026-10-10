@@ -219,7 +219,8 @@
       "active": "Active",
       "on_leave": "On leave",
       "suspended": "Suspended",
-      "terminated": "Terminated"
+      "terminated": "Terminated",
+      "onboarding": "Onboarding"
     },
     "gender": {
       "male": "Male",
@@ -968,7 +969,8 @@
       "tasks": "Tasks",
       "tasksOverdue": "Tasks overdue",
       "tasksUnassigned": "Tasks unassigned",
-      "annualTotal": "Annual total"
+      "annualTotal": "Annual total",
+      "onboarding": "Onboarding"
     },
     "value": {
       "iqama": "Iqama",
@@ -1862,7 +1864,8 @@
           "note": "Failure to confirm leaves the file open with fines."
         }
       }
-    }
+    },
+    "statusFollowsOnboarding": "Follows the onboarding sequence — it becomes Active when the sequence completes."
   },
   "hiring": {
     "title": "Hiring",

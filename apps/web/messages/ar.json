@@ -219,7 +219,8 @@
       "active": "نشط",
       "on_leave": "في إجازة",
       "suspended": "موقوف",
-      "terminated": "منتهي"
+      "terminated": "منتهي",
+      "onboarding": "قيد الاستقدام"
     },
     "gender": {
       "male": "ذكر",
@@ -968,7 +969,8 @@
       "tasks": "المهام",
       "tasksOverdue": "مهام متأخرة",
       "tasksUnassigned": "مهام غير مسندة",
-      "annualTotal": "الإجمالي السنوي"
+      "annualTotal": "الإجمالي السنوي",
+      "onboarding": "قيد الاستقدام"
     },
     "value": {
       "iqama": "الإقامة",
@@ -1862,7 +1864,8 @@
           "note": "عدم التأكيد يُبقي الملف مفتوحًا مع غرامات."
         }
       }
-    }
+    },
+    "statusFollowsOnboarding": "يتبع تسلسل الاستقدام — يصبح «نشط» عند اكتمال التسلسل."
   },
   "hiring": {
     "title": "التوظيف",

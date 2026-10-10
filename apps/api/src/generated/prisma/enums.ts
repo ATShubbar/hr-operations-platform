@@ -67,7 +67,8 @@ export const EmploymentStatus = {
   active: 'active',
   on_leave: 'on_leave',
   suspended: 'suspended',
-  terminated: 'terminated'
+  terminated: 'terminated',
+  onboarding: 'onboarding'
 } as const
 
 export type EmploymentStatus = (typeof EmploymentStatus)[keyof typeof EmploymentStatus]

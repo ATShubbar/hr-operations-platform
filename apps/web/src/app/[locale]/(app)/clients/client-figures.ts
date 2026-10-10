@@ -1,4 +1,4 @@
-import { isUnderManagement } from '@hr/contracts/headcount';
+import { hasJoined, isUnderManagement } from '@hr/contracts/headcount';
 import { isFinished } from '@hr/contracts/work-status';
 import type {
   ClientResponse,
@@ -52,9 +52,8 @@ export function figuresFor(
   processes: readonly GroProcessResponse[],
   requests: readonly RequestResponse[],
 ): ClientFigures {
-  const staff = employees.filter(
-    (e) => e.clientId === clientId && e.employmentStatus !== 'terminated',
-  );
+  // In post only (MOB-04a): neither a leaver nor someone still on the way in.
+  const staff = employees.filter((e) => e.clientId === clientId && hasJoined(e.employmentStatus));
   const saudis = staff.filter(isSaudi).length;
   return {
     headcount: staff.length,

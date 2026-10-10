@@ -7,6 +7,7 @@ import { ArrowLeft } from 'lucide-react';
 import type { ClientResponse, EmployeeResponse } from '@hr/contracts';
 import { Link, useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
+import { hasJoined } from '@hr/contracts/headcount';
 import { useCan } from '@/lib/session';
 import { toneFor } from '@/lib/status-tone';
 import { EMPLOYMENT_STATUS_KEY, type Locale } from '@/lib/employee-format';
@@ -257,7 +258,8 @@ export default function PersonRecordPage() {
         </TabsPanel>
 
         <TabsPanel value="leave">
-          <LeaveTab employeeId={emp.id} terminated={emp.employmentStatus === 'terminated'} />
+          {/* No leave to request for a leaver — or for someone not yet arrived (MOB-04a). */}
+          <LeaveTab employeeId={emp.id} terminated={!hasJoined(emp.employmentStatus)} />
         </TabsPanel>
 
         <TabsPanel value="family">

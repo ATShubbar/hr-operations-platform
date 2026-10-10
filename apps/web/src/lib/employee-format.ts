@@ -26,6 +26,8 @@ export function toDateInput(iso: string | null): string {
 // re-declare them). `as const` gives each a literal-union element type, which
 // the KEY maps below are keyed on — so map[value] is `string`, never
 // `string | undefined` under noUncheckedIndexedAccess.
+// The statuses a person can be GIVEN by hand. `onboarding` (MOB-04a, ADR-018) is
+// not among them: the onboarding sequence sets and clears it.
 export const EMPLOYMENT_STATUS_VALUES = ['active', 'on_leave', 'suspended', 'terminated'] as const;
 export const CONTRACT_TYPE_VALUES = [
   'unlimited',
@@ -49,11 +51,12 @@ export type ExitReentryV = (typeof EXIT_REENTRY_VALUES)[number];
 export type GosiRegV = (typeof GOSI_REG_VALUES)[number];
 
 // Enum → message key (in the `employees` namespace). Used as t(EMPLOYMENT_STATUS_KEY[value]).
-export const EMPLOYMENT_STATUS_KEY: Record<EmploymentStatusV, string> = {
+export const EMPLOYMENT_STATUS_KEY: Record<EmploymentStatusV | 'onboarding', string> = {
   active: 'status.active',
   on_leave: 'status.on_leave',
   suspended: 'status.suspended',
   terminated: 'status.terminated',
+  onboarding: 'status.onboarding',
 };
 
 export const CONTRACT_TYPE_KEY: Record<ContractTypeV, string> = {

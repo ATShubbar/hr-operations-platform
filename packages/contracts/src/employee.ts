@@ -6,7 +6,22 @@ import { bilingualTextSchema } from './client-company.js';
 // are `null` when the caller lacks salary.read / govdata.read.
 
 export const genderSchema = z.enum(['male', 'female']);
-export const employmentStatusSchema = z.enum(['active', 'on_leave', 'suspended', 'terminated']);
+// `onboarding` (MOB-04a, ADR-018): mid-mobilisation — hired, not yet arrived. It
+// is set and cleared by the onboarding sequence ONLY, so the write schemas below
+// take `manualEmploymentStatusSchema`, which leaves it out.
+export const employmentStatusSchema = z.enum([
+  'active',
+  'on_leave',
+  'suspended',
+  'terminated',
+  'onboarding',
+]);
+export const manualEmploymentStatusSchema = z.enum([
+  'active',
+  'on_leave',
+  'suspended',
+  'terminated',
+]);
 export const contractTypeSchema = z.enum([
   'unlimited',
   'fixed_term',
@@ -105,7 +120,7 @@ export const createEmployeeRequestSchema = z.object({
   jobTitleEn: z.string().optional(),
   department: z.string().optional(),
   hireDate: z.coerce.date().optional(),
-  employmentStatus: employmentStatusSchema.optional(),
+  employmentStatus: manualEmploymentStatusSchema.optional(),
   contractEndDate: z.coerce.date().optional(),
   countsTowardSaudization: z.boolean().optional(),
   salary: salaryWriteSchema.optional(), // requires salary.update
@@ -123,7 +138,7 @@ export const updateEmployeeCoreRequestSchema = z
     jobTitleEn: z.string().optional(),
     department: z.string().optional(),
     hireDate: z.coerce.date().optional(),
-    employmentStatus: employmentStatusSchema.optional(),
+    employmentStatus: manualEmploymentStatusSchema.optional(),
     contractEndDate: z.coerce.date().optional(),
     countsTowardSaudization: z.boolean().optional(),
   })

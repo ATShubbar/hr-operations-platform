@@ -1,3 +1,4 @@
+import { hasJoined } from '@hr/contracts';
 import { Injectable } from '@nestjs/common';
 import type {
   EmployeeLeaveResponse,
@@ -71,7 +72,8 @@ export class LeaveBalanceService {
     now?: Date,
   ): Promise<LeaveBalanceListResponse> {
     const today = riyadhToday(now);
-    const current = people.filter((p) => p.employmentStatus !== 'terminated');
+    // In post only (MOB-04a): neither a leaver nor someone still on the way in.
+    const current = people.filter((p) => hasJoined(p.employmentStatus));
     const ids = current.map((p) => p.id);
     const [entries, pending] = await Promise.all([
       db.leaveEntry.findMany({ where: { employeeId: { in: ids }, leaveYear: today.getUTCFullYear() } }),

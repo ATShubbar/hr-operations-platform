@@ -423,16 +423,27 @@ export function ProfileTab({
           draft: emp.contractType,
           apply: choice('contractType'),
         },
-        {
-          id: 'employmentStatus',
-          label: t('field.employmentStatus'),
-          group: 'core',
-          kind: 'select',
-          options: opts(EMPLOYMENT_STATUS_VALUES, EMPLOYMENT_STATUS_KEY),
-          display: te(EMPLOYMENT_STATUS_KEY[emp.employmentStatus]),
-          draft: emp.employmentStatus,
-          apply: choice('employmentStatus'),
-        },
+        // MOB-04a (ADR-018): `onboarding` is the onboarding sequence's to clear —
+        // while someone is mid-mobilisation the status is shown, not edited, and
+        // it is never offered as a choice.
+        emp.employmentStatus === 'onboarding'
+          ? {
+              id: 'employmentStatus',
+              label: t('field.employmentStatus'),
+              group: null,
+              display: te(EMPLOYMENT_STATUS_KEY[emp.employmentStatus]),
+              note: t('statusFollowsOnboarding'),
+            }
+          : {
+              id: 'employmentStatus',
+              label: t('field.employmentStatus'),
+              group: 'core',
+              kind: 'select',
+              options: opts(EMPLOYMENT_STATUS_VALUES, EMPLOYMENT_STATUS_KEY),
+              display: te(EMPLOYMENT_STATUS_KEY[emp.employmentStatus]),
+              draft: emp.employmentStatus,
+              apply: choice('employmentStatus'),
+            },
         {
           id: 'saudization',
           label: t('field.saudization'),

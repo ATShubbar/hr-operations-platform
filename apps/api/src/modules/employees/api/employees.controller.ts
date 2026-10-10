@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Body,
+  ConflictException,
   Controller,
   Delete,
   ForbiddenException,
@@ -119,6 +120,18 @@ export class EmployeesController {
     const parsed = updateEmployeeCoreRequestSchema.safeParse(body);
     if (!parsed.success) throw new BadRequestException('Invalid employee payload');
     const { name, ...rest } = parsed.data;
+    // MOB-04a (ADR-018): `onboarding` is the onboarding sequence's to clear, not a
+    // hand edit — someone mid-mobilisation becomes active when the sequence
+    // completes (or terminated when their hire is withdrawn). The schema already
+    // refuses setting it; this refuses leaving it. Other fields stay editable.
+    if (rest.employmentStatus !== undefined) {
+      const current = await this.require(id);
+      if (current.employmentStatus === 'onboarding') {
+        throw new ConflictException(
+          'This employee is onboarding; their status follows the onboarding sequence',
+        );
+      }
+    }
     const data: Prisma.EmployeeUncheckedUpdateInput = {
       ...rest,
       ...(name ? { nameAr: name.ar, nameEn: name.en } : {}),

@@ -67,6 +67,7 @@ export {
 export {
   genderSchema,
   employmentStatusSchema,
+  manualEmploymentStatusSchema,
   contractTypeSchema,
   gosiContributionBasisSchema,
   wpsStatusSchema,
@@ -394,7 +395,7 @@ export {
 } from './request-thread.js';
 
 export { FINISHED, isFinished, type WorkKind } from './work-status.js';
-export { isUnderManagement } from './headcount.js';
+export { hasJoined, isUnderManagement } from './headcount.js';
 export {
   dependantRelationshipSchema,
   createDependantSchema,

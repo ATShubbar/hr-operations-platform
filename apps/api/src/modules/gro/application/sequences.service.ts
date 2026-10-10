@@ -231,6 +231,27 @@ export class SequencesService {
     });
   }
 
+  // MOB-04a (ADR-018): a terminated person's onboarding is over — cancel the run
+  // rather than leave a live sequence on someone who has left. (A running FINAL
+  // EXIT is left alone: the departure paperwork is still to be done.) Called from
+  // the termination event, so there may be no signed-in actor (a system path).
+  async cancelOnboardingOnTermination(employeeId: string): Promise<number> {
+    const actorId = requestContext.get()?.actorId ?? null;
+    return this.prisma.$transaction(async (tx) => {
+      const running = await tx.groSequence.findMany({
+        where: { employeeId, kind: 'onboarding', status: 'running' },
+      });
+      for (const row of running) {
+        await tx.groSequence.update({
+          where: { id: row.id },
+          data: { status: 'cancelled', cancelledAt: new Date(), cancelledByUserId: actorId },
+        });
+        await this.record(tx, row, 'cancel', { kind: row.kind, reason: 'terminated' });
+      }
+      return running.length;
+    });
+  }
+
   private actor(): string {
     const actorId = requestContext.get()?.actorId;
     if (!actorId) throw new BadRequestException('A signed-in actor is required');

@@ -62,7 +62,8 @@ describe('Reports export (REP-03, e2e)', () => {
     expect(body.startsWith('﻿')).toBe(true); // Excel reads Arabic correctly
     const lines = body.slice(1).split('\r\n');
     expect(lines[0]).toBe(
-      'Client,Headcount,Active,On leave,Suspended,Terminated,Saudi,Non-Saudi,Saudization %',
+      // MOB-04a added the Onboarding column: people on the way in, never in the headcount.
+      'Client,Headcount,Active,On leave,Suspended,Terminated,Onboarding,Saudi,Non-Saudi,Saudization %',
     );
     // The comma-and-quote client name is quoted, with its quotes doubled.
     const tricky = lines.find((l) => l.includes('Al-Rajhi'));

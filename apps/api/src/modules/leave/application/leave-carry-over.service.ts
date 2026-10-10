@@ -1,3 +1,4 @@
+import { hasJoined } from '@hr/contracts';
 import { Injectable, Logger } from '@nestjs/common';
 import type { CarryOverResponse } from '@hr/contracts';
 import { PrismaService } from '../../../prisma/prisma.service';
@@ -28,7 +29,8 @@ export class LeaveCarryOverService {
     options: { clientId?: string } = {},
   ): Promise<CarryOverResponse> {
     const people = (await this.employees.list(options.clientId)).filter(
-      (p) => p.employmentStatus !== 'terminated',
+      // In post only (MOB-04a): neither a leaver nor someone still on the way in.
+      (p) => hasJoined(p.employmentStatus),
     );
     const result: CarryOverResponse = { year, credited: 0, alreadyCredited: 0, nothingToCarry: 0 };
 

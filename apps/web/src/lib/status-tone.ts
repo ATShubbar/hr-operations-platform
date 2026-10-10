@@ -63,6 +63,9 @@ const EMPLOYEE: Record<string, StatusTone> = {
   // one on holiday.
   suspended: 'warning',
   terminated: 'neutral',
+  // MOB-04a (ADR-018): hired, on the way in — in progress, like on_leave it is
+  // not a fault; the label and the dot tell the two apart.
+  onboarding: 'info',
 };
 
 // Candidate stages are SEVEN — too many for hue. The pipeline board already

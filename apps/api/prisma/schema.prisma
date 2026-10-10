@@ -283,6 +283,10 @@ enum EmploymentStatus {
   on_leave
   suspended
   terminated
+  // MOB-04a (ADR-018): mid-mobilisation — hired, not yet arrived. NOT under
+  // management (no headcount, no leave); set and cleared by the onboarding
+  // sequence only, never by hand.
+  onboarding
 }
 
 enum ContractType {

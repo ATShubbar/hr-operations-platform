@@ -107,6 +107,7 @@ export class ReportingService {
         onLeave: 0,
         suspended: 0,
         terminated: 0,
+        onboarding: 0,
         saudi: 0,
         nonSaudi: 0,
         saudizationPct: 0,
@@ -118,6 +119,8 @@ export class ReportingService {
       on_leave: 'onLeave',
       suspended: 'suspended',
       terminated: 'terminated',
+      // MOB-04a (ADR-018): on the way in — a column of their own, never the headcount.
+      onboarding: 'onboarding',
     };
     const managed: typeof employees = [];
     for (const e of employees) {
@@ -125,7 +128,7 @@ export class ReportingService {
       if (!row) continue; // an archived (or hard-deleted) company — not in this report
       const key = STATUS_KEY[e.employmentStatus];
       if (key) row[key] = (row[key] as number) + 1;
-      if (!isUnderManagement(e.employmentStatus, 'active')) continue; // a leaver: column only
+      if (!isUnderManagement(e.employmentStatus, 'active')) continue; // a leaver or an arrival: column only
       managed.push(e);
       row.headcount = (row.headcount as number) + 1;
       // Saudization proxy: nationality 'SA'. `countsTowardSaudization` is a
@@ -153,6 +156,7 @@ export class ReportingService {
         count('onLeave', 'On leave'),
         count('suspended', 'Suspended'),
         count('terminated', 'Terminated'),
+        count('onboarding', 'Onboarding'),
         count('saudi', 'Saudi'),
         count('nonSaudi', 'Non-Saudi'),
         count('saudizationPct', 'Saudization %'),
