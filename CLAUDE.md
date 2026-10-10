@@ -1540,6 +1540,12 @@ Billing `StepReopenedHandler` voids that step's fee (`VOID_REASON_STEP_REOPENED`
 failure is reported, never rolls the filing back), `lib/standard-fees.ts`. Mobilisation tab: filing asks what was paid; filed
 steps show their fee or offer Record fee. `GroResolve`: completing ANY procedure opens the dialog for `fee.create` holders.
 Lesson: two red proofs didn't bite — a test that hits an EARLIER refusal proves nothing about the rule behind it. API **772/772**.
+**BILL-03 done — the client's Fees tab.** `clients/[id]/fees-tab.tsx`: 4 tiles, "Where the money went" by authority, the
+ledger with a Show filter (all but void · not yet invoiced · invoiced · void), Add a fee by hand, per-fee Correct / Attach or
+Remove receipt / Void-with-reason (officers + Administrator; the Auditor gets no button). The 90-day tiles follow the
+prototype; **"Not yet invoiced" is EVERYTHING still recorded** (an old unbilled fee is still owed — the one deliberate change).
+Void fees are in no figure and listed only under Void. `toneFor('fee')`. Ledger text WRAPS (an ellipsis hid what was paid
+for). No API change.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

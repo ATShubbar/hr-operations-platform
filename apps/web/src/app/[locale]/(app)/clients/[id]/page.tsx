@@ -32,6 +32,7 @@ import { BandPill, ProfileLine } from '@/components/client-profile-bits';
 import { ClientFormDialog } from '../client-form-dialog';
 import { figuresFor } from '../client-figures';
 import { PortalUsersDialog } from '../portal-users-dialog';
+import { FeesTab } from './fees-tab';
 import { RecordsTab } from './records-tab';
 import { HiringTab } from './hiring-tab';
 import { OpenWorkTab } from './open-work-tab';
@@ -64,7 +65,7 @@ const TABS = [
   'commercial',
 ] as const;
 type Tab = (typeof TABS)[number];
-const BUILT = new Set<Tab>(['overview', 'people', 'requests', 'work', 'hiring', 'records']);
+const BUILT = new Set<Tab>(['overview', 'people', 'requests', 'work', 'hiring', 'records', 'fees']);
 
 export default function ClientRecordPage() {
   const t = useTranslations('clients');
@@ -343,6 +344,16 @@ export default function ClientRecordPage() {
 
         <TabsPanel value="records">
           <RecordsTab client={client} onClientSaved={setClient} />
+        </TabsPanel>
+
+        <TabsPanel value="fees">
+          <FeesTab
+            clientId={client.id}
+            people={staff.map((e) => ({
+              id: e.id,
+              name: locale === 'ar' ? e.name.ar : e.name.en,
+            }))}
+          />
         </TabsPanel>
 
         {TABS.filter((k) => !BUILT.has(k)).map((k) => (

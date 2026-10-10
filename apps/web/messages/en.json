@@ -308,7 +308,6 @@
       "commercial": "Commercial"
     },
     "soon": {
-      "fees": "Government fees paid on this company's behalf.",
       "commercial": "Service tier, pricing, term, invoices and payment status.",
       "value": "Soon"
     },
@@ -491,6 +490,75 @@
       "termStart": "Term starts",
       "termEnd": "Term ends",
       "termOrder": "The term cannot end before it starts."
+    },
+    "fees": {
+      "loadError": "Could not load this company's fees.",
+      "tile": {
+        "paid90": "Paid on their behalf · 90 days",
+        "notInvoiced": "Not yet invoiced",
+        "notInvoicedSub": "all of it, whatever its age",
+        "recovered90": "Already recovered · 90 days",
+        "filings90": "Filings · 90 days"
+      },
+      "whereTitle": "Where the money went",
+      "whereSub": "Fees paid in the last 90 days, by authority.",
+      "whereEmpty": "Nothing paid in the last 90 days.",
+      "ledgerTitle": "Fee ledger",
+      "ledgerSub": "Government fees are passed through at cost and recovered on an invoice.",
+      "show": "Show",
+      "filter": {
+        "live": "All but void",
+        "recorded": "Not yet invoiced",
+        "invoiced": "Invoiced",
+        "void": "Void"
+      },
+      "add": "Add a fee",
+      "empty": "No fees recorded for this company yet.",
+      "emptyFiltered": "No fees match this view.",
+      "companyLevel": "Company-level (no employee)",
+      "status": {
+        "recorded": "Recorded",
+        "invoiced": "Invoiced",
+        "void": "Void"
+      },
+      "voidedLine": "Void — {reason}",
+      "reasonStepReopened": "its step was reopened",
+      "receiptFor": "Open the receipt for {ref}",
+      "actionsFor": "Actions for {ref}",
+      "action": {
+        "openReceipt": "Open receipt",
+        "correct": "Correct",
+        "attachReceipt": "Attach a receipt",
+        "removeReceipt": "Remove receipt",
+        "void": "Void this fee"
+      },
+      "note": "Amounts are what staff recorded as paid. Nothing is deleted: a fee recorded in error is voided and stays listed under Void.",
+      "addTitle": "Add a fee",
+      "addHint": "For a payment that was not recorded when a step or procedure was filed, such as a company-level fee.",
+      "correctTitle": "Correct {ref}",
+      "correctHint": "A fee can be corrected until an invoice recovers it.",
+      "label": "What was paid for",
+      "labelPlaceholder": "Chamber of Commerce attestation",
+      "employee": "For",
+      "voidTitle": "Void {ref}?",
+      "voidHint": "{amount} leaves this company's totals. The fee stays in the ledger, marked void, with your reason.",
+      "voidReason": "Reason",
+      "voidKeep": "Keep it",
+      "voidConfirm": "Void the fee",
+      "error": {
+        "label": "Say what was paid for.",
+        "reason": "Give a reason (at least a few words).",
+        "save": "Could not save. Try again.",
+        "notRecorded": "This fee can no longer be corrected.",
+        "cannotVoid": "This fee is on an invoice or already void, so it cannot be voided.",
+        "receiptOpen": "Could not open the receipt."
+      },
+      "toast": {
+        "corrected": "{ref} corrected.",
+        "voided": "{ref} voided.",
+        "receiptAttached": "Receipt attached to {ref}.",
+        "receiptRemoved": "Receipt removed from {ref}."
+      }
     }
   },
   "audit": {

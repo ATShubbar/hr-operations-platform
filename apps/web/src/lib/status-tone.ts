@@ -141,6 +141,15 @@ const NITAQAT: Record<string, StatusTone> = {
   platinum: 'info',
 };
 
+// A government fee (ADR-020): recorded = paid on the client's behalf and not yet
+// recovered — the state that asks for something (an invoice); invoiced = an
+// invoice recovers it; void = taken out of the ledger's totals, not a fault.
+const FEE: Record<string, StatusTone> = {
+  recorded: 'warning',
+  invoiced: 'ok',
+  void: 'neutral',
+};
+
 const DOMAINS = {
   vacancy: VACANCY,
   client: CLIENT,
@@ -155,6 +164,7 @@ const DOMAINS = {
   leave: LEAVE,
   auditSeverity: AUDIT_SEVERITY,
   nitaqat: NITAQAT,
+  fee: FEE,
 } as const;
 
 export type StatusDomain = keyof typeof DOMAINS;
