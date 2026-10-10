@@ -1595,6 +1595,13 @@ STAFF_BASE; `scopeOf` staff-only until NC-05) → `{today, thresholds, items, su
 `told`. Setting `escalation.thresholds` (system; fixed day list; later stage never earlier). ADR-021 rev. 1: one obligation
 reported once · a Saudi's iqama/permit not watched · a role-owned expiry is each member's · quiet count per viewer. Seed:
 32–33 items, counts matched SQL, 4–7 ms per call. API **817/817**.
+**NC-02 done — read marks and the bell's count.** `esc_reads` (PK user + item; stage + date; staff connection only, DELETE
+granted). An item is `read` only while still at the mark's STAGE and DATE (climbing = unread again — usually with the date
+UNCHANGED, as the days run down). `GET /escalations/count` → `{needsAction}` (told + unread + Escalated/Breach);
+`POST /escalations/read {keys}` marks only what the caller's OWN ladder shows (other keys ignored — a mark can't probe for
+records), then clears their marks for items that left the ladder. Not audited (exempt list, like bell read marks). Lesson
+again: 3 of 13 red proofs didn't bite — the "climb" test moved the date, and the count was checked only for the one role
+where looser rules give the same number. Check a rule for a viewer who can tell it apart. API **826/826**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

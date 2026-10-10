@@ -218,6 +218,7 @@ describe('The escalation ladder for staff (NC-01, e2e)', () => {
       'key',
       'mine',
       'owner',
+      'read',
       'rule',
       'stage',
       'subject',
@@ -453,7 +454,15 @@ describe('The ladder — staff only, even for a role that held the permission (N
     await app.close();
   });
 
-  it('a client manager granted escalation.read is still refused', async () => {
-    await request(app.getHttpServer()).get('/escalations').set('Cookie', rep.cookie).expect(403);
+  it('a client manager granted escalation.read is still refused — the ladder, its count and read marks', async () => {
+    const http = () => request(app.getHttpServer());
+    await http().get('/escalations').set('Cookie', rep.cookie).expect(403);
+    await http().get('/escalations/count').set('Cookie', rep.cookie).expect(403);
+    await http()
+      .post('/escalations/read')
+      .set('Cookie', rep.cookie)
+      .send({ keys: ['expiry:x:iqama'] })
+      .expect(403);
+    expect(await owner.escalationRead.count({ where: { userId: rep.userId } })).toBe(0);
   });
 });

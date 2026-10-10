@@ -80,7 +80,8 @@ export const ModelName = {
   LeaveEntry: 'LeaveEntry',
   Fee: 'Fee',
   BillingTerms: 'BillingTerms',
-  Invoice: 'Invoice'
+  Invoice: 'Invoice',
+  EscalationRead: 'EscalationRead'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -645,6 +646,17 @@ export const InvoiceScalarFieldEnum = {
 } as const
 
 export type InvoiceScalarFieldEnum = (typeof InvoiceScalarFieldEnum)[keyof typeof InvoiceScalarFieldEnum]
+
+
+export const EscalationReadScalarFieldEnum = {
+  userId: 'userId',
+  itemKey: 'itemKey',
+  stage: 'stage',
+  dueOn: 'dueOn',
+  readAt: 'readAt'
+} as const
+
+export type EscalationReadScalarFieldEnum = (typeof EscalationReadScalarFieldEnum)[keyof typeof EscalationReadScalarFieldEnum]
 
 
 export const SortOrder = {

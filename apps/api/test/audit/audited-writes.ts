@@ -143,6 +143,8 @@ export const AUDIT_EXEMPT_WRITES: Record<string, string> = {
   'POST /auth/mfa/verify': 'persists mfa_secret to auth_users — a SECURITY event, out of scope for business-data audit; belongs to the future auth-event audit stream',
   'POST /auth/mfa/challenge': 'promotes the Redis session to full; no business-table mutation',
   'POST /notifications/:id/read': "marks the caller's own notification read; a self-service read-state toggle, not a business-data mutation",
+  'POST /escalations/read':
+    "marks the caller's own ladder items read (NC-02); a read-state toggle on what they are already shown, not a business-data mutation",
   'POST /notifications/read-all': "marks the caller's own notifications read; a self-service read-state toggle, not a business-data mutation",
   'POST /expiry/scan': 'system-wide (cross-client) maintenance trigger; the scan spans all clients so there is no single client scope for the AUDIT-03 tx, and its durable record is the exp_alerts + notifications it raises',
 };

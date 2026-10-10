@@ -118,18 +118,21 @@ const UNDECIDED: ReadonlySet<string> = new Set(['open', 'info_needed']);
 
 type Owner = { userId: string } | { role: OwnerRole } | null;
 
+/** An item as the rules produce it. Whether the viewer has READ it is added by the service. */
+export type LadderItem = Omit<EscalationItem, 'read'>;
+
 export function buildLadder(
   input: LadderInput,
   viewer: LadderViewer,
-): { items: EscalationItem[]; suppressed: number } {
+): { items: LadderItem[]; suppressed: number } {
   const { today, thresholds } = input;
   const clients = new Map(input.clients.map((c) => [c.id, c]));
   const people = new Map(input.people.map((p) => [p.id, p]));
   const requests = new Map(input.requests.map((r) => [r.id, r]));
-  const items: EscalationItem[] = [];
+  const items: LadderItem[] = [];
   let suppressed = 0;
 
-  const clientOf = (id: string | null): EscalationItem['client'] => {
+  const clientOf = (id: string | null): LadderItem['client'] => {
     const c = id ? clients.get(id) : undefined;
     return c ? { id: c.id, name: c.name } : null;
   };

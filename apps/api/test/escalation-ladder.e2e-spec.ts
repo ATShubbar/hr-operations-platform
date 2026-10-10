@@ -1,8 +1,9 @@
-import { DEFAULT_ESCALATION_THRESHOLDS, type EscalationItem } from '@hr/contracts';
+import { DEFAULT_ESCALATION_THRESHOLDS } from '@hr/contracts';
 import { describe, expect, it } from 'vitest';
 import {
   buildLadder,
   type LadderInput,
+  type LadderItem,
   type LadderViewer,
 } from '../src/modules/escalations/public-api';
 
@@ -73,8 +74,8 @@ const base = (over: Partial<LadderInput> = {}): LadderInput => ({
   ]),
   ...over,
 });
-const keys = (items: EscalationItem[]) => items.map((i) => i.key);
-const one = (input: LadderInput, who: LadderViewer, key: string): EscalationItem | undefined =>
+const keys = (items: LadderItem[]) => items.map((i) => i.key);
+const one = (input: LadderInput, who: LadderViewer, key: string): LadderItem | undefined =>
   buildLadder(input, who).items.find((i) => i.key === key);
 
 describe('document expiry', () => {

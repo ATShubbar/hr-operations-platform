@@ -84,6 +84,9 @@ export const escalationItemSchema = z.object({
   owner: escalationOwnerSchema.nullable(),
   mine: z.boolean(), // the viewer owns it — "Assigned to me"
   told: z.boolean(), // the viewer is in this stage's audience
+  // NC-02: the viewer has marked it read AT THIS STAGE AND DATE. Climbing a
+  // stage, or a changed date, makes it unread again.
+  read: z.boolean(),
 });
 
 export const escalationLadderResponseSchema = z.object({
@@ -94,6 +97,21 @@ export const escalationLadderResponseSchema = z.object({
   suppressed: z.number().int(),
 });
 
+// Read marks (NC-02) — the only thing the ladder stores. The caller names the
+// items; the server marks those it is CURRENTLY showing them, at the stage and
+// date they are at now, and ignores the rest.
+export const MAX_READ_KEYS = 200;
+export const markEscalationsReadRequestSchema = z.strictObject({
+  keys: z.array(z.string().trim().min(1).max(200)).max(MAX_READ_KEYS),
+});
+export const markEscalationsReadResponseSchema = z.object({ marked: z.number().int() });
+
+// The bell's count: unread items the viewer is told about, at Escalated or Breach.
+export const escalationCountResponseSchema = z.object({ needsAction: z.number().int() });
+
+export type MarkEscalationsReadRequest = z.infer<typeof markEscalationsReadRequestSchema>;
+export type MarkEscalationsReadResponse = z.infer<typeof markEscalationsReadResponseSchema>;
+export type EscalationCountResponse = z.infer<typeof escalationCountResponseSchema>;
 export type EscalationItem = z.infer<typeof escalationItemSchema>;
 export type EscalationSubject = z.infer<typeof escalationSubjectSchema>;
 export type EscalationOwner = z.infer<typeof escalationOwnerSchema>;

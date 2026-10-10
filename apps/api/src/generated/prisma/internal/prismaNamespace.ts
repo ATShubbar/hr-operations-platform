@@ -413,7 +413,8 @@ export const ModelName = {
   LeaveEntry: 'LeaveEntry',
   Fee: 'Fee',
   BillingTerms: 'BillingTerms',
-  Invoice: 'Invoice'
+  Invoice: 'Invoice',
+  EscalationRead: 'EscalationRead'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -429,7 +430,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "authUser" | "authAccountToken" | "coreScopeCheck" | "auditEntry" | "systemSetting" | "clientSetting" | "userSetting" | "client" | "employee" | "dependant" | "document" | "notification" | "expiryAlert" | "notificationPreference" | "request" | "requestComment" | "requestAttachment" | "task" | "vacancy" | "candidate" | "groProcess" | "groSequence" | "groSequenceStep" | "gcalInvitation" | "calendarEvent" | "leaveRequest" | "leaveEntry" | "fee" | "billingTerms" | "invoice"
+    modelProps: "authUser" | "authAccountToken" | "coreScopeCheck" | "auditEntry" | "systemSetting" | "clientSetting" | "userSetting" | "client" | "employee" | "dependant" | "document" | "notification" | "expiryAlert" | "notificationPreference" | "request" | "requestComment" | "requestAttachment" | "task" | "vacancy" | "candidate" | "groProcess" | "groSequence" | "groSequenceStep" | "gcalInvitation" | "calendarEvent" | "leaveRequest" | "leaveEntry" | "fee" | "billingTerms" | "invoice" | "escalationRead"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2653,6 +2654,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    EscalationRead: {
+      payload: Prisma.$EscalationReadPayload<ExtArgs>
+      fields: Prisma.EscalationReadFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.EscalationReadFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EscalationReadPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.EscalationReadFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EscalationReadPayload>
+        }
+        findFirst: {
+          args: Prisma.EscalationReadFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EscalationReadPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.EscalationReadFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EscalationReadPayload>
+        }
+        findMany: {
+          args: Prisma.EscalationReadFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EscalationReadPayload>[]
+        }
+        create: {
+          args: Prisma.EscalationReadCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EscalationReadPayload>
+        }
+        createMany: {
+          args: Prisma.EscalationReadCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.EscalationReadCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EscalationReadPayload>[]
+        }
+        delete: {
+          args: Prisma.EscalationReadDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EscalationReadPayload>
+        }
+        update: {
+          args: Prisma.EscalationReadUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EscalationReadPayload>
+        }
+        deleteMany: {
+          args: Prisma.EscalationReadDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.EscalationReadUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.EscalationReadUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EscalationReadPayload>[]
+        }
+        upsert: {
+          args: Prisma.EscalationReadUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EscalationReadPayload>
+        }
+        aggregate: {
+          args: Prisma.EscalationReadAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateEscalationRead>
+        }
+        groupBy: {
+          args: Prisma.EscalationReadGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EscalationReadGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.EscalationReadCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EscalationReadCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -3238,6 +3313,17 @@ export const InvoiceScalarFieldEnum = {
 } as const
 
 export type InvoiceScalarFieldEnum = (typeof InvoiceScalarFieldEnum)[keyof typeof InvoiceScalarFieldEnum]
+
+
+export const EscalationReadScalarFieldEnum = {
+  userId: 'userId',
+  itemKey: 'itemKey',
+  stage: 'stage',
+  dueOn: 'dueOn',
+  readAt: 'readAt'
+} as const
+
+export type EscalationReadScalarFieldEnum = (typeof EscalationReadScalarFieldEnum)[keyof typeof EscalationReadScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -4112,6 +4198,7 @@ export type GlobalOmitConfig = {
   fee?: Prisma.FeeOmit
   billingTerms?: Prisma.BillingTermsOmit
   invoice?: Prisma.InvoiceOmit
+  escalationRead?: Prisma.EscalationReadOmit
 }
 
 /* Types for Logging */

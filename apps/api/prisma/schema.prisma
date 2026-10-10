@@ -1158,3 +1158,20 @@ enum InvoiceStatus {
   sent
   paid
 }
+
+// NC-02 (ADR-021): READ MARKS — the only thing the escalation ladder stores.
+// The ladder itself is derived on every call; this remembers, per person, the
+// stage and the date at which they last marked an item read. ONE row per
+// person per item: an item at a different stage or date than its mark is
+// unread again. `item_key` is the ladder's own key (it names a record by id,
+// nothing more); `user_id` is a bare auth user id.
+model EscalationRead {
+  userId  String   @map("user_id") @db.Uuid
+  itemKey String   @map("item_key")
+  stage   String
+  dueOn   DateTime @map("due_on") @db.Date
+  readAt  DateTime @default(now()) @map("read_at")
+
+  @@id([userId, itemKey])
+  @@map("esc_reads")
+}

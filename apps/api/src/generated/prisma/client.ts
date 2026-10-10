@@ -189,3 +189,8 @@ export type BillingTerms = Prisma.BillingTermsModel
  * 
  */
 export type Invoice = Prisma.InvoiceModel
+/**
+ * Model EscalationRead
+ * 
+ */
+export type EscalationRead = Prisma.EscalationReadModel
