@@ -1727,6 +1727,11 @@ plural/select branch). `apps/web/scripts/verify-ar-messages.mjs` runs inside the
 or branch that opens with a digit, `#` or a `{placeholder}` without the mark, and on a LITERAL mark. Follow-up **UX-20**
 (a trailing full stop at the wrong end; Arabic sentences holding a Latin name).
 
+**UX-03b and CI-01 closed (2026-10-11).** UX-03b (wrap identifiers in `<bdi>`) was overtaken: ADR-012 made the layout
+LTR and UX-08 / DS-06+ / UX-18 did what still mattered. CI-01 (intermittent "Seed the test database" failure) met its own
+closing condition — 26 green runs in a row (#243–#268) — with the cause NEVER confirmed; the step prints the object
+store's log if it fails again.
+
 ## Technical landmines (each cost real debugging — do not rediscover)
 
 - `apps/web/messages/ar.json` holds right-to-left marks as the ESCAPE `\u200f`. `json.dumps(ensure_ascii=False)` (or any
