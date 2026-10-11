@@ -59,10 +59,11 @@ type View = 'month' | 'week' | 'agenda';
 const VIEWS: readonly View[] = ['month', 'week', 'agenda'];
 const ALL = 'all';
 const ASSIGNABLE = new Set(['administrator', 'hr_officer', 'gro_officer']);
-const LEGEND = ['gro', 'request', 'task', 'event'] as const;
+const LEGEND = ['gro', 'step', 'request', 'task', 'event'] as const;
 
 export default function CalendarPage() {
   const t = useTranslations('calendar');
+  const tm = useTranslations('person.mob');
   const locale = useLocale();
   const router = useRouter();
   const { statusLabel, titleFor } = useViewItemLabels();
@@ -121,18 +122,25 @@ export default function CalendarPage() {
 
   const shown = owner === ALL ? items : items.filter((i) => i.ownerUserId === owner);
 
-  const title = (it: CalendarItem) => titleFor(it.kind as ViewItemKind, it.title);
+  // A step's title arrives as its KEY (MOB-06b) — translated here, like the
+  // Mobilisation tab does.
+  const title = (it: CalendarItem) =>
+    it.step ? tm(`step.${it.step.key}.title`) : titleFor(it.kind as ViewItemKind, it.title);
   const ownerName = (it: CalendarItem) =>
     staff.find((s) => s.id === it.ownerUserId)?.displayName ?? null;
   const where = (it: CalendarItem) => {
     const c = clients.find((x) => x.id === it.clientId);
     const client = c ? (locale === 'ar' ? c.name.ar : c.name.en) : null;
     if (it.kind === 'event') return client;
+    if (it.step)
+      return [tm(`kind.${it.step.sequenceKind}.label`), client].filter(Boolean).join(' · ');
     return [statusLabel(it.kind as ViewItemKind, it.status), client].filter(Boolean).join(' · ');
   };
 
   async function open(it: CalendarItem) {
     if (it.kind === 'request') return void router.push(`/requests?r=${it.id}`);
+    // A step is filed where the rest of its sequence is (MOB-06, owner decision).
+    if (it.step) return void router.push(`/employees/${it.step.employeeId}?tab=mob`);
     if (it.kind === 'task' || it.kind === 'gro') return void router.push('/queue');
     if (!canUpdate) return;
     try {

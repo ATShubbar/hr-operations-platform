@@ -14,6 +14,8 @@ import type {
   GroProcessListResponse,
   GroProcessResponse,
   RequestListResponse,
+  SequenceInFlight,
+  SequenceInFlightListResponse,
   RequestResponse,
   StaffDirectoryEntry,
   StaffDirectoryResponse,
@@ -94,6 +96,8 @@ interface Data {
   tasks: TaskResponse[];
   candidates: CandidateResponse[];
   staff: StaffDirectoryEntry[];
+  /** Running onboardings / final exits (MOB-06b): their ready steps are queue items. */
+  sequences: SequenceInFlight[];
 }
 const EMPTY: Data = {
   clients: [],
@@ -103,6 +107,7 @@ const EMPTY: Data = {
   tasks: [],
   candidates: [],
   staff: [],
+  sequences: [],
 };
 
 /** Same local calendar day as now. */
@@ -145,7 +150,7 @@ function StaffOverview() {
         fails.push(err);
         return fallback;
       });
-    const [c, e, g, r, k, d, cand, deps] = await Promise.all([
+    const [c, e, g, r, k, d, cand, deps, sq] = await Promise.all([
       get<ClientListResponse>('/clients', { clients: [] }),
       get<EmployeeListResponse>('/employees', { employees: [] }),
       get<GroProcessListResponse>('/gro-processes', { processes: [] }),
@@ -158,6 +163,11 @@ function StaffOverview() {
       // DEP-05a: dependants' dates, for the runway and the expiring tile. Its
       // own failure is not counted with the rest: the page still stands.
       loadDependantExpiries(),
+      // MOB-06b: outside `get`, like the dependants read — not one of the
+      // sources that decide "nothing loaded".
+      apiFetch<SequenceInFlightListResponse>('/gro-sequences?status=running').catch(() => ({
+        sequences: [],
+      })),
     ]);
     setDependants(deps);
     if (fails.some((x) => x instanceof ApiError && x.status === 401)) {
@@ -172,6 +182,7 @@ function StaffOverview() {
       tasks: k.tasks,
       candidates: cand.candidates,
       staff: d.users.filter((u) => ASSIGNABLE.has(u.role)),
+      sequences: sq.sequences,
     });
     setLoaded(true);
   }

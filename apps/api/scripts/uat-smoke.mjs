@@ -346,6 +346,32 @@ async function main() {
       'insurance and licence: an open renewal keeps its expiry quiet',
       `renewal ${renewal?.status ?? 'missing'}, quiet items ${ladder.json?.suppressed}`,
     );
+    // MOB-06: a READY step of a running onboarding / final exit is work — it has
+    // an owner through its run, sits in the calendar's data on its target date,
+    // and follows the bell's queue rule.
+    const runs = await call('/gro-sequences?status=running', { cookie: hr });
+    const inFlight = runs.json?.sequences ?? [];
+    const ready = inFlight.flatMap((r) => r.steps.filter((st) => st.state === 'ready').map((st) => ({ r, st })));
+    const day = (n) => new Date(Date.now() + n * 86_400_000).toISOString().slice(0, 10);
+    const cal = await call(`/calendar/view?from=${day(-120)}T00:00:00Z&to=${day(120)}T23:59:59Z`, { cookie: hr });
+    const calSteps = (cal.json?.items ?? []).filter((i) => i.kind === 'step');
+    check(
+      runs.status === 200 &&
+        ready.length > 0 &&
+        inFlight.every((r) => 'assigneeUserId' in r) &&
+        inFlight.some((r) => r.assigneeUserId) &&
+        calSteps.length === ready.length &&
+        calSteps.every((i) => i.step?.key && i.status === 'ready'),
+      'sequence steps: every ready step is in the calendar, and runs carry an owner',
+      `${inFlight.length} running, ${ready.length} ready steps, ${calSteps.length} in the calendar`,
+    );
+    const stepItems = (ladder.json?.items ?? []).filter((i) => i.subject?.kind === 'sequence_step');
+    const readyKeys = new Set(ready.map(({ r, st }) => `step:${r.id}:${st.key}`));
+    check(
+      stepItems.every((i) => readyKeys.has(i.key) && i.rule === 'queue'),
+      'sequence steps: the bell lists only ready steps, under the queue rule',
+      `${stepItems.length} step item(s) on the ladder`,
+    );
     // DEP-06: a dependant's iqama renewal is a procedure on the sponsor. Staff
     // see it, NAMED; its expiry is quiet; and the client manager of the same
     // company never sees it (a database policy — clients see nothing of a family).

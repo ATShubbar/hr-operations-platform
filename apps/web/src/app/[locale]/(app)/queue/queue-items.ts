@@ -8,6 +8,7 @@ import type {
   EmployeeResponse,
   GroProcessResponse,
   RequestResponse,
+  SequenceInFlight,
   TaskResponse,
 } from '@hr/contracts';
 import type { QueueItem } from './queue-actions';
@@ -39,12 +40,15 @@ export interface WorkSources {
   tasks: readonly TaskResponse[];
   employees: readonly EmployeeResponse[];
   clients: readonly ClientResponse[];
+  /** Running onboardings / final exits (MOB-06b); omitted = the viewer has none to see. */
+  sequences?: readonly SequenceInFlight[];
 }
 
 export function useQueueItems(
-  { processes, requests, tasks, employees, clients }: WorkSources,
+  { processes, requests, tasks, employees, clients, sequences }: WorkSources,
   view: QueueView = 'open',
 ): QueueItem[] {
+  const tm = useTranslations('person.mob');
   const tg = useTranslations('gro');
   const tr = useTranslations('requests');
   const tt = useTranslations('tasks');
@@ -144,6 +148,42 @@ export function useQueueItems(
         searchText: [k.title],
       });
     }
+    // MOB-06b: each READY step of a running sequence is open work, due on its
+    // target date and owned by its run's owner. Blocked steps cannot be acted on
+    // yet; filed ones are the sequence's history, shown on the Mobilisation tab
+    // — so the Finished view has none.
+    if (view === 'open') {
+      for (const run of sequences ?? []) {
+        if (run.status !== 'running') continue;
+        const person = {
+          name: locale === 'ar' ? run.employee.name.ar : run.employee.name.en,
+          ar: run.employee.name.ar,
+        };
+        for (const st of run.steps) {
+          if (st.state !== 'ready') continue;
+          const title = tm(`step.${st.key}.title`);
+          items.push({
+            kind: 'step',
+            id: `${run.id}:${st.key}`,
+            title,
+            ref: null,
+            meta: [person.name, clientName(run.clientId), tm(`kind.${run.kind}.label`)]
+              .filter(Boolean)
+              .join(' · '),
+            clientId: run.clientId,
+            clientName: clientName(run.clientId),
+            person,
+            due: st.target,
+            createdAt: run.startedOn,
+            finishedAt: null,
+            assigneeUserId: run.assigneeUserId,
+            recordHref: `/employees/${run.employee.id}?tab=mob`,
+            step: { sequenceId: run.id, key: st.key, sequenceKind: run.kind },
+            searchText: [title, person.name, run.employee.name.ar, st.portal],
+          });
+        }
+      }
+    }
     if (view === 'finished') {
       return items.sort((a, b) => (b.finishedAt ?? '').localeCompare(a.finishedAt ?? ''));
     }
@@ -152,5 +192,5 @@ export function useQueueItems(
         (a.due ?? '9999').localeCompare(b.due ?? '9999') || a.createdAt.localeCompare(b.createdAt),
     );
     // tg/tr/tt change with the locale, which is listed.
-  }, [processes, requests, tasks, employees, clients, locale, view]);
+  }, [processes, requests, tasks, employees, clients, sequences, locale, view]);
 }

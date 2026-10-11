@@ -1217,7 +1217,8 @@
       "gro": "Procedure deadline",
       "request": "Request due",
       "task": "Internal task",
-      "event": "Event"
+      "event": "Event",
+      "step": "Onboarding or exit step"
     },
     "legendSoon": "Meetings, interviews and portal appointments as separate types — coming soon",
     "error": "Something went wrong. Please try again.",
@@ -1239,7 +1240,8 @@
       "event": "Event",
       "task": "Task",
       "request": "Request",
-      "gro": "Procedure"
+      "gro": "Procedure",
+      "step": "Step"
     }
   },
   "gro": {
@@ -2268,7 +2270,10 @@
         "filed": "{title} — filed.",
         "reopened": "{title} reopened.",
         "cancelled": "{label} cancelled.",
-        "exitComplete": "{title} — filed. The final exit is complete and the employment has ended."
+        "exitComplete": "{title} — filed. The final exit is complete and the employment has ended.",
+        "ownerSet": "{name} now owns this sequence.",
+        "ownerCleared": "This sequence has no owner now.",
+        "ownerFailed": "The owner wasn't changed. Try again."
       },
       "error": {
         "future": "A step cannot be filed in the future.",
@@ -2357,7 +2362,10 @@
           "note": "Failure to confirm leaves the file open with fines."
         }
       },
-      "endsEmployment": "Filing this ends {name}'s employment. Their record stays as history and any self-service account is closed."
+      "endsEmployment": "Filing this ends {name}'s employment. Their record stays as history and any self-service account is closed.",
+      "owner": "Owner",
+      "ownerNone": "Nobody yet",
+      "ownerSomeone": "Someone"
     },
     "statusFollowsOnboarding": "Follows the onboarding sequence — it becomes Active when the sequence completes."
   },
@@ -2488,6 +2496,7 @@
     "kind": {
       "all": "All",
       "procedure": "Procedures",
+      "step": "Steps",
       "request": "Requests",
       "task": "Tasks"
     },
@@ -2517,6 +2526,7 @@
     "someone": "Assigned",
     "assignLabel": "Assign {title}",
     "assignHeading": "Assign this item",
+    "assignRunHeading": "Assign the whole sequence",
     "reassigned": "Reassigned to {name}.",
     "snooze": "Snooze",
     "snoozeHint": "Move the due date seven days later",
@@ -2524,6 +2534,7 @@
     "markDone": "Mark done",
     "taskDone": "“{title}” marked done.",
     "openRequest": "Open request",
+    "openStep": "Open sequence",
     "actionError": "That change could not be saved. Try again.",
     "factEmployee": "Employee",
     "factRequester": "Raised by",

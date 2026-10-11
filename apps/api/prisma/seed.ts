@@ -1033,9 +1033,19 @@ async function seedSequences(prisma: PrismaClient): Promise<number> {
     });
   }
 
+  // MOB-06b: each run has ONE owner — whose work its ready steps are. The first
+  // arrival is the GRO officer's, the second is left unassigned (so the queue
+  // shows work nobody has taken), the final exit is an HR officer's.
+  const hrOfficer = await prisma.authUser.findUnique({
+    where: { email: seedEmail('staff-hr_officer') },
+  });
   const runs = [
-    ...SEED_MOBILISING.map((m) => ({ ...m, kind: 'onboarding' as const })),
-    { ...SEED_FINAL_EXIT, kind: 'final_exit' as const },
+    ...SEED_MOBILISING.map((m, i) => ({
+      ...m,
+      kind: 'onboarding' as const,
+      owner: i === 0 ? by : null,
+    })),
+    { ...SEED_FINAL_EXIT, kind: 'final_exit' as const, owner: hrOfficer?.id ?? null },
   ];
   // Idempotency: replace the seeded runs — and any other RUNNING run of the same
   // kind for the same person, which the one-running-per-kind index would refuse
@@ -1063,6 +1073,7 @@ async function seedSequences(prisma: PrismaClient): Promise<number> {
         status: 'running',
         startedOn: daysFromNow(-r.startedDaysAgo),
         startedByUserId: by,
+        assigneeUserId: r.owner,
         steps: {
           create: SEQUENCES[r.kind].steps.map((step) => {
             const ago = r.filed[step.key];

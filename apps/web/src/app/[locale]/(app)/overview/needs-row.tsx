@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { ClipboardList, MessageSquare, Stamp } from 'lucide-react';
+import { ClipboardList, ListChecks, MessageSquare, Stamp } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { Button } from '@/components/ui/button';
 import { DueCell, GroResolve } from '@/components/gro-work-list';
@@ -15,7 +15,12 @@ import { useQueueActions, type QueueItem } from '../queue/queue-actions';
 // a procedure gets the GRO status control (GRO-03 expiry capture included), a
 // task is marked done, a request opens on the Requests screen.
 
-const ICON = { procedure: Stamp, request: MessageSquare, task: ClipboardList } as const;
+const ICON = {
+  procedure: Stamp,
+  request: MessageSquare,
+  task: ClipboardList,
+  step: ListChecks,
+} as const;
 
 export function NeedsRow({
   item,
@@ -37,13 +42,23 @@ export function NeedsRow({
         <Icon className="size-4" aria-hidden />
       </span>
       <span className="flex min-w-0 grow basis-40 flex-col gap-px">
-        <button
-          type="button"
-          onClick={onOpen}
-          className="truncate text-start text-sm leading-5 font-medium outline-none hover:underline focus-visible:underline"
-        >
-          {item.title}
-        </button>
+        {item.kind === 'step' ? (
+          // MOB-06b: a step is filed on the person's Mobilisation tab.
+          <Link
+            href={item.recordHref ?? '/queue'}
+            className="truncate text-start text-sm leading-5 font-medium outline-none hover:underline focus-visible:underline"
+          >
+            {item.title}
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={onOpen}
+            className="truncate text-start text-sm leading-5 font-medium outline-none hover:underline focus-visible:underline"
+          >
+            {item.title}
+          </button>
+        )}
         <span className="truncate text-xs leading-4 text-muted-foreground">{item.meta}</span>
         {error && (
           <span role="alert" className="text-[11px] leading-4 text-destructive">
@@ -74,6 +89,16 @@ export function NeedsRow({
             render={<Link href={item.recordHref ?? '/requests'} />}
           >
             {t('openRequest')}
+          </Button>
+        ) : item.kind === 'step' ? (
+          <Button
+            variant="outline"
+            size="xs"
+            className="w-28"
+            nativeButton={false}
+            render={<Link href={item.recordHref ?? '/queue'} />}
+          >
+            {t('openStep')}
           </Button>
         ) : (
           <span className="w-28" aria-hidden />

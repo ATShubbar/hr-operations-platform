@@ -11,6 +11,8 @@ import type {
   GroProcessListResponse,
   GroProcessResponse,
   RequestListResponse,
+  SequenceInFlight,
+  SequenceInFlightListResponse,
   RequestResponse,
   StaffDirectoryEntry,
   StaffDirectoryResponse,
@@ -58,7 +60,7 @@ import { WorkItemDialog } from './work-item-dialog';
 
 type Band = 'over' | 'today' | 'week' | 'later' | 'none';
 const BANDS: readonly Band[] = ['over', 'today', 'week', 'later', 'none'];
-const KINDS = ['all', 'procedure', 'request', 'task'] as const;
+const KINDS = ['all', 'procedure', 'step', 'request', 'task'] as const;
 type KindFilter = (typeof KINDS)[number];
 const ALL = 'all';
 const ASSIGNABLE = new Set(['administrator', 'hr_officer', 'gro_officer']);
@@ -121,6 +123,7 @@ export default function WorkQueuePage() {
   const [employees, setEmployees] = useState<EmployeeResponse[]>([]);
   const [clients, setClients] = useState<ClientResponse[]>([]);
   const [staff, setStaff] = useState<StaffDirectoryEntry[]>([]);
+  const [sequences, setSequences] = useState<SequenceInFlight[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState('');
 
@@ -153,18 +156,25 @@ export default function WorkQueuePage() {
         fails.push(err);
         return fallback;
       });
-    const [g, r, tk, e, c, d] = await Promise.all([
+    const [g, r, tk, e, c, d, sq] = await Promise.all([
       get<GroProcessListResponse>('/gro-processes', { processes: [] }),
       get<RequestListResponse>('/requests', { requests: [] }),
       get<TaskListResponse>('/tasks', { tasks: [] }),
       get<EmployeeListResponse>('/employees', { employees: [] }),
       get<ClientListResponse>('/clients', { clients: [] }),
       get<StaffDirectoryResponse>('/staff-users/directory', { users: [] }),
+      // MOB-06b: running onboardings / final exits — their ready steps are work.
+      // Outside `get` on purpose: it is not one of the six that decide "nothing
+      // loaded", and a role without it simply has no steps.
+      apiFetch<SequenceInFlightListResponse>('/gro-sequences?status=running').catch(() => ({
+        sequences: [],
+      })),
     ]);
     if (fails.some((x) => x instanceof ApiError && x.status === 401)) {
       return void router.replace('/login');
     }
     if (fails.length === 6) setError(t('loadError'));
+    setSequences(sq.sequences);
     setProcesses(g.processes);
     setRequests(r.requests);
     setTasks(tk.tasks);
@@ -187,7 +197,7 @@ export default function WorkQueuePage() {
     return c ? (locale === 'ar' ? c.name.ar : c.name.en) : null;
   };
 
-  const sources = { processes, requests, tasks, employees, clients };
+  const sources = { processes, requests, tasks, employees, clients, sequences };
   const all = useQueueItems(sources);
   const finished = useQueueItems(sources, 'finished');
   const pool = view === 'open' ? all : finished;

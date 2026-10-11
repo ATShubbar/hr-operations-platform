@@ -129,7 +129,15 @@ export const KIND_CHIP: Record<CalendarItem['kind'], string> = {
   request: 'bg-status-warning/10 text-status-warning',
   task: 'bg-transparent text-neutral-600 ring-1 ring-neutral-200 ring-inset',
   event: 'bg-neutral-100 text-neutral-800',
+  // MOB-06b: a ready onboarding / final-exit step — sequenced work, its own tone.
+  step: 'bg-status-info/10 text-status-info',
 };
+
+// A stable key per item. A `step` item's id is its SEQUENCE's, and one run can
+// have several steps ready on the same day — the step key tells them apart
+// (two siblings with one key make React drop one: the THREAD-03 landmine).
+export const itemKey = (it: CalendarItem): string =>
+  it.step ? `step-${it.id}-${it.step.key}` : `${it.kind}-${it.id}`;
 
 // The same kinds as solid dots, for the phone month grid: a 6px dot needs the full
 // tone — the chips' 10% tints are invisible at that size (measured on a 375 grid).
@@ -138,4 +146,5 @@ export const KIND_DOT: Record<CalendarItem['kind'], string> = {
   request: 'bg-status-warning',
   task: 'bg-neutral-400',
   event: 'bg-neutral-700',
+  step: 'bg-status-info',
 };

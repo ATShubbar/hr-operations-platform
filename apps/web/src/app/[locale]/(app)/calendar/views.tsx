@@ -16,6 +16,7 @@ import {
   timeOf,
   weekdayShort,
   type Iso,
+  itemKey,
 } from './cal-utils';
 
 // The calendar's three views + the selected-day panel (DS-14), the prototype's
@@ -186,7 +187,7 @@ export function MonthView({
               >
                 {its.slice(0, 4).map((it) => (
                   <span
-                    key={`${it.kind}-${it.id}`}
+                    key={itemKey(it)}
                     className={cn('size-1.5 rounded-full', KIND_DOT[it.kind])}
                   />
                 ))}
@@ -194,13 +195,7 @@ export function MonthView({
             )}
             <span className="hidden flex-col gap-1 sm:flex">
               {its.slice(0, SHOWN).map((it) => (
-                <Chip
-                  key={`${it.kind}-${it.id}`}
-                  item={it}
-                  label={title(it)}
-                  size="cell"
-                  onOpen={onOpen}
-                />
+                <Chip key={itemKey(it)} item={it} label={title(it)} size="cell" onOpen={onOpen} />
               ))}
               {its.length > SHOWN && (
                 <span className="px-1.5 text-[11px] leading-4 text-muted-foreground">
@@ -254,7 +249,7 @@ export function WeekView({
               <div className="flex min-h-[420px] flex-col gap-1.5 p-2">
                 {its.map((it) => (
                   <Chip
-                    key={`${it.kind}-${it.id}`}
+                    key={itemKey(it)}
                     item={it}
                     label={title(it)}
                     size="week"
@@ -318,7 +313,7 @@ export function AgendaView({
           </div>
           <div className="flex min-w-0 grow flex-col gap-1.5">
             {its.map((it) => (
-              <div key={`${it.kind}-${it.id}`} className="flex min-w-0 items-center gap-2">
+              <div key={itemKey(it)} className="flex min-w-0 items-center gap-2">
                 <div className="min-w-0 grow">
                   <Chip item={it} label={title(it)} size="agenda" sub={where(it)} onOpen={onOpen} />
                 </div>
@@ -372,7 +367,7 @@ export function DayPanel({
       ) : (
         <ul>
           {its.map((it) => (
-            <li key={`${it.kind}-${it.id}`} className="border-t">
+            <li key={itemKey(it)} className="border-t">
               <button
                 type="button"
                 onClick={() => onOpen(it)}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
-import { ClipboardList, MessageSquare, Stamp } from 'lucide-react';
+import { ClipboardList, ListChecks, MessageSquare, Stamp } from 'lucide-react';
 import type { StaffDirectoryEntry } from '@hr/contracts';
 import { formatHijri } from '@hr/dates';
 import { Avatar } from '@/components/ui/avatar';
@@ -12,7 +12,14 @@ import type { QueueItem } from './queue-actions';
 // picker (a finished item has no next step); the title still opens the
 // work-item dialog for the detail. "Finished" is the item's last update.
 
-const ICON = { procedure: Stamp, request: MessageSquare, task: ClipboardList } as const;
+// (`step` never reaches the Finished view — filed steps are the sequence's own
+// history — but the map covers every kind the queue knows.)
+const ICON = {
+  procedure: Stamp,
+  request: MessageSquare,
+  task: ClipboardList,
+  step: ListChecks,
+} as const;
 
 export function FinishedRow({
   item,

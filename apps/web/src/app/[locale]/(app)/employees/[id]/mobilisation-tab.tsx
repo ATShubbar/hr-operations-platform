@@ -10,6 +10,8 @@ import type {
   SequenceListResponse,
   SequenceResponse,
   SequenceStep,
+  StaffDirectoryEntry,
+  StaffDirectoryResponse,
 } from '@hr/contracts';
 import { standardStepFee } from '@hr/contracts/billing-lists';
 import { formatHijri } from '@hr/dates';
@@ -34,8 +36,20 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LoadError, NoAccess } from '@/components/ui/load-state';
 import { Skeleton, SkeletonRegion } from '@/components/ui/skeleton';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { StatusPill } from '@/components/ui/status-pill';
 import { toastError, toastSuccess } from '@/components/ui/toast';
+
+// MOB-06b: the roles that can own a sequence (they hold gro.process), and the
+// Select's value for "nobody" (a Select cannot carry null).
+const OWNER_ROLES: ReadonlySet<string> = new Set(['administrator', 'hr_officer', 'gro_officer']);
+const NOBODY = 'nobody';
 
 // The Person record's Mobilisation tab (MOB-03, ADR-018) — the prototype's:
 // "No sequence running" with Start onboarding / Start final exit, or the running
@@ -142,6 +156,32 @@ export function MobilisationTab({
     void load();
     void loadFees();
   }, [employeeId]);
+
+  // MOB-06b: a run's OWNER — whose work its ready steps are. Only the roles that
+  // work procedures can be one (the server checks; this keeps the list honest).
+  const [staff, setStaff] = useState<StaffDirectoryEntry[]>([]);
+  useEffect(() => {
+    apiFetch<StaffDirectoryResponse>('/staff-users/directory')
+      .then((r) => setStaff(r.users.filter((u) => OWNER_ROLES.has(u.role))))
+      .catch(() => setStaff([]));
+  }, []);
+  async function assign(run: SequenceResponse, userId: string | null) {
+    setBusy(true);
+    try {
+      await apiFetch(`/gro-sequences/${run.id}/assign`, {
+        method: 'POST',
+        body: JSON.stringify({ assigneeUserId: userId }),
+      });
+      const name = staff.find((u) => u.id === userId)?.displayName;
+      toastSuccess(userId ? t('toast.ownerSet', { name: name ?? '' }) : t('toast.ownerCleared'));
+      await load();
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
+      toastError(t('toast.ownerFailed'));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   const day = (iso: string) => {
     const d = new Date(`${iso.slice(0, 10)}T00:00:00Z`);
@@ -398,6 +438,8 @@ export function MobilisationTab({
           onFile={openFile}
           onReopen={(run, step) => void reopen(run, step)}
           onCancel={setCancelling}
+          staff={staff}
+          onAssign={(run, userId) => void assign(run, userId)}
           day={day}
           hijri={hijri}
           list={list}
@@ -593,6 +635,8 @@ function SequenceCard({
   onFile,
   onReopen,
   onCancel,
+  staff,
+  onAssign,
   day,
   hijri,
   list,
@@ -607,6 +651,9 @@ function SequenceCard({
   onFile: (run: SequenceResponse, step: SequenceStep) => void;
   onReopen: (run: SequenceResponse, step: SequenceStep) => void;
   onCancel: (run: SequenceResponse) => void;
+  /** Who can own a run, and the change (MOB-06b). Omitted on history cards. */
+  staff?: readonly StaffDirectoryEntry[];
+  onAssign?: (run: SequenceResponse, userId: string | null) => void;
   day: (iso: string) => string;
   hijri: (iso: string) => string;
   list: (keys: string[]) => string;
@@ -629,6 +676,12 @@ function SequenceCard({
   // both kinds (MOB-04b; its completion has made the person active, or MOB-05
   // terminated them) — and a cancelled one is closed.
   const reopenable = canProcess && live;
+  // An owner who is no longer in the list (their role changed) still shows by
+  // name when the directory has them; otherwise as "someone".
+  const ownerLabel = (userId: string | null) =>
+    userId === null
+      ? t('ownerNone')
+      : (staff?.find((u) => u.id === userId)?.displayName ?? t('ownerSomeone'));
 
   return (
     <div className="overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10">
@@ -648,6 +701,36 @@ function SequenceCard({
               <bdi>
                 {next ? t('next', { title: t(`step.${next.key}.title`) }) : t('nothingWaiting')}
               </bdi>
+            </span>
+          )}
+          {live && staff && (
+            <span className="mt-1 flex flex-wrap items-center gap-2">
+              <Label htmlFor={`owner-${run.id}`} className="text-xs text-muted-foreground">
+                {t('owner')}
+              </Label>
+              {canProcess && onAssign ? (
+                <Select
+                  value={run.assigneeUserId ?? NOBODY}
+                  onValueChange={(v) => onAssign(run, v === NOBODY || !v ? null : String(v))}
+                  disabled={busy}
+                >
+                  <SelectTrigger id={`owner-${run.id}`} size="sm" className="w-[200px]">
+                    <SelectValue>{(v) => ownerLabel(v === NOBODY ? null : String(v))}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={NOBODY}>{t('ownerNone')}</SelectItem>
+                    {staff.map((u) => (
+                      <SelectItem key={u.id} value={u.id}>
+                        {u.displayName ?? u.id.slice(0, 8)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <span id={`owner-${run.id}`} className="text-[13px] leading-[18px]">
+                  {ownerLabel(run.assigneeUserId)}
+                </span>
+              )}
             </span>
           )}
         </span>

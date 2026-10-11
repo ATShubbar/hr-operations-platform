@@ -106,6 +106,9 @@ function hrefOf(item: EscalationItem, audience: Audience): string {
       return `/queue?open=procedure-${s.id}`;
     case 'task':
       return `/queue?open=task-${s.id}`;
+    // MOB-06b: a step is filed where the rest of its sequence is.
+    case 'sequence_step':
+      return `/employees/${s.employee.id}?tab=mob`;
   }
 }
 
@@ -115,6 +118,7 @@ export function NotificationCentre() {
   const tp = useTranslations('people');
   const tg = useTranslations('gro');
   const tq = useTranslations('requests');
+  const tm = useTranslations('person.mob');
   const locale = useLocale() as Locale;
   const router = useRouter();
   const me = useSession();
@@ -256,6 +260,8 @@ export function NotificationCentre() {
         return tc(`title.work.${w}`, { what: s.title, count });
       case 'request':
         return tc(`title.request.${w}`, { type: tq(`type.${s.type}`), count });
+      case 'sequence_step':
+        return tc(`title.work.${w}`, { what: tm(`step.${s.step}.title`), count });
     }
   }
   function subjectOf(i: EscalationItem): string | null {

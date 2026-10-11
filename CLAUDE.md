@@ -1708,6 +1708,19 @@ the completion dialog (Calendar + bell still show the type only). The generic St
 type (it can't pick a dependant). Seed: Omar Hassan's renewal open → HR ladder 34 items / 19 need action / 7 quiet. Smoke +2
 (the client-exclusion check runs as the real client login on UAT).
 
+**MOB-06a done — a ready sequence step is a work item (ADR-018 rev. 2).** `gro_sequences.assignee_user_id` — ONE owner
+per run: at start the client's named officer if `isActiveStaffWith(…, 'gro.process')`, else null;
+`POST /gro-sequences/:id/assign` (`gro.process` + `scopeOf`, running runs only → 409, audited `gro-sequence.assign`, the new
+owner is told once). GRO now imports ClientsModule (Clients imports only Audit/Auth — no loop). `/calendar/view` kind
+**`step`** (`id` = the SEQUENCE id, so `step.key` distinguishes; gated by `gro.read`; READY steps only). Ladder: `LadderStep`
++ `steps` on `LadderInput`, queue rule, key `step:<run>:<key>`, subject `sequence_step`; never on a client's or employee's
+ladder. API **913/913**.
+**MOB-06b done — MOB-06 COMPLETE.** Queue kind **`step`** (`QueueItem.id` = `<run>:<key>`; title + "Open sequence" →
+`/employees/:id?tab=mob`; NO dialog, NO snooze; the picker assigns the WHOLE run). `useQueueItems({…, sequences})` — the
+queue page and the Overview each load `/gro-sequences?status=running`. Calendar: `itemKey(it)` (a `step` item's id repeats
+— the duplicate-key landmine), info-tone chip, legend. Mobilisation tab: Owner Select. Seed owners: GRO officer / nobody /
+HR officer → HR ladder 35 items / 19 need action / 7 quiet. Smoke +2. Not done: Reports' officer workload ignores steps.
+
 ## Technical landmines (each cost real debugging — do not rediscover)
 
 - RLS policies MUST use `NULLIF(current_setting('app.client_id', true), '')::uuid` — pooled connections leave the GUC as '' not NULL (SPIKE-001).

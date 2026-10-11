@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Check, ChevronDown, ClipboardList, MessageSquare, Stamp } from 'lucide-react';
+import { Check, ChevronDown, ClipboardList, ListChecks, MessageSquare, Stamp } from 'lucide-react';
 import type { StaffDirectoryEntry } from '@hr/contracts';
 import { Link } from '@/i18n/navigation';
 import { cn } from '@/lib/utils';
@@ -21,7 +21,12 @@ import { ASSIGNEE_ROLES, useQueueActions, type QueueItem } from './queue-actions
 // expiry capture included), a task is marked done, a request opens on the
 // Requests screen, where approve / decline live.
 
-const ICON = { procedure: Stamp, request: MessageSquare, task: ClipboardList } as const;
+const ICON = {
+  procedure: Stamp,
+  request: MessageSquare,
+  task: ClipboardList,
+  step: ListChecks,
+} as const;
 
 export function QueueRow({
   item,
@@ -73,13 +78,24 @@ export function QueueRow({
       </span>
       <span className="flex min-w-0 grow basis-48 flex-col gap-px">
         <span className="flex min-w-0 items-center gap-2">
-          <button
-            type="button"
-            onClick={onOpen}
-            className="truncate text-start text-sm leading-5 font-medium outline-none hover:underline focus-visible:underline"
-          >
-            {item.title}
-          </button>
+          {item.kind === 'step' ? (
+            // A step has no dialog of its own: it is filed on the person's
+            // Mobilisation tab, beside the rest of its sequence (MOB-06).
+            <Link
+              href={item.recordHref ?? '/queue'}
+              className="truncate text-start text-sm leading-5 font-medium outline-none hover:underline focus-visible:underline"
+            >
+              {item.title}
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={onOpen}
+              className="truncate text-start text-sm leading-5 font-medium outline-none hover:underline focus-visible:underline"
+            >
+              {item.title}
+            </button>
+          )}
           {item.ref && (
             <bdi dir="ltr" className="shrink-0 font-mono text-[11px] text-neutral-400">
               {item.ref}
@@ -114,7 +130,8 @@ export function QueueRow({
             </PopoverTrigger>
             <PopoverContent className="w-[264px] p-1">
               <p className="px-2.5 pt-1.5 pb-1 text-[11px] leading-4 font-medium text-muted-foreground">
-                {t('assignHeading')}
+                {/* A step is owned through its run: say so before it is handed over. */}
+                {t(item.kind === 'step' ? 'assignRunHeading' : 'assignHeading')}
               </p>
               <ul className="flex flex-col">
                 {staff
@@ -194,6 +211,16 @@ export function QueueRow({
             render={<Link href={item.recordHref ?? '/requests'} />}
           >
             {t('openRequest')}
+          </Button>
+        ) : item.kind === 'step' ? (
+          <Button
+            variant="outline"
+            size="xs"
+            className="w-28"
+            nativeButton={false}
+            render={<Link href={item.recordHref ?? '/queue'} />}
+          >
+            {t('openStep')}
           </Button>
         ) : null}
       </span>

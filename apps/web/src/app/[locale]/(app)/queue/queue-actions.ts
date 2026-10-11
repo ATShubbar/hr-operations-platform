@@ -19,7 +19,10 @@ import { toastSuccess } from '@/components/ui/toast';
 // - Snooze (owner decision, DS-12): moves the REAL due date seven days later,
 //   through each kind's own update — audited, never a view-only hide.
 
-export type QueueKind = 'procedure' | 'request' | 'task';
+// `step` (MOB-06b): a READY step of a running onboarding / final exit. It is
+// owned through its RUN (one owner per sequence) and filed on the person's
+// Mobilisation tab — the queue lists it and can hand the run to someone.
+export type QueueKind = 'procedure' | 'request' | 'task' | 'step';
 
 export interface QueueItem {
   kind: QueueKind;
@@ -42,6 +45,8 @@ export interface QueueItem {
   gro?: GroProcessResponse;
   request?: RequestResponse;
   task?: TaskResponse;
+  /** For kind `step`: the run it belongs to and which step. */
+  step?: { sequenceId: string; key: string; sequenceKind: 'onboarding' | 'final_exit' };
   searchText: string[];
 }
 
@@ -59,6 +64,7 @@ const ENDPOINT: Record<QueueKind, string> = {
   procedure: '/gro-processes',
   request: '/requests',
   task: '/tasks',
+  step: '/gro-sequences',
 };
 
 /** YYYY-MM-DD, `days` after the given date (UTC). */
@@ -83,6 +89,7 @@ export function useQueueActions(item: QueueItem, onChanged: () => Promise<void> 
     item.request?.status === 'in_progress' || item.request?.status === 'info_needed';
   const canAssign =
     (item.kind === 'procedure' && canGro) ||
+    (item.kind === 'step' && canGro) ||
     (item.kind === 'task' && canTask) ||
     (item.kind === 'request' && canRequestProcess && requestApproved);
   const canSnooze =
@@ -112,6 +119,15 @@ export function useQueueActions(item: QueueItem, onChanged: () => Promise<void> 
   // Hand the item to someone: a request through its own route (REQ-05 — its
   // status stays), procedures and tasks through their update.
   function assign(userId: string, toast: string): Promise<boolean> {
+    // A step has no owner of its own: handing it over hands over its whole run.
+    if (item.kind === 'step' && item.step) {
+      return send(
+        'POST',
+        `/gro-sequences/${item.step.sequenceId}/assign`,
+        { assigneeUserId: userId },
+        toast,
+      );
+    }
     return item.kind === 'request'
       ? send('POST', `/requests/${item.id}/assign`, { assigneeUserId: userId }, toast)
       : patch({ assigneeUserId: userId }, toast);
