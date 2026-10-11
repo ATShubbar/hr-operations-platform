@@ -1663,6 +1663,14 @@ with `clearableText` / `clearableDate` (empty → `null`; the older fields still
 change. Fixed in passing: My file's Arabic subtitle (Latin name inside an Arabic sentence) → one `<bdi>` run. Filed DEP-05
 (the runway's dependant rows still say "not stored yet").
 
+**INS-03 done — INS-01..03 COMPLETE (ADR-021 rev. 3).** `EMPLOYEE_DOCS` + `medical_insurance`, `driving_licence`
+(owner fallback `hr_officer`; in the ladder's `GOVDATA_DOCS`, NOT expat-only, no `RENEWED_BY` entry → never quiet until
+INS-04). Compliance report rows `medicalInsurance` / `drivingLicence`. Seed `INSURANCE_LICENCE` (8 named people on every
+stage; everyone else in post an insurance date 45–345 days out; all four columns written each run). Smoke +3. Clean-seed
+ladder: HR 35 items / 20 need action, GRO 36 / 16, client manager 1, employee-a 3 — **NC-06's totals were one too high**
+(a leftover request; corrected in its evidence). After the suite, RE-SEED locally (the suite clears client settings). API
+**877/877**. Follow-ups: INS-04 (renewal procedures), DEP-05 (runway's dependant rows).
+
 ## Technical landmines (each cost real debugging — do not rediscover)
 
 - RLS policies MUST use `NULLIF(current_setting('app.client_id', true), '')::uuid` — pooled connections leave the GUC as '' not NULL (SPIKE-001).

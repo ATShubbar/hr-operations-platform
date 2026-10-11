@@ -91,6 +91,8 @@ describe('Reporting — ReportingService (REP-01)', () => {
           basicSalary: '8000.00',
           housingAllowance: '2000.00',
           workPermitExpiry: new Date('2027-07-20'),
+          medicalInsuranceExpiry: new Date('2027-06-10'),
+          drivingLicenceExpiry: new Date('2027-08-20'),
         },
       }),
       // terminated · NOT costed (payroll counts active employees only)
@@ -267,7 +269,10 @@ describe('Reporting — ReportingService (REP-01)', () => {
     expect(delta('workPermit', 'due60')).toBe(1); // +50d
     expect(delta('exitReentry', 'due90')).toBe(1); // +85d
     expect(delta('document', 'due30')).toBe(1); // +9d
-    expect(total(after, 'total') - total(before, 'total')).toBe(5);
+    // INS-03: medical insurance and driving licence are rows of their own.
+    expect(delta('medicalInsurance', 'due30')).toBe(1); // +10d
+    expect(delta('drivingLicence', 'due90')).toBe(1); // +81d
+    expect(total(after, 'total') - total(before, 'total')).toBe(7);
   });
 
   it('recruitment-pipeline: candidate stage counts per vacancy', async () => {

@@ -1,6 +1,6 @@
 # ADR-021 — The notification centre: an escalation ladder, derived, not stored
 
-- Status: Accepted (rev. 1, 2026-10-10: four points settled while building NC-01; rev. 2, 2026-10-11: six points settled while building NC-05)
+- Status: Accepted (rev. 1, 2026-10-10: four points settled while building NC-01; rev. 2, 2026-10-11: six points settled while building NC-05; rev. 3, 2026-10-11: medical insurance and driving licence join the watched documents, INS-03)
 - Date: 2026-10-10
 - Owner: Ahmed Alshubbar (product decision; NC-00)
 - Amends: **architecture.md**. A new delivery module, one permission and one matrix row. Now **v1.15**.
@@ -64,6 +64,23 @@ Four points the first text left open. Each follows from a rule already above.
 - **A client manager is never shown an owner.** To them the work is PEOPLE&GRO's.
 - **A client manager sees no dependant.** ADR-017 gives clients no view of dependants; the ladder follows it.
 - **An employee's open procedures are read on the staff connection**, for one purpose: to keep quiet a document that is already being renewed. No procedure is returned to them.
+
+### Rev. 3 — medical insurance and driving licence (INS-03)
+
+The decision above lists a person's dated documents as iqama, work permit, passport and contract end,
+because that was all the record held. INS-01 added medical insurance and driving licence to the
+record (owner decision), so the expiry rule watches them too:
+
+- **Both are optional.** A document with no date is not watched; nobody is flagged for having no
+  driving licence on file.
+- **They apply to Saudi nationals as well** (unlike the iqama and the work permit).
+- **Owner:** the client's named officer; where none is named, the HR officers for both (the
+  prototype's division of labour).
+- **Reading them needs `govdata.read`**: their dates sit in the record's government-data group.
+- **They are never quiet.** No procedure renews them yet. Renewal procedures are a later card
+  (INS-04); when it lands they join the list of procedures that quiet an expiry.
+- **Client managers and employees** follow the existing rules unchanged: a client manager is told
+  once one has lapsed (while their portal is on), an employee sees their own at every stage.
 
 ### Who is told at each stage
 

@@ -72,9 +72,17 @@ export const STAGE_AUDIENCE: Record<
 export const ACTION_STAGES: readonly EscalationStage[] = ['escalation', 'breach'];
 
 // The dated documents the expiry rule watches. On the employee they are read
-// from the RECORD (the dates the runway and the People screen use); insurance
-// and driving licence are not stored yet and are not here.
-export const EMPLOYEE_DOCS = ['iqama', 'work_permit', 'passport', 'contract'] as const;
+// from the RECORD (the dates the runway and the People screen use). Medical
+// insurance and driving licence joined in INS-03 (ADR-021 rev. 3); both are
+// optional on the record, and a document with no date is simply not watched.
+export const EMPLOYEE_DOCS = [
+  'iqama',
+  'work_permit',
+  'passport',
+  'contract',
+  'medical_insurance',
+  'driving_licence',
+] as const;
 export type EmployeeDoc = (typeof EMPLOYEE_DOCS)[number];
 export const DEPENDANT_DOCS = ['iqama', 'passport', 'insurance'] as const;
 export type DependantDoc = (typeof DEPENDANT_DOCS)[number];
@@ -88,6 +96,9 @@ export const EMPLOYEE_DOC_OWNER: Record<EmployeeDoc, OwnerRole> = {
   work_permit: 'gro_officer',
   passport: 'gro_officer',
   contract: 'hr_officer',
+  // The prototype's division of labour: both sit with the HR officers.
+  medical_insurance: 'hr_officer',
+  driving_licence: 'hr_officer',
 };
 export const DEPENDANT_DOC_OWNER: Record<DependantDoc, OwnerRole> = {
   iqama: 'gro_officer',
@@ -96,8 +107,9 @@ export const DEPENDANT_DOC_OWNER: Record<DependantDoc, OwnerRole> = {
 };
 
 // The procedures that RENEW a document. While one is open for the person, the
-// expiry stays quiet: it is already being worked. Passport and contract have
-// no such procedure and are never quiet.
+// expiry stays quiet: it is already being worked. Passport, contract, medical
+// insurance and driving licence have no such procedure and are never quiet
+// (renewal procedures for the last two are INS-04).
 export const RENEWED_BY: Partial<Record<EmployeeDoc, readonly string[]>> = {
   iqama: ['iqama_issue', 'iqama_renewal'],
   work_permit: ['work_permit_renewal'],

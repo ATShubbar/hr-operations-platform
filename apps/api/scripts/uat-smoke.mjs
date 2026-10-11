@@ -320,6 +320,38 @@ async function main() {
     check(staffRoute.status === 403, 'ladder: the staff ladder is refused to an employee', `HTTP ${staffRoute.status}`);
   }
 
+  // Medical insurance and driving licence (INS-01..03): stored on the record,
+  // watched by the ladder, and the employee sees their own numbers.
+  if (hr) {
+    const ladder = await call('/escalations', { cookie: hr });
+    const docs = new Set(
+      (ladder.json?.items ?? []).filter((i) => i.subject?.kind === 'document').map((i) => i.subject.doc),
+    );
+    check(
+      docs.has('medical_insurance') && docs.has('driving_licence'),
+      'insurance and licence: both are on the ladder',
+      `documents on the ladder: ${[...docs].join(', ')}`,
+    );
+    // Ahmed Hassan — a fixed seed id, with a policy and a licence on file.
+    const person = await call('/employees/e0000001-0000-4000-8000-000000000002', { cookie: hr });
+    const gov = person.json?.govdata ?? {};
+    check(
+      person.status === 200 &&
+        [gov.medicalInsuranceNumber, gov.medicalInsuranceExpiry, gov.drivingLicenceNumber, gov.drivingLicenceExpiry].every(Boolean),
+      'insurance and licence: an officer reads the numbers and dates on the record',
+      `HTTP ${person.status}`,
+    );
+  }
+  if (sessions.employee) {
+    const me = await call('/me', { cookie: sessions.employee });
+    const ids = me.json?.identifiers ?? {};
+    check(
+      me.status === 200 && Boolean(ids.medicalInsuranceNumber) && Boolean(ids.medicalInsuranceExpiry),
+      'insurance and licence: the employee sees their own policy number and date',
+      `HTTP ${me.status}`,
+    );
+  }
+
   for (const cookie of Object.values(sessions)) {
     await call('/auth/logout', { cookie, method: 'POST' });
   }

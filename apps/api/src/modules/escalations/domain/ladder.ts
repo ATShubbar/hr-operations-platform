@@ -108,7 +108,14 @@ export interface LadderInput {
 }
 
 // The documents whose dates are government data: read only with `govdata.read`.
-const GOVDATA_DOCS: ReadonlySet<EmployeeDoc> = new Set(['iqama', 'work_permit', 'passport']);
+const GOVDATA_DOCS: ReadonlySet<EmployeeDoc> = new Set([
+  'iqama',
+  'work_permit',
+  'passport',
+  // INS-01 put these two dates in the government-data group of the record.
+  'medical_insurance',
+  'driving_licence',
+]);
 // A Saudi national has no iqama and no work permit (the People screen's rule).
 const EXPAT_ONLY: ReadonlySet<EmployeeDoc> = new Set(['iqama', 'work_permit']);
 // A request waiting on a decision — or on its requester — is spoken for by the

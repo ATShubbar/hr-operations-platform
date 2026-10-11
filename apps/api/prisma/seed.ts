@@ -278,6 +278,22 @@ const EMPLOYEES: ReadonlyArray<readonly [client: string, id: string, spec: EmpSp
   [SEED_CLIENT_E, 'e0000005-0000-4000-8000-000000000003', { ar: 'عادل السالم', en: 'Adel Alsalem', nat: 'SA', dept: 'Administration', jobAr: 'كاتب', jobEn: 'Clerk', salary: 5000, hiredYearsAgo: 2 }],
 ];
 
+// INS-03: medical insurance and driving licence, as DAYS FROM TODAY, for the
+// people who put them on every stage of the notification ladder (thresholds
+// 30 / 14 / 7, then lapsed). Everyone else in post gets an insurance date well
+// outside the window (derived from their id, so it is stable across runs) and no
+// licence — most people's licence is no business of their employer's file.
+const INSURANCE_LICENCE: Readonly<Record<string, { insurance?: number; licence?: number }>> = {
+  'e0000001-0000-4000-8000-000000000002': { insurance: 10, licence: 420 }, // Ahmed Hassan — Reminder
+  'e0000001-0000-4000-8000-000000000004': { insurance: -4 }, // Syed Ali — lapsed
+  'e0000001-0000-4000-8000-000000000006': { insurance: 5 }, // Joseph Santos — Escalated
+  'e0000001-0000-4000-8000-000000000008': { insurance: 200, licence: 21 }, // Mahmoud Abdelrahman (driver) — licence at Notice
+  'e0000002-0000-4000-8000-000000000001': { insurance: 27 }, // Rajesh Kumar — Notice
+  'e0000002-0000-4000-8000-000000000009': { insurance: 120, licence: 9 }, // Hassan Alyamani (forklift) — licence at Reminder
+  'e0000003-0000-4000-8000-000000000001': { insurance: 300, licence: 900 }, // Badr Alotaibi (fleet manager)
+  'e0000003-0000-4000-8000-000000000002': { insurance: 150, licence: -6 }, // Shah Mohammed (truck driver) — licence lapsed
+};
+
 async function seedEmployees(prisma: PrismaClient): Promise<number> {
   let n = 0;
   for (const [clientId, id, e] of EMPLOYEES) {
@@ -285,7 +301,18 @@ async function seedEmployees(prisma: PrismaClient): Promise<number> {
     // Identifier shapes follow the real ones: a national id starts with 1, an
     // iqama with 2. Derived from the row id so they stay stable across runs.
     const serial = id.slice(-6);
+    // Insurance for everyone still in post; a licence only where one is named.
+    // All four columns are written on EVERY run (null where there is none), so a
+    // re-seed puts back whatever a walk-through changed.
+    const doc = INSURANCE_LICENCE[id] ?? {};
+    const inPost = (e.status ?? 'active') !== 'terminated';
+    const idNumber = Number(id.slice(4, 8)) * 100 + Number(id.slice(-2));
+    const insuranceIn = doc.insurance ?? (inPost ? 45 + ((idNumber * 37) % 300) : undefined);
     const rest = {
+      medicalInsuranceNumber: insuranceIn === undefined ? null : `POL-${id.slice(4, 8)}-${serial}`,
+      medicalInsuranceExpiry: insuranceIn === undefined ? null : daysFromNow(insuranceIn),
+      drivingLicenceNumber: doc.licence === undefined ? null : `DL-${id.slice(4, 8)}-${serial}`,
+      drivingLicenceExpiry: doc.licence === undefined ? null : daysFromNow(doc.licence),
       clientId,
       nameAr: e.ar,
       nameEn: e.en,

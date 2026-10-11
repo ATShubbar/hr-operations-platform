@@ -216,6 +216,94 @@ describe('document expiry', () => {
   });
 });
 
+// INS-03 (ADR-021 rev. 3): medical insurance and driving licence joined the
+// employee's dated documents.
+describe('medical insurance and driving licence (INS-03)', () => {
+  const INS = `expiry:${P1}:medical_insurance`;
+  const LIC = `expiry:${P1}:driving_licence`;
+
+  it('are watched like any other document — each at the stage it has reached', () => {
+    const input = base({
+      people: [
+        person({ dates: { medical_insurance: day(-2), driving_licence: day(14) } }),
+        // Outside the window, and no date at all: nothing to say.
+        person({ id: P2, dates: { medical_insurance: day(90), driving_licence: null } }),
+      ],
+    });
+    const items = buildLadder(input, admin).items;
+    expect(items.map((i) => [i.key, i.stage, i.daysLeft])).toEqual([
+      [INS, 'breach', -2],
+      [LIC, 'reminder', 14],
+    ]);
+    expect(items[0]?.subject).toMatchObject({ kind: 'document', doc: 'medical_insurance' });
+  });
+
+  it('apply to a Saudi national too (unlike the iqama and the work permit)', () => {
+    const input = base({
+      people: [
+        person({
+          nationality: 'SA',
+          dates: { iqama: day(-1), medical_insurance: day(-1), driving_licence: day(-1) },
+        }),
+      ],
+    });
+    expect(keys(buildLadder(input, admin).items).sort()).toEqual([LIC, INS].sort());
+  });
+
+  it('belong to the HR officers when the client names no officer; to the named officer when it does', () => {
+    const dates = { medical_insurance: day(20), driving_licence: day(20) };
+    const byType = base({ people: [person({ dates })] });
+    for (const key of [INS, LIC]) {
+      expect(one(byType, hr, key)).toMatchObject({
+        owner: { kind: 'role', role: 'hr_officer' },
+        mine: true,
+        told: true,
+      });
+      // A GRO officer may read it; at Notice it is neither theirs nor told to them.
+      expect(one(byType, gro1, key)).toMatchObject({ mine: false, told: false });
+    }
+    const named = base({ people: [person({ clientId: OTHER, dates })] });
+    expect(one(named, gro2, INS)).toMatchObject({ owner: { kind: 'person', name: 'Salman' }, mine: true });
+    expect(one(named, hr, LIC)).toMatchObject({ mine: false, told: false });
+  });
+
+  it('need the permission that reads government data — their dates live there', () => {
+    const input = base({
+      people: [person({ dates: { medical_insurance: day(-1), driving_licence: day(-1), contract: day(-1) } })],
+    });
+    const without = viewer(ADMIN, 'administrator', ['employee.read']);
+    expect(keys(buildLadder(input, without).items)).toEqual([`expiry:${P1}:contract`]);
+    expect(keys(buildLadder(input, admin).items)).toHaveLength(3);
+  });
+
+  it('are never quiet: no procedure renews them yet, whatever is open for the person', () => {
+    const input = base({
+      people: [person({ dates: { medical_insurance: day(5), driving_licence: day(5), iqama: day(5) } })],
+      procedures: ['iqama_renewal', 'work_permit_renewal', 'other'].map((type, i) => ({
+        id: `f0000000-0000-4000-8000-00000000000${i}`,
+        employeeId: P1,
+        clientId: CO,
+        type,
+        status: 'in_progress',
+        dueOn: null,
+        assigneeUserId: null,
+      })),
+    });
+    const out = buildLadder(input, admin);
+    const docs = out.items.filter((i) => i.subject.kind === 'document').map((i) => i.key);
+    expect(docs.sort()).toEqual([LIC, INS].sort()); // the iqama is quiet, these two are not
+  });
+
+  it('reach the client manager only once lapsed, and the employee at every stage', () => {
+    const input = base({
+      people: [person({ dates: { medical_insurance: day(-2), driving_licence: day(5) } })],
+    });
+    // (Each builder is handed only what its audience may read; here, one person.)
+    expect(keys(buildClientLadder(input).items)).toEqual([INS]);
+    expect(keys(buildEmployeeLadder(input).items).sort()).toEqual([LIC, INS].sort());
+  });
+});
+
 describe('who owns an expiry, and who is told', () => {
   const lapsing = (days: number, clientId = CO) =>
     base({ people: [person({ clientId, dates: { iqama: day(days), contract: day(days) } })] });

@@ -905,7 +905,9 @@
         "iqama": "Iqama",
         "work_permit": "Work permit",
         "passport": "Passport",
-        "contract": "Employment contract"
+        "contract": "Employment contract",
+        "medical_insurance": "Medical insurance",
+        "driving_licence": "Driving licence"
       },
       "dependantDoc": {
         "iqama": "Dependant's iqama",
@@ -967,7 +969,7 @@
         "expiry": {
           "label": "Document expiry",
           "watches": "Every dated document on a person's record, and on their dependants · days before expiry",
-          "owner": "Owned by the client's named officer. Where none is named: GRO officers for iqama, work permit and passport; HR officers for contracts and dependants' insurance."
+          "owner": "Owned by the client's named officer. Where none is named: GRO officers for iqama, work permit and passport; HR officers for contracts, medical insurance, driving licences and dependants' insurance."
         },
         "queue": {
           "label": "Queue deadline",
@@ -1438,6 +1440,8 @@
       "passport": "Passport",
       "workPermit": "Work permit",
       "exitReentry": "Exit/re-entry",
+      "medicalInsurance": "Medical insurance",
+      "drivingLicence": "Driving licence",
       "document": "Documents",
       "draft": "Draft",
       "open": "Open",

@@ -101,6 +101,8 @@ const toPerson = (p: EmployeeRecord): LadderPerson => ({
     work_permit: iso(p.workPermitExpiry),
     passport: iso(p.passportExpiry),
     contract: iso(p.contractEndDate),
+    medical_insurance: iso(p.medicalInsuranceExpiry),
+    driving_licence: iso(p.drivingLicenceExpiry),
   },
 });
 const toDependant = (d: DependantRecord): LadderDependant => ({

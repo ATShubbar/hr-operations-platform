@@ -189,6 +189,9 @@ export class ReportingService {
       { key: 'passport', dates: employees.map((e) => e.passportExpiry) },
       { key: 'workPermit', dates: employees.map((e) => e.workPermitExpiry) },
       { key: 'exitReentry', dates: employees.map((e) => e.exitReentryExpiry) },
+      // INS-03: on the record since INS-01.
+      { key: 'medicalInsurance', dates: employees.map((e) => e.medicalInsuranceExpiry) },
+      { key: 'drivingLicence', dates: employees.map((e) => e.drivingLicenceExpiry) },
       { key: 'document', dates: documents.map((d) => d.expiryDate) },
     ];
 
