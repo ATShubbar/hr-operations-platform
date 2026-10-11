@@ -1,9 +1,9 @@
 import type { EmployeeResponse } from '@hr/contracts';
 
 // An employee's dated documents, read from the employee RECORD (DS-05): iqama,
-// work permit and passport from government data, the contract from its end date.
-// The prototype's insurance and driving licence are not stored yet — listed so
-// screens can show them "soon", with no date.
+// work permit, passport, medical insurance and driving licence from government
+// data, the contract from its end date. The last two joined in INS-01; both are
+// optional — a person with no licence on file simply has no licence row to judge.
 //
 // Extracted in DS-10 when the Client record became the second screen to judge
 // people by their documents (People is the first); one copy keeps the two from
@@ -19,8 +19,8 @@ export const DOC_TYPES: ReadonlyArray<{
   { key: 'permit', date: (e) => e.govdata?.workPermitExpiry ?? null },
   { key: 'contract', date: (e) => e.contractEndDate },
   { key: 'passport', date: (e) => e.govdata?.passportExpiry ?? null },
-  { key: 'insurance' }, // not stored yet
-  { key: 'licence' }, // not stored yet
+  { key: 'insurance', date: (e) => e.govdata?.medicalInsuranceExpiry ?? null },
+  { key: 'licence', date: (e) => e.govdata?.drivingLicenceExpiry ?? null },
 ];
 
 export interface DocDue {

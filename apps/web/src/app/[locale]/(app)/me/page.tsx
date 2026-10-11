@@ -179,6 +179,8 @@ export default function MyFilePage() {
       ['permit', saudi ? null : ids.workPermitExpiry, []],
       ['contract', profile.contractEndDate, ['contract']],
       ['passport', ids.passportExpiry, ['passport']],
+      ['insurance', ids.medicalInsuranceExpiry, ['medical_insurance']],
+      ['licence', ids.drivingLicenceExpiry, ['driving_licence']],
     ] as const
   )
     .map(([key, recordIso, categories]) => {
@@ -204,6 +206,8 @@ export default function MyFilePage() {
     [tEmp('fieldBorder'), ids.borderNumber],
     [tEmp('fieldWorkPermit'), ids.workPermitNumber],
     [tEmp('fieldGosiRegNo'), ids.gosiRegistrationNumber],
+    [tEmp('fieldMedicalInsuranceNo'), ids.medicalInsuranceNumber],
+    [tEmp('fieldDrivingLicenceNo'), ids.drivingLicenceNumber],
   ].filter((row): row is [string, string] => Boolean(row[1]));
   if (ids.gosiRegistrationStatus) {
     identifiers.push([
@@ -297,7 +301,11 @@ export default function MyFilePage() {
           <h2 id="me-docs" className="text-base leading-6 font-medium">
             {t('myDocuments')}
           </h2>
-          <p className="text-[13px] leading-[18px] text-muted-foreground">{t('documentsNote')}</p>
+          <p className="text-[13px] leading-[18px] text-muted-foreground">
+            {/* One isolated run (ADR-012): the Arabic sentence holds a Latin name,
+                and without this its halves swapped sides under the LTR layout. */}
+            <bdi>{t('documentsNote')}</bdi>
+          </p>
         </div>
         {docRows.length === 0 ? (
           <p className="border-t px-5 py-6 text-[13px] text-muted-foreground">{t('noDocuments')}</p>

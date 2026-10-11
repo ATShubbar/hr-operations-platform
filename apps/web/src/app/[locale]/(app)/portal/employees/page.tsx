@@ -122,6 +122,30 @@ export default function PortalEmployeesPage() {
                 </span>
               ),
             },
+            // INS-01: the employer sees these two DATES for their own people —
+            // never the policy or licence number (the API sends none).
+            {
+              key: 'medicalInsuranceExpiry',
+              header: t('employees.colInsuranceExpiry'),
+              sortValue: (e) => e.govdata?.medicalInsuranceExpiry,
+              cell: (e) => (
+                <span className="whitespace-nowrap text-sm text-muted-foreground">
+                  {dualDate(e.govdata?.medicalInsuranceExpiry ?? null, locale) ??
+                    t('employees.none')}
+                </span>
+              ),
+            },
+            {
+              key: 'drivingLicenceExpiry',
+              header: t('employees.colLicenceExpiry'),
+              sortValue: (e) => e.govdata?.drivingLicenceExpiry,
+              cell: (e) => (
+                <span className="whitespace-nowrap text-sm text-muted-foreground">
+                  {dualDate(e.govdata?.drivingLicenceExpiry ?? null, locale) ??
+                    t('employees.none')}
+                </span>
+              ),
+            },
           ]}
         />
       )}

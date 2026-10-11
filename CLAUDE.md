@@ -1656,6 +1656,13 @@ the employee), dates = status tier (also the client manager, own people). `Docum
 change the date may upload the file. Renewal as a procedure = INS-04 (later). Screens = INS-02, ladder/report/seed = INS-03.
 API **868/868**.
 
+**INS-02 done — the two documents on screen.** `lib/employee-docs.ts` gives `insurance` / `licence` real dates, so People
+(filter, chips, order), the runway, Overview and Reports pick them up from ONE change. Profile → Employment: four fields
+with `clearableText` / `clearableDate` (empty → `null`; the older fields still can't be cleared). Documents tab rows
+(cycles 12 / 120 months) + the two upload categories; My file rows + numbers; portal employees two date columns. No API
+change. Fixed in passing: My file's Arabic subtitle (Latin name inside an Arabic sentence) → one `<bdi>` run. Filed DEP-05
+(the runway's dependant rows still say "not stored yet").
+
 ## Technical landmines (each cost real debugging — do not rediscover)
 
 - RLS policies MUST use `NULLIF(current_setting('app.client_id', true), '')::uuid` — pooled connections leave the GUC as '' not NULL (SPIKE-001).

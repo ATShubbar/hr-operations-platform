@@ -99,6 +99,16 @@ const number = (key: string) => (d: Drafts, b: Body) => {
 const date = (key: string) => (d: Drafts, b: Body) => {
   if (d[key]) b[key] = d[key];
 };
+// INS-01 fields CAN be cleared — the API takes null for them: a policy that
+// ended or a licence no longer held leaves the record, and with its date gone the
+// document is no longer watched.
+const clearableText = (key: string) => (d: Drafts, b: Body) => {
+  const v = (d[key] ?? '').trim();
+  b[key] = v === '' ? null : v;
+};
+const clearableDate = (key: string) => (d: Drafts, b: Body) => {
+  b[key] = d[key] ? d[key] : null;
+};
 const choice = (key: string) => (d: Drafts, b: Body) => {
   if (d[key]) b[key] = d[key];
 };
@@ -535,6 +545,50 @@ export function ProfileTab({
                 apply: date('exitReentryExpiry'),
               },
             ]),
+        // ---- INS-01: medical insurance and driving licence (everyone, Saudis
+        // included; all four optional) ----
+        {
+          id: 'medicalInsuranceNumber',
+          label: t('field.medicalInsuranceNumber'),
+          group: 'gov',
+          kind: 'text',
+          mono: true,
+          dir: 'ltr',
+          display: g?.medicalInsuranceNumber ?? null,
+          draft: g?.medicalInsuranceNumber ?? '',
+          apply: clearableText('medicalInsuranceNumber'),
+        },
+        {
+          id: 'medicalInsuranceExpiry',
+          label: t('field.medicalInsuranceExpiry'),
+          group: 'gov',
+          kind: 'date',
+          display: day(g?.medicalInsuranceExpiry),
+          sub: hijri(g?.medicalInsuranceExpiry),
+          draft: toDateInput(g?.medicalInsuranceExpiry ?? null),
+          apply: clearableDate('medicalInsuranceExpiry'),
+        },
+        {
+          id: 'drivingLicenceNumber',
+          label: t('field.drivingLicenceNumber'),
+          group: 'gov',
+          kind: 'text',
+          mono: true,
+          dir: 'ltr',
+          display: g?.drivingLicenceNumber ?? null,
+          draft: g?.drivingLicenceNumber ?? '',
+          apply: clearableText('drivingLicenceNumber'),
+        },
+        {
+          id: 'drivingLicenceExpiry',
+          label: t('field.drivingLicenceExpiry'),
+          group: 'gov',
+          kind: 'date',
+          display: day(g?.drivingLicenceExpiry),
+          sub: hijri(g?.drivingLicenceExpiry),
+          draft: toDateInput(g?.drivingLicenceExpiry ?? null),
+          apply: clearableDate('drivingLicenceExpiry'),
+        },
       ],
     },
     {

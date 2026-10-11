@@ -47,8 +47,8 @@ import { toastSuccess } from '@/components/ui/toast';
 // lives — the same endpoints the Profile tab edits through.
 //
 // Work permits have no registry category, so their file column reads "No file".
-// Medical insurance and driving licence are not stored at all yet: shown, "Not
-// stored yet", with no actions. The prototype's renewal reference number has no
+// Medical insurance and driving licence are stored since INS-01 (cycles from the
+// prototype: 12 and 120 months). The prototype's renewal reference number has no
 // field to live in, so it is not offered (DS-07 evidence).
 
 type Group = 'core' | 'gov';
@@ -91,8 +91,26 @@ const ROWS: RowDef[] = [
     cycleMonths: 60,
     field: { group: 'gov', key: 'passportExpiry', read: (e) => e.govdata?.passportExpiry ?? null },
   },
-  { key: 'insurance', categories: [] },
-  { key: 'licence', categories: [] },
+  {
+    key: 'insurance',
+    categories: ['medical_insurance'],
+    cycleMonths: 12,
+    field: {
+      group: 'gov',
+      key: 'medicalInsuranceExpiry',
+      read: (e) => e.govdata?.medicalInsuranceExpiry ?? null,
+    },
+  },
+  {
+    key: 'licence',
+    categories: ['driving_licence'],
+    cycleMonths: 120,
+    field: {
+      group: 'gov',
+      key: 'drivingLicenceExpiry',
+      read: (e) => e.govdata?.drivingLicenceExpiry ?? null,
+    },
+  },
 ];
 
 const CATEGORIES: DocumentCategory[] = [
@@ -102,6 +120,8 @@ const CATEGORIES: DocumentCategory[] = [
   'contract',
   'gosi',
   'national_id',
+  'medical_insurance',
+  'driving_licence',
   'cv',
   'other',
 ];
@@ -407,9 +427,7 @@ export function DocumentsTab({
                       </span>
                     </span>
                   ) : (
-                    <span className="text-xs text-neutral-400">
-                      {r.field ? t('noFile') : t('soon')}
-                    </span>
+                    <span className="text-xs text-neutral-400">{t('noFile')}</span>
                   )}
                 </td>
                 <td className="px-4 text-end">

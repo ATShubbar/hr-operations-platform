@@ -18,6 +18,8 @@ const CATEGORIES = [
   'contract',
   'gosi',
   'national_id',
+  'medical_insurance',
+  'driving_licence',
   'cv',
   'other',
 ] as const;

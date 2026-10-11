@@ -100,6 +100,8 @@
       "contract": "عقد",
       "gosi": "التأمينات",
       "national_id": "هوية وطنية",
+      "medical_insurance": "التأمين الطبي",
+      "driving_licence": "رخصة القيادة",
       "cv": "سيرة ذاتية",
       "other": "أخرى"
     }
@@ -221,6 +223,8 @@
     "fieldPassport": "رقم الجواز",
     "fieldWorkPermit": "رقم رخصة العمل",
     "fieldGosiRegNo": "رقم التسجيل في التأمينات",
+    "fieldMedicalInsuranceNo": "رقم وثيقة التأمين الطبي",
+    "fieldDrivingLicenceNo": "رقم رخصة القيادة",
     "fieldExitReentry": "حالة الخروج والعودة",
     "save": "حفظ",
     "saving": "جارٍ الحفظ…",
@@ -1282,6 +1286,8 @@
       "colStatus": "الحالة",
       "colIqamaExpiry": "انتهاء الإقامة",
       "colWorkPermitExpiry": "انتهاء رخصة العمل",
+      "colInsuranceExpiry": "انتهاء التأمين الطبي",
+      "colLicenceExpiry": "انتهاء رخصة القيادة",
       "none": "—",
       "empty": "لا يوجد موظفون لعرضهم.",
       "status": {
@@ -1309,6 +1315,8 @@
         "contract": "عقد",
         "gosi": "التأمينات",
         "national_id": "هوية وطنية",
+        "medical_insurance": "التأمين الطبي",
+        "driving_licence": "رخصة القيادة",
         "cv": "سيرة ذاتية",
         "other": "أخرى"
       },
@@ -1852,7 +1860,6 @@
       "insurance": "التأمين الطبي",
       "licence": "رخصة القيادة"
     },
-    "docSoon": "{doc} · قريبًا",
     "left": "{n, plural, zero {اليوم} one {باقٍ يوم} two {باقٍ يومان} few {باقٍ # أيام} many {باقٍ # يومًا} other {باقٍ # يوم}}",
     "over": "{n, plural, one {متأخر يومًا} two {متأخر يومين} few {متأخر # أيام} many {متأخر # يومًا} other {متأخر # يوم}}",
     "range": "{from}–{to} من {total}",
@@ -1941,6 +1948,10 @@
       "saudization": "يُحتسب في السعودة",
       "workPermitNumber": "رقم رخصة العمل",
       "workPermitExpiry": "انتهاء رخصة العمل",
+      "medicalInsuranceNumber": "رقم وثيقة التأمين الطبي",
+      "medicalInsuranceExpiry": "انتهاء التأمين الطبي",
+      "drivingLicenceNumber": "رقم رخصة القيادة",
+      "drivingLicenceExpiry": "انتهاء رخصة القيادة",
       "gosiStatus": "التسجيل في التأمينات",
       "absherRef": "مرجع أبشر",
       "exitReentry": "الخروج والعودة",
@@ -2009,7 +2020,6 @@
       "renew": "تجديد",
       "renewAgain": "تجديد مرة أخرى",
       "renewed": "جُدّد في {date}",
-      "soon": "غير مخزّن بعد",
       "fileError": "تعذّر فتح الملف. حاول مرة أخرى.",
       "renewTitle": "تسجيل تجديد",
       "renewDescription": "يحل تاريخ الانتهاء الجديد محل القديم في كل مكان — المدة المتبقية وقائمة العمل والتنبيهات.",

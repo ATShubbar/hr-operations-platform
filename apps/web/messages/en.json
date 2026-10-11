@@ -100,6 +100,8 @@
       "contract": "Contract",
       "gosi": "GOSI",
       "national_id": "National ID",
+      "medical_insurance": "Medical insurance",
+      "driving_licence": "Driving licence",
       "cv": "CV",
       "other": "Other"
     }
@@ -221,6 +223,8 @@
     "fieldPassport": "Passport number",
     "fieldWorkPermit": "Work permit number",
     "fieldGosiRegNo": "GOSI registration number",
+    "fieldMedicalInsuranceNo": "Medical insurance policy number",
+    "fieldDrivingLicenceNo": "Driving licence number",
     "fieldExitReentry": "Exit / re-entry status",
     "save": "Save",
     "saving": "Saving…",
@@ -1282,6 +1286,8 @@
       "colStatus": "Status",
       "colIqamaExpiry": "Iqama expiry",
       "colWorkPermitExpiry": "Work permit expiry",
+      "colInsuranceExpiry": "Medical insurance expiry",
+      "colLicenceExpiry": "Driving licence expiry",
       "none": "—",
       "empty": "No employees to show.",
       "status": {
@@ -1309,6 +1315,8 @@
         "contract": "Contract",
         "gosi": "GOSI",
         "national_id": "National ID",
+        "medical_insurance": "Medical insurance",
+        "driving_licence": "Driving licence",
         "cv": "CV",
         "other": "Other"
       },
@@ -1852,7 +1860,6 @@
       "insurance": "Medical insurance",
       "licence": "Driving licence"
     },
-    "docSoon": "{doc} · soon",
     "left": "{n}d left",
     "over": "{n}d over",
     "range": "{from}–{to} of {total}",
@@ -1941,6 +1948,10 @@
       "saudization": "Counts toward Saudization",
       "workPermitNumber": "Work permit number",
       "workPermitExpiry": "Work permit expiry",
+      "medicalInsuranceNumber": "Medical insurance policy number",
+      "medicalInsuranceExpiry": "Medical insurance expiry",
+      "drivingLicenceNumber": "Driving licence number",
+      "drivingLicenceExpiry": "Driving licence expiry",
       "gosiStatus": "GOSI registration",
       "absherRef": "Absher reference",
       "exitReentry": "Exit re-entry",
@@ -2009,7 +2020,6 @@
       "renew": "Renew",
       "renewAgain": "Renew again",
       "renewed": "Renewed {date}",
-      "soon": "Not stored yet",
       "fileError": "Could not open the file. Try again.",
       "renewTitle": "Record a renewal",
       "renewDescription": "The new expiry replaces the old one everywhere — runway, queue and notifications.",

@@ -53,11 +53,9 @@ import {
 // sorted soonest-first, with a client / document / time-left filter row and a
 // coloured "days left" chip.
 //
-// The expiry dates come from the employee record itself (no API change): iqama,
-// work permit and passport from government data, the contract from its end
-// date. The prototype's two other document types — medical insurance and driving
-// licence — are not stored yet, so they are SHOWN in the document filter, marked
-// "soon" and disabled (owner rule: unbuilt parts are visible, never faked).
+// The expiry dates come from the employee record itself: iqama, work permit,
+// passport, medical insurance and driving licence from government data, the
+// contract from its end date (the last two documents since INS-01).
 //
 // One deliberate deviation, raised on the card: the prototype drops anyone with
 // no dated document from the list. Here, with no document filter set, such a
@@ -123,7 +121,7 @@ export default function PeoplePage() {
     const c = q.get('client');
     if (c) setFClient(c);
     const d = q.get('doc');
-    if (d && DOC_TYPES.some((x) => x.key === d && x.date)) setFDoc(d as DocKey);
+    if (d && DOC_TYPES.some((x) => x.key === d)) setFDoc(d as DocKey);
     const b = q.get('band');
     if (b && (BANDS as readonly string[]).includes(b)) setFBand(b as (typeof BANDS)[number]);
   }, []);
@@ -372,8 +370,8 @@ export default function PeoplePage() {
           <SelectContent>
             <SelectItem value={ALL}>{t('anyDocument')}</SelectItem>
             {DOC_TYPES.map((d) => (
-              <SelectItem key={d.key} value={d.key} disabled={!d.date}>
-                {d.date ? docLabel(d.key) : t('docSoon', { doc: docLabel(d.key) })}
+              <SelectItem key={d.key} value={d.key}>
+                {docLabel(d.key)}
               </SelectItem>
             ))}
           </SelectContent>
