@@ -1,5 +1,18 @@
 import { z } from 'zod';
 
+// A comma-separated list of record types (1–50 of them).
+const recordTypes = z
+  .string()
+  .min(1)
+  .max(1000)
+  .transform((v) =>
+    v
+      .split(',')
+      .map((x) => x.trim())
+      .filter(Boolean),
+  )
+  .pipe(z.array(z.string().min(1).max(100)).min(1).max(50));
+
 // Audit read API (AUDIT-04). The query filters mirror the columns admins
 // reason about; `limit`/`beforeId` are cursor pagination (newest-first).
 export const auditQuerySchema = z.object({
@@ -12,18 +25,12 @@ export const auditQuerySchema = z.object({
   // DS-15: several record types at once (an Audit-trail category is a set of
   // them), comma-separated; and a case-insensitive text search over the action
   // and the record type, applied on the SERVER so it reaches every page.
-  resources: z
-    .string()
-    .min(1)
-    .max(1000)
-    .transform((v) =>
-      v
-        .split(',')
-        .map((x) => x.trim())
-        .filter(Boolean),
-    )
-    .pipe(z.array(z.string().min(1).max(100)).min(1).max(50))
-    .optional(),
+  resources: recordTypes.optional(),
+  // AUDIT-08: every record type EXCEPT these. The Audit trail's "Records"
+  // category is "whatever no other category claims", so the screen sends the
+  // other categories' types here — and a record type added later is included
+  // without anyone remembering to list it.
+  notResources: recordTypes.optional(),
   q: z.string().trim().min(1).max(100).optional(),
   // AUDIT-07: how serious — derived from the record type + action (one rule table).
   severity: z.enum(['routine', 'notable', 'critical']).optional(),

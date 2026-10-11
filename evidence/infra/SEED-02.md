@@ -56,6 +56,6 @@ The lesson is in the guide: a proof that removes the scope from a delete is dest
 
 ## Stated plainly
 
-- **On UAT the ids change one last time.** The accounts there were created by the old seed. The first Seed UAT with this change keeps them (it matches by email), so in fact they do not change again at all: the old delete is simply gone. From now on a re-seed needs no fresh sign-in.
+- **On UAT nothing changes hands.** The accounts there were created by the old seed; the new one matches them by email and keeps them, so even the first Seed UAT with this change leaves the ids as they are. A re-seed no longer needs a fresh sign-in. (When presenting the card I said the first run would change them once more. That was wrong.)
 - **A session opened before a re-seed keeps the role it had.** If a future seed changed a sample account's role, an open session would carry the old one until sign-in. No seed does that today.
 - **Sessions are not ended by the seed.** The fix makes that unnecessary by keeping the ids.

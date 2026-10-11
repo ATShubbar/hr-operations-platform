@@ -1639,6 +1639,11 @@ owned)`: upsert BY EMAIL (ids stable → a session opened before a re-seed is st
 written each run (status active, `mfaSecret` + `passwordSetAt` null — a hand-made enrolment is cleared), unlisted
 seed-owned accounts removed, anyone else untouched. No more "sign in again after Seed UAT". API **852/852**.
 
+**AUDIT-08 done — the Audit trail's Records filter shows every record type.** The list + export accept
+`notResources` (validated like `resources`; `whereFor` now ANDs its conditions). Web `filterOf(category)` sends an include
+list for a named category and an EXCLUDE list (the types other categories claim) for Records — a new record type lands in
+Records with no change. The category map still lives only in the web (`lib/audit-category.ts`).
+
 ## Technical landmines (each cost real debugging — do not rediscover)
 
 - RLS policies MUST use `NULLIF(current_setting('app.client_id', true), '')::uuid` — pooled connections leave the GUC as '' not NULL (SPIKE-001).

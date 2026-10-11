@@ -19,7 +19,7 @@ import {
   AUDIT_CATEGORIES,
   CATEGORY_CLASS,
   categoryOf,
-  resourcesOf,
+  filterOf,
   type AuditCategory,
 } from '@/lib/audit-category';
 import { cn } from '@/lib/utils';
@@ -138,7 +138,11 @@ export default function AuditTrailPage() {
     p.set('limit', String(PAGE_SIZE));
     if (q) p.set('q', q);
     if (actor !== ALL) p.set('actorId', actor);
-    if (category !== ALL) p.set('resources', resourcesOf(category).join(','));
+    const byCategory = category === ALL ? null : filterOf(category);
+    if (byCategory && 'resources' in byCategory) p.set('resources', byCategory.resources.join(','));
+    if (byCategory && 'notResources' in byCategory) {
+      p.set('notResources', byCategory.notResources.join(','));
+    }
     if (win !== 'all') p.set('from', startOfDayAgo(Number(win)));
     if (severity !== ALL) p.set('severity', severity);
     return p;
@@ -395,7 +399,7 @@ export default function AuditTrailPage() {
           <SelectContent>
             <SelectItem value={ALL}>{t('allCategories')}</SelectItem>
             {AUDIT_CATEGORIES.map((c) => {
-              const none = resourcesOf(c).length === 0;
+              const none = filterOf(c) === null;
               return (
                 <SelectItem key={c} value={c} disabled={none}>
                   {none ? t('categorySoon', { name: t(`category.${c}`) }) : t(`category.${c}`)}

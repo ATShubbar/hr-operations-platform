@@ -45,7 +45,11 @@ export class AuditQueryService {
     const where: Prisma.AuditEntryWhereInput = {};
     if (query.resource) where.resource = query.resource;
     // DS-15: several record types (a category) — combined with `resource` by AND.
-    if (query.resources) where.AND = [{ resource: { in: query.resources } }];
+    const and: Prisma.AuditEntryWhereInput[] = [];
+    if (query.resources) and.push({ resource: { in: query.resources } });
+    // AUDIT-08: everything EXCEPT these types — "Records" is whatever no other
+    // category claims, so a type added later is included without being listed.
+    if (query.notResources) and.push({ resource: { notIn: query.notResources } });
     if (query.q) {
       where.OR = [
         { action: { contains: query.q, mode: 'insensitive' } },
@@ -63,7 +67,8 @@ export class AuditQueryService {
     }
     // AUDIT-07: severity is derived from record type + action — filtered on the
     // server through the same rule table that labels each entry.
-    if (query.severity) where.AND = [...((where.AND as Prisma.AuditEntryWhereInput[]) ?? []), whereSeverity(query.severity)];
+    if (query.severity) and.push(whereSeverity(query.severity));
+    if (and.length > 0) where.AND = and;
     return where;
   }
 
@@ -117,7 +122,9 @@ export class AuditQueryService {
         select: { actorId: true },
       }),
       // AUDIT-07: the Flagged-critical tile — critical events in the same window.
-      this.prisma.auditEntry.count({ where: { AND: [{ createdAt: { gte: since } }, whereSeverity('critical')] } }),
+      this.prisma.auditEntry.count({
+        where: { AND: [{ createdAt: { gte: since } }, whereSeverity('critical')] },
+      }),
     ]);
     return { eventsToday, actors: actors.length, critical };
   }

@@ -43,26 +43,25 @@ export function categoryOf(resource: string): AuditCategory {
 }
 
 /**
- * The record types a category covers, for the API's `resources=` filter.
- * `records` is "everything else" — the known types not claimed by another
- * category. An empty list means the category has nothing to filter on yet.
+ * How a category is asked of the API (the filter runs on the server, across
+ * every page):
+ *   · a named category is the record types it CLAIMS (`resources=`);
+ *   · Records is everything NO category claims, so it is asked for as an
+ *     exclusion (`notResources=`). AUDIT-08: it used to be a fixed list of
+ *     types written when the screen was built, and every record type added
+ *     since — dependants, sequences, leave, fees, invoices — silently dropped
+ *     out of it. As an exclusion, a new type is a record until someone files
+ *     it under another category here.
+ * `null` means the category has nothing to filter on yet (Payroll).
  */
-export function resourcesOf(category: AuditCategory): string[] {
-  if (category === 'records') {
-    return [
-      'employee',
-      'document',
-      'client',
-      'candidate',
-      'vacancy',
-      'calendar-event',
-      'notification-pref',
-      'config',
-    ];
-  }
-  return Object.entries(BY_RESOURCE)
+export function filterOf(
+  category: AuditCategory,
+): { resources: string[] } | { notResources: string[] } | null {
+  if (category === 'records') return { notResources: Object.keys(BY_RESOURCE) };
+  const claimed = Object.entries(BY_RESOURCE)
     .filter(([, c]) => c === category)
     .map(([r]) => r);
+  return claimed.length > 0 ? { resources: claimed } : null;
 }
 
 // The category badge's tone: the prototype's soft colours. Decorative metadata
