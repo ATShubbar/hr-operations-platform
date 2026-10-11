@@ -87,6 +87,6 @@ One new check: "insurance and licence: an open renewal keeps its expiry quiet". 
 - Settings → Standard fees was not opened to look at the three new boxes (it needs an Administrator's authenticator locally). The page builds its boxes from the same list the tests check, and the labels are the ones the start dialog showed.
 - Not looked at separately at phone width: no layout changed, three entries joined existing lists.
 
-## For UAT
+## On UAT (2026-10-11)
 
-Run **Seed UAT (seed-and-smoke)** once `/api/health` shows this commit — not before.
+Deploy of `4835ab1` finished (CI #261, green) at 06:17 UTC. The owner then ran **Seed UAT #12** on the same commit: seed passed, smoke check passed — started after the deploy this time, as INS-03's note asks.
