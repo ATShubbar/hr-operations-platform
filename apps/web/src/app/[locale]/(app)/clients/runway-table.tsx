@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import type { DependantExpiry, EmployeeResponse } from '@hr/contracts';
 import { Link } from '@/i18n/navigation';
+import type { DependantDocKey } from '@/lib/dependant-docs';
 import type { DocKey } from '@/lib/employee-docs';
 import { cn } from '@/lib/utils';
 import { RUNWAY_BANDS, dependantRunwayFor, runwayFor, type RunwayBand } from './client-figures';
@@ -43,6 +44,7 @@ export function RunwayTable({
   staff,
   dependants,
   cellHref,
+  dependantHref,
 }: {
   /** The heading's id — the section and its scroll region are named by it. */
   id: string;
@@ -56,16 +58,18 @@ export function RunwayTable({
   dependants?: readonly DependantExpiry[] | null;
   /** Where a cell leads: a document, and a band (null = every band). Omitted = plain numbers. */
   cellHref?: (doc: DocKey, band: RunwayBand | null) => string;
+  /** The same for a dependant row: it leads to the SPONSORS concerned (DEP-05b). */
+  dependantHref?: (doc: DependantDocKey, band: RunwayBand | null) => string;
 }) {
   const t = useTranslations('clients');
   const tp = useTranslations('people');
   const runway = runwayFor(staff);
   const dependantRows = dependants ? dependantRunwayFor(staff, dependants) : null;
 
-  const cell = (doc: DocKey, band: RunwayBand | null, body: string | number, title: string) =>
-    cellHref ? (
+  const linked = (href: string | null, body: string | number, title: string) =>
+    href ? (
       <Link
-        href={cellHref(doc, band)}
+        href={href}
         title={title}
         className="flex h-11 items-center justify-center outline-none hover:bg-neutral-900/[0.04] hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset"
       >
@@ -74,6 +78,14 @@ export function RunwayTable({
     ) : (
       body
     );
+  const cell = (doc: DocKey, band: RunwayBand | null, body: string | number, title: string) =>
+    linked(cellHref ? cellHref(doc, band) : null, body, title);
+  const depCell = (
+    doc: DependantDocKey,
+    band: RunwayBand | null,
+    body: string | number,
+    title: string,
+  ) => linked(dependantHref ? dependantHref(doc, band) : null, body, title);
 
   return (
     <section
@@ -160,13 +172,27 @@ export function RunwayTable({
               (dependantRows ?? dependantRunwayFor(staff, [])).map((row) => (
                 <tr key={`dep-${row.key}`} className="h-11 [&>td]:border-t">
                   <th scope="row" className="border-t px-4 text-start font-normal">
-                    {t(`dependantDoc.${row.key}`)}
+                    {dependantRows && dependantHref ? (
+                      <Link
+                        href={dependantHref(row.key, null)}
+                        className="outline-none hover:underline focus-visible:underline"
+                      >
+                        {t(`dependantDoc.${row.key}`)}
+                      </Link>
+                    ) : (
+                      t(`dependantDoc.${row.key}`)
+                    )}
                   </th>
                   {dependantRows ? (
                     <>
                       {RUNWAY_BANDS.map((b) => (
                         <td key={b.key} className={cn('text-center font-mono', BAND_CELL[b.key])}>
-                          {row.counts[b.key]}
+                          {depCell(
+                            row.key,
+                            b.key,
+                            row.counts[b.key],
+                            `${t(`dependantDoc.${row.key}`)} · ${t(`band.${b.key}`)}`,
+                          )}
                         </td>
                       ))}
                       <td className="px-4 text-end font-mono text-muted-foreground">

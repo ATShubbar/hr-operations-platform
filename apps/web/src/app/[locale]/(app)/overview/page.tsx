@@ -24,7 +24,7 @@ import { formatHijri } from '@hr/dates';
 import { Link, useRouter } from '@/i18n/navigation';
 import { SequencesPanel } from '@/components/sequences-panel';
 import { apiFetch, ApiError } from '@/lib/api';
-import { dependantDocs, loadDependantExpiries } from '@/lib/dependant-docs';
+import { dependantDocs, loadDependantExpiries, type DependantDocKey } from '@/lib/dependant-docs';
 import { datedDocs, daysTo, type DocKey } from '@/lib/employee-docs';
 import { useCan, useSession } from '@/lib/session';
 import { Button } from '@/components/ui/button';
@@ -82,6 +82,9 @@ const PEOPLE_BAND: Record<RunwayBand, string> = {
 };
 const cohortHref = (doc: DocKey, band: RunwayBand | null) =>
   `/employees?doc=${doc}${band ? `&band=${PEOPLE_BAND[band]}` : ''}`;
+// A dependant cell opens the SPONSORS on People (DEP-05b).
+const dependantCohortHref = (doc: DependantDocKey, band: RunwayBand | null) =>
+  `/employees?doc=dep-${doc}${band ? `&band=${PEOPLE_BAND[band]}` : ''}`;
 
 interface Data {
   clients: ClientResponse[];
@@ -377,6 +380,7 @@ function StaffOverview() {
             staff={people}
             dependants={dependants}
             cellHref={cohortHref}
+            dependantHref={dependantCohortHref}
           />
 
           <section

@@ -1686,6 +1686,12 @@ renewal (Joseph Santos) → HR ladder 35 items / 19 need action / 6 quiet. Smoke
 read", OMITTED = no rows (the client manager's Overview). Counted on the Overview tile, client cards, client record and
 Reports (tile + forecast). Seed: Overview "expiring 30d" 19 → 20. API **889/889**. Next: DEP-05b (People filter + cell links).
 
+**DEP-05b done — DEP-05 COMPLETE.** People's Document filter: `dep-iqama` / `dep-insurance` / `dep-passport` list the
+SPONSORS (one row per sponsor, judged on the soonest matching dependant document the band keeps; chip "… · N dependants";
+row → `?tab=family`); disabled when the dates couldn't be read. `RunwayTable dependantHref=` (Overview passes it; the Client
+record's runway stays plain). A runway cell counts DOCUMENTS, the list shows PEOPLE — and People lists everyone while the
+runway counts people under management (true of the employees' own documents already). No API change.
+
 ## Technical landmines (each cost real debugging — do not rediscover)
 
 - RLS policies MUST use `NULLIF(current_setting('app.client_id', true), '')::uuid` — pooled connections leave the GUC as '' not NULL (SPIKE-001).

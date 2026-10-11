@@ -6,6 +6,7 @@ import { ChevronRight } from 'lucide-react';
 import type {
   ClientListResponse,
   ClientResponse,
+  DependantExpiry,
   EmployeeListResponse,
   EmployeeResponse,
 } from '@hr/contracts';
@@ -23,6 +24,12 @@ import {
   type DocDue,
   type DocKey,
 } from '@/lib/employee-docs';
+import {
+  DEPENDANT_DOC_KEYS,
+  dependantDocs,
+  loadDependantExpiries,
+  type DependantDocKey,
+} from '@/lib/dependant-docs';
 import type { Locale } from '@/lib/employee-format';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/avatar';
@@ -63,6 +70,22 @@ import {
 // open-ended contract, say) from the People screen would be a silent loss.
 
 const BANDS = ['overdue', '0-7', '8-14', '15-30', '31-60', '61-90'] as const;
+
+// DEP-05b: the Document filter also offers the three DEPENDANT documents. Such a
+// filter lists the SPONSORS — the employees whose dependants hold a matching
+// document — because the list is of employees and a dependant is reached
+// through their sponsor's record.
+type DepFilter = `dep-${DependantDocKey}`;
+type DocFilter = DocKey | DepFilter;
+const DEP_FILTERS = DEPENDANT_DOC_KEYS.map((k) => `dep-${k}` as DepFilter);
+const depKeyOf = (f: string): DependantDocKey | null =>
+  (DEP_FILTERS as readonly string[]).includes(f) ? (f.slice(4) as DependantDocKey) : null;
+
+/** What a row is judged on: how long is left, on which document (and for how many dependants). */
+interface Focus {
+  days: number;
+  label: string;
+}
 const PAGE = 50;
 const ALL = 'all';
 
@@ -88,7 +111,10 @@ export default function PeoplePage() {
 
   const [search, setSearch] = useState('');
   const [fClient, setFClient] = useState(ALL);
-  const [fDoc, setFDoc] = useState<DocKey | typeof ALL>(ALL);
+  const [fDoc, setFDoc] = useState<DocFilter | typeof ALL>(ALL);
+  // Dependants' expiry dates (DEP-05a); null = could not be read, so the three
+  // dependant filters are not offered.
+  const [dependants, setDependants] = useState<DependantExpiry[] | null>(null);
   const [fBand, setFBand] = useState<(typeof BANDS)[number] | typeof ALL>(ALL);
   const [page, setPage] = useState(0);
 
@@ -96,12 +122,14 @@ export default function PeoplePage() {
     setLoading(true);
     setError('');
     try {
-      const [emp, cli] = await Promise.all([
+      const [emp, cli, deps] = await Promise.all([
         apiFetch<EmployeeListResponse>('/employees'),
         apiFetch<ClientListResponse>('/clients').catch(() => ({ clients: [] })),
+        loadDependantExpiries(),
       ]);
       setEmployees(emp.employees);
       setClients(cli.clients);
+      setDependants(deps);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
       if (err instanceof ApiError && err.status === 403) setForbidden(true);
@@ -121,7 +149,7 @@ export default function PeoplePage() {
     const c = q.get('client');
     if (c) setFClient(c);
     const d = q.get('doc');
-    if (d && DOC_TYPES.some((x) => x.key === d)) setFDoc(d as DocKey);
+    if (d && (DOC_TYPES.some((x) => x.key === d) || depKeyOf(d))) setFDoc(d as DocFilter);
     const b = q.get('band');
     if (b && (BANDS as readonly string[]).includes(b)) setFBand(b as (typeof BANDS)[number]);
   }, []);
@@ -156,19 +184,39 @@ export default function PeoplePage() {
     const month = new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(d);
     return `${d.getUTCDate()} ${month} ${d.getUTCFullYear()}`;
   };
-  const docLabel = (k: DocKey) => t(`doc.${k}`);
-
-  // The document a row is judged on: the filtered type, or whichever expires first.
-  const focusDoc = (e: EmployeeResponse): DocDue | null => {
-    const docs = datedDocs(e);
-    if (fDoc !== ALL) return docs.find((d) => d.key === fDoc) ?? null;
-    return docs.sort((a, b) => a.days - b.days)[0] ?? null;
+  const docLabel = (k: DocFilter) => {
+    const dep = depKeyOf(k);
+    return dep ? t(`depDoc.${dep}`) : t(`doc.${k as DocKey}`);
   };
   const inBand = (days: number) => {
     if (fBand === ALL) return true;
     if (fBand === 'overdue') return days < 0;
     const [lo, hi] = fBand.split('-').map(Number) as [number, number];
     return days >= lo && days <= hi;
+  };
+
+  // The document a row is judged on: the filtered type, or whichever of the
+  // person's OWN documents expires first.
+  const focusDoc = (e: EmployeeResponse): Focus | null => {
+    const dep = fDoc === ALL ? null : depKeyOf(fDoc);
+    if (dep) {
+      // A sponsor may have several dependants holding this document: judge the
+      // row on the soonest one the time-left filter keeps, and say how many.
+      const matching = dependantDocs(dependants ?? [], [e])
+        .filter((d) => d.key === dep && inBand(d.days))
+        .sort((a, b) => a.days - b.days);
+      const first = matching[0];
+      if (!first) return null;
+      const doc = t(`depDoc.${dep}`);
+      return {
+        days: first.days,
+        label: matching.length > 1 ? t('depMany', { doc, count: matching.length }) : doc,
+      };
+    }
+    const docs = datedDocs(e);
+    const own: DocDue | undefined =
+      fDoc !== ALL ? docs.find((d) => d.key === fDoc) : docs.sort((a, b) => a.days - b.days)[0];
+    return own ? { days: own.days, label: t(`doc.${own.key}`) } : null;
   };
 
   const rows = useMemo(() => {
@@ -202,7 +250,7 @@ export default function PeoplePage() {
         })
     );
     // focusDoc/inBand/name read the filter state listed here.
-  }, [employees, clients, search, fClient, fDoc, fBand, locale]);
+  }, [employees, clients, dependants, search, fClient, fDoc, fBand, locale]);
 
   const pages = Math.max(1, Math.ceil(rows.length / PAGE));
   const current = Math.min(page, pages - 1);
@@ -358,13 +406,13 @@ export default function PeoplePage() {
         <Select
           value={fDoc}
           onValueChange={(v) => {
-            setFDoc((v as DocKey) ?? ALL);
+            setFDoc((v as DocFilter) ?? ALL);
             setPage(0);
           }}
         >
           <SelectTrigger size="sm" className="w-[200px]" aria-label={t('filterDocument')}>
             <SelectValue>
-              {(v) => (v === ALL ? t('anyDocument') : docLabel(v as DocKey))}
+              {(v) => (v === ALL ? t('anyDocument') : docLabel(v as DocFilter))}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
@@ -372,6 +420,13 @@ export default function PeoplePage() {
             {DOC_TYPES.map((d) => (
               <SelectItem key={d.key} value={d.key}>
                 {docLabel(d.key)}
+              </SelectItem>
+            ))}
+            {/* Dependants' documents list their sponsors (DEP-05b). Not offered
+                when the dates could not be read. */}
+            {DEP_FILTERS.map((k) => (
+              <SelectItem key={k} value={k} disabled={dependants === null}>
+                {docLabel(k)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -445,7 +500,11 @@ export default function PeoplePage() {
                 ))}
               {!loading &&
                 visible.map(({ e, doc }) => {
-                  const href = `/employees/${e.id}`;
+                  // Under a dependant filter the row opens where the dependants are.
+                  const href =
+                    fDoc !== ALL && depKeyOf(fDoc)
+                      ? `/employees/${e.id}?tab=family`
+                      : `/employees/${e.id}`;
                   const iqama = e.govdata?.iqamaExpiry ?? null;
                   return (
                     // The row is a mouse target as in the prototype; the NAME is
@@ -517,7 +576,7 @@ export default function PeoplePage() {
                                 : t('left', { n: doc.days })}
                             </span>
                             <span className="truncate text-xs leading-4 text-muted-foreground">
-                              {docLabel(doc.key)}
+                              {doc.label}
                             </span>
                           </span>
                         ) : (

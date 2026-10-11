@@ -1870,6 +1870,12 @@
       "insurance": "Medical insurance",
       "licence": "Driving licence"
     },
+    "depDoc": {
+      "iqama": "Dependant iqama",
+      "insurance": "Dependant insurance",
+      "passport": "Dependant passport"
+    },
+    "depMany": "{doc} · {count} dependants",
     "left": "{n}d left",
     "over": "{n}d over",
     "range": "{from}–{to} of {total}",

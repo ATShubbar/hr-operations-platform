@@ -1870,6 +1870,12 @@
       "insurance": "التأمين الطبي",
       "licence": "رخصة القيادة"
     },
+    "depDoc": {
+      "iqama": "إقامة المُعال",
+      "insurance": "تأمين المُعال",
+      "passport": "جواز سفر المُعال"
+    },
+    "depMany": "{doc} · {count} مُعالين",
     "left": "{n, plural, zero {اليوم} one {باقٍ يوم} two {باقٍ يومان} few {باقٍ # أيام} many {باقٍ # يومًا} other {باقٍ # يوم}}",
     "over": "{n, plural, one {متأخر يومًا} two {متأخر يومين} few {متأخر # أيام} many {متأخر # يومًا} other {متأخر # يوم}}",
     "range": "{from}–{to} من {total}",
