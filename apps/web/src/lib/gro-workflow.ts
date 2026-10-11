@@ -22,4 +22,9 @@ export const GRO_EXPIRY_TYPES: ReadonlySet<GroProcessType> = new Set([
   'iqama_renewal',
   'exit_reentry',
   'work_permit_renewal',
+  // INS-04: each ends with a new expiry on the record (a conversion issues the
+  // Saudi licence, so it sets the same date a renewal does).
+  'medical_insurance_renewal',
+  'driving_licence_renewal',
+  'driving_licence_conversion',
 ]);

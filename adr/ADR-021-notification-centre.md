@@ -79,6 +79,9 @@ record (owner decision), so the expiry rule watches them too:
 - **Reading them needs `govdata.read`**: their dates sit in the record's government-data group.
 - **They are never quiet.** No procedure renews them yet. Renewal procedures are a later card
   (INS-04); when it lands they join the list of procedures that quiet an expiry.
+  **INS-04 landed (2026-10-11):** an open *Medical insurance renewal* quiets the insurance; an
+  open *Driving licence renewal* or *Driving licence conversion* quiets the licence. Each quiets
+  only its own document, for the one person, while it is open.
 - **Client managers and employees** follow the existing rules unchanged: a client manager is told
   once one has lapsed (while their portal is on), an employee sees their own at every stage.
 

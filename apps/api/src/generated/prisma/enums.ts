@@ -292,7 +292,10 @@ export const GroProcessType = {
   profession_change: 'profession_change',
   sponsorship_transfer: 'sponsorship_transfer',
   work_permit_renewal: 'work_permit_renewal',
-  other: 'other'
+  other: 'other',
+  medical_insurance_renewal: 'medical_insurance_renewal',
+  driving_licence_renewal: 'driving_licence_renewal',
+  driving_licence_conversion: 'driving_licence_conversion'
 } as const
 
 export type GroProcessType = (typeof GroProcessType)[keyof typeof GroProcessType]

@@ -76,6 +76,11 @@ export const DEFAULT_STANDARD_FEES: StandardFees = {
     sponsorship_transfer: 200_000,
     work_permit_renewal: 970_000,
     other: 0,
+    // INS-04. The prototype prices an insurance renewal and a licence
+    // CONVERSION; it gives no figure for a licence renewal, so that starts at 0.
+    medical_insurance_renewal: 180_000,
+    driving_licence_renewal: 0,
+    driving_licence_conversion: 40_000,
   },
   steps: {
     onboarding: {

@@ -1671,6 +1671,14 @@ ladder: HR 35 items / 20 need action, GRO 36 / 16, client manager 1, employee-a 
 (a leftover request; corrected in its evidence). After the suite, RE-SEED locally (the suite clears client settings). API
 **877/877**. Follow-ups: INS-04 (renewal procedures), DEP-05 (runway's dependant rows).
 
+**INS-04 done — renewal procedures.** `GroProcessType` + `medical_insurance_renewal`, `driving_licence_renewal`,
+`driving_licence_conversion` (own migration). `gro-effects` `EXPIRY_FIELD` writes `medicalInsuranceExpiry` /
+`drivingLicenceExpiry` on completion; `RENEWED_BY` quiets the matching document; web `GRO_EXPIRY_TYPES`,
+`PROCEDURE_AUTHORITY` (cchi / absher), start-dialog list. Standard fees 180_000 / 0 / 40_000 halalas (prototype, unverified).
+**A NEW PROCEDURE TYPE MUST ALSO BE ADDED TO ANY SAVED `billing.standard-fees` ROW** — its schema is strict and complete;
+migration `…standard_fees_insurance_licence` shows the pattern (add missing keys only, repeatable). Seed: one open insurance
+renewal (Joseph Santos) → HR ladder 35 items / 19 need action / 6 quiet. Smoke +1. API **882/882**.
+
 ## Technical landmines (each cost real debugging — do not rediscover)
 
 - RLS policies MUST use `NULLIF(current_setting('app.client_id', true), '')::uuid` — pooled connections leave the GUC as '' not NULL (SPIKE-001).

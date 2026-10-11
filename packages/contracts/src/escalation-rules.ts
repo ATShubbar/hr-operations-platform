@@ -107,12 +107,14 @@ export const DEPENDANT_DOC_OWNER: Record<DependantDoc, OwnerRole> = {
 };
 
 // The procedures that RENEW a document. While one is open for the person, the
-// expiry stays quiet: it is already being worked. Passport, contract, medical
-// insurance and driving licence have no such procedure and are never quiet
-// (renewal procedures for the last two are INS-04).
+// expiry stays quiet: it is already being worked. Passport and contract have
+// no such procedure and are never quiet. (Insurance and licence since INS-04;
+// a licence is renewed, or first issued by converting a foreign one.)
 export const RENEWED_BY: Partial<Record<EmployeeDoc, readonly string[]>> = {
   iqama: ['iqama_issue', 'iqama_renewal'],
   work_permit: ['work_permit_renewal'],
+  medical_insurance: ['medical_insurance_renewal'],
+  driving_licence: ['driving_licence_renewal', 'driving_licence_conversion'],
 };
 
 /** Whole days from `today` to `dueOn` (both YYYY-MM-DD). Negative = the date has passed. */

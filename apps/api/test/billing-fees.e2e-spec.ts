@@ -430,6 +430,13 @@ describe('Government fee ledger (BILL-01, e2e)', () => {
         STANDARD_FEES_KEY
       ];
     expect(await read(hr)).toEqual(DEFAULT_STANDARD_FEES);
+    // INS-04: the three new procedures have a standard fee (the prototype's
+    // unverified figures; it gives none for a licence renewal).
+    expect(DEFAULT_STANDARD_FEES.procedures).toMatchObject({
+      medical_insurance_renewal: 180_000,
+      driving_licence_renewal: 0,
+      driving_licence_conversion: 40_000,
+    });
     // The defaults ARE the sequence definitions' fees — one source, in halalas.
     for (const kind of ['onboarding', 'final_exit'] as const) {
       expect(DEFAULT_STANDARD_FEES.steps[kind]).toEqual(

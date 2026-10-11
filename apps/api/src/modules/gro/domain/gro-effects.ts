@@ -4,13 +4,22 @@ import type { GroProcessStatus, GroProcessType } from '../../../generated/prisma
 // Which employee govdata expiry field a completed GRO process writes back (GRO-03).
 // Only document-expiry-establishing types map; the rest (final_exit,
 // profession_change, sponsorship_transfer, other) write nothing on completion.
-export type ExpiryField = 'iqamaExpiry' | 'exitReentryExpiry' | 'workPermitExpiry';
+export type ExpiryField =
+  | 'iqamaExpiry'
+  | 'exitReentryExpiry'
+  | 'workPermitExpiry'
+  | 'medicalInsuranceExpiry'
+  | 'drivingLicenceExpiry';
 
 const EXPIRY_FIELD: Partial<Record<GroProcessType, ExpiryField>> = {
   iqama_issue: 'iqamaExpiry',
   iqama_renewal: 'iqamaExpiry',
   exit_reentry: 'exitReentryExpiry',
   work_permit_renewal: 'workPermitExpiry',
+  // INS-04: a conversion ISSUES the Saudi licence, so it sets the same date.
+  medical_insurance_renewal: 'medicalInsuranceExpiry',
+  driving_licence_renewal: 'drivingLicenceExpiry',
+  driving_licence_conversion: 'drivingLicenceExpiry',
 };
 
 export function expiryFieldFor(type: GroProcessType): ExpiryField | null {
@@ -39,6 +48,9 @@ const TYPE_LABEL: Record<GroProcessType, { ar: string; en: string }> = {
   sponsorship_transfer: { ar: 'نقل كفالة', en: 'Sponsorship transfer' },
   work_permit_renewal: { ar: 'تجديد رخصة عمل', en: 'Work permit renewal' },
   other: { ar: 'معاملة حكومية', en: 'Government process' },
+  medical_insurance_renewal: { ar: 'تجديد التأمين الطبي', en: 'Medical insurance renewal' },
+  driving_licence_renewal: { ar: 'تجديد رخصة القيادة', en: 'Driving licence renewal' },
+  driving_licence_conversion: { ar: 'تحويل رخصة القيادة', en: 'Driving licence conversion' },
 };
 
 const STATUS_LABEL: Record<GroProcessStatus, { ar: string; en: string }> = {

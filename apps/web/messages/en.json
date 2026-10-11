@@ -1251,6 +1251,9 @@
       "profession_change": "Profession change",
       "sponsorship_transfer": "Sponsorship transfer",
       "work_permit_renewal": "Work permit renewal",
+      "medical_insurance_renewal": "Medical insurance renewal",
+      "driving_licence_renewal": "Driving licence renewal",
+      "driving_licence_conversion": "Driving licence conversion",
       "other": "Other"
     },
     "status": {
@@ -1455,6 +1458,9 @@
       "profession_change": "Profession change",
       "sponsorship_transfer": "Sponsorship transfer",
       "work_permit_renewal": "Work permit renewal",
+      "medical_insurance_renewal": "Medical insurance renewal",
+      "driving_licence_renewal": "Driving licence renewal",
+      "driving_licence_conversion": "Driving licence conversion",
       "other": "Other",
       "(no client)": "(no client)"
     },

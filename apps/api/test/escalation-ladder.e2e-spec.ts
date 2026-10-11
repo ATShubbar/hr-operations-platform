@@ -276,22 +276,50 @@ describe('medical insurance and driving licence (INS-03)', () => {
     expect(keys(buildLadder(input, admin).items)).toHaveLength(3);
   });
 
-  it('are never quiet: no procedure renews them yet, whatever is open for the person', () => {
-    const input = base({
-      people: [person({ dates: { medical_insurance: day(5), driving_licence: day(5), iqama: day(5) } })],
-      procedures: ['iqama_renewal', 'work_permit_renewal', 'other'].map((type, i) => ({
-        id: `f0000000-0000-4000-8000-00000000000${i}`,
-        employeeId: P1,
-        clientId: CO,
-        type,
-        status: 'in_progress',
-        dueOn: null,
-        assigneeUserId: null,
-      })),
+  // INS-04: each document is quiet while ITS renewal is open — and only then.
+  it('go quiet while their own renewal is open: insurance by its renewal, the licence by a renewal or a conversion', () => {
+    const people = [
+      person({ dates: { medical_insurance: day(5), driving_licence: day(5) } }),
+      person({ id: P2, dates: { medical_insurance: day(5), driving_licence: day(5) } }),
+    ];
+    const open = (id: string, employeeId: string, type: string, status = 'in_progress') => ({
+      id: `f0000000-0000-4000-8000-0000000000${id}`,
+      employeeId,
+      clientId: CO,
+      type,
+      status,
+      dueOn: null,
+      assigneeUserId: null,
     });
-    const out = buildLadder(input, admin);
-    const docs = out.items.filter((i) => i.subject.kind === 'document').map((i) => i.key);
-    expect(docs.sort()).toEqual([LIC, INS].sort()); // the iqama is quiet, these two are not
+    const docsOf = (procedures: LadderInput['procedures']) => {
+      const out = buildLadder(base({ people, procedures }), admin);
+      return {
+        keys: out.items.filter((i) => i.subject.kind === 'document').map((i) => i.key).sort(),
+        quiet: out.suppressed,
+      };
+    };
+    const all = [`expiry:${P1}:driving_licence`, `expiry:${P1}:medical_insurance`, `expiry:${P2}:driving_licence`, `expiry:${P2}:medical_insurance`];
+    expect(docsOf([])).toEqual({ keys: all, quiet: 0 });
+
+    // The insurance renewal quiets that person's insurance — not their licence,
+    // and nothing of the colleague's.
+    expect(docsOf([open('01', P1, 'medical_insurance_renewal')])).toEqual({
+      keys: all.filter((k) => k !== INS),
+      quiet: 1,
+    });
+    // Either licence procedure quiets the licence.
+    for (const type of ['driving_licence_renewal', 'driving_licence_conversion']) {
+      expect(docsOf([open('02', P1, type)])).toEqual({ keys: all.filter((k) => k !== LIC), quiet: 1 });
+    }
+    // A finished renewal, or a procedure for something else, quiets nothing.
+    expect(
+      docsOf([
+        open('03', P1, 'medical_insurance_renewal', 'completed'),
+        open('04', P1, 'driving_licence_renewal', 'cancelled'),
+        open('05', P1, 'iqama_renewal'),
+        open('06', P1, 'other'),
+      ]),
+    ).toEqual({ keys: all, quiet: 0 });
   });
 
   it('reach the client manager only once lapsed, and the employee at every stage', () => {

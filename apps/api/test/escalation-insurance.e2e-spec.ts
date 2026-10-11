@@ -45,6 +45,7 @@ describe('Insurance and licence in the ladder (INS-03, e2e)', () => {
   const cleanup = async () => {
     const companies = await owner.client.findMany({ where: { nameEn: { startsWith: MARK } } });
     const where = { clientId: { in: companies.map((c) => c.id) } };
+    await owner.groProcess.deleteMany({ where });
     await owner.employee.deleteMany({ where });
     await owner.clientSetting.deleteMany({ where });
     await owner.client.deleteMany({ where: { id: where.clientId } });
@@ -106,6 +107,26 @@ describe('Insurance and licence in the ladder (INS-03, e2e)', () => {
     expect(mine(await ladder('/escalations', rep))).toEqual([
       [`expiry:${ids.a}:medical_insurance`, 'breach'],
     ]);
+  });
+
+  // INS-04: an open renewal quiets the document for every audience. (Runs last:
+  // it changes what the tests above read.)
+  it('an open renewal quiets the document — for staff, the client manager and the employee', async () => {
+    const proc = await owner.groProcess.create({
+      data: { clientId: ids.co, employeeId: ids.a, type: 'medical_insurance_renewal', status: 'in_progress' },
+    });
+    try {
+      const staff = await ladder('/escalations', hr);
+      expect(mine(staff).map(([k]) => k)).not.toContain(`expiry:${ids.a}:medical_insurance`);
+      expect(mine(staff).map(([k]) => k)).toContain(`expiry:${ids.a}:driving_licence`);
+      expect(mine(staff).map(([k]) => k)).toContain(`expiry:${ids.b}:medical_insurance`);
+      expect(mine(await ladder('/escalations', rep))).toEqual([]);
+      expect(mine(await ladder('/me/escalations', me))).toEqual([
+        [`expiry:${ids.a}:driving_licence`, 'escalation'],
+      ]);
+    } finally {
+      await owner.groProcess.delete({ where: { id: proc.id } });
+    }
   });
 
   it('the employee: both of their own, nothing of the colleague', async () => {

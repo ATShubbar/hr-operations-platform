@@ -1251,6 +1251,9 @@
       "profession_change": "تغيير مهنة",
       "sponsorship_transfer": "نقل كفالة",
       "work_permit_renewal": "تجديد رخصة عمل",
+      "medical_insurance_renewal": "تجديد التأمين الطبي",
+      "driving_licence_renewal": "تجديد رخصة القيادة",
+      "driving_licence_conversion": "تحويل رخصة القيادة",
       "other": "أخرى"
     },
     "status": {
@@ -1455,6 +1458,9 @@
       "profession_change": "تغيير مهنة",
       "sponsorship_transfer": "نقل كفالة",
       "work_permit_renewal": "تجديد رخصة عمل",
+      "medical_insurance_renewal": "تجديد التأمين الطبي",
+      "driving_licence_renewal": "تجديد رخصة القيادة",
+      "driving_licence_conversion": "تحويل رخصة القيادة",
       "other": "أخرى",
       "(no client)": "(بدون عميل)"
     },

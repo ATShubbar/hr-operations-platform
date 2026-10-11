@@ -87,6 +87,16 @@ describe('GRO processes API (GRO-02, e2e)', () => {
     procB = b.body.id;
   });
 
+  // INS-04: three more procedure types; anything not on the list is still refused.
+  it('accepts the insurance and licence procedures, and refuses an unknown type', async () => {
+    for (const type of ['medical_insurance_renewal', 'driving_licence_renewal', 'driving_licence_conversion']) {
+      const res = await post(gro.cookie, { employeeId: empA, type }).expect(201);
+      expect(res.body.type).toBe(type);
+      await owner.groProcess.delete({ where: { id: res.body.id } });
+    }
+    await post(gro.cookie, { employeeId: empA, type: 'insurance_renewal' }).expect(400);
+  });
+
   it('rejects create for an unknown employee (404)', async () => {
     await post(gro.cookie, {
       employeeId: '00000000-0000-4000-8000-000000000000',

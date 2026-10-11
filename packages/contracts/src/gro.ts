@@ -13,6 +13,10 @@ export const groProcessTypeSchema = z.enum([
   'sponsorship_transfer',
   'work_permit_renewal',
   'other',
+  // INS-04
+  'medical_insurance_renewal',
+  'driving_licence_renewal',
+  'driving_licence_conversion',
 ]);
 export const groProcessStatusSchema = z.enum([
   'not_started',

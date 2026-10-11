@@ -105,8 +105,12 @@ officer) edit them, the Auditor reads, a client manager sees the two DATES for t
 and never the numbers, and the employee sees their own in full. Medical insurance is not a
 government document; it is grouped here because it is kept, renewed and watched the same way and
 by the same people. Two document categories were added with them (`medical_insurance`,
-`driving_licence`) so an uploaded file can be matched to its row. Renewal as a procedure is a
-later card (INS-04).
+`driving_licence`) so an uploaded file can be matched to its row.
+
+**INS-04 (2026-10-11).** Three procedure types renew them: `medical_insurance_renewal` →
+`medical_insurance_expiry`; `driving_licence_renewal` and `driving_licence_conversion` (a foreign
+licence converted to a Saudi one — the prototype's procedure) → `driving_licence_expiry`.
+Completing one with a resulting expiry writes that date to the record (the GRO-03 rule).
 
 ---
 

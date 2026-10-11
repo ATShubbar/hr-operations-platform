@@ -826,6 +826,11 @@ enum GroProcessType {
   sponsorship_transfer
   work_permit_renewal
   other
+  // INS-04: renewing the two documents INS-01 put on the record. A conversion
+  // turns a foreign driving licence into a Saudi one (the prototype's procedure).
+  medical_insurance_renewal
+  driving_licence_renewal
+  driving_licence_conversion
 }
 
 enum GroProcessStatus {

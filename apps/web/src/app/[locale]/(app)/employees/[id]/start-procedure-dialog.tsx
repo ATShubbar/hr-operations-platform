@@ -39,6 +39,10 @@ const TYPES = [
   'profession_change',
   'sponsorship_transfer',
   'work_permit_renewal',
+  // INS-04
+  'medical_insurance_renewal',
+  'driving_licence_renewal',
+  'driving_licence_conversion',
   'other',
 ] as const satisfies readonly GroProcessType[];
 

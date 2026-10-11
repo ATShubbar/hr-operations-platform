@@ -332,6 +332,20 @@ async function main() {
       'insurance and licence: both are on the ladder',
       `documents on the ladder: ${[...docs].join(', ')}`,
     );
+    // INS-04: Joseph Santos's insurance lapses in days, but its renewal is open
+    // (a seeded procedure) — so the expiry is quiet and counted as such.
+    const quietKey = 'expiry:e0000001-0000-4000-8000-000000000006:medical_insurance';
+    const procedures = await call('/gro-processes', { cookie: hr });
+    const renewal = (procedures.json?.processes ?? []).find(
+      (p) => p.type === 'medical_insurance_renewal' && p.employeeId === 'e0000001-0000-4000-8000-000000000006',
+    );
+    check(
+      Boolean(renewal) &&
+        !(ladder.json?.items ?? []).some((i) => i.key === quietKey) &&
+        (ladder.json?.suppressed ?? 0) > 0,
+      'insurance and licence: an open renewal keeps its expiry quiet',
+      `renewal ${renewal?.status ?? 'missing'}, quiet items ${ladder.json?.suppressed}`,
+    );
     // Ahmed Hassan — a fixed seed id, with a policy and a licence on file.
     const person = await call('/employees/e0000001-0000-4000-8000-000000000002', { cookie: hr });
     const gov = person.json?.govdata ?? {};

@@ -24,6 +24,10 @@ export const PROCEDURE_AUTHORITY: Record<string, FeeAuthority> = {
   sponsorship_transfer: 'qiwa',
   work_permit_renewal: 'qiwa',
   other: 'other',
+  // INS-04 — the prototype's portals for these procedures.
+  medical_insurance_renewal: 'cchi',
+  driving_licence_renewal: 'absher',
+  driving_licence_conversion: 'absher',
 };
 
 export type ReceiptProblem = 'type' | 'size';

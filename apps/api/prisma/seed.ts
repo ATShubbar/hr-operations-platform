@@ -646,6 +646,11 @@ async function seedGroProcesses(prisma: PrismaClient): Promise<number> {
     where: { email: seedEmail('staff-gro_officer') },
   });
   const by = gro?.id ?? null;
+  // INS-04: the insurance renewal belongs to an HR officer (the prototype's
+  // division of labour).
+  const hrOfficer = await prisma.authUser.findUnique({
+    where: { email: seedEmail('staff-hr_officer') },
+  });
   const processes = [
     { id: 'e1000001-0000-4000-8000-000000000001', clientId: SEED_CLIENT_A, employeeId: 'e0000001-0000-4000-8000-000000000002', type: 'iqama_renewal' as const, status: 'in_progress' as const, referenceNumber: 'MUQ-2026-00123', dueDate: daysFromNow(9), assigneeUserId: by },
     { id: 'e1000001-0000-4000-8000-000000000002', clientId: SEED_CLIENT_A, employeeId: 'e0000001-0000-4000-8000-000000000002', type: 'exit_reentry' as const, status: 'not_started' as const, dueDate: daysFromNow(25), assigneeUserId: by },
@@ -656,6 +661,10 @@ async function seedGroProcesses(prisma: PrismaClient): Promise<number> {
     { id: 'e1000002-0000-4000-8000-000000000003', clientId: SEED_CLIENT_B, employeeId: 'e0000002-0000-4000-8000-000000000004', type: 'exit_reentry' as const, status: 'completed' as const, referenceNumber: 'MUQ-2026-00512', dueDate: daysFromNow(-18), resultingExpiry: daysFromNow(160), assigneeUserId: by },
     { id: 'e1000003-0000-4000-8000-000000000001', clientId: SEED_CLIENT_C, employeeId: 'e0000003-0000-4000-8000-000000000002', type: 'iqama_renewal' as const, status: 'in_progress' as const, referenceNumber: 'MUQ-2026-01204', dueDate: daysFromNow(1), assigneeUserId: by },
     { id: 'e1000004-0000-4000-8000-000000000001', clientId: SEED_CLIENT_D, employeeId: 'e0000004-0000-4000-8000-000000000002', type: 'profession_change' as const, status: 'not_started' as const, dueDate: daysFromNow(2), assigneeUserId: by },
+    // INS-04: Joseph Santos's medical insurance lapses in 5 days (INS-03). Its
+    // renewal is open, so that expiry is QUIET in the bell and this work item
+    // carries it instead.
+    { id: 'e1000001-0000-4000-8000-000000000005', clientId: SEED_CLIENT_A, employeeId: 'e0000001-0000-4000-8000-000000000006', type: 'medical_insurance_renewal' as const, status: 'in_progress' as const, referenceNumber: 'CCHI-2026-0412', dueDate: daysFromNow(3), assigneeUserId: hrOfficer?.id ?? null },
   ];
   for (const { id, ...rest } of processes) {
     await prisma.groProcess.upsert({ where: { id }, create: { id, ...rest }, update: rest });

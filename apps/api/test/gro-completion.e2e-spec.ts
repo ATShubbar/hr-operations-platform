@@ -79,6 +79,24 @@ describe('GRO — completion effects (GRO-03, e2e)', () => {
     expect(empAudit).toHaveLength(1);
   });
 
+  // INS-04: the three renewal procedures write the document's new date back.
+  it.each([
+    ['medical_insurance_renewal', 'medicalInsuranceExpiry', 'drivingLicenceExpiry'],
+    ['driving_licence_renewal', 'drivingLicenceExpiry', 'medicalInsuranceExpiry'],
+    ['driving_licence_conversion', 'drivingLicenceExpiry', 'medicalInsuranceExpiry'],
+  ] as const)('completing a %s writes the new date to %s — and leaves the other document alone', async (type, field, other) => {
+    const OTHER_DATE = new Date('2027-01-15');
+    await owner.employee.update({ where: { id: empId }, data: { [field]: null, [other]: OTHER_DATE } });
+    const p = await gro.create({ clientId, employeeId: empId, type });
+    createdProcessIds.push(p.id);
+    await gro.update(p.id, { resultingExpiry: RESULT_EXPIRY });
+    await complete(p.id);
+
+    const emp = await owner.employee.findUniqueOrThrow({ where: { id: empId } });
+    expect(emp[field]?.toISOString().slice(0, 10)).toBe('2028-06-30');
+    expect(emp[other]?.toISOString().slice(0, 10)).toBe('2027-01-15');
+  });
+
   it('notifies the assignee on status change', async () => {
     const notes = await owner.notification.findMany({
       where: { recipientUserId: officer.userId, category: 'general' },
