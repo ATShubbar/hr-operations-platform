@@ -14,7 +14,6 @@ import type {
   StaffDirectoryResponse,
 } from '@hr/contracts';
 import { standardStepFee } from '@hr/contracts/billing-lists';
-import { formatHijri } from '@hr/dates';
 import { FeeCapture, feeCaptureProblem, type FeeCaptureValue } from '@/components/fee-capture';
 import { recordFee, type RecordFeeResult } from '@/lib/fees';
 import { halalasToInput, sarTextToHalalas, useMoney } from '@/lib/money';
@@ -45,6 +44,7 @@ import {
 } from '@/components/ui/select';
 import { StatusPill } from '@/components/ui/status-pill';
 import { toastError, toastSuccess } from '@/components/ui/toast';
+import { dateFormat, hijriDate } from '@/lib/dates';
 
 // MOB-06b: the roles that can own a sequence (they hold gro.process), and the
 // Select's value for "nobody" (a Select cannot carry null).
@@ -186,17 +186,17 @@ export function MobilisationTab({
   const day = (iso: string) => {
     const d = new Date(`${iso.slice(0, 10)}T00:00:00Z`);
     if (locale === 'ar') {
-      return new Intl.DateTimeFormat('ar', {
+      return dateFormat('ar', {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
         timeZone: 'UTC',
       }).format(d);
     }
-    const month = new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(d);
+    const month = dateFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(d);
     return `${d.getUTCDate()} ${month} ${d.getUTCFullYear()}`;
   };
-  const hijri = (iso: string) => formatHijri(new Date(`${iso.slice(0, 10)}T00:00:00Z`), locale);
+  const hijri = (iso: string) => hijriDate(new Date(`${iso.slice(0, 10)}T00:00:00Z`), locale);
   const title = (key: string) => t(`step.${key}.title`);
   const list = (keys: string[]) => keys.map(title).join(t('and'));
 

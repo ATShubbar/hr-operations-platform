@@ -5,7 +5,6 @@ import { useLocale, useTranslations } from 'next-intl';
 import { MoreHorizontal, Paperclip } from 'lucide-react';
 import type { FeeListResponse, FeeReceiptDownloadResponse, FeeResponse } from '@hr/contracts';
 import { FEE_AUTHORITIES, type FeeAuthority } from '@hr/contracts/billing-lists';
-import { formatHijri } from '@hr/dates';
 import { FeeCapture, feeCaptureProblem, type FeeCaptureValue } from '@/components/fee-capture';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
@@ -38,6 +37,7 @@ import {
 import { StatusPill } from '@/components/ui/status-pill';
 import { Textarea } from '@/components/ui/textarea';
 import { toastError, toastSuccess } from '@/components/ui/toast';
+import { dateFormat, hijriDate } from '@/lib/dates';
 
 // The Client record's Fees tab (BILL-03, ADR-020) — the prototype's: four
 // tiles, "Where the money went" by authority, and the fee ledger.
@@ -101,14 +101,14 @@ export function FeesTab({
   }, [clientId]);
 
   const date = (iso: string) =>
-    new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-GB', {
+    dateFormat(locale === 'ar' ? 'ar' : 'en-GB', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
       timeZone: 'UTC',
       numberingSystem: 'latn',
     }).format(new Date(`${iso}T00:00:00Z`));
-  const hijri = (iso: string) => formatHijri(new Date(`${iso}T00:00:00Z`), locale);
+  const hijri = (iso: string) => hijriDate(new Date(`${iso}T00:00:00Z`), locale);
 
   const what = useFeeWhat();
 

@@ -6,6 +6,7 @@ import type { RequestResponse } from '@hr/contracts';
 import { Link } from '@/i18n/navigation';
 import { toneFor } from '@/lib/status-tone';
 import { StatusPill } from '@/components/ui/status-pill';
+import { dateFormat } from '@/lib/dates';
 
 // The Client record's Requests tab (DS-11): everything this company has asked
 // for and where each stands, newest first — the prototype's list. Each row opens
@@ -21,14 +22,14 @@ export function RequestsTab({ requests }: { requests: readonly RequestResponse[]
   const day = (iso: string) => {
     const d = new Date(iso);
     if (locale === 'ar') {
-      return new Intl.DateTimeFormat('ar', {
+      return dateFormat('ar', {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
         timeZone: 'UTC',
       }).format(d);
     }
-    const month = new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(d);
+    const month = dateFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(d);
     return `${d.getUTCDate()} ${month} ${d.getUTCFullYear()}`;
   };
 

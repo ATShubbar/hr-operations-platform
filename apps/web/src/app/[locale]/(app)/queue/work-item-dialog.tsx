@@ -3,7 +3,6 @@
 import { useState, type ReactNode } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { GroProcessStatus, StaffDirectoryEntry } from '@hr/contracts';
-import { formatHijri } from '@hr/dates';
 import { Link } from '@/i18n/navigation';
 import { chipClass, daysTo } from '@/lib/employee-docs';
 import type { Locale } from '@/lib/employee-format';
@@ -29,6 +28,7 @@ import {
 } from '@/components/ui/select';
 import { GroResolve } from '@/components/gro-work-list';
 import { useQueueActions, type QueueItem } from './queue-actions';
+import { hijriDate } from '@/lib/dates';
 
 // The work-item dialog (DS-13) — the prototype's drawer for one queue item:
 // who and which company it concerns, when it is due (chip + Hijri), what it is
@@ -176,7 +176,7 @@ function Body({
                   )}
                 </span>
                 <span className="text-[10px] leading-[14px] text-neutral-400">
-                  {formatHijri(new Date(item.due), locale)}
+                  {hijriDate(new Date(item.due), locale)}
                 </span>
               </span>
             ) : (

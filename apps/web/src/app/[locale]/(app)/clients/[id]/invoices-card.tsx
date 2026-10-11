@@ -9,7 +9,6 @@ import type {
   InvoiceListResponse,
   InvoiceResponse,
 } from '@hr/contracts';
-import { formatHijri } from '@hr/dates';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useFeeWhat } from '@/lib/fee-what';
@@ -31,6 +30,7 @@ import { LoadError } from '@/components/ui/load-state';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { StatusPill } from '@/components/ui/status-pill';
 import { toastSuccess } from '@/components/ui/toast';
+import { dateFormat, hijriDate } from '@/lib/dates';
 
 // Invoice RECORDS on the Commercial tab (BILL-05, ADR-020).
 //
@@ -107,14 +107,14 @@ export function InvoicesCard({
   }, [clientId]);
 
   const date = (iso: string) =>
-    new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-GB', {
+    dateFormat(locale === 'ar' ? 'ar' : 'en-GB', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
       timeZone: 'UTC',
       numberingSystem: 'latn',
     }).format(new Date(`${iso}T00:00:00Z`));
-  const hijri = (iso: string) => formatHijri(new Date(`${iso}T00:00:00Z`), locale);
+  const hijri = (iso: string) => hijriDate(new Date(`${iso}T00:00:00Z`), locale);
   // ADR-012 lays the page out left to right in both languages: a whole Arabic
   // line is isolated so a figure it opens with stays where it was written.
   const whole = (text: string) => (

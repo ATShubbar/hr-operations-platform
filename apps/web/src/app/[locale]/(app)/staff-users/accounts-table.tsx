@@ -24,6 +24,7 @@ import {
 import { StatusPill } from '@/components/ui/status-pill';
 import { TABLE_CELL, TABLE_FRAME, TABLE_HEAD, TABLE_ROW } from '@/components/ui/table';
 import { toastError, toastSuccess } from '@/components/ui/toast';
+import { dateFormat } from '@/lib/dates';
 
 // The Accounts block of Roles and permissions (DS-19) — STAFF accounts (owner
 // decision): search, role and status filters, and per row the prototype's role
@@ -77,7 +78,7 @@ export function AccountsTable({
 
   const nameOf = (u: StaffUserResponse) => u.displayName ?? u.email;
   const joined = (iso: string) =>
-    new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-GB', {
+    dateFormat(locale === 'ar' ? 'ar' : 'en-GB', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',

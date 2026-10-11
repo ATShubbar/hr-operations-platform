@@ -2,7 +2,6 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import type { CalendarItem } from '@hr/contracts';
-import { formatHijri } from '@hr/dates';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -18,6 +17,7 @@ import {
   type Iso,
   itemKey,
 } from './cal-utils';
+import { hijriDate } from '@/lib/dates';
 
 // The calendar's three views + the selected-day panel (DS-14), the prototype's
 // Month / Week / Agenda. Each receives the already-filtered items; opening an
@@ -308,7 +308,7 @@ export function AgendaView({
               {longDate(d, locale)}
             </h3>
             <span className="text-[11px] leading-[15px] text-muted-foreground">
-              {formatHijri(new Date(`${d}T12:00:00Z`), locale)}
+              {hijriDate(new Date(`${d}T12:00:00Z`), locale)}
             </span>
           </div>
           <div className="flex min-w-0 grow flex-col gap-1.5">
@@ -351,7 +351,7 @@ export function DayPanel({
             {longDate(day, locale)}
           </h2>
           <span className="text-xs leading-4 text-muted-foreground">
-            {formatHijri(new Date(`${day}T12:00:00Z`), locale)}
+            {hijriDate(new Date(`${day}T12:00:00Z`), locale)}
           </span>
         </div>
         {canCreate && (

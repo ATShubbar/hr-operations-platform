@@ -16,6 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { StatusPill } from '@/components/ui/status-pill';
 import { toastSuccess } from '@/components/ui/toast';
 import { RequestLeaveDialog } from '../../leaves/request-leave-dialog';
+import { dateFormat } from '@/lib/dates';
 
 // The Person record's Leave tab (LEAVE-05) — the prototype's: the annual balance
 // (available, the Art. 109 basis, a taken / booked / remaining bar, overdrawn),
@@ -74,7 +75,7 @@ export function LeaveTab({
   const pct = (n: number) => `${Math.round((Math.max(0, Math.min(n, total)) / total) * 100)}%`;
   const takenTone = b.overdrawn ? 'bg-status-critical' : 'bg-neutral-900';
   const day = (ymd: string) =>
-    new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-GB', {
+    dateFormat(locale === 'ar' ? 'ar' : 'en-GB', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',

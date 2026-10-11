@@ -3,12 +3,12 @@
 import { useLocale, useTranslations } from 'next-intl';
 import type { ClientResponse, DependantExpiry, EmployeeResponse } from '@hr/contracts';
 import { bandAbove, bandBelow } from '@hr/contracts/client-profile';
-import { formatHijri } from '@hr/dates';
 import { BandPill } from '@/components/client-profile-bits';
 import { PEOPLE_BAND, type ClientFigures, type RunwayBand } from '../client-figures';
 import { RunwayTable } from '../runway-table';
 import { SaudiShare } from '../saudi-share';
 import { ServicePanel } from '../service-panel';
+import { dateFormat, hijriDate } from '@/lib/dates';
 
 // A runway cell → People, narrowed to this company, that document and that band.
 const cohortHref = (clientId: string, doc: string, band: RunwayBand | null) =>
@@ -51,14 +51,14 @@ export function OverviewTab({
   const noteKey = band === 'red' || band === 'yellow' ? band : 'clear';
   const checked = client.nitaqat
     ? {
-        date: new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-GB', {
+        date: dateFormat(locale === 'ar' ? 'ar' : 'en-GB', {
           day: 'numeric',
           month: 'short',
           year: 'numeric',
           timeZone: 'UTC',
           numberingSystem: 'latn',
         }).format(new Date(`${client.nitaqat.checkedOn}T00:00:00Z`)),
-        hijri: formatHijri(new Date(`${client.nitaqat.checkedOn}T00:00:00Z`), locale),
+        hijri: hijriDate(new Date(`${client.nitaqat.checkedOn}T00:00:00Z`), locale),
       }
     : null;
   const field = (label: string, value: string, muted = false) => (

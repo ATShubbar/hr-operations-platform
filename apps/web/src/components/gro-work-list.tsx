@@ -10,7 +10,6 @@ import {
   standardProcedureFee,
   type FeeAuthority,
 } from '@hr/contracts/billing-lists';
-import { formatHijri } from '@hr/dates';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { PROCEDURE_AUTHORITY, recordFee } from '@/lib/fees';
@@ -41,6 +40,7 @@ import {
 import { StatusAction } from '@/components/ui/status-action';
 import { procedureTitle } from '@/lib/procedure-title';
 import { toastError, toastSuccess } from '@/components/ui/toast';
+import { dateFormat, hijriDate } from '@/lib/dates';
 
 // Open government procedures as rows, each with "Resolve" (DS-07, shared in
 // DS-11): the Person record lists one person's, the Client record a whole
@@ -65,14 +65,14 @@ export function useDueLabel() {
   const day = (iso: string) => {
     const d = new Date(iso);
     if (locale === 'ar') {
-      return new Intl.DateTimeFormat('ar', {
+      return dateFormat('ar', {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
         timeZone: 'UTC',
       }).format(d);
     }
-    const month = new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(d);
+    const month = dateFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(d);
     return `${d.getUTCDate()} ${month} ${d.getUTCFullYear()}`;
   };
   return (iso: string | null) => {
@@ -93,7 +93,7 @@ export function DueCell({ iso }: { iso: string | null }) {
       <span className={`text-[13px] leading-[17px] font-medium ${d.cls}`}>{d.label}</span>
       {iso && (
         <span className="text-[10px] leading-[14px] text-neutral-400">
-          {formatHijri(new Date(iso), locale)}
+          {hijriDate(new Date(iso), locale)}
         </span>
       )}
     </span>

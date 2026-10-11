@@ -148,3 +148,25 @@ export function rtlSafeMessages<T>(tree: T): T {
   }
   return tree;
 }
+
+/** The browser's own marks inside an all-numeric Arabic date ("3/10/2026" carries one after each part). */
+const INNER_MARK = /[\u200f\u061c]/;
+/** A mark that already makes what follows right-to-left: RLM, or the Arabic letter mark. */
+const LEADING_MARK = /^[\u200f\u061c]/;
+
+/**
+ * A formatted VALUE that stands on its own — a date, a time (UX-21). These are
+ * made in code, so the message rule never sees them. Measured: "3 أكتوبر 2026"
+ * alone in a left-to-right line is drawn day, then year, then month — the leading
+ * number is placed at the left. A right-to-left mark in front ties the number to
+ * the words after it. Nothing is needed behind: a number that FOLLOWS Arabic text
+ * already sits inside its run.
+ *
+ * Returned as it came: a value with nothing right-to-left in it (no Arabic letter
+ * and no mark), and one that already opens with an Arabic letter or with a mark.
+ */
+export function rtlSafeValue(value: string): string {
+  if (!ARABIC_LETTER.test(value) && !INNER_MARK.test(value)) return value;
+  const first = value.trimStart()[0] ?? '';
+  return ARABIC_LETTER.test(first) || LEADING_MARK.test(first) ? value : RLM + value;
+}

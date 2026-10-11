@@ -40,6 +40,7 @@ import {
 } from './cal-utils';
 import { EventDialog, type EventTarget } from './event-dialog';
 import { AgendaView, DayPanel, MonthView, WeekView } from './views';
+import { dateFormat } from '@/lib/dates';
 
 // The Calendar (DS-14) — the prototype's calendar (ADR-012): Month (grid + the
 // selected day's panel), Week and Agenda over /calendar/view, which merges booked
@@ -166,7 +167,7 @@ export default function CalendarPage() {
 
   const heading =
     view === 'week'
-      ? `${t('weekOf')} ${new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-US', { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${days[0]}T12:00:00Z`))}`
+      ? `${t('weekOf')} ${dateFormat(locale === 'ar' ? 'ar' : 'en-US', { day: 'numeric', month: 'short', timeZone: 'UTC' }).format(new Date(`${days[0]}T12:00:00Z`))}`
       : monthTitle(selected, locale);
   const hijri =
     view === 'week'

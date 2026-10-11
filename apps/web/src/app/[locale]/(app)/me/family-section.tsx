@@ -3,13 +3,13 @@
 import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { SelfDependant, SelfDependantListResponse } from '@hr/contracts';
-import { formatHijri } from '@hr/dates';
 import { apiFetch } from '@/lib/api';
 import { chipClass, daysTo } from '@/lib/employee-docs';
 import type { Locale } from '@/lib/employee-format';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { dateFormat, hijriDate } from '@/lib/dates';
 
 // My family (DEP-04, ADR-017) — the dependants on my sponsorship, read-only, in
 // the Family tab's card shape (DEP-03), phone-first. The numbers are mine to see
@@ -54,14 +54,14 @@ export function FamilySection({ onRequestChange }: { onRequestChange: () => void
   const day = (iso: string) => {
     const d = new Date(`${iso}T00:00:00Z`);
     if (locale === 'ar') {
-      return new Intl.DateTimeFormat('ar', {
+      return dateFormat('ar', {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
         timeZone: 'UTC',
       }).format(d);
     }
-    const month = new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(d);
+    const month = dateFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(d);
     return `${d.getUTCDate()} ${month} ${d.getUTCFullYear()}`;
   };
   const chipText = (days: number) =>
@@ -130,7 +130,7 @@ export function FamilySection({ onRequestChange }: { onRequestChange: () => void
                     <span className="text-[13px] leading-[18px]">{tf(`doc.${doc.key}`)}</span>
                     {iso ? (
                       <span className="text-[11px] leading-[15px] text-muted-foreground">
-                        {day(iso)} · {formatHijri(new Date(`${iso}T00:00:00Z`), locale)}
+                        {day(iso)} · {hijriDate(new Date(`${iso}T00:00:00Z`), locale)}
                       </span>
                     ) : (
                       <span className="text-[11px] leading-[15px] text-neutral-400">

@@ -20,6 +20,7 @@ import { toastSuccess } from '@/components/ui/toast';
 import { LeaveTab } from '../../employees/[id]/leave-tab';
 import { LeaveDetail } from '../../leaves/leave-detail';
 import { RequestLeaveDialog } from '../../leaves/request-leave-dialog';
+import { dateFormat } from '@/lib/dates';
 
 // My leave (LEAVE-06, ADR-014) — the prototype's employee version of Leaves:
 // "My leave", "N requests on file · M awaiting a decision", Request leave (always
@@ -76,7 +77,7 @@ export default function MyLeavePage() {
   const lq = useMemo(() => leave.find((r) => r.id === selected) ?? null, [leave, selected]);
   const awaiting = leave.filter((r) => r.status === 'pending' || r.status === 'approved').length;
   const shortDay = (ymd: string) =>
-    new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-GB', {
+    dateFormat(locale === 'ar' ? 'ar' : 'en-GB', {
       day: 'numeric',
       month: 'short',
       timeZone: 'UTC',

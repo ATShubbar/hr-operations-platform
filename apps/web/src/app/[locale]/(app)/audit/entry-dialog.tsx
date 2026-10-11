@@ -3,7 +3,6 @@
 import type { ReactNode } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { AuditEntry } from '@hr/contracts';
-import { formatHijri } from '@hr/dates';
 import { categoryOf, CATEGORY_CLASS } from '@/lib/audit-category';
 import { toneFor } from '@/lib/status-tone';
 import { cn } from '@/lib/utils';
@@ -16,6 +15,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { StatusPill } from '@/components/ui/status-pill';
+import { dateFormat, hijriDate } from '@/lib/dates';
 
 // One audit entry (DS-15) — the prototype's detail dialog: what happened to
 // which record, the category, who, when (both calendars), and — owner decision —
@@ -159,13 +159,13 @@ export function EntryDialog({
                   t('when'),
                   <span className="flex flex-col">
                     <span className="text-[13px] leading-[18px]">
-                      {new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-GB', {
+                      {dateFormat(locale === 'ar' ? 'ar' : 'en-GB', {
                         dateStyle: 'medium',
                         timeStyle: 'short',
                       }).format(when)}
                     </span>
                     <span className="text-[11px] leading-[15px] text-neutral-400">
-                      {formatHijri(when, locale)}
+                      {hijriDate(when, locale)}
                     </span>
                   </span>,
                 )}

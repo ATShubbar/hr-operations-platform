@@ -10,7 +10,6 @@ import type {
   DocumentResponse,
   UploadIssueResponse,
 } from '@hr/contracts';
-import { formatHijri } from '@hr/dates';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { chipClass, daysTo } from '@/lib/employee-docs';
@@ -38,6 +37,7 @@ import {
 import { StatusPill } from '@/components/ui/status-pill';
 import { toastSuccess } from '@/components/ui/toast';
 import { ProfileRecords } from './profile-records';
+import { dateFormat, hijriDate } from '@/lib/dates';
 
 // The Client record's Records tab (DS-22a). Its first built part is the
 // company's OWN documents — those attached to no person (the documents registry
@@ -105,14 +105,14 @@ export function RecordsTab({
   const day = (iso: string) => {
     const d = new Date(`${iso.slice(0, 10)}T00:00:00Z`);
     if (locale === 'ar') {
-      return new Intl.DateTimeFormat('ar', {
+      return dateFormat('ar', {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
         timeZone: 'UTC',
       }).format(d);
     }
-    const month = new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(d);
+    const month = dateFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(d);
     return `${d.getUTCDate()} ${month} ${d.getUTCFullYear()}`;
   };
 
@@ -266,7 +266,7 @@ export function RecordsTab({
                       <>
                         <span className="text-[13px] leading-[17px]">{day(d.expiryDate)}</span>
                         <span className="text-[10px] leading-[14px] text-neutral-400">
-                          {formatHijri(new Date(d.expiryDate), locale)}
+                          {hijriDate(new Date(d.expiryDate), locale)}
                         </span>
                       </>
                     ) : (

@@ -24,6 +24,7 @@ import { EscalationRulesDialog } from '@/components/escalation-rules-dialog';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Skeleton, SkeletonRegion } from '@/components/ui/skeleton';
+import { dateFormat } from '@/lib/dates';
 
 // The notification centre (NC-03, ADR-021) — the prototype's panel behind the
 // header bell.
@@ -231,7 +232,7 @@ export function NotificationCentre() {
 
   const name = (n: { ar: string | null; en: string }) => (locale === 'ar' ? n.ar || n.en : n.en);
   const date = (iso: string) =>
-    new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-GB', {
+    dateFormat(locale === 'ar' ? 'ar' : 'en-GB', {
       day: 'numeric',
       month: 'short',
       timeZone: 'UTC',

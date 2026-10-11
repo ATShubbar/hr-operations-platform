@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { rtlSafeMessage, rtlSafeMessages } from './bidi.js';
+import { rtlSafeMessage, rtlSafeMessages, rtlSafeValue } from './bidi.js';
 
 // Written as escapes on purpose: an invisible character in a source file cannot
 // be reviewed.
@@ -147,5 +147,51 @@ describe('rtlSafeMessages — a whole message file', () => {
       n: 3,
     });
     expect(tree).toEqual(copy);
+  });
+});
+
+// UX-21: a date or a time is DATA, formatted in code — it never passes through the
+// message rule. Measured: "3 أكتوبر 2026" on its own is drawn day (x 817), year
+// (x 829), month (x 865); read from the right, "October 2026 3".
+describe('rtlSafeValue — a formatted value standing on its own (UX-21)', () => {
+  it('a date that opens with its day is marked in front', () => {
+    expect(rtlSafeValue('3 أكتوبر 2026')).toBe(`${RLM}3 أكتوبر 2026`);
+    expect(rtlSafeValue('22 ربيع الآخر 1448 هـ')).toBe(`${RLM}22 ربيع الآخر 1448 هـ`);
+  });
+
+  it('a time is marked in front', () => {
+    expect(rtlSafeValue('10:30 ص')).toBe(`${RLM}10:30 ص`);
+  });
+
+  it('a date and a time joined into one value get ONE mark', () => {
+    expect(rtlSafeValue('3 أكتوبر 2026 · 10:30 ص')).toBe(`${RLM}3 أكتوبر 2026 · 10:30 ص`);
+  });
+
+  it('nothing is added behind it: a year at the end already sits inside the run', () => {
+    expect(rtlSafeValue('أكتوبر 2026')).toBe('أكتوبر 2026');
+  });
+
+  it('a value that opens with an Arabic word is untouched', () => {
+    for (const v of ['الأحد 11 أكتوبر', 'أكتوبر', 'قبل 3 أيام']) expect(rtlSafeValue(v)).toBe(v);
+  });
+
+  it('a value with no Arabic is untouched', () => {
+    for (const v of ['3 Oct 2026', '11/10/2026', '10:30', '2026-10-11', '']) {
+      expect(rtlSafeValue(v)).toBe(v);
+    }
+  });
+
+  it('a value that already opens with a mark is untouched (some browsers add their own)', () => {
+    const marked = `${RLM}3 أكتوبر 2026`;
+    expect(rtlSafeValue(marked)).toBe(marked);
+    expect(rtlSafeValue(rtlSafeValue('10:30 ص'))).toBe(`${RLM}10:30 ص`);
+  });
+
+  it('an all-numeric Arabic date, which the browser fills with its own marks, is marked in front too', () => {
+    expect(rtlSafeValue(`3${RLM}/10${RLM}/2026`)).toBe(`${RLM}3${RLM}/10${RLM}/2026`);
+  });
+
+  it('a mark further in does not stop the one in front (browsers put marks inside some formats)', () => {
+    expect(rtlSafeValue(`3 أكتوبر${RLM} 2026`)).toBe(`${RLM}3 أكتوبر${RLM} 2026`);
   });
 });

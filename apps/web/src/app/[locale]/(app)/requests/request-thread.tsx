@@ -11,6 +11,7 @@ import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { RequestAttachments } from './request-attachments';
+import { dateFormat } from '@/lib/dates';
 
 // A request's thread (ADR-016) — the prototype's Attachments + Comments blocks
 // under the request detail. THREAD-01: comments; THREAD-02: files
@@ -76,7 +77,7 @@ export function RequestThread({
   }
 
   const when = (iso: string) =>
-    new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-GB', {
+    dateFormat(locale === 'ar' ? 'ar' : 'en-GB', {
       day: 'numeric',
       month: 'short',
       hour: '2-digit',

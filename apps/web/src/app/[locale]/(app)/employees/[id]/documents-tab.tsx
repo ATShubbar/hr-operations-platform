@@ -10,7 +10,6 @@ import type {
   EmployeeResponse,
   UploadIssueResponse,
 } from '@hr/contracts';
-import { formatHijri } from '@hr/dates';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useCan } from '@/lib/session';
@@ -34,6 +33,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toastSuccess } from '@/components/ui/toast';
+import { dateFormat, hijriDate } from '@/lib/dates';
 
 // The Person record's Documents tab (DS-07) — the prototype's "Documents on file"
 // table: one row per document type, its scanned file, its expiry with the days-
@@ -198,17 +198,17 @@ export function DocumentsTab({
   const day = (iso: string) => {
     const d = new Date(iso);
     if (locale === 'ar') {
-      return new Intl.DateTimeFormat('ar', {
+      return dateFormat('ar', {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
         timeZone: 'UTC',
       }).format(d);
     }
-    const month = new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(d);
+    const month = dateFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(d);
     return `${d.getUTCDate()} ${month} ${d.getUTCFullYear()}`;
   };
-  const hijri = (iso: string) => formatHijri(new Date(iso), locale);
+  const hijri = (iso: string) => hijriDate(new Date(iso), locale);
   const chipText = (days: number) =>
     days < 0 ? tp('over', { n: Math.abs(days) }) : tp('left', { n: days });
 

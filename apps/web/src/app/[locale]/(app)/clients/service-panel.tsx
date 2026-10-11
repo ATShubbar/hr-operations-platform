@@ -4,7 +4,6 @@ import { useState, type FormEvent } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { ClientResponse, StaffDirectoryResponse } from '@hr/contracts';
 import { RESPONSE_COMMITMENTS, SERVICE_TIERS } from '@hr/contracts/client-profile';
-import { formatHijri } from '@hr/dates';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useCan } from '@/lib/session';
@@ -28,6 +27,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toastSuccess } from '@/components/ui/toast';
+import { dateFormat, hijriDate } from '@/lib/dates';
 
 // The Service panel (PROF-05, ADR-019) — the prototype's: the named officer,
 // the tier, the response commitment and when the term ends. Shown on the Client
@@ -76,14 +76,14 @@ export function ServicePanel({
   });
 
   const date = (iso: string) =>
-    new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-GB', {
+    dateFormat(locale === 'ar' ? 'ar' : 'en-GB', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
       timeZone: 'UTC',
       numberingSystem: 'latn',
     }).format(new Date(`${iso}T00:00:00Z`));
-  const hijri = (iso: string) => formatHijri(new Date(`${iso}T00:00:00Z`), locale);
+  const hijri = (iso: string) => hijriDate(new Date(`${iso}T00:00:00Z`), locale);
 
   async function startEdit() {
     setError('');

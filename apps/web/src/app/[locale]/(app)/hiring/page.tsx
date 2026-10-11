@@ -41,6 +41,7 @@ import { AddCandidateDialog, type RoleSummary } from './add-candidate-dialog';
 import { CandidateDialog, type CandidateView } from './candidate-dialog';
 import { OpenRoleDialog } from './open-role-dialog';
 import { COLUMNS, canDrop, forwardOf, isActive, isSaudi, type Column } from './stages';
+import { dateFormat } from '@/lib/dates';
 
 // Hiring (DS-09) — the prototype's Hiring screen (ADR-012): the open roles above
 // the candidate board. It replaces REC-06's two screens (/vacancies, /candidates),
@@ -190,8 +191,8 @@ export default function HiringPage() {
   const formatDate = (iso: string) => {
     const d = new Date(iso);
     return locale === 'ar'
-      ? new Intl.DateTimeFormat('ar', { day: 'numeric', month: 'short', year: 'numeric' }).format(d)
-      : `${d.getDate()} ${new Intl.DateTimeFormat('en-US', { month: 'short' }).format(d)} ${d.getFullYear()}`;
+      ? dateFormat('ar', { day: 'numeric', month: 'short', year: 'numeric' }).format(d)
+      : `${d.getDate()} ${dateFormat('en-US', { month: 'short' }).format(d)} ${d.getFullYear()}`;
   };
 
   const board = useMemo(() => candidates.filter((c) => isActive(c.stage)), [candidates]);

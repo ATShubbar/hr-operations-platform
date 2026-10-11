@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { TriangleAlert } from 'lucide-react';
 import type { ClientResponse } from '@hr/contracts';
 import { bandWarning, type BandCheck } from '@hr/contracts/client-profile';
+import { dateFormat } from '@/lib/dates';
 
 // The Nitaqat band warning (PROF-06, ADR-019). Shown at the moment of an action
 // a Red or Yellow band bears on — a non-Saudi hire; on Red also a work-permit
@@ -34,7 +35,7 @@ export function BandWarning({
   const band = bandWarning(source?.nitaqat?.band, check);
   if (!source?.nitaqat || !band) return null;
 
-  const checked = new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-GB', {
+  const checked = dateFormat(locale === 'ar' ? 'ar' : 'en-GB', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',

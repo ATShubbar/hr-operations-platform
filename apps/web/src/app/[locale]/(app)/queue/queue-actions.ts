@@ -7,6 +7,7 @@ import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useCan } from '@/lib/session';
 import { toastSuccess } from '@/components/ui/toast';
+import { dateFormat } from '@/lib/dates';
 
 // One queue item, whichever kind it is (DS-12), and the actions on it — shared
 // by the row and the work-item dialog (DS-13), so the two can't disagree about
@@ -101,14 +102,14 @@ export function useQueueActions(item: QueueItem, onChanged: () => Promise<void> 
   const day = (iso: string) => {
     const d = new Date(`${iso.slice(0, 10)}T00:00:00Z`);
     if (locale === 'ar') {
-      return new Intl.DateTimeFormat('ar', {
+      return dateFormat('ar', {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
         timeZone: 'UTC',
       }).format(d);
     }
-    const month = new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(d);
+    const month = dateFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(d);
     return `${d.getUTCDate()} ${month} ${d.getUTCFullYear()}`;
   };
 

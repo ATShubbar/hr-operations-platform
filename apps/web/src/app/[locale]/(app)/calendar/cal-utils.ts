@@ -1,5 +1,6 @@
 import type { CalendarItem } from '@hr/contracts';
 import { hijriParts } from '@hr/dates';
+import { dateFormat } from '@/lib/dates';
 
 // Date helpers for the calendar (DS-14). Days are handled as YYYY-MM-DD strings and
 // all arithmetic is UTC-anchored, so no local offset can shift a day boundary.
@@ -74,7 +75,7 @@ export const hijriDay = (iso: Iso) => hijriParts(new Date(`${iso}T12:00:00Z`)).d
 
 /** The Hijri month(s) a Gregorian range spans — one name, or "A – B 1448". */
 export function hijriSpan(from: Iso, to: Iso, locale: string): string {
-  const f = new Intl.DateTimeFormat(`${locale}-u-ca-islamic-umalqura`, {
+  const f = dateFormat(`${locale}-u-ca-islamic-umalqura`, {
     month: 'long',
     year: 'numeric',
     timeZone: 'UTC',
@@ -85,7 +86,7 @@ export function hijriSpan(from: Iso, to: Iso, locale: string): string {
 }
 
 export function monthTitle(iso: Iso, locale: string): string {
-  return new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-US', {
+  return dateFormat(locale === 'ar' ? 'ar' : 'en-US', {
     month: 'long',
     year: 'numeric',
     timeZone: 'UTC',
@@ -97,7 +98,7 @@ export function weekdayShort(
   locale: string,
   width: 'short' | 'narrow' = 'short',
 ): string {
-  return new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-US', {
+  return dateFormat(locale === 'ar' ? 'ar' : 'en-US', {
     weekday: width,
     timeZone: 'UTC',
   }).format(new Date(`${iso}T12:00:00Z`));
@@ -106,7 +107,7 @@ export function weekdayShort(
 export function longDate(iso: Iso, locale: string): string {
   const d = new Date(`${iso}T12:00:00Z`);
   if (locale === 'ar') {
-    return new Intl.DateTimeFormat('ar', {
+    return dateFormat('ar', {
       weekday: 'long',
       day: 'numeric',
       month: 'long',
@@ -114,8 +115,8 @@ export function longDate(iso: Iso, locale: string): string {
       timeZone: 'UTC',
     }).format(d);
   }
-  const wd = new Intl.DateTimeFormat('en-US', { weekday: 'long', timeZone: 'UTC' }).format(d);
-  const mo = new Intl.DateTimeFormat('en-US', { month: 'long', timeZone: 'UTC' }).format(d);
+  const wd = dateFormat('en-US', { weekday: 'long', timeZone: 'UTC' }).format(d);
+  const mo = dateFormat('en-US', { month: 'long', timeZone: 'UTC' }).format(d);
   return `${wd} ${d.getUTCDate()} ${mo} ${d.getUTCFullYear()}`;
 }
 

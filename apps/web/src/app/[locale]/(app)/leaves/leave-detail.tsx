@@ -3,7 +3,6 @@
 import { useLocale, useTranslations } from 'next-intl';
 import { Clock, Scale, TriangleAlert } from 'lucide-react';
 import type { LeaveBalanceListResponse, LeaveResponse, LeaveType } from '@hr/contracts';
-import { formatHijri } from '@hr/dates';
 import type { Locale } from '@/lib/employee-format';
 import { deductsBalance, leaveDate } from '@/lib/leave';
 import { toneFor } from '@/lib/status-tone';
@@ -11,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { StatusPill } from '@/components/ui/status-pill';
+import { dateFormat, hijriDate } from '@/lib/dates';
 
 // One leave request's detail (LEAVE-04; extracted in LEAVE-06 so My leave reuses
 // it): the prototype's header, length / dates (Gregorian + Hijri) / submitted,
@@ -45,7 +45,7 @@ export function LeaveDetail({
   const locale = useLocale() as Locale;
   const isStaff = audience === 'staff';
   const longDay = (ymd: string) =>
-    new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-GB', {
+    dateFormat(locale === 'ar' ? 'ar' : 'en-GB', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
@@ -100,7 +100,7 @@ export function LeaveDetail({
             {longDay(lq.startDate)} — {longDay(lq.endDate)}
           </dd>
           <dd className="text-[11px] leading-[15px] text-neutral-400">
-            {formatHijri(leaveDate(lq.startDate), locale)} — {formatHijri(leaveDate(lq.endDate), locale)}
+            {hijriDate(leaveDate(lq.startDate), locale)} — {hijriDate(leaveDate(lq.endDate), locale)}
           </dd>
         </div>
         <div className="flex flex-col gap-0.5 border-t px-5 py-3 sm:border-s sm:border-t-0">

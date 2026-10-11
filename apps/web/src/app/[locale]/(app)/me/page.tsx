@@ -11,7 +11,6 @@ import type {
 } from '@hr/contracts';
 import { Link } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
-import { formatHijri } from '@hr/dates';
 import { chipClass, daysTo } from '@/lib/employee-docs';
 import { EXIT_REENTRY_KEY, GOSI_REG_KEY, type Locale } from '@/lib/employee-format';
 import { cn } from '@/lib/utils';
@@ -22,6 +21,7 @@ import { LoadError } from '@/components/ui/load-state';
 import { Skeleton, SkeletonRegion } from '@/components/ui/skeleton';
 import { FamilySection } from './family-section';
 import { RaiseRequestDialog } from './raise-request-dialog';
+import { dateFormat, hijriDate } from '@/lib/dates';
 
 type Loaded = {
   profile: SelfProfileResponse;
@@ -134,14 +134,14 @@ export default function MyFilePage() {
   const shortDate = (iso: string) => {
     const d = new Date(`${iso.slice(0, 10)}T00:00:00Z`);
     if (locale === 'ar') {
-      return new Intl.DateTimeFormat('ar', {
+      return dateFormat('ar', {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
         timeZone: 'UTC',
       }).format(d);
     }
-    const month = new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(d);
+    const month = dateFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(d);
     return `${d.getUTCDate()} ${month} ${d.getUTCFullYear()}`;
   };
   const chipText = (days: number) =>
@@ -352,7 +352,7 @@ export default function MyFilePage() {
                         <span className="flex flex-col items-end">
                           <span>{shortDate(r.iso)}</span>
                           <span className="text-[10px] leading-[14px] text-neutral-400">
-                            {formatHijri(new Date(r.iso), locale)}
+                            {hijriDate(new Date(r.iso), locale)}
                           </span>
                         </span>
                       ) : (

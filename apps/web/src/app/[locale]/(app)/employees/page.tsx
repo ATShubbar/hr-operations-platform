@@ -10,7 +10,6 @@ import type {
   EmployeeListResponse,
   EmployeeResponse,
 } from '@hr/contracts';
-import { formatHijri } from '@hr/dates';
 import { matchesAnyField } from '@hr/text';
 import { Link, useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
@@ -54,6 +53,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { dateFormat, hijriDate } from '@/lib/dates';
 
 // People (DS-05) — the prototype's People screen, laid out as the owner's design
 // has it (ADR-012): every employee judged by the document that expires FIRST,
@@ -174,14 +174,14 @@ export default function PeoplePage() {
   const shortDate = (iso: string) => {
     const d = new Date(iso);
     if (locale === 'ar') {
-      return new Intl.DateTimeFormat('ar', {
+      return dateFormat('ar', {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
         timeZone: 'UTC',
       }).format(d);
     }
-    const month = new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(d);
+    const month = dateFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(d);
     return `${d.getUTCDate()} ${month} ${d.getUTCFullYear()}`;
   };
   const docLabel = (k: DocFilter) => {
@@ -559,7 +559,7 @@ export default function PeoplePage() {
                           <span className="flex flex-col">
                             <span className="text-[13px] leading-[18px]">{shortDate(iqama)}</span>
                             <span className="text-[10px] leading-[14px] text-neutral-400">
-                              {formatHijri(new Date(iqama), locale)}
+                              {hijriDate(new Date(iqama), locale)}
                             </span>
                           </span>
                         )}

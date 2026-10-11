@@ -27,6 +27,7 @@ import { toastSuccess } from '@/components/ui/toast';
 import { BalancesTab } from './balances-tab';
 import { LeaveDetail } from './leave-detail';
 import { RequestLeaveDialog } from './request-leave-dialog';
+import { dateFormat } from '@/lib/dates';
 
 // Leaves (LEAVE-04, ADR-014) — the prototype's screen (ADR-012): four tiles, the
 // Requests tab (list beside the selected request's detail) and the Request leave
@@ -110,7 +111,7 @@ export default function LeavesPage() {
     return c ? (locale === 'ar' ? c.name.ar : c.name.en) : null;
   };
   const shortDay = (ymd: string) =>
-    new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-GB', {
+    dateFormat(locale === 'ar' ? 'ar' : 'en-GB', {
       day: 'numeric',
       month: 'short',
       timeZone: 'UTC',

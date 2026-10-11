@@ -3,7 +3,6 @@
 import { useState, type FormEvent } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { LeaveBalanceListResponse, LeaveResponse, LeaveType } from '@hr/contracts';
-import { formatHijri } from '@hr/dates';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import type { Locale } from '@/lib/employee-format';
@@ -34,6 +33,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { hijriDate } from '@/lib/dates';
 
 type Person = LeaveBalanceListResponse['balances'][number];
 
@@ -214,7 +214,7 @@ export function RequestLeaveDialog({
                   the Hijri date is echoed so it reads like the prototype's options. */}
               {form.startDate && (
                 <p className="text-xs leading-4 text-muted-foreground">
-                  {formatHijri(leaveDate(form.startDate), locale)}
+                  {hijriDate(leaveDate(form.startDate), locale)}
                 </p>
               )}
             </div>

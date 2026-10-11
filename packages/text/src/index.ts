@@ -76,4 +76,4 @@ export function matchesAnyField(
 }
 
 // Arabic messages in a left-to-right layout (UX-20) — see bidi.ts.
-export { rtlSafeMessage, rtlSafeMessages } from './bidi.js';
+export { rtlSafeMessage, rtlSafeMessages, rtlSafeValue } from './bidi.js';

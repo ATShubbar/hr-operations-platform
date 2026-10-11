@@ -44,5 +44,7 @@ export const overlaps = (a: { startDate: string; endDate: string }, b: { startDa
 
 // Today as the calendar day in Riyadh — what "away today" means for a Saudi workforce.
 export function riyadhToday(): string {
+  // A day for arithmetic, not for the screen — so not through lib/dates (UX-21).
+  // eslint-disable-next-line no-restricted-syntax
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Riyadh' }).format(new Date());
 }

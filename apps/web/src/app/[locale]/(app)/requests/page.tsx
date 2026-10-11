@@ -12,7 +12,6 @@ import type {
   RequestStatus,
   StaffDirectoryResponse,
 } from '@hr/contracts';
-import { formatHijri } from '@hr/dates';
 import { matchesAnyField } from '@hr/text';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
@@ -40,6 +39,7 @@ import { AskInfoDialog } from './ask-info-dialog';
 import { InfoNeededBanner } from './info-needed-banner';
 import { NewRequestDialog } from './new-request-dialog';
 import { RequestThread } from './request-thread';
+import { dateFormat, hijriDate } from '@/lib/dates';
 
 // Requests (DS-08) — the prototype's Requests screen (ADR-012): the list beside
 // the selected request's detail.
@@ -142,13 +142,13 @@ export default function RequestsPage() {
   const day = (iso: string) => {
     const d = new Date(iso);
     if (locale === 'ar') {
-      return new Intl.DateTimeFormat('ar', {
+      return dateFormat('ar', {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
       }).format(d);
     }
-    return `${d.getDate()} ${new Intl.DateTimeFormat('en-US', { month: 'short' }).format(d)} ${d.getFullYear()}`;
+    return `${d.getDate()} ${dateFormat('en-US', { month: 'short' }).format(d)} ${d.getFullYear()}`;
   };
 
   const list = useMemo(
@@ -382,7 +382,7 @@ export default function RequestsPage() {
                   <dt className="text-xs leading-4 text-muted-foreground">{t('submitted')}</dt>
                   <dd className="text-sm leading-5">{day(req.createdAt)}</dd>
                   <dd className="text-[11px] leading-[15px] text-neutral-400">
-                    {formatHijri(new Date(req.createdAt), locale)}
+                    {hijriDate(new Date(req.createdAt), locale)}
                   </dd>
                 </div>
                 <div className="flex flex-col gap-0.5 border-t px-5 py-3 sm:border-t-0 sm:border-s">
@@ -392,7 +392,7 @@ export default function RequestsPage() {
                   </dd>
                   {req.dueDate && (
                     <dd className="text-[11px] leading-[15px] text-neutral-400">
-                      {formatHijri(new Date(req.dueDate), locale)}
+                      {hijriDate(new Date(req.dueDate), locale)}
                     </dd>
                   )}
                   {/* THREAD-04: the type's turnaround — and the clock's pause while waiting. */}
@@ -642,11 +642,9 @@ function DecisionTrail({ requestId }: { requestId: string }) {
     const d = new Date(iso);
     const date =
       locale === 'ar'
-        ? new Intl.DateTimeFormat('ar', { day: 'numeric', month: 'short', year: 'numeric' }).format(
-            d,
-          )
-        : `${d.getDate()} ${new Intl.DateTimeFormat('en-US', { month: 'short' }).format(d)} ${d.getFullYear()}`;
-    return `${date} · ${new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(d)}`;
+        ? dateFormat('ar', { day: 'numeric', month: 'short', year: 'numeric' }).format(d)
+        : `${d.getDate()} ${dateFormat('en-US', { month: 'short' }).format(d)} ${d.getFullYear()}`;
+    return `${date} · ${dateFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(d)}`;
   };
   const known = messages.requests?.trailAction ?? {};
   const title = (e: EmployeeHistoryEntry) =>

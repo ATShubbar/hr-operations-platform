@@ -1,4 +1,4 @@
-import { formatGregorian, formatHijri } from '@hr/dates';
+import { gregorianDate, hijriDate } from '@/lib/dates';
 
 // Shared display helpers for the employees UI (EMP-03). Dates follow the ADR-005
 // dual-calendar rule: storage is Gregorian UTC, we RENDER Hijri (Umm al-Qura)
@@ -13,7 +13,7 @@ export function dualDate(iso: string | null, locale: Locale): string | null {
   if (!iso) return null;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
-  return `${formatHijri(d, locale)} · ${formatGregorian(d, locale)}`;
+  return `${hijriDate(d, locale)} · ${gregorianDate(d, locale)}`;
 }
 
 // ISO string → yyyy-mm-dd for <input type="date"> (Gregorian input; storage and

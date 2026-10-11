@@ -21,6 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { dateFormat } from '@/lib/dates';
 
 // Reports (DS-16): the prototype's analytics dashboard on top (dashboard.tsx),
 // and REP-04's catalog below it as "Detailed reports" (owner decision — the
@@ -158,7 +159,7 @@ export default function ReportsPage() {
     );
   }
 
-  const today = new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-GB', {
+  const today = dateFormat(locale === 'ar' ? 'ar' : 'en-GB', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',

@@ -4,7 +4,6 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Lock } from 'lucide-react';
 import type { EmployeeResponse } from '@hr/contracts';
-import { formatHijri } from '@hr/dates';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useCan, useSession } from '@/lib/session';
@@ -36,6 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { dateFormat, hijriDate } from '@/lib/dates';
 
 // The Person record's Profile tab (DS-06) — the prototype's three sections,
 // Identity · Employment · Compensation, each with its own Edit → Save/Cancel.
@@ -151,18 +151,17 @@ export function ProfileTab({
     if (!iso) return null;
     const d = new Date(iso);
     if (locale === 'ar') {
-      return new Intl.DateTimeFormat('ar', {
+      return dateFormat('ar', {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
         timeZone: 'UTC',
       }).format(d);
     }
-    const month = new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(d);
+    const month = dateFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(d);
     return `${d.getUTCDate()} ${month} ${d.getUTCFullYear()}`;
   };
-  const hijri = (iso: string | null | undefined) =>
-    iso ? formatHijri(new Date(iso), locale) : null;
+  const hijri = (iso: string | null | undefined) => (iso ? hijriDate(new Date(iso), locale) : null);
   const money = (n: number | null | undefined) => (n == null ? null : n.toLocaleString('en-US'));
   const opts = <T extends string>(values: readonly T[], key: Record<T, string>) =>
     // The KEY maps hold message keys as plain strings; next-intl's typed `t`

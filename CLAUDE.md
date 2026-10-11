@@ -1765,6 +1765,17 @@ wrapping the WHOLE message in one isolate reverses lines built from several piec
 stops at the wrong end 56 → 0, pieces out of order 341 → 229, and the 229 are NOT messages: 181 dates (**UX-21**) and data
 lines (**UX-22**). `turbo.json`: `lint` depends on `^build` (the check imports `@hr/text`). No API change.
 
+**UX-21 done — Arabic dates and times read in order.** A date is DATA formatted in code, so UX-20's message rule never
+saw it: «3 أكتوبر 2026» alone was drawn day, year, month. `@hr/text` `rtlSafeValue` puts a right-to-left mark IN FRONT of a
+value that holds Arabic and does not open with an Arabic letter (nothing behind; English untouched). **Every date or time
+the web app shows goes through `apps/web/src/lib/dates.ts`** — `dateFormat(locales, options)` (a drop-in for
+`new Intl.DateTimeFormat`), `hijriDate`, `gregorianDate`; 96 calls in 44 files were swept, and the web lint now FORBIDS
+`new Intl.DateTimeFormat` and importing `formatHijri` / `formatGregorian` outside that file (`riyadhToday()` in
+`lib/leave.ts` is the one exemption: a day for arithmetic). `@hr/dates` itself is unchanged — the API uses it, and a mark
+must not enter API output. 23-screen sweep: dates out of order 181 → 0; what is left (28) is lines assembled from data
+(**UX-22**). The sweep harness (judge by glyph position, one screen per iframe, results in localStorage) is described in
+`evidence/ux/UX-20.md`. No API change.
+
 ## Technical landmines (each cost real debugging — do not rediscover)
 
 - `apps/web/messages/ar.json` must hold NO directional control character (mark or isolate) — the rule in `@hr/text`
@@ -1773,6 +1784,8 @@ lines (**UX-22**). `turbo.json`: `lint` depends on `^build` (the check imports `
 - A slot's VALUE is sealed as one piece and takes its direction from its own content: a number range passed as a single
   value ("8–14") is drawn left to right inside an Arabic sentence. Pass the two numbers as two slots (`{from}–{to}`)
   (UX-20: the People summary).
+- A date/time for the SCREEN comes from `apps/web/src/lib/dates.ts`; a date used as a key, a file name, an input value
+  or in arithmetic is built from the raw date — the screen version carries an invisible mark in Arabic (UX-21).
 - When a tool call writes a `\u` escape for an invisible character into a source file, the character can arrive as the
   LITERAL — it happened three times in one day (a guard script, a test file, a regex). After writing such a file, scan it
   for literal controls and rewrite them as escapes built in code (`chr(92) + 'u200f'`), never by typing the escape again.

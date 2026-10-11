@@ -33,6 +33,7 @@ import { Avatar } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { isOpenProcedure } from '@/components/gro-work-list';
 import { figuresFor, underManagement } from '../clients/client-figures';
+import { dateFormat } from '@/lib/dates';
 
 // The Reports dashboard (DS-16) — the prototype's analytics panels, computed on
 // the page from the list endpoints the screen can already read (owner decision;
@@ -166,7 +167,7 @@ export function ReportsDashboard() {
       const key = d.toISOString().slice(0, 7);
       return {
         key,
-        label: new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-US', {
+        label: dateFormat(locale === 'ar' ? 'ar' : 'en-US', {
           month: 'short',
           timeZone: 'UTC',
         }).format(d),

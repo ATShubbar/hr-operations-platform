@@ -9,6 +9,7 @@ import type { Locale } from '@/lib/employee-format';
 import { cn } from '@/lib/utils';
 import { LoadError } from '@/components/ui/load-state';
 import { Skeleton } from '@/components/ui/skeleton';
+import { dateFormat } from '@/lib/dates';
 
 // The Person record's History tab (AUDIT-06) — the prototype's Timeline over
 // GET /employees/:id/history: what happened on this person's record, their
@@ -79,11 +80,9 @@ export function HistoryTab({ employeeId }: { employeeId: string }) {
     const d = new Date(iso);
     const date =
       locale === 'ar'
-        ? new Intl.DateTimeFormat('ar', { day: 'numeric', month: 'short', year: 'numeric' }).format(
-            d,
-          )
-        : `${d.getDate()} ${new Intl.DateTimeFormat('en-US', { month: 'short' }).format(d)} ${d.getFullYear()}`;
-    const time = new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(d);
+        ? dateFormat('ar', { day: 'numeric', month: 'short', year: 'numeric' }).format(d)
+        : `${d.getDate()} ${dateFormat('en-US', { month: 'short' }).format(d)} ${d.getFullYear()}`;
+    const time = dateFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(d);
     return `${date} · ${time}`;
   };
   const known = messages.person?.history?.action ?? {};

@@ -3,9 +3,9 @@
 import { useLocale, useTranslations } from 'next-intl';
 import { ClipboardList, ListChecks, MessageSquare, Stamp } from 'lucide-react';
 import type { StaffDirectoryEntry } from '@hr/contracts';
-import { formatHijri } from '@hr/dates';
 import { Avatar } from '@/components/ui/avatar';
 import type { QueueItem } from './queue-actions';
+import { dateFormat, hijriDate } from '@/lib/dates';
 
 // One row of the Work queue's Finished view (DS-22b) — the history the GRO and
 // Task history screens used to hold. Read-only: no Resolve, Snooze or assignee
@@ -63,14 +63,14 @@ export function FinishedRow({
         {when && (
           <>
             <span className="text-[13px] leading-[17px]">
-              {new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-GB', {
+              {dateFormat(locale === 'ar' ? 'ar' : 'en-GB', {
                 day: 'numeric',
                 month: 'short',
                 year: 'numeric',
               }).format(when)}
             </span>
             <span className="text-[10px] leading-[14px] text-neutral-400">
-              {formatHijri(when, locale)}
+              {hijriDate(when, locale)}
             </span>
           </>
         )}

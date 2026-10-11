@@ -5,7 +5,6 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Check, Lock, TriangleAlert } from 'lucide-react';
 import type { BillingSummaryResponse, ClientResponse } from '@hr/contracts';
 import { BILLING_CYCLES, type BillingCycle } from '@hr/contracts/billing-lists';
-import { formatHijri } from '@hr/dates';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { halalasToInput, sarTextToHalalas, useMoney } from '@/lib/money';
@@ -36,6 +35,7 @@ import { SkeletonRegion } from '@/components/ui/skeleton';
 import { StatusPill } from '@/components/ui/status-pill';
 import { toastSuccess } from '@/components/ui/toast';
 import { InvoicesCard } from './invoices-card';
+import { dateFormat, hijriDate } from '@/lib/dates';
 
 // The Client record's Commercial tab, first half (BILL-04, ADR-020) — the
 // prototype's Subscription and Agreement cards and what the tier includes.
@@ -196,14 +196,14 @@ export function CommercialTab({ client }: { client: ClientResponse }) {
   if (!data) return <SkeletonRegion label={ts('loading')} />;
 
   const date = (iso: string) =>
-    new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-GB', {
+    dateFormat(locale === 'ar' ? 'ar' : 'en-GB', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
       timeZone: 'UTC',
       numberingSystem: 'latn',
     }).format(new Date(`${iso}T00:00:00Z`));
-  const hijri = (iso: string) => formatHijri(new Date(`${iso}T00:00:00Z`), locale);
+  const hijri = (iso: string) => hijriDate(new Date(`${iso}T00:00:00Z`), locale);
 
   const { terms, estimate, standing } = data;
   const s = client.service;

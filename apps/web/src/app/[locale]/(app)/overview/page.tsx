@@ -22,7 +22,6 @@ import type {
   TaskListResponse,
   TaskResponse,
 } from '@hr/contracts';
-import { formatHijri } from '@hr/dates';
 import { Link, useRouter } from '@/i18n/navigation';
 import { SequencesPanel } from '@/components/sequences-panel';
 import { apiFetch, ApiError } from '@/lib/api';
@@ -49,6 +48,7 @@ import { WorkItemDialog } from '../queue/work-item-dialog';
 import { ClientOverview } from './client-overview';
 import { NeedsRow } from './needs-row';
 import { PortfolioTable } from './portfolio-table';
+import { dateFormat, hijriDate } from '@/lib/dates';
 
 // The Overview (DS-17) — the prototype's home screen (ADR-012), for staff. It
 // replaces UX-04's "Today" work list, whose job the Work queue (DS-12) now does
@@ -224,13 +224,13 @@ function StaffOverview() {
 
   const now = new Date();
   const todayLine = [
-    new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-GB', {
+    dateFormat(locale === 'ar' ? 'ar' : 'en-GB', {
       weekday: 'long',
       day: 'numeric',
       month: 'long',
       year: 'numeric',
     }).format(now),
-    formatHijri(now, locale),
+    hijriDate(now, locale),
     t('cleared', { count: cleared }),
   ].join(' · ');
 

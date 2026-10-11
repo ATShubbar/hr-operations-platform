@@ -42,6 +42,7 @@ import type { QueueItem } from './queue-actions';
 import { FinishedRow } from './finished-row';
 import { useQueueItems, type QueueView } from './queue-items';
 import { WorkItemDialog } from './work-item-dialog';
+import { dateFormat } from '@/lib/dates';
 
 // The Work queue (DS-12) — the prototype's queue (ADR-012): every open piece of
 // work in one list, grouped by how urgent it is — government procedures, requests
@@ -94,7 +95,7 @@ function useMonths(locale: string) {
       if (!g) {
         g = {
           key,
-          label: new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-GB', {
+          label: dateFormat(locale === 'ar' ? 'ar' : 'en-GB', {
             month: 'long',
             year: 'numeric',
           }).format(d),

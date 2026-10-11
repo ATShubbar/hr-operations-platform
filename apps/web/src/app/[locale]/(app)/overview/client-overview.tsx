@@ -16,7 +16,6 @@ import type {
   VacancyPipeline,
   VacancyResponse,
 } from '@hr/contracts';
-import { formatHijri } from '@hr/dates';
 import { Link, useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { datedDocs } from '@/lib/employee-docs';
@@ -34,6 +33,7 @@ import { RunwayTable } from '../clients/runway-table';
 import { PipelineBars } from '../hiring/pipeline-bars';
 import { NewRequestDialog } from '../requests/new-request-dialog';
 import { PortfolioTable } from './portfolio-table';
+import { dateFormat, hijriDate } from '@/lib/dates';
 
 // The client manager's Overview (DS-18) — the prototype's client view of its
 // home screen (ADR-012): their company only.
@@ -133,13 +133,13 @@ export function ClientOverview() {
   const now = new Date();
   const dateLine = (cleared: number) =>
     [
-      new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-GB', {
+      dateFormat(locale === 'ar' ? 'ar' : 'en-GB', {
         weekday: 'long',
         day: 'numeric',
         month: 'long',
         year: 'numeric',
       }).format(now),
-      formatHijri(now, locale),
+      hijriDate(now, locale),
       t('cleared', { count: cleared }),
     ].join(' · ');
 
@@ -227,7 +227,7 @@ export function ClientOverview() {
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     .slice(0, SHOWN_REQUESTS);
   const shortDate = (iso: string) =>
-    new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-GB', {
+    dateFormat(locale === 'ar' ? 'ar' : 'en-GB', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',

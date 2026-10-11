@@ -15,6 +15,7 @@ import type { Locale } from '@/lib/employee-format';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { toastSuccess } from '@/components/ui/toast';
+import { dateFormat } from '@/lib/dates';
 
 // Kept in step with @hr/contracts (REQUEST_ATTACHMENT_*) — values, not imported,
 // so the page doesn't ship zod (the DS-06 landmine).
@@ -156,7 +157,7 @@ export function RequestAttachments({
   }
 
   const when = (iso: string) =>
-    new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-GB', {
+    dateFormat(locale === 'ar' ? 'ar' : 'en-GB', {
       day: 'numeric',
       month: 'short',
     }).format(new Date(iso));

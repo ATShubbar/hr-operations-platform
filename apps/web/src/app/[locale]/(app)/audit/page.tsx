@@ -10,7 +10,6 @@ import type {
   StaffDirectoryEntry,
   StaffDirectoryResponse,
 } from '@hr/contracts';
-import { formatHijri } from '@hr/dates';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useCan } from '@/lib/session';
@@ -37,6 +36,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { StatusPill } from '@/components/ui/status-pill';
 import { EntryDialog } from './entry-dialog';
+import { dateFormat, hijriDate } from '@/lib/dates';
 
 // The Audit trail (DS-15) — the prototype's screen (ADR-012) over the audit log
 // (AUDIT-04), still Administrator + Auditor only (audit.read).
@@ -258,7 +258,7 @@ export default function AuditTrailPage() {
   const roleLabel = (e: AuditEntry) =>
     e.actorRole && messages.roles?.[e.actorRole] ? tr(e.actorRole) : (e.actorRole ?? '');
   const time = (iso: string) =>
-    new Intl.DateTimeFormat(locale === 'ar' ? 'ar' : 'en-GB', {
+    dateFormat(locale === 'ar' ? 'ar' : 'en-GB', {
       hour: '2-digit',
       minute: '2-digit',
     }).format(new Date(iso));
@@ -266,13 +266,13 @@ export default function AuditTrailPage() {
     const d = new Date(`${day}T12:00:00Z`);
     const g =
       locale === 'ar'
-        ? new Intl.DateTimeFormat('ar', {
+        ? dateFormat('ar', {
             day: 'numeric',
             month: 'long',
             year: 'numeric',
             timeZone: 'UTC',
           }).format(d)
-        : `${d.getUTCDate()} ${new Intl.DateTimeFormat('en-US', { month: 'long', timeZone: 'UTC' }).format(d)} ${d.getUTCFullYear()}`;
+        : `${d.getUTCDate()} ${dateFormat('en-US', { month: 'long', timeZone: 'UTC' }).format(d)} ${d.getUTCFullYear()}`;
     return day === localDay(new Date().toISOString()) ? t('todaySuffix', { date: g }) : g;
   };
 
@@ -475,7 +475,7 @@ export default function AuditTrailPage() {
                   {dayHeading(day)}
                 </h2>
                 <span className="text-xs leading-4 text-neutral-400">
-                  {formatHijri(new Date(`${day}T12:00:00Z`), locale)}
+                  {hijriDate(new Date(`${day}T12:00:00Z`), locale)}
                 </span>
                 <span className="grow" />
                 <span className="font-mono text-xs text-muted-foreground">

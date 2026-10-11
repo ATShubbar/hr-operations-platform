@@ -10,7 +10,6 @@ import type {
   GroProcessResponse,
 } from '@hr/contracts';
 import { isFinished } from '@hr/contracts/work-status';
-import { formatHijri } from '@hr/dates';
 import { Link, useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useMoney } from '@/lib/money';
@@ -34,6 +33,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Skeleton, SkeletonRegion } from '@/components/ui/skeleton';
 import { toastSuccess } from '@/components/ui/toast';
 import { DependantDialog } from './dependant-dialog';
+import { dateFormat, hijriDate } from '@/lib/dates';
 
 // The Person record's Family tab (DEP-03, ADR-017) — the prototype's: a header
 // card (how many dependants are sponsored, Add a dependant), then one card per
@@ -156,17 +156,17 @@ export function FamilyTab({
   const day = (iso: string) => {
     const d = new Date(`${iso}T00:00:00Z`);
     if (locale === 'ar') {
-      return new Intl.DateTimeFormat('ar', {
+      return dateFormat('ar', {
         day: 'numeric',
         month: 'short',
         year: 'numeric',
         timeZone: 'UTC',
       }).format(d);
     }
-    const month = new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(d);
+    const month = dateFormat('en-US', { month: 'short', timeZone: 'UTC' }).format(d);
     return `${d.getUTCDate()} ${month} ${d.getUTCFullYear()}`;
   };
-  const hijri = (iso: string) => formatHijri(new Date(`${iso}T00:00:00Z`), locale);
+  const hijri = (iso: string) => hijriDate(new Date(`${iso}T00:00:00Z`), locale);
   const chipText = (days: number) =>
     days < 0 ? tp('over', { n: Math.abs(days) }) : tp('left', { n: days });
   const nameOf = (d: DependantResponse) => (locale === 'ar' && d.nameAr ? d.nameAr : d.nameEn);
