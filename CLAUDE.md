@@ -1819,6 +1819,17 @@ export. Audited BEFORE the bytes return (`employee`/`export`, notable: rows, col
 views a person chooses and saves, not the prototype's fixed shortcuts; design card first. SOON-03 (leave service level)
 and SOON-04 (candidate target + health) are approved and next.
 
+**SOON-03 done — a leave request has a service level (ADR-014 rev. 2).** Setting **`leave.service-level-days`** (system,
+whole working days 1–30, default 2; Settings → System → "Leave service level", `config.write`). Every leave response
+carries **`serviceLevel {days, dueOn, state, workingDaysOver}`** — DERIVED when read by the pure
+`leave/domain/leave-service-level.ts` (nothing stored, no migration): the clock runs from the day submitted to the day
+FILED, in the company's `working.week` and the system timezone; the employer's approval does not stop it. States:
+running · overdue · met · late · closed (declined/withdrawn). Changing the setting re-measures EVERY request, past ones
+included (requests store their due date instead — different on purpose). `LeavePresenter` now reads `ConfigService`
+(Leave → Configuration, no loop). Web: the line on `leaves/leave-detail.tsx` (amber when overdue or late). `seedLeave`
+spreads submission/filing dates (`ago`, `filedAfter`) so a fresh seed shows every state. Leave is still NOT in the queue
+or the bell. API **942/942**. Next: SOON-04 (candidate target date + health).
+
 ## Technical landmines (each cost real debugging — do not rediscover)
 
 - `apps/web/messages/ar.json` must hold NO directional control character (mark or isolate) — the rule in `@hr/text`
@@ -1841,6 +1852,9 @@ and SOON-04 (candidate target + health) are approved and next.
   needs two checks carries one as the decorator and makes the other in the handler (SOON-01: the portal export).
 - A JSON body over ~100 KB is refused by the server before validation (413). 5,000 uuids is ~190 KB: keep id lists to
   2,000 (`EXPORT_MAX_IDS`) or raise the body limit on purpose (SOON-01).
+- A test that compares two calendars or two working weeks FROM TODAY can pass by coincidence: "two working days from
+  today" is the same date in a Sunday–Thursday and a Monday–Friday week on a Sunday. Its red proof did not bite
+  (SOON-03). Use a FIXED weekday on which the two answers differ.
 - When a tool call writes a `\u` escape for an invisible character into a source file, the character can arrive as the
   LITERAL — it happened three times in one day (a guard script, a test file, a regex). After writing such a file, scan it
   for literal controls and rewrite them as escapes built in code (`chr(92) + 'u200f'`), never by typing the escape again.

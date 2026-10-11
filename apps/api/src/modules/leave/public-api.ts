@@ -14,6 +14,7 @@ export {
   raiseRefusal,
 } from './domain/leave-rules';
 export { LeaveStatusChangedEvent } from './domain/leave-status-changed.event';
+export { leaveServiceLevel } from './domain/leave-service-level';
 export {
   CARRY_CAP,
   carryOverFrom,

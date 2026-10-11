@@ -63,6 +63,12 @@ export const serviceLevelDaysSchema = z
   })
   .strict();
 export const SERVICE_LEVEL_KEY = 'request.service-level-days';
+// SOON-03: the service level of a leave request, in working days from the day it
+// is submitted to the day PEOPLE&GRO files it. One number: leave has no types
+// with different turnarounds (the prototype shows a single "2 working days").
+export const LEAVE_SERVICE_LEVEL_KEY = 'leave.service-level-days';
+export const leaveServiceLevelDaysSchema = z.number().int().min(1).max(30);
+export const DEFAULT_LEAVE_SERVICE_LEVEL_DAYS = 2;
 
 const SETTING_DEFS: readonly SettingDef[] = [
   {
@@ -88,6 +94,15 @@ const SETTING_DEFS: readonly SettingDef[] = [
     default: { letter: 2, certificate: 2, document: 3, gro_service: 5, general: 1 },
     levels: ['system'],
     description: 'Turnaround per request type, in working days; sets a new request\'s due date.',
+  },
+  {
+    // SOON-03 (ADR-014 rev. 2): shown on every leave request and measured
+    // against it. Editable by an Administrator.
+    key: LEAVE_SERVICE_LEVEL_KEY,
+    schema: leaveServiceLevelDaysSchema,
+    default: DEFAULT_LEAVE_SERVICE_LEVEL_DAYS,
+    levels: ['system'],
+    description: 'Working days to file a leave request, counted from the day it is submitted.',
   },
   {
     // BILL-01 (ADR-020): what a filing dialog PREFILLS — the person filing

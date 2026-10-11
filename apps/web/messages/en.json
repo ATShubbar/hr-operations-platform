@@ -200,6 +200,14 @@
       "unit": "Saudi riyals. 0 means no fee is expected.",
       "invalid": "Each box needs an amount in riyals from 0 to 1,000,000, with at most two decimal places.",
       "save": "Save standard fees"
+    },
+    "leaveServiceLevel": {
+      "title": "Leave service level",
+      "subtitle": "How many working days PEOPLE&GRO has to file a leave request, counted from the day it is submitted. Shown on every request and measured against it; a change applies to every request at once, past ones included.",
+      "label": "Leave requests",
+      "unit": "Working days of each company's week. The employer's approval does not stop the clock.",
+      "invalid": "A whole number of days from 1 to 30.",
+      "save": "Save leave service level"
     }
   },
   "employees": {
@@ -2655,8 +2663,6 @@
     "length": "Length",
     "dates": "Dates",
     "submitted": "Submitted",
-    "serviceLevel": "Service level",
-    "soon": "Soon",
     "noDetail": "No details given.",
     "wait": {
       "pendingClient": "Your decision. People & Gro files it once you approve.",
@@ -2774,6 +2780,14 @@
       "emptyTitle": "No leave yet",
       "empty": "Request leave here; your employer decides, then People & Gro records it.",
       "submitted": "{ref} submitted · with your employer for a decision."
+    },
+    "sl": {
+      "days": "{count, plural, one {# working day} other {# working days}}",
+      "running": "Service level {days} · file by {date}",
+      "overdue": "Past its service level by {count, plural, one {# working day} other {# working days}} · was due {date}",
+      "met": "Filed inside its service level of {days}",
+      "late": "Filed {count, plural, one {# working day} other {# working days}} past its service level",
+      "closed": "Service level {days}"
     }
   },
   "search": {

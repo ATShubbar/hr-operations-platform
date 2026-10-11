@@ -775,36 +775,49 @@ async function seedLeave(prisma: PrismaClient): Promise<number> {
     selfRaised?: boolean;
     decidedBy?: string;
     details?: string;
+    /** SOON-03: submitted this many days ago (0 = today)… */
+    ago?: number;
+    /** …and filed this many days after that (default: the next day). */
+    filedAfter?: number;
   };
+  // SOON-03: the dates are spread so a fresh seed shows EVERY service-level state
+  // (2 working days from submission to filing): running, overdue while waiting on
+  // the employer, overdue while approved and unfiled, met, late, and closed.
   const specs: Spec[] = [
     // Away today (5 of 7 days), filed; 30 days a year (hired 7 years ago).
-    { emp: A(5), client: SEED_CLIENT_A, type: 'annual', start: daysFromNow(-2), days: 7, status: 'filed', raisedBy: repA, decidedBy: repA, details: 'Family visit. Cover agreed with the sales team.' },
+    { emp: A(5), client: SEED_CLIENT_A, type: 'annual', start: daysFromNow(-2), days: 7, status: 'filed', raisedBy: repA, decidedBy: repA, details: 'Family visit. Cover agreed with the sales team.', ago: 9 },
     // The employee account's own request, waiting on the employer.
     { emp: A(2), client: SEED_CLIENT_A, type: 'annual', start: daysFromNow(21), days: 5, status: 'pending', raisedBy: employeeUser, selfRaised: true, details: 'Trip home after the quarter close.' },
     // Ahmed's leave earlier this year, filed.
-    { emp: A(2), client: SEED_CLIENT_A, type: 'annual', start: daysFromNow(-60), days: 3, status: 'filed', raisedBy: hr, decidedBy: repA },
+    { emp: A(2), client: SEED_CLIENT_A, type: 'annual', start: daysFromNow(-60), days: 3, status: 'filed', raisedBy: hr, decidedBy: repA, ago: 70 },
     // Approved, awaiting filing — and overlapping the next one (the clash).
-    { emp: A(3), client: SEED_CLIENT_A, type: 'annual', start: daysFromNow(9), days: 4, status: 'approved', raisedBy: repA, decidedBy: repA, details: 'Wedding of a sibling.' },
-    { emp: A(9), client: SEED_CLIENT_A, type: 'annual', start: daysFromNow(10), days: 4, status: 'pending', raisedBy: hr, details: 'Short break; support rota covered by the vendor.' },
+    { emp: A(3), client: SEED_CLIENT_A, type: 'annual', start: daysFromNow(9), days: 4, status: 'approved', raisedBy: repA, decidedBy: repA, details: 'Wedding of a sibling.', ago: 6 },
+    { emp: A(9), client: SEED_CLIENT_A, type: 'annual', start: daysFromNow(10), days: 4, status: 'pending', raisedBy: hr, details: 'Short break; support rota covered by the vendor.', ago: 1 },
     // Sick leave waiting on the employer.
-    { emp: A(6), client: SEED_CLIENT_A, type: 'sick', start: daysFromNow(3), days: 2, status: 'pending', raisedBy: hr, details: 'Planned minor procedure; certificate to follow.' },
+    { emp: A(6), client: SEED_CLIENT_A, type: 'sick', start: daysFromNow(3), days: 2, status: 'pending', raisedBy: hr, details: 'Planned minor procedure; certificate to follow.', ago: 5 },
     // Overdrawn: 25 days taken against ~18 accrued — the excess is unpaid.
-    { emp: A(7), client: SEED_CLIENT_A, type: 'annual', start: daysFromNow(-90), days: 25, status: 'filed', raisedBy: repA, decidedBy: repA, details: 'Extended family leave, agreed as partly unpaid.' },
+    { emp: A(7), client: SEED_CLIENT_A, type: 'annual', start: daysFromNow(-90), days: 25, status: 'filed', raisedBy: repA, decidedBy: repA, details: 'Extended family leave, agreed as partly unpaid.', ago: 100, filedAfter: 5 },
     // Last-quarter leave for the long-serving supervisor.
-    { emp: A(1), client: SEED_CLIENT_A, type: 'annual', start: daysFromNow(-120), days: 10, status: 'filed', raisedBy: hr, decidedBy: repA },
+    { emp: A(1), client: SEED_CLIENT_A, type: 'annual', start: daysFromNow(-120), days: 10, status: 'filed', raisedBy: hr, decidedBy: repA, ago: 130 },
     // Declined, and withdrawn.
-    { emp: A(12), client: SEED_CLIENT_A, type: 'marriage', start: daysFromNow(30), days: 5, status: 'declined', raisedBy: hr, decidedBy: repA },
-    { emp: A(8), client: SEED_CLIENT_A, type: 'annual', start: daysFromNow(40), days: 6, status: 'withdrawn', raisedBy: repA },
+    { emp: A(12), client: SEED_CLIENT_A, type: 'marriage', start: daysFromNow(30), days: 5, status: 'declined', raisedBy: hr, decidedBy: repA, ago: 3 },
+    { emp: A(8), client: SEED_CLIENT_A, type: 'annual', start: daysFromNow(40), days: 6, status: 'withdrawn', raisedBy: repA, ago: 2 },
     // The other company: one pending request of its own.
     { emp: B1, client: SEED_CLIENT_B, type: 'annual', start: daysFromNow(14), days: 3, status: 'pending', raisedBy: repB, details: 'Eid travel.' },
   ];
 
   const now = new Date();
+  const DAY = 86_400_000;
   let n = 0;
   for (const s of specs) {
     const decided = s.status !== 'pending' && s.status !== 'withdrawn';
+    // Submitted `ago` days back; decided a few hours later; filed `filedAfter`
+    // days after submission — never in the future.
+    const submitted = new Date(now.getTime() - (s.ago ?? 0) * DAY);
+    const later = (days: number) => new Date(Math.min(now.getTime(), submitted.getTime() + days * DAY));
     const row = await prisma.leaveRequest.create({
       data: {
+        createdAt: submitted,
         clientId: s.client,
         employeeId: s.emp,
         type: s.type,
@@ -816,10 +829,10 @@ async function seedLeave(prisma: PrismaClient): Promise<number> {
         raisedByUserId: s.raisedBy,
         raisedByEmployeeId: s.selfRaised ? s.emp : null,
         decidedByUserId: decided ? (s.decidedBy ?? repA) : null,
-        decidedAt: decided ? now : null,
+        decidedAt: decided ? later(0.25) : null,
         filedByUserId: s.status === 'filed' ? hr : null,
-        filedAt: s.status === 'filed' ? now : null,
-        withdrawnAt: s.status === 'withdrawn' ? now : null,
+        filedAt: s.status === 'filed' ? later(s.filedAfter ?? 1) : null,
+        withdrawnAt: s.status === 'withdrawn' ? later(0.25) : null,
       },
     });
     if (s.status === 'filed') {
@@ -860,9 +873,10 @@ async function seedLeave(prisma: PrismaClient): Promise<number> {
       status: 'filed',
       raisedByUserId: hr,
       decidedByUserId: repA,
-      decidedAt: now,
+      createdAt: new Date(Date.UTC(year - 1, 4, 18, 9)),
+      decidedAt: new Date(Date.UTC(year - 1, 4, 18, 13)),
       filedByUserId: hr,
-      filedAt: now,
+      filedAt: new Date(Date.UTC(year - 1, 4, 19, 9)),
     },
   });
   await prisma.leaveEntry.create({

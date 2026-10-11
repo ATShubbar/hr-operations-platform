@@ -36,6 +36,18 @@ export const leaveQuerySchema = z.object({
   status: leaveStatusSchema.optional(),
 });
 
+// SOON-03: the service level of a leave request — worked out when it is read,
+// never stored. `days` is the setting; `dueOn` the day it must be FILED by
+// (working days of the company's week after the day it was submitted);
+// `workingDaysOver` how far past that day it is (overdue) or was filed (late).
+export const leaveServiceLevelStateSchema = z.enum(['running', 'overdue', 'met', 'late', 'closed']);
+export const leaveServiceLevelSchema = z.object({
+  days: z.number().int(),
+  dueOn: z.string(), // YYYY-MM-DD
+  state: leaveServiceLevelStateSchema,
+  workingDaysOver: z.number().int(),
+});
+
 export const leaveResponseSchema = z.object({
   id: z.uuid(),
   ref: z.string(),
@@ -56,6 +68,7 @@ export const leaveResponseSchema = z.object({
   decidedOnBehalf: z.boolean(),
   filedAt: z.string().nullable(),
   withdrawnAt: z.string().nullable(),
+  serviceLevel: leaveServiceLevelSchema,
   createdAt: z.string(),
   updatedAt: z.string(),
 });
@@ -138,3 +151,4 @@ export type LeaveHistoryEntry = z.infer<typeof leaveHistoryEntrySchema>;
 export type EmployeeLeaveResponse = z.infer<typeof employeeLeaveResponseSchema>;
 export type CarryOverRequest = z.infer<typeof carryOverRequestSchema>;
 export type CarryOverResponse = z.infer<typeof carryOverResponseSchema>;
+export type LeaveServiceLevel = z.infer<typeof leaveServiceLevelSchema>;

@@ -44,6 +44,7 @@ export function LeaveDetail({
 }) {
   const t = useTranslations('leaves');
   const locale = useLocale() as Locale;
+  const sl = lq.serviceLevel;
   const isStaff = audience === 'staff';
   const longDay = (ymd: string) =>
     dateFormat(locale === 'ar' ? 'ar' : 'en-GB', {
@@ -106,8 +107,21 @@ export function LeaveDetail({
         <div className="flex flex-col gap-0.5 border-t px-5 py-3 sm:border-s sm:border-t-0">
           <dt className="text-xs leading-4 text-muted-foreground">{t('submitted')}</dt>
           <dd className="text-sm leading-5">{longDay(lq.createdAt.slice(0, 10))}</dd>
-          <dd className="text-[11px] leading-[15px] text-neutral-400">
-            {dots(locale, t('serviceLevel'), t('soon'))}
+          {/* SOON-03: the service level, measured — amber once the day to file by
+              has passed (or it was filed late). Worked out by the server. */}
+          <dd
+            className={cn(
+              'text-[11px] leading-[15px]',
+              sl.state === 'overdue' || sl.state === 'late'
+                ? 'font-medium text-status-warning'
+                : 'text-neutral-400',
+            )}
+          >
+            {t(`sl.${sl.state}`, {
+              days: t('sl.days', { count: sl.days }),
+              date: longDay(sl.dueOn),
+              count: sl.workingDaysOver,
+            })}
           </dd>
         </div>
       </dl>

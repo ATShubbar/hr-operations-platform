@@ -13,6 +13,7 @@ export function toLeaveResponse(
     employee: { nameEn: string; nameAr: string } | undefined;
     raisedBy: LeaveResponse['raisedBy'];
     viewer: { userId: string | null; employeeId: string | null };
+    serviceLevel: LeaveResponse['serviceLevel'];
   },
 ): LeaveResponse {
   return {
@@ -37,6 +38,7 @@ export function toLeaveResponse(
     decidedOnBehalf: r.decidedOnBehalf,
     filedAt: iso(r.filedAt),
     withdrawnAt: iso(r.withdrawnAt),
+    serviceLevel: ctx.serviceLevel,
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   };

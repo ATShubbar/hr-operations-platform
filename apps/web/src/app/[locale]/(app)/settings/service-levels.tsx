@@ -96,3 +96,68 @@ export function ServiceLevelsSection({
     </Card>
   );
 }
+
+// SOON-03: the service level of a leave request — ONE number of working days,
+// from the day a request is submitted to the day PEOPLE&GRO files it. Unlike the
+// request levels above it is not stamped on anything: every leave request is
+// measured against the current value whenever it is read.
+export const LEAVE_SERVICE_LEVEL_KEY = 'leave.service-level-days';
+
+export function LeaveServiceLevelSection({
+  value,
+  busy,
+  onSave,
+}: {
+  value: number | undefined;
+  busy: boolean;
+  onSave: (next: number) => void;
+}) {
+  const t = useTranslations('settings.leaveServiceLevel');
+  const [draft, setDraft] = useState(String(value ?? ''));
+  const [seen, setSeen] = useState(value);
+  if (value !== seen) {
+    setSeen(value);
+    setDraft(String(value ?? ''));
+  }
+  const n = Number(draft);
+  const valid = draft.trim() !== '' && Number.isInteger(n) && n >= 1 && n <= 30;
+
+  function submit(e: FormEvent) {
+    e.preventDefault();
+    if (valid) onSave(n);
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{t('title')}</CardTitle>
+        <p className="text-sm text-muted-foreground">{t('subtitle')}</p>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={submit} className="flex flex-col gap-4">
+          <div className="flex max-w-40 flex-col gap-1.5">
+            <Label htmlFor="leave-sla">{t('label')}</Label>
+            <Input
+              id="leave-sla"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={30}
+              value={draft}
+              aria-describedby="leave-sla-unit"
+              onChange={(e) => setDraft(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <p id="leave-sla-unit" className="grow text-xs leading-4 text-muted-foreground">
+              {valid ? t('unit') : t('invalid')}
+            </p>
+            <Button type="submit" size="sm" disabled={busy || !valid || n === value}>
+              {t('save')}
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}

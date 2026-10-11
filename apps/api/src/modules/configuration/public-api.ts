@@ -4,3 +4,9 @@ export { ConfigurationModule } from './configuration.module';
 export { ConfigService } from './application/config.service';
 // THREAD-04: the service-level setting, read by Requests.
 export { SERVICE_LEVEL_KEY, serviceLevelDaysSchema } from './domain/catalog';
+// SOON-03: the leave service level, read by Leave.
+export {
+  DEFAULT_LEAVE_SERVICE_LEVEL_DAYS,
+  LEAVE_SERVICE_LEVEL_KEY,
+  leaveServiceLevelDaysSchema,
+} from './domain/catalog';

@@ -19,7 +19,12 @@ import { NotificationPreferences } from '@/components/notification-preferences';
 import { AccessTable } from './access-table';
 import { ExpiryScanSection } from './expiry-scan';
 import { LeaveCarryOverSection } from './leave-carry-over';
-import { SERVICE_LEVEL_KEY, ServiceLevelsSection } from './service-levels';
+import {
+  LEAVE_SERVICE_LEVEL_KEY,
+  LeaveServiceLevelSection,
+  SERVICE_LEVEL_KEY,
+  ServiceLevelsSection,
+} from './service-levels';
 import { STANDARD_FEES_KEY, StandardFeesSection } from './standard-fees';
 import { GoogleCalendarSection } from './google-calendar';
 import { Badge } from '@/components/ui/badge';
@@ -338,6 +343,13 @@ export default function SettingsPage() {
                 value={system[SERVICE_LEVEL_KEY] as Record<string, number> | undefined}
                 busy={busy}
                 onSave={(next) => void patchSystem(SERVICE_LEVEL_KEY, next)}
+              />
+            )}
+            {canWriteSystem && system && (
+              <LeaveServiceLevelSection
+                value={system[LEAVE_SERVICE_LEVEL_KEY] as number | undefined}
+                busy={busy}
+                onSave={(next) => void patchSystem(LEAVE_SERVICE_LEVEL_KEY, next)}
               />
             )}
             {canWriteSystem && system && (

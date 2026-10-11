@@ -135,3 +135,13 @@ payroll effects of sick tiers and unpaid leave; correcting a filed leave.
 - `design/…/People & Gro Console.dc.html` — `LEAVE_TYPES`, `entitlementOf`, `leaveBalance`,
   `LEAVE_REQ`, the Leaves markup
 - `BACKLOG.md` → LEAVE-00..06; `evidence/arch/LEAVE-00.md`
+- **rev. 2 (SOON-03, 2026-10-11) — a service level, shown and measured.** Owner decision. One
+  setting, `leave.service-level-days` (whole working days, 1–30, default 2, the prototype's
+  figure), changed by an Administrator. The clock runs from the day a request is SUBMITTED until
+  PEOPLE&GRO FILES it, in the company's own working week; the employer's approval does not stop
+  it. A request is *running*, *overdue*, *met*, *late* or — when declined or withdrawn —
+  *closed*. **Nothing is stored:** the due day and the state are worked out when the request is
+  read, so a change to the setting re-measures every request at once, past ones included.
+  (Requests store their due date instead, because it can be moved by hand and is paused while
+  detail is awaited; a leave request has neither.) Still out, as decided above: leave in the
+  Work queue, the Calendar and the bell.

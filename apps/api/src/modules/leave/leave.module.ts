@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AuditModule } from '../audit/public-api';
 import { AuthModule } from '../auth/public-api';
+import { ConfigurationModule } from '../configuration/public-api';
 import { EmployeesModule } from '../employees/public-api';
 import { LeaveController } from './api/leave.controller';
 import { LeaveBalanceService } from './application/leave-balance.service';
@@ -14,7 +15,7 @@ import { LeaveService } from './application/leave.service';
 // request is for; Auth names who raised it. Prisma/Scoped/EmployeeScoped Prisma
 // are @Global.
 @Module({
-  imports: [AuditModule, AuthModule, EmployeesModule],
+  imports: [AuditModule, AuthModule, ConfigurationModule, EmployeesModule],
   controllers: [LeaveController],
   providers: [LeaveService, LeavePresenter, LeaveBalanceService, LeaveCarryOverService],
   exports: [LeaveService, LeavePresenter, LeaveBalanceService, LeaveCarryOverService],
