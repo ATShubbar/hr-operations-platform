@@ -35,6 +35,8 @@ export function deadlineItem(
   status: string,
   clientId: string | null,
   assigneeUserId: string | null,
+  /** DEP-07: the dependant a dependant procedure is for. */
+  dependant: { nameEn: string; nameAr: string | null } | null = null,
 ): CalendarItem {
   const iso = `${due.toISOString().slice(0, 10)}T00:00:00.000Z`;
   return {
@@ -48,6 +50,7 @@ export function deadlineItem(
     clientId,
     ownerUserId: assigneeUserId,
     step: null,
+    dependant,
   };
 }
 
@@ -76,6 +79,7 @@ export function stepItem(
     clientId: run.clientId,
     ownerUserId: run.assigneeUserId,
     step: { key: step.key, sequenceKind: run.kind, employeeId: run.employeeId },
+    dependant: null,
   };
 }
 
@@ -92,5 +96,6 @@ export function eventItem(e: CalendarEventRecord): CalendarItem {
     clientId: e.clientId,
     ownerUserId: e.ownerUserId,
     step: null,
+    dependant: null,
   };
 }

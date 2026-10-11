@@ -253,6 +253,11 @@ export class EscalationsService {
         this.today(),
       ]);
     const dependants = await this.dependants.listForEmployees(people.map((p) => p.id));
+    // DEP-07: the names of the dependants that procedures are for — removed ones
+    // included, since a procedure outlives a removal only until it is cancelled.
+    const procedureDependants = await this.dependants.namesOf(
+      procedures.flatMap((p) => (p.dependantId ? [p.dependantId] : [])),
+    );
 
     // A named officer owns their client's expiries only while they are still an
     // active officer; otherwise ownership falls back to the role (ADR-021).
@@ -284,7 +289,13 @@ export class EscalationsService {
         ),
         people: people.map(toPerson),
         dependants: dependants.map(toDependant),
-        procedures: procedures.map(toProcedure),
+        procedures: procedures.map((p) => {
+          const named = p.dependantId ? procedureDependants.get(p.dependantId) : undefined;
+          return {
+            ...toProcedure(p),
+            dependantName: named ? { ar: named.nameAr, en: named.nameEn } : null,
+          };
+        }),
         steps: runs.flatMap(toSteps),
         tasks: tasks.map((t) => ({
           id: t.id,

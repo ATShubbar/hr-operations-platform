@@ -59,7 +59,16 @@ export const escalationSubjectSchema = z.discriminatedUnion('kind', [
     }),
     employee: person,
   }),
-  z.object({ kind: z.literal('procedure'), id: z.uuid(), type: z.string(), employee: person }),
+  z.object({
+    kind: z.literal('procedure'),
+    id: z.uuid(),
+    type: z.string(),
+    employee: person,
+    // DEP-07: the dependant a dependant procedure is for; null for any other.
+    dependant: z
+      .object({ name: z.object({ ar: z.string().nullable(), en: z.string() }) })
+      .nullable(),
+  }),
   // MOB-06a: a ready step of a running onboarding / final exit (the queue rule).
   z.object({
     kind: z.literal('sequence_step'),

@@ -255,7 +255,13 @@ export function NotificationCentre() {
           count,
         });
       case 'procedure':
-        return tc(`title.work.${w}`, { what: tg(`type.${s.type}`), count });
+        return tc(`title.work.${w}`, {
+          // DEP-07: a dependant's renewal says who it is for.
+          what: s.dependant
+            ? `${tg(`type.${s.type}`)} · ${name(s.dependant.name)}`
+            : tg(`type.${s.type}`),
+          count,
+        });
       case 'task':
         return tc(`title.work.${w}`, { what: s.title, count });
       case 'request':

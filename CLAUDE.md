@@ -1738,6 +1738,11 @@ Reports' Open items + officer workload count READY sequence steps (the dashboard
 a failed read just leaves them out). Header search placeholder "People, companies, refs, IDs" — the box holds ~242px of
 text, so measure a new placeholder before shipping it. No API change.
 
+**DEP-07 done — the calendar and the bell name the dependant.** `/calendar/view` procedure items carry
+`dependant {nameEn, nameAr} | null` (`GroProcessesService.dependantNames`), the ladder's procedure subject carries
+`dependant {name} | null` (`LadderProcedure.dependantName`, staff ladder only). Web appends `· name` to the title in both.
+To see a seeded item in the bell that is not yet on the ladder, move its due date by SQL and put it back. API **921/921**.
+
 ## Technical landmines (each cost real debugging — do not rediscover)
 
 - `apps/web/messages/ar.json` holds right-to-left marks as the ESCAPE `\u200f`. `json.dumps(ensure_ascii=False)` (or any

@@ -88,6 +88,8 @@ export interface LadderProcedure {
   assigneeUserId: string | null;
   /** The dependant a dependant procedure is for (DEP-06a); absent/null otherwise. */
   dependantId?: string | null;
+  /** Their name, for display (DEP-07) — staff ladder only. */
+  dependantName?: { ar: string | null; en: string } | null;
 }
 export interface LadderTask {
   id: string;
@@ -301,6 +303,7 @@ function reach(
           id: proc.id,
           type: proc.type,
           employee: { id: person.id, name: person.name },
+          dependant: proc.dependantName ? { name: proc.dependantName } : null,
         },
         proc.clientId,
         assignee(proc.assigneeUserId),

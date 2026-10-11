@@ -83,6 +83,9 @@ export const calendarItemSchema = z.object({
       employeeId: z.uuid(),
     })
     .nullable(),
+  // DEP-07: for a procedure that is FOR a dependant (a family iqama renewal),
+  // who — so the calendar can say so, as the Work queue does. null otherwise.
+  dependant: z.object({ nameEn: z.string(), nameAr: z.string().nullable() }).nullable(),
 });
 export const calendarViewResponseSchema = z.object({
   items: z.array(calendarItemSchema),

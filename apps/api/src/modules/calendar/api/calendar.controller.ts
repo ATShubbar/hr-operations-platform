@@ -169,13 +169,24 @@ export class CalendarController {
 
     // GRO deadlines — only for gro.read holders
     if (this.policy.can(role, 'gro.read')) {
-      const procs = await this.gro.list();
+      const procs = (await this.gro.list()).filter(
+        (p) => dueInRange(p.dueDate, from, to) && isActiveDeadline('gro', p.status),
+      );
+      // DEP-07: a dependant procedure says who it is for.
+      const dependants = await this.gro.dependantNames(procs);
       for (const p of procs) {
-        if (dueInRange(p.dueDate, from, to) && isActiveDeadline('gro', p.status)) {
-          items.push(
-            deadlineItem('gro', p.id, p.type, p.dueDate!, p.status, p.clientId, p.assigneeUserId),
-          );
-        }
+        items.push(
+          deadlineItem(
+            'gro',
+            p.id,
+            p.type,
+            p.dueDate!,
+            p.status,
+            p.clientId,
+            p.assigneeUserId,
+            (p.dependantId && dependants.get(p.dependantId)) || null,
+          ),
+        );
       }
       // MOB-06a: READY steps of running onboardings / final exits, on their
       // target date. Blocked steps are not work yet; filed ones no longer are.

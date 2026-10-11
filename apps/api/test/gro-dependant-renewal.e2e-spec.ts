@@ -207,6 +207,42 @@ describe('A dependant’s iqama renewal as a procedure (DEP-06a, e2e)', () => {
     expect(has(await ladder('/escalations', hr), `dependant:${ids.wife}:iqama`)).toBe(false);
   });
 
+  // DEP-07: wherever staff see the procedure, they see WHO it is for — the
+  // calendar and the bell included (the queue already did).
+  it('the calendar and the bell name the dependant', async () => {
+    await cancelOpen();
+    const due = day(1).toISOString().slice(0, 10);
+    const p = await start(gro, { employeeId: ids.a, type: TYPE, dependantId: ids.son, dueDate: due }).expect(201);
+    const view = await http()
+      .get('/calendar/view')
+      .query({ from: `${day(-1).toISOString().slice(0, 10)}T00:00:00Z`, to: `${day(3).toISOString().slice(0, 10)}T23:59:59Z` })
+      .set('Cookie', hr.cookie)
+      .expect(200);
+    const items: { kind: string; id: string; dependant: unknown }[] = view.body.items;
+    expect(items.find((i) => i.id === p.body.id)).toMatchObject({
+      kind: 'gro',
+      title: TYPE,
+      dependant: { nameEn: `${MARK} son`, nameAr: 'زوجة' },
+    });
+    // An ordinary procedure on the same day names nobody.
+    const plain = await start(gro, { employeeId: ids.a, type: 'profession_change', dueDate: due }).expect(201);
+    const again = await http()
+      .get('/calendar/view')
+      .query({ from: `${day(-1).toISOString().slice(0, 10)}T00:00:00Z`, to: `${day(3).toISOString().slice(0, 10)}T23:59:59Z` })
+      .set('Cookie', hr.cookie)
+      .expect(200);
+    expect(again.body.items.find((i: { id: string }) => i.id === plain.body.id).dependant).toBeNull();
+
+    const item = (await ladder('/escalations', hr)).items.find((i) => i.key === `procedure:${p.body.id}`);
+    expect(item?.subject).toMatchObject({
+      kind: 'procedure',
+      type: TYPE,
+      dependant: { name: { en: `${MARK} son`, ar: 'زوجة' } },
+    });
+    const other = (await ladder('/escalations', hr)).items.find((i) => i.key === `procedure:${plain.body.id}`);
+    expect(other?.subject).toMatchObject({ kind: 'procedure', dependant: null });
+  });
+
   it('removing a dependant cancels their open renewal', async () => {
     await cancelOpen();
     const p = await start(gro, { employeeId: ids.a, type: TYPE, dependantId: ids.son }).expect(201);

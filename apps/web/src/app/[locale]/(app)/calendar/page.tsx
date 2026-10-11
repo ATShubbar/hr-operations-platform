@@ -124,8 +124,15 @@ export default function CalendarPage() {
 
   // A step's title arrives as its KEY (MOB-06b) — translated here, like the
   // Mobilisation tab does.
-  const title = (it: CalendarItem) =>
-    it.step ? tm(`step.${it.step.key}.title`) : titleFor(it.kind as ViewItemKind, it.title);
+  const title = (it: CalendarItem) => {
+    const base = it.step
+      ? tm(`step.${it.step.key}.title`)
+      : titleFor(it.kind as ViewItemKind, it.title);
+    // DEP-07: a dependant's renewal says who it is for, as the Work queue does.
+    if (!it.dependant) return base;
+    const who = locale === 'ar' && it.dependant.nameAr ? it.dependant.nameAr : it.dependant.nameEn;
+    return `${base} · ${who}`;
+  };
   const ownerName = (it: CalendarItem) =>
     staff.find((s) => s.id === it.ownerUserId)?.displayName ?? null;
   const where = (it: CalendarItem) => {
