@@ -92,3 +92,14 @@ The portal switch was removed afterwards.
 
 - Runway cells for dependants are numbers, not links, until DEP-05b.
 - The "before" values for the client cards and the forecast were not recorded, so only their totals after the change are shown.
+
+## A correction to the backlog (2026-10-11)
+
+The backlog already had a card called DEP-05, written when dependants were first built: "Dependants join the expiry engine — alerts, the Overview runway and GRO's auto-renewal procedure — needs its own decisions". During INS-02 I filed the runway gap under the same number without seeing that card, and when closing this work I wrote DEP-05a and DEP-05b over the original row.
+
+Nothing was lost in the product; the record was wrong. It now reads:
+
+- **DEP-05a, DEP-05b:** the runway and figures part — done.
+- Alerts were already done by the notification ladder (ADR-021).
+- **DEP-06 (new, planned):** the one part of the original card still open — a dependant's renewal as a procedure on the sponsor. It needs the owner's decisions.
+- My duplicate row is removed.
