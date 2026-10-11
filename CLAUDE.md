@@ -1732,6 +1732,12 @@ LTR and UX-08 / DS-06+ / UX-18 did what still mattered. CI-01 (intermittent "See
 closing condition — 26 green runs in a row (#243–#268) — with the cause NEVER confirmed; the step prints the object
 store's log if it fails again.
 
+**UX-19 done — three small gaps.** The Client record's runway cells link to People (`cohortHref` →
+`/employees?client=&doc=&band=`; the band table is `PEOPLE_BAND` in `clients/client-figures.ts`, shared with the Overview).
+Reports' Open items + officer workload count READY sequence steps (the dashboard loads `/gro-sequences?status=running`;
+a failed read just leaves them out). Header search placeholder "People, companies, refs, IDs" — the box holds ~242px of
+text, so measure a new placeholder before shipping it. No API change.
+
 ## Technical landmines (each cost real debugging — do not rediscover)
 
 - `apps/web/messages/ar.json` holds right-to-left marks as the ESCAPE `\u200f`. `json.dumps(ensure_ascii=False)` (or any

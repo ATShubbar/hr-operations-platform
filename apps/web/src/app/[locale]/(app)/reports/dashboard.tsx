@@ -14,6 +14,8 @@ import type {
   GroProcessListResponse,
   GroProcessResponse,
   RequestListResponse,
+  SequenceInFlight,
+  SequenceInFlightListResponse,
   RequestResponse,
   StaffDirectoryEntry,
   StaffDirectoryResponse,
@@ -64,6 +66,8 @@ interface Data {
   fees: { recent: FeeResponse[]; owed: FeeResponse[] } | null;
   /** Dependants' expiry dates (DEP-05a); null = could not be read, so not counted. */
   dependants: DependantExpiry[] | null;
+  /** Running onboardings / final exits (UX-19): their READY steps are open work. */
+  sequences: SequenceInFlight[];
 }
 
 const empty =
@@ -107,7 +111,10 @@ export function ReportsDashboard() {
         }))
         .catch(empty(null)),
       loadDependantExpiries(),
-    ]).then(([c, e, g, r, k, d, fees, dependants]) =>
+      apiFetch<SequenceInFlightListResponse>('/gro-sequences?status=running').catch(
+        empty({ sequences: [] }),
+      ),
+    ]).then(([c, e, g, r, k, d, fees, dependants, sq]) =>
       setData({
         clients: c.clients,
         employees: e.employees,
@@ -117,6 +124,7 @@ export function ReportsDashboard() {
         staff: d.users,
         fees,
         dependants,
+        sequences: sq.sequences,
       }),
     );
   }, []);
@@ -141,6 +149,13 @@ export function ReportsDashboard() {
       ...procs.map((p) => ({ due: p.dueDate, who: p.assigneeUserId })),
       ...reqs.map((r) => ({ due: r.dueDate, who: r.assigneeUserId })),
       ...tasks.map((x) => ({ due: x.dueDate, who: x.assigneeUserId })),
+      // UX-19 (MOB-06): a READY step of a running sequence is open work, due on
+      // its target date and carried by its run's owner — as the Work queue counts it.
+      ...data.sequences.flatMap((run) =>
+        run.steps
+          .filter((st) => st.state === 'ready')
+          .map((st) => ({ due: st.target as string | null, who: run.assigneeUserId })),
+      ),
     ];
     const late = (due: string | null) => due !== null && daysTo(due) < 0;
 

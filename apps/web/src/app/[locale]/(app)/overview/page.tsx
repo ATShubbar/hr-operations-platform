@@ -35,7 +35,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { StatTile } from '@/components/ui/stat-tile';
 import { toastSuccess } from '@/components/ui/toast';
 import { ClientFormDialog } from '../clients/client-form-dialog';
-import { figuresFor, underManagement, type RunwayBand } from '../clients/client-figures';
+import {
+  PEOPLE_BAND,
+  figuresFor,
+  underManagement,
+  type RunwayBand,
+} from '../clients/client-figures';
 import { RunwayTable } from '../clients/runway-table';
 import { StartProcedureDialog } from '../employees/[id]/start-procedure-dialog';
 import { countsOf, PipelineBars } from '../hiring/pipeline-bars';
@@ -73,15 +78,7 @@ import { PortfolioTable } from './portfolio-table';
 const ASSIGNABLE = new Set(['administrator', 'hr_officer', 'gro_officer']);
 const NEEDS = 5;
 
-// A runway cell's cohort on People: the runway's bands, in People's filter values.
-const PEOPLE_BAND: Record<RunwayBand, string> = {
-  overdue: 'overdue',
-  d7: '0-7',
-  d14: '8-14',
-  d30: '15-30',
-  d60: '31-60',
-  d90: '61-90',
-};
+// A runway cell's cohort on People (the band names are shared — client-figures).
 const cohortHref = (doc: DocKey, band: RunwayBand | null) =>
   `/employees?doc=${doc}${band ? `&band=${PEOPLE_BAND[band]}` : ''}`;
 // A dependant cell opens the SPONSORS on People (DEP-05b).

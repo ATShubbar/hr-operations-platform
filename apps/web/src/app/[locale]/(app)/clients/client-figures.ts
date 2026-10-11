@@ -88,6 +88,18 @@ export const RUNWAY_BANDS = [
 ] as const;
 export type RunwayBand = (typeof RUNWAY_BANDS)[number]['key'];
 
+// A runway cell's cohort on People: the runway's bands, in People's filter
+// values. Shared by the Overview and the Client record (UX-19), so a cell leads
+// to the same list from either screen.
+export const PEOPLE_BAND: Record<RunwayBand, string> = {
+  overdue: 'overdue',
+  d7: '0-7',
+  d14: '8-14',
+  d30: '15-30',
+  d60: '31-60',
+  d90: '61-90',
+};
+
 export interface RunwayRow {
   key: DocKey;
   stored: boolean;

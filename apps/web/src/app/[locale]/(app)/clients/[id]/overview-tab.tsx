@@ -5,10 +5,14 @@ import type { ClientResponse, DependantExpiry, EmployeeResponse } from '@hr/cont
 import { bandAbove, bandBelow } from '@hr/contracts/client-profile';
 import { formatHijri } from '@hr/dates';
 import { BandPill } from '@/components/client-profile-bits';
-import type { ClientFigures } from '../client-figures';
+import { PEOPLE_BAND, type ClientFigures, type RunwayBand } from '../client-figures';
 import { RunwayTable } from '../runway-table';
 import { SaudiShare } from '../saudi-share';
 import { ServicePanel } from '../service-panel';
+
+// A runway cell → People, narrowed to this company, that document and that band.
+const cohortHref = (clientId: string, doc: string, band: RunwayBand | null) =>
+  `/employees?client=${clientId}&doc=${doc}${band ? `&band=${PEOPLE_BAND[band]}` : ''}`;
 
 // The Client record's Overview (DS-10): five tiles, the Nitaqat and Service panels,
 // and the expiry runway (runway-table.tsx, shared with the Overview) — the
@@ -128,7 +132,15 @@ export function OverviewTab({
         <ServicePanel client={client} onSaved={onClientSaved} />
       </div>
 
-      <RunwayTable id="runway" hint={t('runwayHint')} staff={staff} dependants={dependants} />
+      {/* UX-19: each cell opens this company's people with that document and band. */}
+      <RunwayTable
+        id="runway"
+        hint={t('runwayHint')}
+        staff={staff}
+        dependants={dependants}
+        cellHref={(doc, band) => cohortHref(client.id, doc, band)}
+        dependantHref={(doc, band) => cohortHref(client.id, `dep-${doc}`, band)}
+      />
     </div>
   );
 }

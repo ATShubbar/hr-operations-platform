@@ -1833,7 +1833,7 @@
     }
   },
   "header": {
-    "searchPlaceholder": "Search people, refs, ID numbers"
+    "searchPlaceholder": "People, companies, refs, IDs"
   },
   "people": {
     "title": "People",
@@ -2770,7 +2770,7 @@
     }
   },
   "search": {
-    "label": "Search people, references and ID numbers",
+    "label": "Search people, companies, references and ID numbers",
     "open": "Search",
     "close": "Close search",
     "kind": {
