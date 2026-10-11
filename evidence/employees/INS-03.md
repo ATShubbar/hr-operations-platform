@@ -105,6 +105,17 @@ The ladder totals quoted in NC-06 were one too high: a request left over from an
 
 The sample data changed, so **Seed UAT (seed-and-smoke)** needs one run for UAT to show insurance and licence dates. Until then the screens work and every person's two documents are simply empty.
 
+## On UAT (2026-10-11)
+
+| Run | Commit | Seed | Smoke check |
+|---|---|---|---|
+| Seed UAT #10 | `88c4d00` | passed | **failed** — it ran at 05:44 UTC while UAT was still serving `d1fc4bc`; the deploy of `88c4d00` went live at about 05:50 |
+| Seed UAT #11 | `88c4d00` | passed | **passed**, with UAT serving `88c4d00` |
+
+Run #10's failing line was not read: the smoke log needs a Google sign-in on this machine and that session had expired. The timing fits the one check that needs the newer code ("both are on the ladder"), and the same checks passed six minutes later with nothing changed but the deployed commit. That is strong, not proof.
+
+The lesson is about order: a Seed UAT run started before the deploy finishes seeds correctly and then checks the old code. Wait for `/api/health` to show the new commit first.
+
 ## Not done
 
 - Renewal as a procedure (INS-04).

@@ -1795,6 +1795,9 @@ ladder: HR 35 items / 20 need action, GRO 36 / 16, client manager 1, employee-a 
 - Hostinger's panel can stop showing a record its nameservers still serve. Verify DNS with `dig +norec` against
   `pixel/byte.dns-parking.com` (compare the SOA serials), not the panel. A managed cert that hit
   `FAILED_NOT_VISIBLE` meanwhile needs REPLACING (new cert → swap on the proxy → delete the old) (GCP-05).
+- Seed UAT builds the seed AND the smoke check from the latest commit, but the smoke check talks to whatever UAT is
+  SERVING. Started before the deploy finishes, it seeds correctly and then fails any check that needs the new code
+  (INS-03: run #10 red, #11 green six minutes later). Wait for `/api/health` to show the commit, then run it.
 - The repository is PUBLIC: anything in it (the dev seed password included) is public. Never seed an
   internet-facing environment with it — `seed-guard.ts` enforces this (GCP-06).
 - `minio/minio` no longer exists on Docker Hub ("repository does not exist") or Quay (401) —
