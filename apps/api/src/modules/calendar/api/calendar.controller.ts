@@ -27,9 +27,15 @@ import type { CalendarEventModel as CalendarEventRecord } from '../../../generat
 import { PolicyService } from '../../auth/public-api';
 import { TasksService } from '../../tasks/public-api';
 import { RequestsService } from '../../requests/public-api';
-import { GroProcessesService } from '../../gro/public-api';
+import { GroProcessesService, SequencesService } from '../../gro/public-api';
 import { CalendarService } from '../application/calendar.service';
-import { deadlineItem, dueInRange, eventItem, isActiveDeadline } from '../domain/calendar-view';
+import {
+  deadlineItem,
+  dueInRange,
+  eventItem,
+  isActiveDeadline,
+  stepItem,
+} from '../domain/calendar-view';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -46,6 +52,7 @@ export class CalendarController {
     private readonly tasks: TasksService,
     private readonly requests: RequestsService,
     private readonly gro: GroProcessesService,
+    private readonly sequences: SequencesService,
   ) {}
 
   // ---- own events ----
@@ -168,6 +175,16 @@ export class CalendarController {
           items.push(
             deadlineItem('gro', p.id, p.type, p.dueDate!, p.status, p.clientId, p.assigneeUserId),
           );
+        }
+      }
+      // MOB-06a: READY steps of running onboardings / final exits, on their
+      // target date. Blocked steps are not work yet; filed ones no longer are.
+      for (const run of await this.sequences.listByStatus('running')) {
+        for (const step of run.steps) {
+          if (step.state !== 'ready') continue;
+          if (dueInRange(new Date(`${step.target}T00:00:00.000Z`), from, to)) {
+            items.push(stepItem(run, step));
+          }
         }
       }
     }

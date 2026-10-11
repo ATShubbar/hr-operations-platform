@@ -7,16 +7,16 @@ import type { CalendarEventModel as CalendarEventRecord } from '../../../generat
 // "Finished" is the ONE shared definition (CAL-04, @hr/contracts/work-status) —
 // the queue and overviews use the same, so the screens can't disagree.
 
-const KIND: Record<Exclude<CalendarItemKind, 'event'>, WorkKind> = {
+/** The kinds that are deadlines of a work item with a status of its own. */
+type DeadlineKind = Exclude<CalendarItemKind, 'event' | 'step'>;
+
+const KIND: Record<DeadlineKind, WorkKind> = {
   task: 'task',
   request: 'request',
   gro: 'procedure',
 };
 
-export function isActiveDeadline(
-  kind: Exclude<CalendarItemKind, 'event'>,
-  status: string,
-): boolean {
+export function isActiveDeadline(kind: DeadlineKind, status: string): boolean {
   return !isFinished(KIND[kind], status);
 }
 
@@ -28,7 +28,7 @@ export function dueInRange(due: Date | null, from: Date, to: Date): boolean {
 // A derived deadline → an all-day calendar item on its due date, owned by its
 // assignee (DS-14).
 export function deadlineItem(
-  kind: Exclude<CalendarItemKind, 'event'>,
+  kind: DeadlineKind,
   id: string,
   title: string,
   due: Date,
@@ -47,6 +47,35 @@ export function deadlineItem(
     status,
     clientId,
     ownerUserId: assigneeUserId,
+    step: null,
+  };
+}
+
+// A READY step of a running onboarding / final exit (MOB-06a) → an all-day item
+// on its TARGET date, owned by the run's owner. `id` is the sequence's; the step
+// key (also the title — the web translates it) tells ready steps of one run apart.
+export function stepItem(
+  run: {
+    id: string;
+    kind: 'onboarding' | 'final_exit';
+    employeeId: string;
+    clientId: string;
+    assigneeUserId: string | null;
+  },
+  step: { key: string; target: string },
+): CalendarItem {
+  const iso = `${step.target}T00:00:00.000Z`;
+  return {
+    kind: 'step',
+    id: run.id,
+    title: step.key,
+    startAt: iso,
+    endAt: iso,
+    allDay: true,
+    status: 'ready',
+    clientId: run.clientId,
+    ownerUserId: run.assigneeUserId,
+    step: { key: step.key, sequenceKind: run.kind, employeeId: run.employeeId },
   };
 }
 
@@ -62,5 +91,6 @@ export function eventItem(e: CalendarEventRecord): CalendarItem {
     status: null,
     clientId: e.clientId,
     ownerUserId: e.ownerUserId,
+    step: null,
   };
 }

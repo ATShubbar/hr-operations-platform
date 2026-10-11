@@ -235,6 +235,8 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'POST /gro-sequences/:id/steps/:key/file': 'staff',
   'POST /gro-sequences/:id/steps/:key/reopen': 'staff',
   'POST /gro-sequences/:id/cancel': 'staff',
+  // MOB-06a: the owner of a run.
+  'POST /gro-sequences/:id/assign': 'staff',
   // Calendar (CAL-02): STAFF-ONLY — clients have no calendar access, so every route
   // is 'staff'. Events are own-scoped (calendar.read-all lifts it); the /calendar/view
   // endpoint merges Tasks/Requests/GRO deadlines read-only. Own-scoping + source

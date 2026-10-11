@@ -11,6 +11,7 @@ import {
   Query,
 } from '@nestjs/common';
 import {
+  assignSequenceSchema,
   fileSequenceStepSchema,
   sequenceStatusQuerySchema,
   startSequenceSchema,
@@ -121,6 +122,18 @@ export class SequencesController {
     return this.one(await this.sequences.cancel(id));
   }
 
+  // MOB-06a: hand a running sequence to another officer, or to nobody.
+  @RequirePermission('gro.process')
+  @Post('gro-sequences/:id/assign')
+  @HttpCode(200)
+  async assign(@Param('id') id: string, @Body() body: unknown): Promise<SequenceResponse> {
+    this.staffOnly();
+    this.requireId(id);
+    const parsed = assignSequenceSchema.safeParse(body);
+    if (!parsed.success) throw new BadRequestException('Invalid owner');
+    return this.one(await this.sequences.assign(id, parsed.data.assigneeUserId));
+  }
+
   // ---- helpers ----
 
   private staffOnly(): void {
@@ -154,6 +167,7 @@ export class SequencesController {
       status: v.status,
       startedOn: v.startedOn,
       startedBy: person(v.startedByUserId),
+      assigneeUserId: v.assigneeUserId,
       completedAt: v.completedAt?.toISOString() ?? null,
       cancelledAt: v.cancelledAt?.toISOString() ?? null,
       steps: v.steps.map((s) => ({

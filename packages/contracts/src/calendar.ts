@@ -58,7 +58,10 @@ export const calendarRangeQuerySchema = z.object({
 
 // A unified calendar item — an own event or a derived deadline. Deadlines are
 // all-day on the due date and carry the source item's status.
-export const calendarItemKindSchema = z.enum(['event', 'task', 'request', 'gro']);
+// `step` (MOB-06a): a READY step of a running onboarding / final exit, on its
+// target date. Its `id` is the SEQUENCE's — several steps of one run can be
+// ready together, so `step.key` is what tells them apart.
+export const calendarItemKindSchema = z.enum(['event', 'task', 'request', 'gro', 'step']);
 export const calendarItemSchema = z.object({
   kind: calendarItemKindSchema,
   id: z.uuid(),
@@ -71,6 +74,15 @@ export const calendarItemSchema = z.object({
   // Whose item it is (DS-14): an event's owner, a deadline's assignee; null when
   // unassigned. Drives the calendar's person filter.
   ownerUserId: z.uuid().nullable(),
+  // Only for kind `step`: which step, of which kind of sequence, for whom. The
+  // title is the step KEY (the web translates it). null for every other kind.
+  step: z
+    .object({
+      key: z.string(),
+      sequenceKind: z.enum(['onboarding', 'final_exit']),
+      employeeId: z.uuid(),
+    })
+    .nullable(),
 });
 export const calendarViewResponseSchema = z.object({
   items: z.array(calendarItemSchema),

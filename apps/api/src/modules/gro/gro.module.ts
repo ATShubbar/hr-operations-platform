@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AuditModule } from '../audit/public-api';
 import { AuthModule } from '../auth/public-api';
+import { ClientsModule } from '../clients/public-api';
 import { EmployeesModule } from '../employees/public-api';
 import { NotificationsModule } from '../notifications/public-api';
 import { GroProcessesController } from './api/gro-processes.controller';
@@ -23,7 +24,9 @@ import { SequencesService } from './application/sequences.service';
 // ADR-004 flow) — one-way (GRO imports only the event type; the bus is @Global).
 // MOB-01 (ADR-018): SequencesService — onboarding and final-exit sequences.
 @Module({
-  imports: [AuditModule, AuthModule, EmployeesModule, NotificationsModule],
+  // ClientsModule (MOB-06a): a new run's owner is the client's named officer.
+  // One-way — Clients imports only Audit and Auth.
+  imports: [AuditModule, AuthModule, ClientsModule, EmployeesModule, NotificationsModule],
   controllers: [GroProcessesController, SequencesController],
   providers: [
     GroProcessesService,

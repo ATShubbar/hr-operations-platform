@@ -88,6 +88,10 @@ record (owner decision), so the expiry rule watches them too:
 **DEP-06 (2026-10-11):** a dependant's iqama is likewise quiet while the `dependant_iqama_renewal`
 that NAMES that dependant is open — theirs only, for staff and for the sponsor's own ladder.
 
+**MOB-06 (2026-10-11):** the queue-deadline rule also covers a READY step of a running onboarding
+or final exit — due on its target date, owned by its run's owner (ADR-018 rev. 2). Staff only; a
+client manager's and an employee's ladder never carry one.
+
 ### Who is told at each stage
 
 | Stage | Document expiry | Queue deadline | Request service level |

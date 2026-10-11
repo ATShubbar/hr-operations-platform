@@ -10,7 +10,10 @@ import type { Prisma } from '../../../generated/prisma/client';
 import type { GroSequenceModel, GroSequenceStepModel } from '../../../generated/prisma/models';
 import { requestContext } from '../../../context/request-context';
 import { AuditService } from '../../audit/public-api';
+import { UsersService } from '../../auth/public-api';
+import { ClientsService } from '../../clients/public-api';
 import { EmployeesService } from '../../employees/public-api';
+import { NotificationsService } from '../../notifications/public-api';
 import { EventBus } from '../../events/public-api';
 import { SEQUENCES, type SequenceKind } from '../domain/sequence-definitions';
 import { SequenceStepReopenedEvent } from '../domain/sequence-step-reopened.event';
@@ -42,6 +45,8 @@ export interface SequenceView {
   status: 'running' | 'completed' | 'cancelled';
   startedOn: string;
   startedByUserId: string | null;
+  /** The run's owner (MOB-06a): whose work its ready steps are. */
+  assigneeUserId: string | null;
   completedAt: Date | null;
   cancelledAt: Date | null;
   steps: Array<StepView & { filedByUserId: string | null }>;
@@ -65,6 +70,7 @@ function toView(row: Row): SequenceView {
     status: row.status,
     startedOn: day(row.startedOn),
     startedByUserId: row.startedByUserId,
+    assigneeUserId: row.assigneeUserId,
     completedAt: row.completedAt,
     cancelledAt: row.cancelledAt,
     steps: stepsOf(row.kind, day(row.startedOn), filed).map((st) => ({
@@ -87,7 +93,58 @@ export class SequencesService {
     private readonly audit: AuditService,
     private readonly employees: EmployeesService,
     private readonly events: EventBus,
+    private readonly clients: ClientsService,
+    private readonly users: UsersService,
+    private readonly notifications: NotificationsService,
   ) {}
+
+  // Who may own a run (MOB-06a): the shared assignee rule (ASSIGN-01) — an
+  // active staff account that can work procedures.
+  private canOwn(userId: string): Promise<boolean> {
+    return this.users.isActiveStaffWith(userId, 'gro.process');
+  }
+
+  // A new run's owner: the client's NAMED OFFICER (ADR-019), when there is one
+  // and they can still work procedures. Otherwise nobody — the run waits in the
+  // queue, unassigned, for someone to take it.
+  private async defaultOwner(clientId: string): Promise<string | null> {
+    const officer = (await this.clients.getById(clientId))?.officerUserId ?? null;
+    return officer && (await this.canOwn(officer)) ? officer : null;
+  }
+
+  // Hand a RUNNING sequence to another officer, or to nobody (MOB-06a). Audited
+  // against the employee like every other sequence change; the person handed it
+  // is told — never about their own act, never on a re-save with the same owner.
+  async assign(id: string, assigneeUserId: string | null): Promise<SequenceView> {
+    const actorId = this.actor();
+    if (assigneeUserId && !(await this.canOwn(assigneeUserId))) {
+      throw new BadRequestException(
+        'A sequence can only be owned by someone who works on procedures',
+      );
+    }
+    const { view, changed } = await this.prisma.$transaction(async (tx) => {
+      const row = await this.load(tx, id);
+      if (row.status !== 'running') throw new ConflictException(`This sequence is ${row.status}`);
+      if (row.assigneeUserId === assigneeUserId) return { view: toView(row), changed: false };
+      await tx.groSequence.update({ where: { id }, data: { assigneeUserId } });
+      await this.record(tx, row, 'assign', { kind: row.kind, assigned: assigneeUserId !== null });
+      return { view: toView(await this.load(tx, id)), changed: true };
+    });
+    if (changed && assigneeUserId && assigneeUserId !== actorId) {
+      const label = SEQUENCES[view.kind].label;
+      await this.notifications.notify({
+        recipientUserId: assigneeUserId,
+        category: 'general',
+        title: { ar: 'أُسند إليك ملف', en: 'A sequence was assigned to you' },
+        body: {
+          ar: view.kind === 'onboarding' ? 'أُسندت إليك إجراءات تهيئة موظف.' : 'أُسندت إليك إجراءات خروج نهائي.',
+          en: `${label} was assigned to you.`,
+        },
+        data: { sequenceId: view.id, employeeId: view.employeeId, kind: 'assigned' },
+      });
+    }
+    return view;
+  }
 
   async listForEmployee(employeeId: string): Promise<SequenceView[]> {
     const rows = await this.prisma.groSequence.findMany({
@@ -124,6 +181,7 @@ export class SequencesService {
       throw new BadRequestException('This employee is terminated');
     }
     const actorId = requestContext.get()?.actorId ?? null;
+    const assigneeUserId = await this.defaultOwner(employee.clientId);
     try {
       return await this.prisma.$transaction(async (tx) => {
         const running = await tx.groSequence.findMany({
@@ -145,6 +203,7 @@ export class SequencesService {
             kind,
             startedOn: new Date(`${todayIso()}T00:00:00.000Z`),
             startedByUserId: actorId,
+            assigneeUserId,
             steps: { create: SEQUENCES[kind].steps.map((s) => ({ stepKey: s.key })) },
           },
           include: { steps: true },

@@ -21,6 +21,7 @@ import {
 // signs in as a real client manager to prove it. Responses are exact whitelists.
 const MARK = 'MOB-02-test';
 const RUN_KEYS = [
+  'assigneeUserId',
   'cancelledAt',
   'completedAt',
   'employeeId',

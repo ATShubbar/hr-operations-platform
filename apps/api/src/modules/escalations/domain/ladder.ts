@@ -63,6 +63,21 @@ export interface LadderDependant {
   name: { ar: string | null; en: string };
   dates: Partial<Record<DependantDoc, string | null>>;
 }
+/** A step of an onboarding / final-exit run (MOB-06a). Only READY steps of RUNNING runs are work. */
+export interface LadderStep {
+  sequenceId: string;
+  sequenceKind: 'onboarding' | 'final_exit';
+  key: string;
+  employeeId: string;
+  clientId: string;
+  /** The step's target date. */
+  dueOn: string;
+  /** The run's owner. */
+  assigneeUserId: string | null;
+  state: string;
+  runStatus: string;
+}
+
 export interface LadderProcedure {
   id: string;
   employeeId: string;
@@ -102,6 +117,8 @@ export interface LadderInput {
   dependants: readonly LadderDependant[];
   /** EVERY procedure — an open one keeps an expiry quiet whoever is looking. */
   procedures: readonly LadderProcedure[];
+  /** Steps of onboarding / final-exit runs (MOB-06a) — read with the procedures. */
+  steps: readonly LadderStep[];
   /** Only the tasks the viewer may read (their task scope is applied by the caller). */
   tasks: readonly LadderTask[];
   /** EVERY request — an undecided one keeps its own task out of the queue rule. */
@@ -287,6 +304,29 @@ function reach(
         },
         proc.clientId,
         assignee(proc.assigneeUserId),
+      );
+    }
+    // MOB-06a: a READY step of a RUNNING onboarding / final exit is dated work
+    // like a procedure — due on its target date, owned by the run's owner. A
+    // blocked step cannot be acted on yet and a filed one is done. The person
+    // need not be under management: an arrival is mid-mobilisation by definition.
+    for (const step of input.steps) {
+      if (step.state !== 'ready' || step.runStatus !== 'running') continue;
+      const person = people.get(step.employeeId);
+      if (!person) continue;
+      push(
+        `step:${step.sequenceId}:${step.key}`,
+        'queue',
+        step.dueOn,
+        {
+          kind: 'sequence_step',
+          sequenceId: step.sequenceId,
+          sequenceKind: step.sequenceKind,
+          step: step.key,
+          employee: { id: person.id, name: person.name },
+        },
+        step.clientId,
+        assignee(step.assigneeUserId),
       );
     }
   }

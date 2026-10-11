@@ -867,6 +867,11 @@ model GroSequence {
   status            GroSequenceStatus @default(running)
   startedOn         DateTime          @map("started_on") @db.Date
   startedByUserId   String?           @map("started_by_user_id") @db.Uuid
+  // MOB-06a (ADR-018 rev. 2): ONE owner for the whole run — the officer handling
+  // this arrival or exit. Its ready steps are that person's work items. Set when
+  // the run starts (the client's named officer, if they can work procedures),
+  // changeable while it is running; null = nobody yet.
+  assigneeUserId    String?           @map("assignee_user_id") @db.Uuid
   completedAt       DateTime?         @map("completed_at")
   cancelledAt       DateTime?         @map("cancelled_at")
   cancelledByUserId String?           @map("cancelled_by_user_id") @db.Uuid
@@ -876,6 +881,7 @@ model GroSequence {
 
   @@index([employeeId])
   @@index([status])
+  @@index([assigneeUserId])
   @@map("gro_sequences")
 }
 

@@ -452,6 +452,7 @@ export {
   sequenceStepStateSchema,
   startSequenceSchema,
   fileSequenceStepSchema,
+  assignSequenceSchema,
   sequenceStepSchema,
   sequenceResponseSchema,
   sequenceListResponseSchema,

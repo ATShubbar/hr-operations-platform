@@ -485,6 +485,7 @@ export const GroSequenceScalarFieldEnum = {
   status: 'status',
   startedOn: 'startedOn',
   startedByUserId: 'startedByUserId',
+  assigneeUserId: 'assigneeUserId',
   completedAt: 'completedAt',
   cancelledAt: 'cancelledAt',
   cancelledByUserId: 'cancelledByUserId',

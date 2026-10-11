@@ -67,6 +67,7 @@ const base = (over: Partial<LadderInput> = {}): LadderInput => ({
   people: [],
   dependants: [],
   procedures: [],
+  steps: [],
   tasks: [],
   requests: [],
   names: new Map([
@@ -446,6 +447,62 @@ describe('queue deadlines', () => {
     assigneeUserId: HR_1,
     requestId: null,
     ...over,
+  });
+
+  // MOB-06a: a READY step of a running onboarding / final exit is dated work too.
+  describe('sequence steps (MOB-06a)', () => {
+    const SEQ = 'c5000000-0000-4000-8000-000000000001';
+    const step = (over: object = {}) => ({
+      sequenceId: SEQ,
+      sequenceKind: 'onboarding' as const,
+      key: 'visa-auth',
+      employeeId: P1,
+      clientId: CO,
+      dueOn: day(-3),
+      assigneeUserId: GRO_1,
+      state: 'ready',
+      runStatus: 'running',
+      ...over,
+    });
+    const KEY = `step:${SEQ}:visa-auth`;
+    // The arrival is mid-mobilisation: not under management, yet their steps are work.
+    const arriving = person({ employmentStatus: 'onboarding' });
+
+    it('a ready step is listed on its target date, owned by the run\u2019s owner', () => {
+      const items = buildLadder(base({ people: [arriving], steps: [step()] }), admin).items;
+      expect(items.map((i) => [i.key, i.rule, i.stage, i.daysLeft])).toEqual([[KEY, 'queue', 'breach', -3]]);
+      expect(items[0]).toMatchObject({
+        subject: { kind: 'sequence_step', sequenceId: SEQ, sequenceKind: 'onboarding', step: 'visa-auth', employee: { id: P1 } },
+        client: { id: CO },
+        owner: { kind: 'person', name: 'Turki' },
+      });
+      expect(one(base({ people: [arriving], steps: [step()] }), gro1, KEY)).toMatchObject({ mine: true, told: true });
+    });
+
+    it('a blocked or filed step, and a step of a finished run, are not work yet or any more', () => {
+      const none = (over: object) => buildLadder(base({ people: [arriving], steps: [step(over)] }), admin).items;
+      expect(none({ state: 'blocked' })).toEqual([]);
+      expect(none({ state: 'filed' })).toEqual([]);
+      expect(none({ runStatus: 'cancelled' })).toEqual([]);
+      expect(none({ runStatus: 'completed' })).toEqual([]);
+      // Outside the queue window (5 days) it is not listed either.
+      expect(none({ dueOn: day(20) })).toEqual([]);
+    });
+
+    it('a run with no owner: first told at the stage that names a role', () => {
+      const input = base({ people: [arriving], steps: [step({ assigneeUserId: null, dueOn: day(4) })] }); // Notice
+      expect(one(input, hr, KEY)).toMatchObject({ owner: null, mine: false, told: false });
+      const late = base({ people: [arriving], steps: [step({ assigneeUserId: null })] }); // Breach
+      expect(one(late, hr, KEY)).toMatchObject({ owner: null, told: true });
+    });
+
+    it('needs the permission that reads procedures; a client and an employee never see one', () => {
+      const input = base({ people: [arriving], steps: [step()] });
+      const without = viewer(ADMIN, 'administrator', ['employee.read', 'task.read', 'request.read']);
+      expect(buildLadder(input, without).items).toEqual([]);
+      expect(buildClientLadder(input).items).toEqual([]);
+      expect(buildEmployeeLadder(input).items).toEqual([]);
+    });
   });
 
   it('lists open procedures and tasks that have a date, owned by their assignee', () => {

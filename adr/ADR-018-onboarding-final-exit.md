@@ -1,6 +1,6 @@
 # ADR-018 — Onboarding and final exit: ordered sequences of government steps
 
-- Status: Accepted
+- Status: Accepted (rev. 2, 2026-10-11: ready steps are work items with one owner per run — MOB-06)
 - Date: 2026-10-07
 - Owner: Ahmed Alshubbar (product decision; MOB-00)
 - Amends: **architecture.md**:
@@ -171,6 +171,26 @@ that, and it is logged as an error.
 - A new candidate stage reaches the stage workflow, the board, pipeline counts and the recruitment report.
 - Hiring's single event (REC-05) gains a second path. Hire-from-Offer stays exactly as it is.
 - Two new staff-owned tables: GRO tables, so `app_client` and `app_employee` get no grants.
+
+## Revision 2 — 2026-10-11 (MOB-06)
+The decision left sequences out of the Work queue and the Calendar "for now". This revision brings
+their steps in. The prototype has neither; these are owner decisions.
+
+- **One owner per run.** A running onboarding or final exit has one officer
+  (`gro_sequences.assignee_user_id`). It is the client's named officer when the run starts — if
+  there is one and they can still work procedures — and can be handed to another officer, or to
+  nobody, while it runs (`POST /gro-sequences/:id/assign`, `gro.process`, staff only). The same
+  assignee rule as every other work item: an active staff account holding `gro.process`.
+- **A READY step is a work item**, due on its target date and owned by its run's owner. A blocked
+  step is not work yet; a filed one no longer is; a cancelled or completed run has none.
+- **Work queue:** a fourth kind, "Step". **Calendar:** ready steps on their target date (in the
+  calendar's data, gated by `gro.read` like procedures). **The bell:** a ready step follows the
+  queue-deadline rule (ADR-021).
+- **Filing stays on the Mobilisation tab.** The queue row, the calendar chip and the bell item all
+  lead there — the one place with the date, the fee and the warnings (the last step of a final
+  exit ends the employment).
+- No snooze: a step's target date comes from the run's start date, not from anyone's choice.
+- Staff only, as sequences already are. No new permission.
 
 ## Build
 

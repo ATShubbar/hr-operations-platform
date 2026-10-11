@@ -60,6 +60,14 @@ export const escalationSubjectSchema = z.discriminatedUnion('kind', [
     employee: person,
   }),
   z.object({ kind: z.literal('procedure'), id: z.uuid(), type: z.string(), employee: person }),
+  // MOB-06a: a ready step of a running onboarding / final exit (the queue rule).
+  z.object({
+    kind: z.literal('sequence_step'),
+    sequenceId: z.uuid(),
+    sequenceKind: z.enum(['onboarding', 'final_exit']),
+    step: z.string(),
+    employee: person,
+  }),
   z.object({ kind: z.literal('task'), id: z.uuid(), title: z.string() }),
   z.object({ kind: z.literal('request'), id: z.uuid(), type: z.string(), title: z.string() }),
 ]);

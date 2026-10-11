@@ -21,7 +21,7 @@ import { PolicyService, UsersService } from '../../auth/public-api';
 import { ClientsService } from '../../clients/public-api';
 import { ConfigService } from '../../configuration/public-api';
 import { DependantsService, EmployeesService } from '../../employees/public-api';
-import { GroProcessesService } from '../../gro/public-api';
+import { GroProcessesService, SequencesService, type SequenceView } from '../../gro/public-api';
 import { RequestsService } from '../../requests/public-api';
 import { TasksService } from '../../tasks/public-api';
 import {
@@ -33,6 +33,7 @@ import {
   type LadderItem,
   type LadderPerson,
   type LadderProcedure,
+  type LadderStep,
   type LadderRequest,
   type LadderViewer,
 } from '../domain/ladder';
@@ -125,6 +126,20 @@ const toProcedure = (p: ProcedureRecord): LadderProcedure => ({
   assigneeUserId: p.assigneeUserId,
   dependantId: p.dependantId,
 });
+// Every step of a run, with its state — the rules keep only READY ones of a
+// RUNNING run (MOB-06a).
+const toSteps = (run: SequenceView): LadderStep[] =>
+  run.steps.map((st) => ({
+    sequenceId: run.id,
+    sequenceKind: run.kind,
+    key: st.key,
+    employeeId: run.employeeId,
+    clientId: run.clientId,
+    dueOn: st.target,
+    assigneeUserId: run.assigneeUserId,
+    state: st.state,
+    runStatus: run.status,
+  }));
 const toRequest = (r: RequestRecord): LadderRequest => ({
   id: r.id,
   clientId: r.clientId,
@@ -146,6 +161,7 @@ export class EscalationsService {
     private readonly employees: EmployeesService,
     private readonly dependants: DependantsService,
     private readonly processes: GroProcessesService,
+    private readonly sequences: SequencesService,
     private readonly requests: RequestsService,
     private readonly tasks: TasksService,
   ) {}
@@ -224,15 +240,18 @@ export class EscalationsService {
     const role = ctx?.role ?? '';
     const viewer: LadderViewer = { userId, role, can: (p) => this.policy.can(role, p) };
 
-    const [clients, people, procedures, requests, tasks, thresholds, today] = await Promise.all([
-      this.clients.list(),
-      this.employees.list(),
-      this.processes.list(),
-      this.requests.list(),
-      this.tasks.list({ scopeUserId: viewer.can('task.read-all') ? undefined : userId }),
-      this.thresholds(),
-      this.today(),
-    ]);
+    const [clients, people, procedures, runs, requests, tasks, thresholds, today] =
+      await Promise.all([
+        this.clients.list(),
+        this.employees.list(),
+        this.processes.list(),
+        // MOB-06a: running onboardings / final exits — their ready steps are work.
+        this.sequences.listByStatus('running'),
+        this.requests.list(),
+        this.tasks.list({ scopeUserId: viewer.can('task.read-all') ? undefined : userId }),
+        this.thresholds(),
+        this.today(),
+      ]);
     const dependants = await this.dependants.listForEmployees(people.map((p) => p.id));
 
     // A named officer owns their client's expiries only while they are still an
@@ -250,6 +269,7 @@ export class EscalationsService {
     const owners = [
       ...active,
       ...procedures.flatMap((p) => (p.assigneeUserId ? [p.assigneeUserId] : [])),
+      ...runs.flatMap((r) => (r.assigneeUserId ? [r.assigneeUserId] : [])),
       ...tasks.flatMap((t) => (t.assigneeUserId ? [t.assigneeUserId] : [])),
       ...requests.flatMap((r) => (r.assigneeUserId ? [r.assigneeUserId] : [])),
     ];
@@ -265,6 +285,7 @@ export class EscalationsService {
         people: people.map(toPerson),
         dependants: dependants.map(toDependant),
         procedures: procedures.map(toProcedure),
+        steps: runs.flatMap(toSteps),
         tasks: tasks.map((t) => ({
           id: t.id,
           title: t.title,
@@ -307,6 +328,7 @@ export class EscalationsService {
       people: people.map(toPerson),
       dependants: [],
       procedures: procedures.map(toProcedure),
+      steps: [], // staff work — never a client's or an employee's item
       tasks: [],
       requests: requests.map(toRequest),
       names: new Map(),
@@ -332,6 +354,7 @@ export class EscalationsService {
       people: [toPerson(record)],
       dependants: dependants.map(toDependant),
       procedures: procedures.map(toProcedure),
+      steps: [], // staff work — never a client's or an employee's item
       tasks: [],
       requests: requests.map(toRequest),
       names: new Map(),

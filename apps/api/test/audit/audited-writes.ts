@@ -96,6 +96,7 @@ export const AUDITED_WRITES: Record<string, string> = {
   'POST /gro-sequences/:id/steps/:key/file': 'gro-sequence.file-step',
   'POST /gro-sequences/:id/steps/:key/reopen': 'gro-sequence.reopen-step',
   'POST /gro-sequences/:id/cancel': 'gro-sequence.cancel',
+  'POST /gro-sequences/:id/assign': 'gro-sequence.assign',
   'POST /fees': 'fee.create',
   'PATCH /fees/:id': 'fee.update',
   'POST /fees/:id/void': 'fee.void',

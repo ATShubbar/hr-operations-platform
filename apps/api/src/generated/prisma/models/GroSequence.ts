@@ -32,6 +32,7 @@ export type GroSequenceMinAggregateOutputType = {
   status: $Enums.GroSequenceStatus | null
   startedOn: Date | null
   startedByUserId: string | null
+  assigneeUserId: string | null
   completedAt: Date | null
   cancelledAt: Date | null
   cancelledByUserId: string | null
@@ -47,6 +48,7 @@ export type GroSequenceMaxAggregateOutputType = {
   status: $Enums.GroSequenceStatus | null
   startedOn: Date | null
   startedByUserId: string | null
+  assigneeUserId: string | null
   completedAt: Date | null
   cancelledAt: Date | null
   cancelledByUserId: string | null
@@ -62,6 +64,7 @@ export type GroSequenceCountAggregateOutputType = {
   status: number
   startedOn: number
   startedByUserId: number
+  assigneeUserId: number
   completedAt: number
   cancelledAt: number
   cancelledByUserId: number
@@ -79,6 +82,7 @@ export type GroSequenceMinAggregateInputType = {
   status?: true
   startedOn?: true
   startedByUserId?: true
+  assigneeUserId?: true
   completedAt?: true
   cancelledAt?: true
   cancelledByUserId?: true
@@ -94,6 +98,7 @@ export type GroSequenceMaxAggregateInputType = {
   status?: true
   startedOn?: true
   startedByUserId?: true
+  assigneeUserId?: true
   completedAt?: true
   cancelledAt?: true
   cancelledByUserId?: true
@@ -109,6 +114,7 @@ export type GroSequenceCountAggregateInputType = {
   status?: true
   startedOn?: true
   startedByUserId?: true
+  assigneeUserId?: true
   completedAt?: true
   cancelledAt?: true
   cancelledByUserId?: true
@@ -197,6 +203,7 @@ export type GroSequenceGroupByOutputType = {
   status: $Enums.GroSequenceStatus
   startedOn: Date
   startedByUserId: string | null
+  assigneeUserId: string | null
   completedAt: Date | null
   cancelledAt: Date | null
   cancelledByUserId: string | null
@@ -233,6 +240,7 @@ export type GroSequenceWhereInput = {
   status?: Prisma.EnumGroSequenceStatusFilter<"GroSequence"> | $Enums.GroSequenceStatus
   startedOn?: Prisma.DateTimeFilter<"GroSequence"> | Date | string
   startedByUserId?: Prisma.UuidNullableFilter<"GroSequence"> | string | null
+  assigneeUserId?: Prisma.UuidNullableFilter<"GroSequence"> | string | null
   completedAt?: Prisma.DateTimeNullableFilter<"GroSequence"> | Date | string | null
   cancelledAt?: Prisma.DateTimeNullableFilter<"GroSequence"> | Date | string | null
   cancelledByUserId?: Prisma.UuidNullableFilter<"GroSequence"> | string | null
@@ -249,6 +257,7 @@ export type GroSequenceOrderByWithRelationInput = {
   status?: Prisma.SortOrder
   startedOn?: Prisma.SortOrder
   startedByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  assigneeUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   cancelledAt?: Prisma.SortOrderInput | Prisma.SortOrder
   cancelledByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -268,6 +277,7 @@ export type GroSequenceWhereUniqueInput = Prisma.AtLeast<{
   status?: Prisma.EnumGroSequenceStatusFilter<"GroSequence"> | $Enums.GroSequenceStatus
   startedOn?: Prisma.DateTimeFilter<"GroSequence"> | Date | string
   startedByUserId?: Prisma.UuidNullableFilter<"GroSequence"> | string | null
+  assigneeUserId?: Prisma.UuidNullableFilter<"GroSequence"> | string | null
   completedAt?: Prisma.DateTimeNullableFilter<"GroSequence"> | Date | string | null
   cancelledAt?: Prisma.DateTimeNullableFilter<"GroSequence"> | Date | string | null
   cancelledByUserId?: Prisma.UuidNullableFilter<"GroSequence"> | string | null
@@ -284,6 +294,7 @@ export type GroSequenceOrderByWithAggregationInput = {
   status?: Prisma.SortOrder
   startedOn?: Prisma.SortOrder
   startedByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
+  assigneeUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   cancelledAt?: Prisma.SortOrderInput | Prisma.SortOrder
   cancelledByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -305,6 +316,7 @@ export type GroSequenceScalarWhereWithAggregatesInput = {
   status?: Prisma.EnumGroSequenceStatusWithAggregatesFilter<"GroSequence"> | $Enums.GroSequenceStatus
   startedOn?: Prisma.DateTimeWithAggregatesFilter<"GroSequence"> | Date | string
   startedByUserId?: Prisma.UuidNullableWithAggregatesFilter<"GroSequence"> | string | null
+  assigneeUserId?: Prisma.UuidNullableWithAggregatesFilter<"GroSequence"> | string | null
   completedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"GroSequence"> | Date | string | null
   cancelledAt?: Prisma.DateTimeNullableWithAggregatesFilter<"GroSequence"> | Date | string | null
   cancelledByUserId?: Prisma.UuidNullableWithAggregatesFilter<"GroSequence"> | string | null
@@ -320,6 +332,7 @@ export type GroSequenceCreateInput = {
   status?: $Enums.GroSequenceStatus
   startedOn: Date | string
   startedByUserId?: string | null
+  assigneeUserId?: string | null
   completedAt?: Date | string | null
   cancelledAt?: Date | string | null
   cancelledByUserId?: string | null
@@ -336,6 +349,7 @@ export type GroSequenceUncheckedCreateInput = {
   status?: $Enums.GroSequenceStatus
   startedOn: Date | string
   startedByUserId?: string | null
+  assigneeUserId?: string | null
   completedAt?: Date | string | null
   cancelledAt?: Date | string | null
   cancelledByUserId?: string | null
@@ -352,6 +366,7 @@ export type GroSequenceUpdateInput = {
   status?: Prisma.EnumGroSequenceStatusFieldUpdateOperationsInput | $Enums.GroSequenceStatus
   startedOn?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assigneeUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -368,6 +383,7 @@ export type GroSequenceUncheckedUpdateInput = {
   status?: Prisma.EnumGroSequenceStatusFieldUpdateOperationsInput | $Enums.GroSequenceStatus
   startedOn?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assigneeUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -384,6 +400,7 @@ export type GroSequenceCreateManyInput = {
   status?: $Enums.GroSequenceStatus
   startedOn: Date | string
   startedByUserId?: string | null
+  assigneeUserId?: string | null
   completedAt?: Date | string | null
   cancelledAt?: Date | string | null
   cancelledByUserId?: string | null
@@ -399,6 +416,7 @@ export type GroSequenceUpdateManyMutationInput = {
   status?: Prisma.EnumGroSequenceStatusFieldUpdateOperationsInput | $Enums.GroSequenceStatus
   startedOn?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assigneeUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -414,6 +432,7 @@ export type GroSequenceUncheckedUpdateManyInput = {
   status?: Prisma.EnumGroSequenceStatusFieldUpdateOperationsInput | $Enums.GroSequenceStatus
   startedOn?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assigneeUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -429,6 +448,7 @@ export type GroSequenceCountOrderByAggregateInput = {
   status?: Prisma.SortOrder
   startedOn?: Prisma.SortOrder
   startedByUserId?: Prisma.SortOrder
+  assigneeUserId?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
   cancelledAt?: Prisma.SortOrder
   cancelledByUserId?: Prisma.SortOrder
@@ -444,6 +464,7 @@ export type GroSequenceMaxOrderByAggregateInput = {
   status?: Prisma.SortOrder
   startedOn?: Prisma.SortOrder
   startedByUserId?: Prisma.SortOrder
+  assigneeUserId?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
   cancelledAt?: Prisma.SortOrder
   cancelledByUserId?: Prisma.SortOrder
@@ -459,6 +480,7 @@ export type GroSequenceMinOrderByAggregateInput = {
   status?: Prisma.SortOrder
   startedOn?: Prisma.SortOrder
   startedByUserId?: Prisma.SortOrder
+  assigneeUserId?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
   cancelledAt?: Prisma.SortOrder
   cancelledByUserId?: Prisma.SortOrder
@@ -501,6 +523,7 @@ export type GroSequenceCreateWithoutStepsInput = {
   status?: $Enums.GroSequenceStatus
   startedOn: Date | string
   startedByUserId?: string | null
+  assigneeUserId?: string | null
   completedAt?: Date | string | null
   cancelledAt?: Date | string | null
   cancelledByUserId?: string | null
@@ -516,6 +539,7 @@ export type GroSequenceUncheckedCreateWithoutStepsInput = {
   status?: $Enums.GroSequenceStatus
   startedOn: Date | string
   startedByUserId?: string | null
+  assigneeUserId?: string | null
   completedAt?: Date | string | null
   cancelledAt?: Date | string | null
   cancelledByUserId?: string | null
@@ -547,6 +571,7 @@ export type GroSequenceUpdateWithoutStepsInput = {
   status?: Prisma.EnumGroSequenceStatusFieldUpdateOperationsInput | $Enums.GroSequenceStatus
   startedOn?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assigneeUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -562,6 +587,7 @@ export type GroSequenceUncheckedUpdateWithoutStepsInput = {
   status?: Prisma.EnumGroSequenceStatusFieldUpdateOperationsInput | $Enums.GroSequenceStatus
   startedOn?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   startedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assigneeUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelledByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -608,6 +634,7 @@ export type GroSequenceSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   status?: boolean
   startedOn?: boolean
   startedByUserId?: boolean
+  assigneeUserId?: boolean
   completedAt?: boolean
   cancelledAt?: boolean
   cancelledByUserId?: boolean
@@ -625,6 +652,7 @@ export type GroSequenceSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   status?: boolean
   startedOn?: boolean
   startedByUserId?: boolean
+  assigneeUserId?: boolean
   completedAt?: boolean
   cancelledAt?: boolean
   cancelledByUserId?: boolean
@@ -640,6 +668,7 @@ export type GroSequenceSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   status?: boolean
   startedOn?: boolean
   startedByUserId?: boolean
+  assigneeUserId?: boolean
   completedAt?: boolean
   cancelledAt?: boolean
   cancelledByUserId?: boolean
@@ -655,6 +684,7 @@ export type GroSequenceSelectScalar = {
   status?: boolean
   startedOn?: boolean
   startedByUserId?: boolean
+  assigneeUserId?: boolean
   completedAt?: boolean
   cancelledAt?: boolean
   cancelledByUserId?: boolean
@@ -662,7 +692,7 @@ export type GroSequenceSelectScalar = {
   updatedAt?: boolean
 }
 
-export type GroSequenceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "employeeId" | "clientId" | "kind" | "status" | "startedOn" | "startedByUserId" | "completedAt" | "cancelledAt" | "cancelledByUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["groSequence"]>
+export type GroSequenceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "employeeId" | "clientId" | "kind" | "status" | "startedOn" | "startedByUserId" | "assigneeUserId" | "completedAt" | "cancelledAt" | "cancelledByUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["groSequence"]>
 export type GroSequenceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   steps?: boolean | Prisma.GroSequence$stepsArgs<ExtArgs>
   _count?: boolean | Prisma.GroSequenceCountOutputTypeDefaultArgs<ExtArgs>
@@ -683,6 +713,7 @@ export type $GroSequencePayload<ExtArgs extends runtime.Types.Extensions.Interna
     status: $Enums.GroSequenceStatus
     startedOn: Date
     startedByUserId: string | null
+    assigneeUserId: string | null
     completedAt: Date | null
     cancelledAt: Date | null
     cancelledByUserId: string | null
@@ -1119,6 +1150,7 @@ export interface GroSequenceFieldRefs {
   readonly status: Prisma.FieldRef<"GroSequence", 'GroSequenceStatus'>
   readonly startedOn: Prisma.FieldRef<"GroSequence", 'DateTime'>
   readonly startedByUserId: Prisma.FieldRef<"GroSequence", 'String'>
+  readonly assigneeUserId: Prisma.FieldRef<"GroSequence", 'String'>
   readonly completedAt: Prisma.FieldRef<"GroSequence", 'DateTime'>
   readonly cancelledAt: Prisma.FieldRef<"GroSequence", 'DateTime'>
   readonly cancelledByUserId: Prisma.FieldRef<"GroSequence", 'String'>

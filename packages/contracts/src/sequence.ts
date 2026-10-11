@@ -50,10 +50,15 @@ export const sequenceResponseSchema = z.strictObject({
   status: sequenceStatusSchema,
   startedOn: z.string(),
   startedBy: person.nullable(),
+  /** The run's owner (MOB-06a): whose work its ready steps are. null = nobody yet. */
+  assigneeUserId: z.uuid().nullable(),
   completedAt: z.string().nullable(),
   cancelledAt: z.string().nullable(),
   steps: z.array(sequenceStepSchema),
 });
+
+/** Hand a running sequence to another officer, or to nobody (MOB-06a). */
+export const assignSequenceSchema = z.strictObject({ assigneeUserId: z.uuid().nullable() });
 
 export const sequenceListResponseSchema = z.object({ sequences: z.array(sequenceResponseSchema) });
 
