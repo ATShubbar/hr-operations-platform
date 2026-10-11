@@ -1648,6 +1648,14 @@ Records with no change. The category map still lives only in the web (`lib/audit
 (`matchesRegistration`), NOT audited; the client hit carries `crNumber`. A widened-policy test proves the staff check (no
 client role holds `client.read`, so the permission alone hid it). API **861/861**.
 
+**INS-01 done — medical insurance + driving licence are on the employee record.** `emp_employees` gains
+`medical_insurance_number/_expiry` + `driving_licence_number/_expiry` (all optional; DB CHECK: number not blank, ≤60).
+They ride in the EXISTING govdata group (no new permission, no new route): numbers = id tier (staff with `govdata.read`,
+the employee), dates = status tier (also the client manager, own people). `DocumentCategory` + `medical_insurance`,
+`driving_licence` (own migration), both in the GRO officer's upload scope AND the old scan's recipients — whoever may
+change the date may upload the file. Renewal as a procedure = INS-04 (later). Screens = INS-02, ladder/report/seed = INS-03.
+API **868/868**.
+
 ## Technical landmines (each cost real debugging — do not rediscover)
 
 - RLS policies MUST use `NULLIF(current_setting('app.client_id', true), '')::uuid` — pooled connections leave the GUC as '' not NULL (SPIKE-001).

@@ -58,9 +58,13 @@ describe('Client portal — /portal/employees (PORTAL-02, e2e)', () => {
         workPermitNumber: 'WP-99',
         gosiRegistrationNumber: 'GOSI-1',
         absherServiceRef: 'ABSHER-1',
+        medicalInsuranceNumber: 'POL-PORTAL-1',
+        drivingLicenceNumber: 'DL-PORTAL-1',
         // govdata status/expiry (must be visible to the portal)
         iqamaExpiry: new Date('2027-01-01'),
         workPermitExpiry: new Date('2027-02-01'),
+        medicalInsuranceExpiry: new Date('2027-03-01'),
+        drivingLicenceExpiry: new Date('2031-04-01'),
         exitReentryStatus: 'single',
         gosiRegistrationStatus: 'registered',
       },
@@ -123,6 +127,12 @@ describe('Client portal — /portal/employees (PORTAL-02, e2e)', () => {
     expect(row.govdata.gosiRegistrationNumber).toBeNull();
     expect(row.govdata.absherServiceRef).toBeNull();
     expect(row.govdata.iqamaExpiry).toBe('2027-01-01T00:00:00.000Z');
+    // INS-01: the insurance and licence DATES reach the employer, the numbers do not.
+    expect(row.govdata.medicalInsuranceNumber).toBeNull();
+    expect(row.govdata.drivingLicenceNumber).toBeNull();
+    expect(row.govdata.medicalInsuranceExpiry).toBe('2027-03-01T00:00:00.000Z');
+    expect(row.govdata.drivingLicenceExpiry).toBe('2031-04-01T00:00:00.000Z');
+    expect(JSON.stringify(a.body)).not.toMatch(/POL-PORTAL-1|DL-PORTAL-1/);
     expect(row.govdata.exitReentryStatus).toBe('single');
     expect(row.govdata.gosiRegistrationStatus).toBe('registered');
 
@@ -141,6 +151,9 @@ describe('Client portal — /portal/employees (PORTAL-02, e2e)', () => {
     expect(res.body.salary).toBeNull();
     expect(res.body.govdata.iqamaNumber).toBeNull();
     expect(res.body.govdata.iqamaExpiry).toBe('2027-01-01T00:00:00.000Z');
+    expect(res.body.govdata.medicalInsuranceNumber).toBeNull();
+    expect(res.body.govdata.drivingLicenceNumber).toBeNull();
+    expect(res.body.govdata.drivingLicenceExpiry).toBe('2031-04-01T00:00:00.000Z');
   });
 
   it('GET :id for another client employee is 404 (existence not leaked)', async () => {

@@ -58,12 +58,18 @@ export const govdataGroupSchema = z.object({
   workPermitNumber: z.string().nullable(),
   gosiRegistrationNumber: z.string().nullable(),
   absherServiceRef: z.string().nullable(),
+  // INS-01: medical insurance (policy number) and driving licence — identifiers
+  // like the ones above; their expiry dates are in the status tier below.
+  medicalInsuranceNumber: z.string().nullable(),
+  drivingLicenceNumber: z.string().nullable(),
   iqamaExpiry: z.string().nullable(),
   passportExpiry: z.string().nullable(),
   workPermitExpiry: z.string().nullable(),
   exitReentryStatus: exitReentryStatusSchema.nullable(),
   exitReentryExpiry: z.string().nullable(),
   gosiRegistrationStatus: gosiRegistrationStatusSchema.nullable(),
+  medicalInsuranceExpiry: z.string().nullable(),
+  drivingLicenceExpiry: z.string().nullable(),
 });
 
 // ---- response ----
@@ -100,12 +106,19 @@ const salaryWriteSchema = salaryGroupSchema.partial();
 // reached Prisma unconverted and every expiry edit returned 500 — from EMP-02
 // until DS-07 found it (the GRO-03 write-back passed Date objects and never hit
 // it). An invalid date is now a 400.
+const documentNumber = z.string().trim().min(1).max(60);
 const govdataWriteSchema = govdataGroupSchema
   .extend({
     iqamaExpiry: z.coerce.date().nullable(),
     passportExpiry: z.coerce.date().nullable(),
     workPermitExpiry: z.coerce.date().nullable(),
     exitReentryExpiry: z.coerce.date().nullable(),
+    // INS-01. The numbers are free text as printed on the policy / licence, but
+    // a real value: trimmed, not blank, 60 characters at most (null clears).
+    medicalInsuranceExpiry: z.coerce.date().nullable(),
+    drivingLicenceExpiry: z.coerce.date().nullable(),
+    medicalInsuranceNumber: documentNumber.nullable(),
+    drivingLicenceNumber: documentNumber.nullable(),
   })
   .partial();
 

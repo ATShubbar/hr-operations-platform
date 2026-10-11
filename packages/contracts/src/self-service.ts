@@ -43,6 +43,11 @@ export const selfProfileResponseSchema = z.object({
     gosiRegistrationStatus: z.string().nullable(),
     exitReentryStatus: z.string().nullable(),
     exitReentryExpiry: z.string().nullable(),
+    // INS-01: their own medical insurance and driving licence.
+    medicalInsuranceNumber: z.string().nullable(),
+    medicalInsuranceExpiry: z.string().nullable(),
+    drivingLicenceNumber: z.string().nullable(),
+    drivingLicenceExpiry: z.string().nullable(),
   }),
   pay: z.object({
     currency: z.string(),

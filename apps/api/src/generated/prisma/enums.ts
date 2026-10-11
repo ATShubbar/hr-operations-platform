@@ -167,7 +167,9 @@ export const DocumentCategory = {
   gosi: 'gosi',
   national_id: 'national_id',
   cv: 'cv',
-  other: 'other'
+  other: 'other',
+  medical_insurance: 'medical_insurance',
+  driving_licence: 'driving_licence'
 } as const
 
 export type DocumentCategory = (typeof DocumentCategory)[keyof typeof DocumentCategory]

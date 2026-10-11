@@ -82,6 +82,8 @@ export function toEmployeeResponse(e: EmployeeRecord, vis: EmployeeVisibility): 
             workPermitNumber: govFull ? e.workPermitNumber : null,
             gosiRegistrationNumber: govFull ? e.gosiRegistrationNumber : null,
             absherServiceRef: govFull ? e.absherServiceRef : null,
+            medicalInsuranceNumber: govFull ? e.medicalInsuranceNumber : null,
+            drivingLicenceNumber: govFull ? e.drivingLicenceNumber : null,
             // expiry/status: visible at both `full` and `status`
             iqamaExpiry: iso(e.iqamaExpiry),
             passportExpiry: iso(e.passportExpiry),
@@ -89,6 +91,8 @@ export function toEmployeeResponse(e: EmployeeRecord, vis: EmployeeVisibility): 
             exitReentryStatus: e.exitReentryStatus,
             exitReentryExpiry: iso(e.exitReentryExpiry),
             gosiRegistrationStatus: e.gosiRegistrationStatus,
+            medicalInsuranceExpiry: iso(e.medicalInsuranceExpiry),
+            drivingLicenceExpiry: iso(e.drivingLicenceExpiry),
           },
   };
 }
@@ -132,6 +136,10 @@ export function toSelfProfileResponse(
       gosiRegistrationStatus: e.gosiRegistrationStatus,
       exitReentryStatus: e.exitReentryStatus,
       exitReentryExpiry: iso(e.exitReentryExpiry),
+      medicalInsuranceNumber: e.medicalInsuranceNumber,
+      medicalInsuranceExpiry: iso(e.medicalInsuranceExpiry),
+      drivingLicenceNumber: e.drivingLicenceNumber,
+      drivingLicenceExpiry: iso(e.drivingLicenceExpiry),
     },
     pay: {
       currency: e.currency,

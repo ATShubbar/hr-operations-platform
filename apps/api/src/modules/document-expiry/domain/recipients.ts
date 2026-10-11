@@ -15,6 +15,10 @@ const GOV_CATEGORIES: ReadonlySet<DocumentCategory> = new Set([
   'visa',
   'gosi',
   'national_id',
+  // INS-01: follows the write scope above (document-policy) — the GRO officer
+  // may upload these, so hears when they expire.
+  'medical_insurance',
+  'driving_licence',
 ]);
 
 export function rolesForCategory(category: DocumentCategory): StaffRole[] {

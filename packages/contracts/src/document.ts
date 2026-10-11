@@ -14,6 +14,9 @@ export const documentCategorySchema = z.enum([
   'national_id',
   'cv',
   'other',
+  // INS-01: the insurance policy / card and the driving licence.
+  'medical_insurance',
+  'driving_licence',
 ]);
 export const documentStatusSchema = z.enum(['pending', 'available', 'quarantined', 'deleted']);
 

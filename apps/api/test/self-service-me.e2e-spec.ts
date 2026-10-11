@@ -70,6 +70,10 @@ describe('GET /me — employee self-service (SS-03, e2e)', () => {
           bankIban: 'SA03 8000 0000 6080 1016 7519',
           wpsStatus: 'compliant',
           iqamaNumber: '2412345678',
+          medicalInsuranceNumber: 'POL-SELF-1',
+          medicalInsuranceExpiry: new Date('2027-03-01'),
+          drivingLicenceNumber: 'DL-SELF-1',
+          drivingLicenceExpiry: new Date('2031-04-01'),
           iqamaExpiry: new Date('2027-05-01'),
           passportNumber: 'A12345678',
           absherServiceRef: 'ABSHER-INTERNAL-REF-SS03',
@@ -108,6 +112,13 @@ describe('GET /me — employee self-service (SS-03, e2e)', () => {
       pay: { currency: 'SAR', basicSalary: 7000, housingAllowance: 1750, gosiWage: 8750 },
     });
     expect(body.identifiers.iqamaExpiry).toMatch(/^2027-05-01/);
+    // INS-01: their own insurance and licence, numbers included.
+    expect(body.identifiers).toMatchObject({
+      medicalInsuranceNumber: 'POL-SELF-1',
+      drivingLicenceNumber: 'DL-SELF-1',
+    });
+    expect(body.identifiers.medicalInsuranceExpiry).toMatch(/^2027-03-01/);
+    expect(body.identifiers.drivingLicenceExpiry).toMatch(/^2031-04-01/);
   });
 
   // The whitelist, pinned: a field added to the staff shape or to this view must
@@ -136,12 +147,16 @@ describe('GET /me — employee self-service (SS-03, e2e)', () => {
     expect(Object.keys(body.identifiers).sort()).toEqual(
       [
         'borderNumber',
+        'drivingLicenceExpiry',
+        'drivingLicenceNumber',
         'exitReentryExpiry',
         'exitReentryStatus',
         'gosiRegistrationNumber',
         'gosiRegistrationStatus',
         'iqamaExpiry',
         'iqamaNumber',
+        'medicalInsuranceExpiry',
+        'medicalInsuranceNumber',
         'nationalId',
         'passportExpiry',
         'passportNumber',

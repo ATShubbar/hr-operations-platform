@@ -109,6 +109,17 @@ describe('Documents upload flow (DOC-02, e2e)', () => {
     await issue(gro.cookie, { category: 'cv' }).expect(403);
   });
 
+  // INS-01: a policy and a driving licence are files too. Whoever may change the
+  // dates (HR and GRO officers) may upload the file — one rule, not two.
+  it('category scope — medical insurance and driving licence: HR and GRO officers', async () => {
+    for (const category of ['medical_insurance', 'driving_licence']) {
+      await issue(hr.cookie, { category }).expect(201);
+      await issue(gro.cookie, { category }).expect(201);
+      await issue(auditor.cookie, { category }).expect(403);
+    }
+    await issue(hr.cookie, { category: 'insurance' }).expect(400); // not a category
+  });
+
   it('a role without document.upload → 403', async () => {
     await issue(auditor.cookie).expect(403);
   });

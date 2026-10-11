@@ -79,6 +79,8 @@ Every date below is **stored as Gregorian UTC** and **rendered Hijri**
 | `work_permit_number` | string, nullable | **Qiwa** | |
 | `gosi_registration_number` | string, nullable | **GOSI** | |
 | `absher_service_ref` | string, nullable | Absher Business | Connector-ready placeholder for gov service ref ids |
+| `medical_insurance_number` | string ≤ 60, nullable | CCHI † | Policy number as printed. INS-01 |
+| `driving_licence_number` | string ≤ 60, nullable | Absher · Traffic † | INS-01 |
 
 ### `govdata:status` — expiry / status (client-rep may see for own, expiry/status only)
 
@@ -90,6 +92,21 @@ Every date below is **stored as Gregorian UTC** and **rendered Hijri**
 | `exit_reentry_status` | enum `none \| single \| multiple` | **Muqeem** | |
 | `exit_reentry_expiry` ⏳ | date, nullable | Muqeem | |
 | `gosi_registration_status` | enum `registered \| pending \| not_registered` | **GOSI** | |
+| `medical_insurance_expiry` ⏳ | date, nullable | CCHI † | INS-01. No date = not watched |
+| `driving_licence_expiry` ⏳ | date, nullable | Absher · Traffic † | INS-01. No date = not watched (not everyone drives) |
+
+† The reference system is the one the design prototype names for this document. It has not
+been checked against the authority and nothing in the app depends on it.
+
+**INS-01 (2026-10-11, owner decisions).** Medical insurance and driving licence joined the
+record: a number and an expiry date each, all optional. They sit in the existing government-data
+group, so no permission changed — `govdata.update` holders (Administrator, HR officer, GRO
+officer) edit them, the Auditor reads, a client manager sees the two DATES for their own people
+and never the numbers, and the employee sees their own in full. Medical insurance is not a
+government document; it is grouped here because it is kept, renewed and watched the same way and
+by the same people. Two document categories were added with them (`medical_insurance`,
+`driving_licence`) so an uploaded file can be matched to its row. Renewal as a procedure is a
+later card (INS-04).
 
 ---
 

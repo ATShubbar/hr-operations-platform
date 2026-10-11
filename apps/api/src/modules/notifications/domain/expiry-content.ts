@@ -14,6 +14,8 @@ const CATEGORY_LABELS: Record<DocumentCategory, { ar: string; en: string }> = {
   national_id: { ar: 'الهوية الوطنية', en: 'National ID' },
   cv: { ar: 'السيرة الذاتية', en: 'CV' },
   other: { ar: 'المستند', en: 'Document' },
+  medical_insurance: { ar: 'التأمين الطبي', en: 'Medical insurance' },
+  driving_licence: { ar: 'رخصة القيادة', en: 'Driving licence' },
 };
 
 export interface ExpiryContent {

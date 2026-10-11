@@ -13,6 +13,11 @@ const GOV_CATEGORIES: ReadonlySet<DocumentCategory> = new Set([
   'visa',
   'gosi',
   'national_id',
+  // INS-01: whoever may change the insurance and licence DATES (govdata.update —
+  // the GRO officer included) may upload the file. One rule for the date and
+  // its paper, though medical insurance is not a government document.
+  'medical_insurance',
+  'driving_licence',
 ]);
 
 // Roles that hold document.upload and their category scope. Roles without

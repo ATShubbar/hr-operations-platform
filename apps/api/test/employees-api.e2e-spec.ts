@@ -227,6 +227,96 @@ describe('Employees API — field-level authorization (EMP-02, e2e)', () => {
   });
 
   // ADR-013 narrowing: the prototype's HR is RWC on employee records — no delete.
+  // INS-01: medical insurance and driving licence — a number and an expiry date
+  // each, in the government-data group (same holders, same redaction).
+  describe('medical insurance and driving licence (INS-01)', () => {
+    const POLICY = 'POL-7741-INS01';
+    const LICENCE = 'DL-2290-INS01';
+    type Gov = Record<string, string | null>;
+    const patch = (cookie: string, id: string, body: Record<string, unknown>) =>
+      request(http()).patch(`/employees/${id}/govdata`).set('Cookie', cookie).send(body);
+
+    it('govdata.update holders write them (HR and GRO); the dates are plain dates', async () => {
+      const emp = await createVia(hr.cookie, baseCreate());
+      const res = await patch(hr.cookie, emp.id, {
+        medicalInsuranceNumber: POLICY,
+        medicalInsuranceExpiry: '2027-03-31',
+      }).expect(200);
+      const g = (res.body as EmployeeBody).govdata as unknown as Gov;
+      expect(g.medicalInsuranceNumber).toBe(POLICY);
+      expect(g.medicalInsuranceExpiry?.slice(0, 10)).toBe('2027-03-31');
+      // Untouched fields stay empty — one document does not imply the other.
+      expect(g.drivingLicenceNumber).toBeNull();
+      expect(g.drivingLicenceExpiry).toBeNull();
+
+      const byGro = await patch(gro.cookie, emp.id, {
+        drivingLicenceNumber: LICENCE,
+        drivingLicenceExpiry: '2031-08-15',
+      }).expect(200);
+      const g2 = (byGro.body as EmployeeBody).govdata as unknown as Gov;
+      expect(g2.drivingLicenceNumber).toBe(LICENCE);
+      expect(g2.drivingLicenceExpiry?.slice(0, 10)).toBe('2031-08-15');
+      expect(g2.medicalInsuranceNumber).toBe(POLICY); // the earlier write is kept
+    });
+
+    it('they can be given at creation, and cleared with null', async () => {
+      const emp = await createVia(
+        hr.cookie,
+        baseCreate({ govdata: { medicalInsuranceNumber: POLICY, drivingLicenceExpiry: '2030-01-01' } }),
+      );
+      const g = emp.govdata as unknown as Gov;
+      expect(g.medicalInsuranceNumber).toBe(POLICY);
+      expect(g.drivingLicenceExpiry?.slice(0, 10)).toBe('2030-01-01');
+      const cleared = await patch(hr.cookie, emp.id, {
+        medicalInsuranceNumber: null,
+        drivingLicenceExpiry: null,
+      }).expect(200);
+      const c = (cleared.body as EmployeeBody).govdata as unknown as Gov;
+      expect(c.medicalInsuranceNumber).toBeNull();
+      expect(c.drivingLicenceExpiry).toBeNull();
+    });
+
+    it('refuses a bad date, a blank number and an over-long number (400)', async () => {
+      const emp = await createVia(hr.cookie, baseCreate());
+      await patch(hr.cookie, emp.id, { medicalInsuranceExpiry: 'next year' }).expect(400);
+      await patch(hr.cookie, emp.id, { drivingLicenceExpiry: 'soon' }).expect(400);
+      await patch(hr.cookie, emp.id, { medicalInsuranceNumber: '   ' }).expect(400);
+      await patch(hr.cookie, emp.id, { drivingLicenceNumber: 'x'.repeat(61) }).expect(400);
+    });
+
+    // The database holds the same line as the contract, for any writer that is
+    // not the API (the seed, a script, a later module).
+    it('the database itself refuses a blank or over-long number', async () => {
+      const emp = await createVia(hr.cookie, baseCreate());
+      const write = (data: Record<string, string>) => owner.employee.update({ where: { id: emp.id }, data });
+      await expect(write({ medicalInsuranceNumber: '  ' })).rejects.toThrow();
+      await expect(write({ drivingLicenceNumber: '' })).rejects.toThrow();
+      await expect(write({ medicalInsuranceNumber: 'x'.repeat(61) })).rejects.toThrow();
+      await expect(write({ drivingLicenceNumber: 'x'.repeat(61) })).rejects.toThrow();
+      await expect(write({ drivingLicenceNumber: 'x'.repeat(60) })).resolves.toBeTruthy();
+    });
+
+    it('the Auditor reads them and cannot write them', async () => {
+      const emp = await createVia(
+        hr.cookie,
+        baseCreate({ govdata: { medicalInsuranceNumber: POLICY, medicalInsuranceExpiry: '2027-03-31' } }),
+      );
+      const seen = await request(http()).get(`/employees/${emp.id}`).set('Cookie', readOnly.cookie).expect(200);
+      expect(((seen.body as EmployeeBody).govdata as unknown as Gov).medicalInsuranceNumber).toBe(POLICY);
+      await patch(readOnly.cookie, emp.id, { medicalInsuranceExpiry: '2028-01-01' }).expect(403);
+    });
+
+    it('the audit entry of such a change carries no number and no date', async () => {
+      const emp = await createVia(hr.cookie, baseCreate());
+      await patch(hr.cookie, emp.id, { medicalInsuranceNumber: POLICY, drivingLicenceNumber: LICENCE }).expect(200);
+      const entries = await owner.auditEntry.findMany({ where: { resource: 'employee', resourceId: emp.id } });
+      expect(entries.some((e) => e.action === 'govdata-update')).toBe(true);
+      const dump = JSON.stringify(entries.map((e) => [e.before, e.after]));
+      expect(dump).not.toContain(POLICY);
+      expect(dump).not.toContain(LICENCE);
+    });
+  });
+
   it('the Administrator terminates (soft delete → terminated); HR and GRO cannot', async () => {
     const emp = await createVia(hr.cookie, baseCreate());
     await request(http()).delete(`/employees/${emp.id}`).set('Cookie', hr.cookie).expect(403);

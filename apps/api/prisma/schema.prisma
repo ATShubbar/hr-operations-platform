@@ -309,6 +309,10 @@ model Employee {
   workPermitNumber       String? @map("work_permit_number")
   gosiRegistrationNumber String? @map("gosi_registration_number")
   absherServiceRef       String? @map("absher_service_ref")
+  // INS-01: the medical-insurance policy number and the driving-licence number.
+  // Identifiers like the ones above: staff with govdata.read, and the employee.
+  medicalInsuranceNumber String? @map("medical_insurance_number")
+  drivingLicenceNumber   String? @map("driving_licence_number")
 
   // --- govdata:status — expiry/status (client-rep may see own) ---
   iqamaExpiry            DateTime?               @map("iqama_expiry") @db.Date
@@ -317,6 +321,10 @@ model Employee {
   exitReentryStatus      ExitReentryStatus?      @map("exit_reentry_status")
   exitReentryExpiry      DateTime?               @map("exit_reentry_expiry") @db.Date
   gosiRegistrationStatus GosiRegistrationStatus? @map("gosi_registration_status")
+  // INS-01: both optional — no date means the document is not watched (nobody
+  // is flagged for not driving).
+  medicalInsuranceExpiry DateTime?               @map("medical_insurance_expiry") @db.Date
+  drivingLicenceExpiry   DateTime?               @map("driving_licence_expiry") @db.Date
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -447,6 +455,10 @@ enum DocumentCategory {
   national_id
   cv
   other
+  // INS-01: the policy / card and the licence, so an uploaded file can be matched
+  // to its row on the record.
+  medical_insurance
+  driving_licence
 }
 
 enum DocumentStatus {

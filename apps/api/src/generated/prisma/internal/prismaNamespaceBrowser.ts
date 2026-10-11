@@ -251,12 +251,16 @@ export const EmployeeScalarFieldEnum = {
   workPermitNumber: 'workPermitNumber',
   gosiRegistrationNumber: 'gosiRegistrationNumber',
   absherServiceRef: 'absherServiceRef',
+  medicalInsuranceNumber: 'medicalInsuranceNumber',
+  drivingLicenceNumber: 'drivingLicenceNumber',
   iqamaExpiry: 'iqamaExpiry',
   passportExpiry: 'passportExpiry',
   workPermitExpiry: 'workPermitExpiry',
   exitReentryStatus: 'exitReentryStatus',
   exitReentryExpiry: 'exitReentryExpiry',
   gosiRegistrationStatus: 'gosiRegistrationStatus',
+  medicalInsuranceExpiry: 'medicalInsuranceExpiry',
+  drivingLicenceExpiry: 'drivingLicenceExpiry',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

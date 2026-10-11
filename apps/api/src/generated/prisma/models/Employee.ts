@@ -74,12 +74,16 @@ export type EmployeeMinAggregateOutputType = {
   workPermitNumber: string | null
   gosiRegistrationNumber: string | null
   absherServiceRef: string | null
+  medicalInsuranceNumber: string | null
+  drivingLicenceNumber: string | null
   iqamaExpiry: Date | null
   passportExpiry: Date | null
   workPermitExpiry: Date | null
   exitReentryStatus: $Enums.ExitReentryStatus | null
   exitReentryExpiry: Date | null
   gosiRegistrationStatus: $Enums.GosiRegistrationStatus | null
+  medicalInsuranceExpiry: Date | null
+  drivingLicenceExpiry: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -116,12 +120,16 @@ export type EmployeeMaxAggregateOutputType = {
   workPermitNumber: string | null
   gosiRegistrationNumber: string | null
   absherServiceRef: string | null
+  medicalInsuranceNumber: string | null
+  drivingLicenceNumber: string | null
   iqamaExpiry: Date | null
   passportExpiry: Date | null
   workPermitExpiry: Date | null
   exitReentryStatus: $Enums.ExitReentryStatus | null
   exitReentryExpiry: Date | null
   gosiRegistrationStatus: $Enums.GosiRegistrationStatus | null
+  medicalInsuranceExpiry: Date | null
+  drivingLicenceExpiry: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -158,12 +166,16 @@ export type EmployeeCountAggregateOutputType = {
   workPermitNumber: number
   gosiRegistrationNumber: number
   absherServiceRef: number
+  medicalInsuranceNumber: number
+  drivingLicenceNumber: number
   iqamaExpiry: number
   passportExpiry: number
   workPermitExpiry: number
   exitReentryStatus: number
   exitReentryExpiry: number
   gosiRegistrationStatus: number
+  medicalInsuranceExpiry: number
+  drivingLicenceExpiry: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -218,12 +230,16 @@ export type EmployeeMinAggregateInputType = {
   workPermitNumber?: true
   gosiRegistrationNumber?: true
   absherServiceRef?: true
+  medicalInsuranceNumber?: true
+  drivingLicenceNumber?: true
   iqamaExpiry?: true
   passportExpiry?: true
   workPermitExpiry?: true
   exitReentryStatus?: true
   exitReentryExpiry?: true
   gosiRegistrationStatus?: true
+  medicalInsuranceExpiry?: true
+  drivingLicenceExpiry?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -260,12 +276,16 @@ export type EmployeeMaxAggregateInputType = {
   workPermitNumber?: true
   gosiRegistrationNumber?: true
   absherServiceRef?: true
+  medicalInsuranceNumber?: true
+  drivingLicenceNumber?: true
   iqamaExpiry?: true
   passportExpiry?: true
   workPermitExpiry?: true
   exitReentryStatus?: true
   exitReentryExpiry?: true
   gosiRegistrationStatus?: true
+  medicalInsuranceExpiry?: true
+  drivingLicenceExpiry?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -302,12 +322,16 @@ export type EmployeeCountAggregateInputType = {
   workPermitNumber?: true
   gosiRegistrationNumber?: true
   absherServiceRef?: true
+  medicalInsuranceNumber?: true
+  drivingLicenceNumber?: true
   iqamaExpiry?: true
   passportExpiry?: true
   workPermitExpiry?: true
   exitReentryStatus?: true
   exitReentryExpiry?: true
   gosiRegistrationStatus?: true
+  medicalInsuranceExpiry?: true
+  drivingLicenceExpiry?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -431,12 +455,16 @@ export type EmployeeGroupByOutputType = {
   workPermitNumber: string | null
   gosiRegistrationNumber: string | null
   absherServiceRef: string | null
+  medicalInsuranceNumber: string | null
+  drivingLicenceNumber: string | null
   iqamaExpiry: Date | null
   passportExpiry: Date | null
   workPermitExpiry: Date | null
   exitReentryStatus: $Enums.ExitReentryStatus | null
   exitReentryExpiry: Date | null
   gosiRegistrationStatus: $Enums.GosiRegistrationStatus | null
+  medicalInsuranceExpiry: Date | null
+  drivingLicenceExpiry: Date | null
   createdAt: Date
   updatedAt: Date
   _count: EmployeeCountAggregateOutputType | null
@@ -496,12 +524,16 @@ export type EmployeeWhereInput = {
   workPermitNumber?: Prisma.StringNullableFilter<"Employee"> | string | null
   gosiRegistrationNumber?: Prisma.StringNullableFilter<"Employee"> | string | null
   absherServiceRef?: Prisma.StringNullableFilter<"Employee"> | string | null
+  medicalInsuranceNumber?: Prisma.StringNullableFilter<"Employee"> | string | null
+  drivingLicenceNumber?: Prisma.StringNullableFilter<"Employee"> | string | null
   iqamaExpiry?: Prisma.DateTimeNullableFilter<"Employee"> | Date | string | null
   passportExpiry?: Prisma.DateTimeNullableFilter<"Employee"> | Date | string | null
   workPermitExpiry?: Prisma.DateTimeNullableFilter<"Employee"> | Date | string | null
   exitReentryStatus?: Prisma.EnumExitReentryStatusNullableFilter<"Employee"> | $Enums.ExitReentryStatus | null
   exitReentryExpiry?: Prisma.DateTimeNullableFilter<"Employee"> | Date | string | null
   gosiRegistrationStatus?: Prisma.EnumGosiRegistrationStatusNullableFilter<"Employee"> | $Enums.GosiRegistrationStatus | null
+  medicalInsuranceExpiry?: Prisma.DateTimeNullableFilter<"Employee"> | Date | string | null
+  drivingLicenceExpiry?: Prisma.DateTimeNullableFilter<"Employee"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Employee"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Employee"> | Date | string
 }
@@ -538,12 +570,16 @@ export type EmployeeOrderByWithRelationInput = {
   workPermitNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   gosiRegistrationNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   absherServiceRef?: Prisma.SortOrderInput | Prisma.SortOrder
+  medicalInsuranceNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  drivingLicenceNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   iqamaExpiry?: Prisma.SortOrderInput | Prisma.SortOrder
   passportExpiry?: Prisma.SortOrderInput | Prisma.SortOrder
   workPermitExpiry?: Prisma.SortOrderInput | Prisma.SortOrder
   exitReentryStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   exitReentryExpiry?: Prisma.SortOrderInput | Prisma.SortOrder
   gosiRegistrationStatus?: Prisma.SortOrderInput | Prisma.SortOrder
+  medicalInsuranceExpiry?: Prisma.SortOrderInput | Prisma.SortOrder
+  drivingLicenceExpiry?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -583,12 +619,16 @@ export type EmployeeWhereUniqueInput = Prisma.AtLeast<{
   workPermitNumber?: Prisma.StringNullableFilter<"Employee"> | string | null
   gosiRegistrationNumber?: Prisma.StringNullableFilter<"Employee"> | string | null
   absherServiceRef?: Prisma.StringNullableFilter<"Employee"> | string | null
+  medicalInsuranceNumber?: Prisma.StringNullableFilter<"Employee"> | string | null
+  drivingLicenceNumber?: Prisma.StringNullableFilter<"Employee"> | string | null
   iqamaExpiry?: Prisma.DateTimeNullableFilter<"Employee"> | Date | string | null
   passportExpiry?: Prisma.DateTimeNullableFilter<"Employee"> | Date | string | null
   workPermitExpiry?: Prisma.DateTimeNullableFilter<"Employee"> | Date | string | null
   exitReentryStatus?: Prisma.EnumExitReentryStatusNullableFilter<"Employee"> | $Enums.ExitReentryStatus | null
   exitReentryExpiry?: Prisma.DateTimeNullableFilter<"Employee"> | Date | string | null
   gosiRegistrationStatus?: Prisma.EnumGosiRegistrationStatusNullableFilter<"Employee"> | $Enums.GosiRegistrationStatus | null
+  medicalInsuranceExpiry?: Prisma.DateTimeNullableFilter<"Employee"> | Date | string | null
+  drivingLicenceExpiry?: Prisma.DateTimeNullableFilter<"Employee"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Employee"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Employee"> | Date | string
 }, "id">
@@ -625,12 +665,16 @@ export type EmployeeOrderByWithAggregationInput = {
   workPermitNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   gosiRegistrationNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   absherServiceRef?: Prisma.SortOrderInput | Prisma.SortOrder
+  medicalInsuranceNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  drivingLicenceNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   iqamaExpiry?: Prisma.SortOrderInput | Prisma.SortOrder
   passportExpiry?: Prisma.SortOrderInput | Prisma.SortOrder
   workPermitExpiry?: Prisma.SortOrderInput | Prisma.SortOrder
   exitReentryStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   exitReentryExpiry?: Prisma.SortOrderInput | Prisma.SortOrder
   gosiRegistrationStatus?: Prisma.SortOrderInput | Prisma.SortOrder
+  medicalInsuranceExpiry?: Prisma.SortOrderInput | Prisma.SortOrder
+  drivingLicenceExpiry?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.EmployeeCountOrderByAggregateInput
@@ -675,12 +719,16 @@ export type EmployeeScalarWhereWithAggregatesInput = {
   workPermitNumber?: Prisma.StringNullableWithAggregatesFilter<"Employee"> | string | null
   gosiRegistrationNumber?: Prisma.StringNullableWithAggregatesFilter<"Employee"> | string | null
   absherServiceRef?: Prisma.StringNullableWithAggregatesFilter<"Employee"> | string | null
+  medicalInsuranceNumber?: Prisma.StringNullableWithAggregatesFilter<"Employee"> | string | null
+  drivingLicenceNumber?: Prisma.StringNullableWithAggregatesFilter<"Employee"> | string | null
   iqamaExpiry?: Prisma.DateTimeNullableWithAggregatesFilter<"Employee"> | Date | string | null
   passportExpiry?: Prisma.DateTimeNullableWithAggregatesFilter<"Employee"> | Date | string | null
   workPermitExpiry?: Prisma.DateTimeNullableWithAggregatesFilter<"Employee"> | Date | string | null
   exitReentryStatus?: Prisma.EnumExitReentryStatusNullableWithAggregatesFilter<"Employee"> | $Enums.ExitReentryStatus | null
   exitReentryExpiry?: Prisma.DateTimeNullableWithAggregatesFilter<"Employee"> | Date | string | null
   gosiRegistrationStatus?: Prisma.EnumGosiRegistrationStatusNullableWithAggregatesFilter<"Employee"> | $Enums.GosiRegistrationStatus | null
+  medicalInsuranceExpiry?: Prisma.DateTimeNullableWithAggregatesFilter<"Employee"> | Date | string | null
+  drivingLicenceExpiry?: Prisma.DateTimeNullableWithAggregatesFilter<"Employee"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Employee"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Employee"> | Date | string
 }
@@ -717,12 +765,16 @@ export type EmployeeCreateInput = {
   workPermitNumber?: string | null
   gosiRegistrationNumber?: string | null
   absherServiceRef?: string | null
+  medicalInsuranceNumber?: string | null
+  drivingLicenceNumber?: string | null
   iqamaExpiry?: Date | string | null
   passportExpiry?: Date | string | null
   workPermitExpiry?: Date | string | null
   exitReentryStatus?: $Enums.ExitReentryStatus | null
   exitReentryExpiry?: Date | string | null
   gosiRegistrationStatus?: $Enums.GosiRegistrationStatus | null
+  medicalInsuranceExpiry?: Date | string | null
+  drivingLicenceExpiry?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -759,12 +811,16 @@ export type EmployeeUncheckedCreateInput = {
   workPermitNumber?: string | null
   gosiRegistrationNumber?: string | null
   absherServiceRef?: string | null
+  medicalInsuranceNumber?: string | null
+  drivingLicenceNumber?: string | null
   iqamaExpiry?: Date | string | null
   passportExpiry?: Date | string | null
   workPermitExpiry?: Date | string | null
   exitReentryStatus?: $Enums.ExitReentryStatus | null
   exitReentryExpiry?: Date | string | null
   gosiRegistrationStatus?: $Enums.GosiRegistrationStatus | null
+  medicalInsuranceExpiry?: Date | string | null
+  drivingLicenceExpiry?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -801,12 +857,16 @@ export type EmployeeUpdateInput = {
   workPermitNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gosiRegistrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   absherServiceRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  medicalInsuranceNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  drivingLicenceNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   iqamaExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   passportExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   workPermitExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   exitReentryStatus?: Prisma.NullableEnumExitReentryStatusFieldUpdateOperationsInput | $Enums.ExitReentryStatus | null
   exitReentryExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   gosiRegistrationStatus?: Prisma.NullableEnumGosiRegistrationStatusFieldUpdateOperationsInput | $Enums.GosiRegistrationStatus | null
+  medicalInsuranceExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  drivingLicenceExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -843,12 +903,16 @@ export type EmployeeUncheckedUpdateInput = {
   workPermitNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gosiRegistrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   absherServiceRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  medicalInsuranceNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  drivingLicenceNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   iqamaExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   passportExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   workPermitExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   exitReentryStatus?: Prisma.NullableEnumExitReentryStatusFieldUpdateOperationsInput | $Enums.ExitReentryStatus | null
   exitReentryExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   gosiRegistrationStatus?: Prisma.NullableEnumGosiRegistrationStatusFieldUpdateOperationsInput | $Enums.GosiRegistrationStatus | null
+  medicalInsuranceExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  drivingLicenceExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -885,12 +949,16 @@ export type EmployeeCreateManyInput = {
   workPermitNumber?: string | null
   gosiRegistrationNumber?: string | null
   absherServiceRef?: string | null
+  medicalInsuranceNumber?: string | null
+  drivingLicenceNumber?: string | null
   iqamaExpiry?: Date | string | null
   passportExpiry?: Date | string | null
   workPermitExpiry?: Date | string | null
   exitReentryStatus?: $Enums.ExitReentryStatus | null
   exitReentryExpiry?: Date | string | null
   gosiRegistrationStatus?: $Enums.GosiRegistrationStatus | null
+  medicalInsuranceExpiry?: Date | string | null
+  drivingLicenceExpiry?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -927,12 +995,16 @@ export type EmployeeUpdateManyMutationInput = {
   workPermitNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gosiRegistrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   absherServiceRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  medicalInsuranceNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  drivingLicenceNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   iqamaExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   passportExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   workPermitExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   exitReentryStatus?: Prisma.NullableEnumExitReentryStatusFieldUpdateOperationsInput | $Enums.ExitReentryStatus | null
   exitReentryExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   gosiRegistrationStatus?: Prisma.NullableEnumGosiRegistrationStatusFieldUpdateOperationsInput | $Enums.GosiRegistrationStatus | null
+  medicalInsuranceExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  drivingLicenceExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -969,12 +1041,16 @@ export type EmployeeUncheckedUpdateManyInput = {
   workPermitNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gosiRegistrationNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   absherServiceRef?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  medicalInsuranceNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  drivingLicenceNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   iqamaExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   passportExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   workPermitExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   exitReentryStatus?: Prisma.NullableEnumExitReentryStatusFieldUpdateOperationsInput | $Enums.ExitReentryStatus | null
   exitReentryExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   gosiRegistrationStatus?: Prisma.NullableEnumGosiRegistrationStatusFieldUpdateOperationsInput | $Enums.GosiRegistrationStatus | null
+  medicalInsuranceExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  drivingLicenceExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1011,12 +1087,16 @@ export type EmployeeCountOrderByAggregateInput = {
   workPermitNumber?: Prisma.SortOrder
   gosiRegistrationNumber?: Prisma.SortOrder
   absherServiceRef?: Prisma.SortOrder
+  medicalInsuranceNumber?: Prisma.SortOrder
+  drivingLicenceNumber?: Prisma.SortOrder
   iqamaExpiry?: Prisma.SortOrder
   passportExpiry?: Prisma.SortOrder
   workPermitExpiry?: Prisma.SortOrder
   exitReentryStatus?: Prisma.SortOrder
   exitReentryExpiry?: Prisma.SortOrder
   gosiRegistrationStatus?: Prisma.SortOrder
+  medicalInsuranceExpiry?: Prisma.SortOrder
+  drivingLicenceExpiry?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -1061,12 +1141,16 @@ export type EmployeeMaxOrderByAggregateInput = {
   workPermitNumber?: Prisma.SortOrder
   gosiRegistrationNumber?: Prisma.SortOrder
   absherServiceRef?: Prisma.SortOrder
+  medicalInsuranceNumber?: Prisma.SortOrder
+  drivingLicenceNumber?: Prisma.SortOrder
   iqamaExpiry?: Prisma.SortOrder
   passportExpiry?: Prisma.SortOrder
   workPermitExpiry?: Prisma.SortOrder
   exitReentryStatus?: Prisma.SortOrder
   exitReentryExpiry?: Prisma.SortOrder
   gosiRegistrationStatus?: Prisma.SortOrder
+  medicalInsuranceExpiry?: Prisma.SortOrder
+  drivingLicenceExpiry?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -1103,12 +1187,16 @@ export type EmployeeMinOrderByAggregateInput = {
   workPermitNumber?: Prisma.SortOrder
   gosiRegistrationNumber?: Prisma.SortOrder
   absherServiceRef?: Prisma.SortOrder
+  medicalInsuranceNumber?: Prisma.SortOrder
+  drivingLicenceNumber?: Prisma.SortOrder
   iqamaExpiry?: Prisma.SortOrder
   passportExpiry?: Prisma.SortOrder
   workPermitExpiry?: Prisma.SortOrder
   exitReentryStatus?: Prisma.SortOrder
   exitReentryExpiry?: Prisma.SortOrder
   gosiRegistrationStatus?: Prisma.SortOrder
+  medicalInsuranceExpiry?: Prisma.SortOrder
+  drivingLicenceExpiry?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -1195,12 +1283,16 @@ export type EmployeeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   workPermitNumber?: boolean
   gosiRegistrationNumber?: boolean
   absherServiceRef?: boolean
+  medicalInsuranceNumber?: boolean
+  drivingLicenceNumber?: boolean
   iqamaExpiry?: boolean
   passportExpiry?: boolean
   workPermitExpiry?: boolean
   exitReentryStatus?: boolean
   exitReentryExpiry?: boolean
   gosiRegistrationStatus?: boolean
+  medicalInsuranceExpiry?: boolean
+  drivingLicenceExpiry?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["employee"]>
@@ -1237,12 +1329,16 @@ export type EmployeeSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   workPermitNumber?: boolean
   gosiRegistrationNumber?: boolean
   absherServiceRef?: boolean
+  medicalInsuranceNumber?: boolean
+  drivingLicenceNumber?: boolean
   iqamaExpiry?: boolean
   passportExpiry?: boolean
   workPermitExpiry?: boolean
   exitReentryStatus?: boolean
   exitReentryExpiry?: boolean
   gosiRegistrationStatus?: boolean
+  medicalInsuranceExpiry?: boolean
+  drivingLicenceExpiry?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["employee"]>
@@ -1279,12 +1375,16 @@ export type EmployeeSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   workPermitNumber?: boolean
   gosiRegistrationNumber?: boolean
   absherServiceRef?: boolean
+  medicalInsuranceNumber?: boolean
+  drivingLicenceNumber?: boolean
   iqamaExpiry?: boolean
   passportExpiry?: boolean
   workPermitExpiry?: boolean
   exitReentryStatus?: boolean
   exitReentryExpiry?: boolean
   gosiRegistrationStatus?: boolean
+  medicalInsuranceExpiry?: boolean
+  drivingLicenceExpiry?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["employee"]>
@@ -1321,17 +1421,21 @@ export type EmployeeSelectScalar = {
   workPermitNumber?: boolean
   gosiRegistrationNumber?: boolean
   absherServiceRef?: boolean
+  medicalInsuranceNumber?: boolean
+  drivingLicenceNumber?: boolean
   iqamaExpiry?: boolean
   passportExpiry?: boolean
   workPermitExpiry?: boolean
   exitReentryStatus?: boolean
   exitReentryExpiry?: boolean
   gosiRegistrationStatus?: boolean
+  medicalInsuranceExpiry?: boolean
+  drivingLicenceExpiry?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type EmployeeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clientId" | "nameAr" | "nameEn" | "nationality" | "gender" | "dateOfBirth" | "jobTitleAr" | "jobTitleEn" | "department" | "hireDate" | "employmentStatus" | "contractType" | "contractEndDate" | "countsTowardSaudization" | "currency" | "basicSalary" | "housingAllowance" | "transportAllowance" | "otherAllowances" | "gosiWage" | "gosiContributionBasis" | "bankIban" | "wpsStatus" | "iqamaNumber" | "nationalId" | "borderNumber" | "passportNumber" | "workPermitNumber" | "gosiRegistrationNumber" | "absherServiceRef" | "iqamaExpiry" | "passportExpiry" | "workPermitExpiry" | "exitReentryStatus" | "exitReentryExpiry" | "gosiRegistrationStatus" | "createdAt" | "updatedAt", ExtArgs["result"]["employee"]>
+export type EmployeeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clientId" | "nameAr" | "nameEn" | "nationality" | "gender" | "dateOfBirth" | "jobTitleAr" | "jobTitleEn" | "department" | "hireDate" | "employmentStatus" | "contractType" | "contractEndDate" | "countsTowardSaudization" | "currency" | "basicSalary" | "housingAllowance" | "transportAllowance" | "otherAllowances" | "gosiWage" | "gosiContributionBasis" | "bankIban" | "wpsStatus" | "iqamaNumber" | "nationalId" | "borderNumber" | "passportNumber" | "workPermitNumber" | "gosiRegistrationNumber" | "absherServiceRef" | "medicalInsuranceNumber" | "drivingLicenceNumber" | "iqamaExpiry" | "passportExpiry" | "workPermitExpiry" | "exitReentryStatus" | "exitReentryExpiry" | "gosiRegistrationStatus" | "medicalInsuranceExpiry" | "drivingLicenceExpiry" | "createdAt" | "updatedAt", ExtArgs["result"]["employee"]>
 
 export type $EmployeePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Employee"
@@ -1368,12 +1472,16 @@ export type $EmployeePayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     workPermitNumber: string | null
     gosiRegistrationNumber: string | null
     absherServiceRef: string | null
+    medicalInsuranceNumber: string | null
+    drivingLicenceNumber: string | null
     iqamaExpiry: Date | null
     passportExpiry: Date | null
     workPermitExpiry: Date | null
     exitReentryStatus: $Enums.ExitReentryStatus | null
     exitReentryExpiry: Date | null
     gosiRegistrationStatus: $Enums.GosiRegistrationStatus | null
+    medicalInsuranceExpiry: Date | null
+    drivingLicenceExpiry: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["employee"]>
@@ -1830,12 +1938,16 @@ export interface EmployeeFieldRefs {
   readonly workPermitNumber: Prisma.FieldRef<"Employee", 'String'>
   readonly gosiRegistrationNumber: Prisma.FieldRef<"Employee", 'String'>
   readonly absherServiceRef: Prisma.FieldRef<"Employee", 'String'>
+  readonly medicalInsuranceNumber: Prisma.FieldRef<"Employee", 'String'>
+  readonly drivingLicenceNumber: Prisma.FieldRef<"Employee", 'String'>
   readonly iqamaExpiry: Prisma.FieldRef<"Employee", 'DateTime'>
   readonly passportExpiry: Prisma.FieldRef<"Employee", 'DateTime'>
   readonly workPermitExpiry: Prisma.FieldRef<"Employee", 'DateTime'>
   readonly exitReentryStatus: Prisma.FieldRef<"Employee", 'ExitReentryStatus'>
   readonly exitReentryExpiry: Prisma.FieldRef<"Employee", 'DateTime'>
   readonly gosiRegistrationStatus: Prisma.FieldRef<"Employee", 'GosiRegistrationStatus'>
+  readonly medicalInsuranceExpiry: Prisma.FieldRef<"Employee", 'DateTime'>
+  readonly drivingLicenceExpiry: Prisma.FieldRef<"Employee", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Employee", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Employee", 'DateTime'>
 }
