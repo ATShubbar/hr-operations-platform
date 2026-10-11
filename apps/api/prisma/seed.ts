@@ -1,7 +1,8 @@
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient, Prisma } from '../src/generated/prisma/client';
+import { PrismaClient } from '../src/generated/prisma/client';
 import { SEED_USER_DOMAIN, seedEmailFor, seedPasswordFor, seedStorageFor, UAT_SEED_EMAILS } from './seed-guard';
+import { syncSeedAccounts, type SeedAccount } from './seed-accounts';
 import { buildSamplePdf, SeedFiles } from './seed-files';
 import { leaveEndDate, splitByYear } from '../src/modules/leave/public-api';
 import { SEQUENCES } from '../src/modules/gro/public-api';
@@ -120,7 +121,7 @@ async function seedUsers(prisma: PrismaClient): Promise<number> {
   // MFA-required roles (Administrator, Auditor — ADR-013) are seeded WITHOUT an
   // mfa_secret: they sign in to an enroll-required session until they enroll,
   // exactly as AUTH-06 requires; the seed never fakes enrollment.
-  const staffUsers: Prisma.AuthUserCreateManyInput[] = await Promise.all(
+  const staffUsers: SeedAccount[] = await Promise.all(
     STAFF_ACCOUNTS.map(async ({ email, role, name }) => ({
       email: seedEmail(email),
       passwordHash: await passwords.hash(SEED_PASSWORD),
@@ -130,7 +131,7 @@ async function seedUsers(prisma: PrismaClient): Promise<number> {
     })),
   );
 
-  const clientRepUsers: Prisma.AuthUserCreateManyInput[] = await Promise.all(
+  const clientRepUsers: SeedAccount[] = await Promise.all(
     CLIENT_REP_ASSIGNMENTS.map(async ({ clientId, name }) => ({
       email: seedEmail(`client_manager-${clientLetter(clientId)}`),
       passwordHash: await passwords.hash(SEED_PASSWORD),
@@ -147,7 +148,7 @@ async function seedUsers(prisma: PrismaClient): Promise<number> {
   // data to fence OUT. No client_id: an employee's company is read from the
   // record (auth_users_principal_binding_chk forbids storing one). It holds no
   // permissions until SS-03, so it can sign in and do nothing else.
-  const employeeUsers: Prisma.AuthUserCreateManyInput[] = [
+  const employeeUsers: SeedAccount[] = [
     {
       email: seedEmail('employee-a'),
       passwordHash: await passwords.hash(SEED_PASSWORD),
@@ -160,19 +161,16 @@ async function seedUsers(prisma: PrismaClient): Promise<number> {
 
   const data = [...staffUsers, ...clientRepUsers, ...employeeUsers];
 
-  // Idempotency: replace exactly the seed-owned users (by email domain),
-  // leaving any test- or manually-created users untouched.
-  // On UAT the addresses are @peopleandgro.com, so delete EXACTLY the seed's own
-  // addresses there — never another account at the company domain.
-  await prisma.authUser.deleteMany({
-    where: {
-      OR: [
-        { email: { endsWith: `@${SEED_USER_DOMAIN}` } },
-        { email: { in: Object.values(UAT_SEED_EMAILS) } },
-      ],
-    },
+  // SEED-02: the accounts are kept IN PLACE (matched by email), so re-seeding
+  // never changes an account's id and a session opened before it is still that
+  // person. Seed-owned means the seed's own email domain — and, on UAT, EXACTLY
+  // the seed's addresses at the company domain, never another account there.
+  await syncSeedAccounts(prisma, data, {
+    OR: [
+      { email: { endsWith: `@${SEED_USER_DOMAIN}` } },
+      { email: { in: Object.values(UAT_SEED_EMAILS) } },
+    ],
   });
-  await prisma.authUser.createMany({ data });
 
   return data.length;
 }

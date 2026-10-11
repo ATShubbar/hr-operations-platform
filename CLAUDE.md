@@ -1634,6 +1634,10 @@ three seed DATES moved so Reminder is never empty (profession-change procedure d
 trip, thresholds 403, client = breaches only, employee = own, staff route 403 for an employee) — the "every stage" check
 holds on SEED DAY, so run `seed-and-smoke`. Follow-ups: NC-07 (stage emails; must replace the old scan's thresholds),
 SEED-02 (the seed leaves old sessions alive for recreated accounts).
+**SEED-02 done — re-seeding keeps the sample accounts' ids.** `prisma/seed-accounts.ts` `syncSeedAccounts(prisma, accounts,
+owned)`: upsert BY EMAIL (ids stable → a session opened before a re-seed is still that person), every seed-owned column
+written each run (status active, `mfaSecret` + `passwordSetAt` null — a hand-made enrolment is cleared), unlisted
+seed-owned accounts removed, anyone else untouched. No more "sign in again after Seed UAT". API **852/852**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
@@ -1653,9 +1657,9 @@ SEED-02 (the seed leaves old sessions alive for recreated accounts).
 - A seed that UPSERTS rows back to a seeded status must also reset every column a CHECK ties to that status — the
   seed left `info_returns_to` set and re-seeding failed on any request someone had put in `info_needed`, which would
   have broken Seed UAT the first time it was used (THREAD-03).
-- The seed RECREATES the seed accounts (new ids). A session opened before a re-seed still works but carries the old id, so
-  anything keyed on "me" (the ladder's "Assigned to me", own tasks) comes back empty — it looks like a bug in the feature.
-  Sign in again after every re-seed before measuring (NC-06; SEED-02 will end those sessions).
+- A RED PROOF THAT REMOVES THE SCOPE FROM A DELETE IS DESTRUCTIVE WHERE IT RUNS. Proving that the seed only removes its own
+  accounts, I deleted the rule — and the test run wiped every account in the local database (SEED-02). Argue that kind of
+  proof from the code, or run it against a throwaway database; never against one you want to keep.
 - Local test runs can leave rows the seed does not remove (auto-opened renewal procedures, `UAT smoke…` requests). They
   change counts — NC-01 reported nine quiet expiries where a clean seed has five. Before quoting a seed figure, check the
   table holds only seeded rows (NC-06).
