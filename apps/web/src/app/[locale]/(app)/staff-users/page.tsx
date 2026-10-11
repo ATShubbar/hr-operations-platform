@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Ellipsis } from 'lucide-react';
 import type {
   RoleListResponse,
@@ -36,6 +36,7 @@ import { StatTile } from '@/components/ui/stat-tile';
 import { toastSuccess } from '@/components/ui/toast';
 import { AccountsTable, STAFF_ROLES } from './accounts-table';
 import { HIDDEN_RESOURCES, PermissionMatrix, resourcesOf } from './permission-matrix';
+import { dots } from '@/lib/pieces';
 
 // Roles and permissions (DS-19) — the prototype's screen (ADR-012), replacing
 // UX-10b's staff directory at the same URL. Administrator manages, Auditor reads
@@ -71,6 +72,7 @@ export default function RolesAndPermissionsPage() {
   const t = useTranslations('staffUsers');
   const tr = useTranslations('roles');
   const ts = useTranslations('states');
+  const locale = useLocale();
   const router = useRouter();
   const canRead = useCan('staff-user.read');
   const canCreate = useCan('staff-user.create');
@@ -224,7 +226,7 @@ export default function RolesAndPermissionsPage() {
               <span className="flex min-w-0 grow flex-col gap-0.5">
                 <span className="font-heading text-lg leading-6 font-semibold">{tr(r.id)}</span>
                 <span className="text-[13px] leading-[18px] text-muted-foreground">
-                  {t('accountsCount', { count: r.accounts })} · {t(`note.${r.id}`)}
+                  {dots(locale, t('accountsCount', { count: r.accounts }), t(`note.${r.id}`))}
                 </span>
               </span>
               <Popover open={menu === r.id} onOpenChange={(o) => setMenu(o ? r.id : null)}>

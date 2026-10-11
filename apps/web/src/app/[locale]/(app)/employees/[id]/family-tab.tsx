@@ -34,6 +34,7 @@ import { Skeleton, SkeletonRegion } from '@/components/ui/skeleton';
 import { toastSuccess } from '@/components/ui/toast';
 import { DependantDialog } from './dependant-dialog';
 import { dateFormat, hijriDate } from '@/lib/dates';
+import { dots } from '@/lib/pieces';
 
 // The Person record's Family tab (DEP-03, ADR-017) — the prototype's: a header
 // card (how many dependants are sponsored, Add a dependant), then one card per
@@ -305,10 +306,14 @@ export function FamilyTab({
                 : rows.length === 0
                   ? t('emptySummary')
                   : dependantFee > 0
-                    ? `${t('summary', { count: rows.length })} · ${t('feeLine', {
-                        total: money(rows.length * dependantFee),
-                        each: money(dependantFee),
-                      })}`
+                    ? dots(
+                        locale,
+                        t('summary', { count: rows.length }),
+                        t('feeLine', {
+                          total: money(rows.length * dependantFee),
+                          each: money(dependantFee),
+                        }),
+                      )
                     : t('summary', { count: rows.length })}
             </bdi>
           </span>
@@ -352,8 +357,11 @@ export function FamilyTab({
               </span>
               <span className="flex shrink-0 flex-col items-end gap-px">
                 <span className="text-xs leading-4 text-muted-foreground">
-                  {t(`relationship.${d.relationship}`)} ·{' '}
-                  {d.dateOfBirth ? t('age', { n: ageOf(d.dateOfBirth) }) : t('ageUnknown')}
+                  {dots(
+                    locale,
+                    t(`relationship.${d.relationship}`),
+                    d.dateOfBirth ? t('age', { n: ageOf(d.dateOfBirth) }) : t('ageUnknown'),
+                  )}
                 </span>
                 {!d.identifierVisible ? (
                   <span
@@ -551,7 +559,7 @@ export function FamilyTab({
           <DialogHeader>
             <DialogTitle>{t('renewTitle')}</DialogTitle>
             <DialogDescription>
-              {renew ? `${t(`doc.${renew.doc.key}`)} · ${nameOf(renew.dep)}` : ''}
+              {renew ? dots(locale, t(`doc.${renew.doc.key}`), nameOf(renew.dep)) : ''}
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-1.5">

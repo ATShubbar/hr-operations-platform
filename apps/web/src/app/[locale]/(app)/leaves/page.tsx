@@ -28,6 +28,7 @@ import { BalancesTab } from './balances-tab';
 import { LeaveDetail } from './leave-detail';
 import { RequestLeaveDialog } from './request-leave-dialog';
 import { dateFormat } from '@/lib/dates';
+import { dots } from '@/lib/pieces';
 
 // Leaves (LEAVE-04, ADR-014) — the prototype's screen (ADR-012): four tiles, the
 // Requests tab (list beside the selected request's detail) and the Request leave
@@ -310,7 +311,7 @@ export default function LeavesPage() {
                           {t(`type.${r.type}`)}
                         </span>
                         <span className="truncate text-[11px] leading-[15px] text-muted-foreground">
-                          {name(r)} · {t('daysCount', { count: r.days })} · {shortDay(r.startDate)}
+                          {dots(locale, name(r), t('daysCount', { count: r.days }), shortDay(r.startDate))}
                         </span>
                       </span>
                       <StatusPill tone={toneFor('leave', r.status)} className="shrink-0">

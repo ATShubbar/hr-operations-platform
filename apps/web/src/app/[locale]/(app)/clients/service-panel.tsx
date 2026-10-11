@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/select';
 import { toastSuccess } from '@/components/ui/toast';
 import { dateFormat, hijriDate } from '@/lib/dates';
+import { dots } from '@/lib/pieces';
 
 // The Service panel (PROF-05, ADR-019) — the prototype's: the named officer,
 // the tier, the response commitment and when the term ends. Shown on the Client
@@ -254,7 +255,10 @@ export function ServicePanel({
               'sv-officer',
               t('namedOfficer'),
               'officer',
-              staff.map((u) => [u.id, `${u.displayName ?? t('officerUnnamed')} · ${tr(u.role)}`]),
+              staff.map((u) => [
+                u.id,
+                dots(locale, u.displayName ?? t('officerUnnamed'), tr(u.role)),
+              ]),
             )}
             <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
               {pick(

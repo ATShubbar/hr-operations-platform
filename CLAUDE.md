@@ -1776,6 +1776,17 @@ must not enter API output. 23-screen sweep: dates out of order 181 → 0; what i
 (**UX-22**). The sweep harness (judge by glyph position, one screen per iframe, results in localStorage) is described in
 `evidence/ux/UX-20.md`. No API change.
 
+**UX-22 done — lines assembled from several pieces read in order.** "job · company · department" built in code read out
+of order in Arabic whenever a piece was English (97 of 226 such lines on 23 screens). `@hr/text` `rtlSafeJoin(pieces,
+{rtl, separator})`: empty pieces dropped, each piece sealed, a mark at each end in Arabic; a plain join in English.
+**In the web app a dot-separated line is built ONLY with `dots(locale, a, b, …)` from `@/lib/pieces` (text) or
+`<DotLine>` from `components/ui/dot-line.tsx` (when a piece is an element);** `spaced()` is the same with a space
+("Procedure #id"). Lint rule **`hr/no-hand-joined-line`** forbids typing the separator anywhere else (one commented
+exemption: the avatar's placeholder glyph). 92 places in 47 files swept. Owner: an all-English line runs from the right
+too. UX-20's message rule gained one case: an Arabic-file message that is only slots joined by the dot (`{name} ·
+{role}`) is a line — 845 messages marked. Sweeps: dot lines 97 → 0; UX-20's sweep 28 → 2 (script false positives).
+Follow-ups: **UX-23** (text cut with "…" hides the START of an Arabic line), **UX-24** (other separators, unmeasured).
+
 ## Technical landmines (each cost real debugging — do not rediscover)
 
 - `apps/web/messages/ar.json` must hold NO directional control character (mark or isolate) — the rule in `@hr/text`
@@ -1786,6 +1797,10 @@ must not enter API output. 23-screen sweep: dates out of order 181 → 0; what i
   (UX-20: the People summary).
 - A date/time for the SCREEN comes from `apps/web/src/lib/dates.ts`; a date used as a key, a file name, an input value
   or in arithmetic is built from the raw date — the screen version carries an invisible mark in Arabic (UX-21).
+- A layout check that judges ONE text node at a time misses a line built from several elements. UX-20's sweep counted 26
+  data lines out of order; the per-LINE sweep written for UX-22 found 97. Judge the unit the reader sees.
+- `<span dir="rtl">` stretched into a block (a flex column does that) pushes its text to the right-hand edge. An inline
+  right-to-left wrapper needs `text-end` to stay where it was (`<DotLine>`, UX-22).
 - When a tool call writes a `\u` escape for an invisible character into a source file, the character can arrive as the
   LITERAL — it happened three times in one day (a guard script, a test file, a regex). After writing such a file, scan it
   for literal controls and rewrite them as escapes built in code (`chr(92) + 'u200f'`), never by typing the escape again.

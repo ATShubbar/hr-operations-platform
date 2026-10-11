@@ -40,6 +40,7 @@ import { InfoNeededBanner } from './info-needed-banner';
 import { NewRequestDialog } from './new-request-dialog';
 import { RequestThread } from './request-thread';
 import { dateFormat, hijriDate } from '@/lib/dates';
+import { dots } from '@/lib/pieces';
 
 // Requests (DS-08) — the prototype's Requests screen (ADR-012): the list beside
 // the selected request's detail.
@@ -328,7 +329,7 @@ export default function RequestsPage() {
                           {r.title}
                         </span>
                         <span className="truncate text-[11px] leading-[15px] text-muted-foreground">
-                          {requesterName(r)} · {day(r.createdAt)}
+                          {dots(locale, requesterName(r), day(r.createdAt))}
                         </span>
                       </span>
                       <StatusPill tone={toneFor('request', r.status)} className="shrink-0">
@@ -362,14 +363,13 @@ export default function RequestsPage() {
                     </bdi>
                   </div>
                   <span className="text-[13px] leading-[18px] text-muted-foreground">
-                    {[
+                    {dots(
+                      locale,
                       t(`type.${req.type}`),
                       requesterName(req),
                       req.requester ? t(`requester.${req.requester.kind}`) : null,
                       clientName(req.clientId),
-                    ]
-                      .filter(Boolean)
-                      .join(' · ')}
+                    )}
                   </span>
                 </div>
                 <StatusPill tone={toneFor('request', req.status)}>
@@ -644,7 +644,7 @@ function DecisionTrail({ requestId }: { requestId: string }) {
       locale === 'ar'
         ? dateFormat('ar', { day: 'numeric', month: 'short', year: 'numeric' }).format(d)
         : `${d.getDate()} ${dateFormat('en-US', { month: 'short' }).format(d)} ${d.getFullYear()}`;
-    return `${date} · ${dateFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(d)}`;
+    return dots(locale, date, dateFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(d));
   };
   const known = messages.requests?.trailAction ?? {};
   const title = (e: EmployeeHistoryEntry) =>

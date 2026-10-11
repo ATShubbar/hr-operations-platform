@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { countsOf, PipelineBars } from '../../hiring/pipeline-bars';
 import { COLUMNS, isActive, type Column } from '../../hiring/stages';
+import { dots } from '@/lib/pieces';
 
 // The Client record's Hiring tab (DS-11): this company's slice of the hiring
 // board (DS-09) — a bar per board column and the candidates in it — with "Open
@@ -114,7 +115,7 @@ export function HiringTab({ clientId }: { clientId: string }) {
                 <span className="flex min-w-0 grow flex-col gap-px">
                   <span className="truncate text-[13px] leading-[18px] font-medium">{name}</span>
                   <span className="truncate text-[11px] leading-[15px] text-muted-foreground">
-                    {[role(c), nationalityName(c.nationality)].filter(Boolean).join(' · ')}
+                    {dots(locale, role(c), nationalityName(c.nationality))}
                   </span>
                 </span>
                 <Badge variant="outline" className="shrink-0">

@@ -196,11 +196,46 @@ const noBareSelectValue = {
   },
 };
 
+// A line ASSEMBLED from several pieces — "job \u00b7 company \u00b7 department" — reads out
+// of order in the Arabic view when a piece is English (UX-22). Measured on 23
+// screens: 97 of 226 such lines. The browser places the English piece at the
+// wrong end and the Arabic pieces around it swap.
+//
+// The web app therefore builds every such line with `dots()` from `@/lib/pieces`
+// (text) or `<DotLine>` (when a piece is an element), which seal each piece and
+// tie the line to run from the right. This rule keeps it that way: the separator
+// may not be typed by hand — in a string, a template or JSX text — anywhere else.
+// (Translated messages live in JSON and are handled by their own rule, UX-20.)
+const SEPARATOR = '\u00b7';
+const noHandJoinedLine = {
+  meta: {
+    type: 'problem',
+    messages: {
+      handJoined:
+        'A line joined by hand with "\u00b7" reads out of order in Arabic when a piece is English. Use dots(locale, a, b) from @/lib/pieces, or <DotLine> when a piece is an element (UX-22).',
+    },
+    schema: [],
+  },
+  create(context) {
+    const check = (node, text) => {
+      if (typeof text === 'string' && text.includes(SEPARATOR)) {
+        context.report({ node, messageId: 'handJoined' });
+      }
+    };
+    return {
+      Literal: (node) => check(node, node.value),
+      TemplateElement: (node) => check(node, node.value?.raw),
+      JSXText: (node) => check(node, node.value),
+    };
+  },
+};
+
 export default {
   rules: {
     'module-boundaries': moduleBoundaries,
     'rtl-safe-classes': rtlSafeClasses,
     'no-brand-in-status': noBrandInStatus,
     'no-bare-select-value': noBareSelectValue,
+    'no-hand-joined-line': noHandJoinedLine,
   },
 };

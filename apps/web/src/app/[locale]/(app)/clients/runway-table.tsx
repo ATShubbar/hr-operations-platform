@@ -1,12 +1,13 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import type { DependantExpiry, EmployeeResponse } from '@hr/contracts';
 import { Link } from '@/i18n/navigation';
 import type { DependantDocKey } from '@/lib/dependant-docs';
 import type { DocKey } from '@/lib/employee-docs';
 import { cn } from '@/lib/utils';
 import { RUNWAY_BANDS, dependantRunwayFor, runwayFor, type RunwayBand } from './client-figures';
+import { dots } from '@/lib/pieces';
 
 // The expiry runway (DS-10; shared with the Overview in DS-17): each document type
 // × how much time is left, over the people given. The Client record passes one
@@ -63,6 +64,7 @@ export function RunwayTable({
 }) {
   const t = useTranslations('clients');
   const tp = useTranslations('people');
+  const locale = useLocale();
   const runway = runwayFor(staff);
   const dependantRows = dependants ? dependantRunwayFor(staff, dependants) : null;
 
@@ -149,7 +151,7 @@ export function RunwayTable({
                             row.key,
                             b.key,
                             row.counts[b.key],
-                            `${label} · ${t(`band.${b.key}`)}`,
+                            dots(locale, label, t(`band.${b.key}`)),
                           )}
                         </td>
                       ))}
@@ -191,7 +193,7 @@ export function RunwayTable({
                             row.key,
                             b.key,
                             row.counts[b.key],
-                            `${t(`dependantDoc.${row.key}`)} · ${t(`band.${b.key}`)}`,
+                            dots(locale, t(`dependantDoc.${row.key}`), t(`band.${b.key}`)),
                           )}
                         </td>
                       ))}

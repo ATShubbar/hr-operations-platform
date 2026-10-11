@@ -49,6 +49,7 @@ import { ClientOverview } from './client-overview';
 import { NeedsRow } from './needs-row';
 import { PortfolioTable } from './portfolio-table';
 import { dateFormat, hijriDate } from '@/lib/dates';
+import { dots } from '@/lib/pieces';
 
 // The Overview (DS-17) — the prototype's home screen (ADR-012), for staff. It
 // replaces UX-04's "Today" work list, whose job the Work queue (DS-12) now does
@@ -223,7 +224,8 @@ function StaffOverview() {
     data.tasks.filter((k) => isFinished('task', k.status) && isToday(k.updatedAt)).length;
 
   const now = new Date();
-  const todayLine = [
+  const todayLine = dots(
+    locale,
     dateFormat(locale === 'ar' ? 'ar' : 'en-GB', {
       weekday: 'long',
       day: 'numeric',
@@ -232,7 +234,7 @@ function StaffOverview() {
     }).format(now),
     hijriDate(now, locale),
     t('cleared', { count: cleared }),
-  ].join(' · ');
+  );
 
   const clientName = (c: ClientResponse) => (locale === 'ar' ? c.name.ar : c.name.en);
 
@@ -457,7 +459,7 @@ function StaffOverview() {
             .map((e) => {
               const c = data.clients.find((x) => x.id === e.clientId);
               const who = locale === 'ar' ? e.name.ar : e.name.en;
-              return { id: e.id, name: c ? `${who} · ${clientName(c)}` : who };
+              return { id: e.id, name: c ? dots(locale, who, clientName(c)) : who };
             })
             .sort((a, b) => a.name.localeCompare(b.name, locale))}
         />

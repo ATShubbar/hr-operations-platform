@@ -41,6 +41,7 @@ import { StatusAction } from '@/components/ui/status-action';
 import { procedureTitle } from '@/lib/procedure-title';
 import { toastError, toastSuccess } from '@/components/ui/toast';
 import { dateFormat, hijriDate } from '@/lib/dates';
+import { DotLine } from '@/components/ui/dot-line';
 
 // Open government procedures as rows, each with "Resolve" (DS-07, shared in
 // DS-11): the Person record lists one person's, the Client record a whole
@@ -338,15 +339,17 @@ export function GroWorkRows({
                 {procedureTitle(p, (ty) => tg(`type.${ty}`), locale)}
               </span>
               <span className="text-xs leading-4 text-muted-foreground">
-                {person && <>{person} · </>}
-                {p.referenceNumber ? (
-                  <bdi dir="ltr" className="font-mono">
-                    {p.referenceNumber}
-                  </bdi>
-                ) : (
-                  t('noRef')
-                )}{' '}
-                · {tg(`status.${p.status}`)}
+                <DotLine>
+                  {person}
+                  {p.referenceNumber ? (
+                    <bdi dir="ltr" className="font-mono">
+                      {p.referenceNumber}
+                    </bdi>
+                  ) : (
+                    t('noRef')
+                  )}
+                  {tg(`status.${p.status}`)}
+                </DotLine>
               </span>
             </span>
             <DueCell iso={p.dueDate} />

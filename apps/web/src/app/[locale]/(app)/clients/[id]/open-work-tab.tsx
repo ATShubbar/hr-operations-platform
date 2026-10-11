@@ -17,6 +17,7 @@ import { useStaffDirectory } from '@/lib/staff-directory';
 import { Button } from '@/components/ui/button';
 import { DueCell, isOpenProcedure, GroWorkRows, byDue } from '@/components/gro-work-list';
 import { toastSuccess } from '@/components/ui/toast';
+import { dots } from '@/lib/pieces';
 
 // The Client record's Open work tab (DS-11): what is still open against this
 // company — its people's government procedures and the internal tasks linked to
@@ -138,10 +139,11 @@ export function OpenWorkTab({
                   <span className="flex min-w-0 grow flex-col gap-px">
                     <span className="truncate text-sm leading-5 font-medium">{task.title}</span>
                     <span className="truncate text-xs leading-4 text-muted-foreground">
-                      {[
+                      {dots(
+                        locale,
                         task.assigneeUserId ? nameFor(task.assigneeUserId) : tt('unassigned'),
                         tt(`status.${task.status}`),
-                      ].join(' · ')}
+                      )}
                     </span>
                   </span>
                   <DueCell iso={task.dueDate} />

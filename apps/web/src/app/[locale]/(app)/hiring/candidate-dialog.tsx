@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import type { CandidateStage } from '@hr/contracts';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,6 +15,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Link } from '@/i18n/navigation';
 import { forwardOf, prevOf } from './stages';
+import { dots } from '@/lib/pieces';
 
 // The candidate's dialog (DS-09) — the prototype's drawer. Facts it has data for
 // are shown; Health, Target and Mobilisation are not stored yet and say so (owner
@@ -59,6 +60,7 @@ export function CandidateDialog({
   onMove: (to: CandidateStage) => void;
 }) {
   const t = useTranslations('hiring');
+  const locale = useLocale();
   const [endOpen, setEndOpen] = useState(false);
   const c = candidate;
   const forward = c ? forwardOf(c.stage, c.nationalityCode) : [];
@@ -85,9 +87,7 @@ export function CandidateDialog({
           <>
             <DialogHeader>
               <DialogTitle>{c.name}</DialogTitle>
-              <DialogDescription>
-                {[c.role, c.client].filter(Boolean).join(' · ')}
-              </DialogDescription>
+              <DialogDescription>{dots(locale, c.role, c.client)}</DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-4">
               <div className="grid grid-cols-2 gap-x-4 gap-y-3 rounded-md bg-neutral-50 px-3.5 py-3 ring-1 ring-foreground/10 sm:grid-cols-3">
@@ -108,11 +108,11 @@ export function CandidateDialog({
 
               <div className="flex flex-col gap-0.5">
                 <span className="text-[13px] leading-[18px] text-pretty text-neutral-700">
-                  {[c.notes, t('addedOn', { date: c.added })].filter(Boolean).join(' · ')}
+                  {dots(locale, c.notes, t('addedOn', { date: c.added }))}
                 </span>
                 <span className="text-xs leading-4 text-muted-foreground">
                   {t('againstRole', {
-                    role: [c.role, c.department].filter(Boolean).join(' · '),
+                    role: dots(locale, c.role, c.department),
                   })}
                 </span>
               </div>

@@ -1,7 +1,8 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import type { FeeResponse } from '@hr/contracts';
+import { dots } from '@/lib/pieces';
 
 // What a fee was FOR, in the viewer's language (BILL-03). A fee recorded by
 // hand carries its own words; a step's or a procedure's fee is named by what
@@ -10,10 +11,15 @@ import type { FeeResponse } from '@hr/contracts';
 export function useFeeWhat(): (fee: FeeResponse) => string {
   const tm = useTranslations('person.mob');
   const tg = useTranslations('gro');
+  const locale = useLocale();
   return (f) =>
     f.source.kind === 'manual'
       ? f.source.label
       : f.source.kind === 'sequence_step'
-        ? `${tm(`step.${f.source.stepKey}.title`)} · ${tm(`kind.${f.source.sequenceKind}.label`)}`
+        ? dots(
+            locale,
+            tm(`step.${f.source.stepKey}.title`),
+            tm(`kind.${f.source.sequenceKind}.label`),
+          )
         : tg(`type.${f.source.procedureType}`);
 }

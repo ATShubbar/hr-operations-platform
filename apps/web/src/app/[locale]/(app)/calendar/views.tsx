@@ -18,6 +18,7 @@ import {
   itemKey,
 } from './cal-utils';
 import { hijriDate } from '@/lib/dates';
+import { dots } from '@/lib/pieces';
 
 // The calendar's three views + the selected-day panel (DS-14), the prototype's
 // Month / Week / Agenda. Each receives the already-filtered items; opening an
@@ -253,7 +254,7 @@ export function WeekView({
                     item={it}
                     label={title(it)}
                     size="week"
-                    sub={[ownerName(it), where(it)].filter(Boolean).join(' · ')}
+                    sub={dots(locale, ownerName(it), where(it))}
                     onOpen={onOpen}
                   />
                 ))}
@@ -387,7 +388,7 @@ export function DayPanel({
                 <span className="flex min-w-0 grow flex-col">
                   <span className="truncate text-sm leading-[19px] font-medium">{title(it)}</span>
                   <span className="truncate text-xs leading-4 text-muted-foreground">
-                    {[ownerName(it), where(it)].filter(Boolean).join(' · ')}
+                    {dots(locale, ownerName(it), where(it))}
                   </span>
                 </span>
               </button>

@@ -21,6 +21,7 @@ import { LeaveTab } from '../../employees/[id]/leave-tab';
 import { LeaveDetail } from '../../leaves/leave-detail';
 import { RequestLeaveDialog } from '../../leaves/request-leave-dialog';
 import { dateFormat } from '@/lib/dates';
+import { dots } from '@/lib/pieces';
 
 // My leave (LEAVE-06, ADR-014) — the prototype's employee version of Leaves:
 // "My leave", "N requests on file · M awaiting a decision", Request leave (always
@@ -168,7 +169,7 @@ export default function MyLeavePage() {
                               {t(`type.${r.type}`)}
                             </span>
                             <span className="truncate text-[11px] leading-[15px] text-muted-foreground">
-                              {t('daysCount', { count: r.days })} · {shortDay(r.startDate)}
+                              {dots(locale, t('daysCount', { count: r.days }), shortDay(r.startDate))}
                             </span>
                           </span>
                           <StatusPill tone={toneFor('leave', r.status)} className="shrink-0">

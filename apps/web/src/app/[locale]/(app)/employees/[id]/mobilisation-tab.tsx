@@ -45,6 +45,7 @@ import {
 import { StatusPill } from '@/components/ui/status-pill';
 import { toastError, toastSuccess } from '@/components/ui/toast';
 import { dateFormat, hijriDate } from '@/lib/dates';
+import { dots } from '@/lib/pieces';
 
 // MOB-06b: the roles that can own a sequence (they hold gro.process), and the
 // Select's value for "nobody" (a Select cannot carry null).
@@ -500,7 +501,7 @@ export function MobilisationTab({
           <DialogHeader>
             <DialogTitle>{tf('recordTitle')}</DialogTitle>
             <DialogDescription>
-              {feeFor ? `${title(feeFor.step.key)} · ${feeFor.step.portal}` : ''}
+              {feeFor ? dots(locale, title(feeFor.step.key), feeFor.step.portal) : ''}
             </DialogDescription>
           </DialogHeader>
           {feeFor && (
@@ -545,13 +546,17 @@ export function MobilisationTab({
           <DialogHeader>
             <DialogTitle>{t('fileTitle')}</DialogTitle>
             <DialogDescription>
-              {filing ? `${title(filing.step.key)} · ${filing.step.portal}` : ''}
+              {filing ? dots(locale, title(filing.step.key), filing.step.portal) : ''}
             </DialogDescription>
           </DialogHeader>
           {filing && (
             <div className="flex flex-col gap-3">
               <p className="text-xs leading-4 text-muted-foreground">
-                {t('target', { date: day(filing.step.target) })} · {hijri(filing.step.target)}
+                {dots(
+                  locale,
+                  t('target', { date: day(filing.step.target) }),
+                  hijri(filing.step.target),
+                )}
               </p>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="mob-filed-on">{t('fileOn')}</Label>
@@ -690,6 +695,7 @@ function SequenceCard({
 }) {
   const t = useTranslations('person.mob');
   const tf = useTranslations('fees');
+  const locale = useLocale();
   const done = run.steps.filter((s) => s.state === 'filed').length;
   const blocked = run.steps.filter((s) => s.state === 'blocked').length;
   const next = run.steps.find((s) => s.state === 'ready');
@@ -821,7 +827,7 @@ function SequenceCard({
                 <bdi>{t(`step.${s.key}.title`)}</bdi>
               </span>
               <span className="text-[11px] leading-[15px] text-pretty text-muted-foreground">
-                {s.portal} · <bdi>{t(`step.${s.key}.note`)}</bdi>
+                {dots(locale, s.portal, t(`step.${s.key}.note`))}
               </span>
               {live && s.state === 'blocked' && (
                 <span className="text-[11px] leading-[15px] text-status-warning">

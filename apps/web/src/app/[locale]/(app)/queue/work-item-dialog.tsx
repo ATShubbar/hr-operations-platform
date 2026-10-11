@@ -29,6 +29,7 @@ import {
 import { GroResolve } from '@/components/gro-work-list';
 import { useQueueActions, type QueueItem } from './queue-actions';
 import { hijriDate } from '@/lib/dates';
+import { dots } from '@/lib/pieces';
 
 // The work-item dialog (DS-13) — the prototype's drawer for one queue item:
 // who and which company it concerns, when it is due (chip + Hijri), what it is
@@ -111,7 +112,7 @@ function Body({
     item.task !== undefined && (status !== item.task.status || priority !== item.task.priority);
 
   const n = item.due ? daysTo(item.due) : null;
-  const sub = [item.ref, item.person?.name, item.clientName].filter(Boolean).join(' · ');
+  const sub = dots(locale, item.ref, item.person?.name, item.clientName);
 
   const detail =
     item.kind === 'request'

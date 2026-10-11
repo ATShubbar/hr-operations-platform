@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type FormEvent, type ReactNode } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Plus, Signature, X } from 'lucide-react';
 import type { ClientPortal, ClientResponse, ClientSignatory } from '@hr/contracts';
 import { CLIENT_PORTALS, MAX_SIGNATORIES } from '@hr/contracts/client-profile';
@@ -21,6 +21,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toastSuccess } from '@/components/ui/toast';
+import { dots } from '@/lib/pieces';
 
 // The Client record's Records tab, the profile half (PROF-04, ADR-019) — the
 // prototype's four cards: main contact, authorised signatories, registrations,
@@ -49,6 +50,7 @@ export function ProfileRecords({
   const t = useTranslations('clients.profile');
   const tp = useTranslations('clientProfile');
   const tc = useTranslations('clients');
+  const locale = useLocale();
   const router = useRouter();
   const canEdit = useCan('client.update');
 
@@ -291,9 +293,7 @@ export function ProfileRecords({
                 <li key={i} className="flex items-center gap-2 text-[13px] leading-[18px]">
                   <Signature className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
                   <span className="min-w-0 truncate">
-                    <bdi>
-                      {s.name} · {s.role}
-                    </bdi>
+                    <bdi>{dots(locale, s.name, s.role)}</bdi>
                   </span>
                 </li>
               ))}

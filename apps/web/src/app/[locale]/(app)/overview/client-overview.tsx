@@ -34,6 +34,7 @@ import { PipelineBars } from '../hiring/pipeline-bars';
 import { NewRequestDialog } from '../requests/new-request-dialog';
 import { PortfolioTable } from './portfolio-table';
 import { dateFormat, hijriDate } from '@/lib/dates';
+import { dots } from '@/lib/pieces';
 
 // The client manager's Overview (DS-18) — the prototype's client view of its
 // home screen (ADR-012): their company only.
@@ -132,7 +133,8 @@ export function ClientOverview() {
 
   const now = new Date();
   const dateLine = (cleared: number) =>
-    [
+    dots(
+      locale,
       dateFormat(locale === 'ar' ? 'ar' : 'en-GB', {
         weekday: 'long',
         day: 'numeric',
@@ -141,7 +143,7 @@ export function ClientOverview() {
       }).format(now),
       hijriDate(now, locale),
       t('cleared', { count: cleared }),
-    ].join(' · ');
+    );
 
   const header = (line: string | null) => (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
@@ -336,9 +338,12 @@ export function ClientOverview() {
                         {r.title}
                       </span>
                       <span className="truncate text-[11px] leading-[15px] text-muted-foreground">
-                        {[tr(`type.${r.type}`), r.requester?.name, shortDate(r.createdAt)]
-                          .filter(Boolean)
-                          .join(' · ')}
+                        {dots(
+                          locale,
+                          tr(`type.${r.type}`),
+                          r.requester?.name,
+                          shortDate(r.createdAt),
+                        )}
                       </span>
                     </span>
                     <StatusPill tone={toneFor('request', r.status)} className="shrink-0">

@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { dateFormat, hijriDate } from '@/lib/dates';
+import { dots } from '@/lib/pieces';
 
 // My family (DEP-04, ADR-017) — the dependants on my sponsorship, read-only, in
 // the Family tab's card shape (DEP-03), phone-first. The numbers are mine to see
@@ -106,8 +107,11 @@ export function FamilySection({ onRequestChange }: { onRequestChange: () => void
             </span>
             <span className="flex shrink-0 flex-col items-end gap-px">
               <span className="text-xs leading-4 text-muted-foreground">
-                {tf(`relationship.${d.relationship}`)} ·{' '}
-                {d.dateOfBirth ? tf('age', { n: ageOf(d.dateOfBirth) }) : tf('ageUnknown')}
+                {dots(
+                  locale,
+                  tf(`relationship.${d.relationship}`),
+                  d.dateOfBirth ? tf('age', { n: ageOf(d.dateOfBirth) }) : tf('ageUnknown'),
+                )}
               </span>
               {d.iqamaNumber ? (
                 <bdi dir="ltr" className="font-mono text-[11px] leading-[15px]">
@@ -130,7 +134,7 @@ export function FamilySection({ onRequestChange }: { onRequestChange: () => void
                     <span className="text-[13px] leading-[18px]">{tf(`doc.${doc.key}`)}</span>
                     {iso ? (
                       <span className="text-[11px] leading-[15px] text-muted-foreground">
-                        {day(iso)} · {hijriDate(new Date(`${iso}T00:00:00Z`), locale)}
+                        {dots(locale, day(iso), hijriDate(new Date(`${iso}T00:00:00Z`), locale))}
                       </span>
                     ) : (
                       <span className="text-[11px] leading-[15px] text-neutral-400">

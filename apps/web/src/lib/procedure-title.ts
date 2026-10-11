@@ -1,4 +1,5 @@
 import type { GroProcessResponse } from '@hr/contracts';
+import { dots } from '@/lib/pieces';
 
 // A procedure's title. Most are their type ("Iqama renewal") — the person is
 // shown beside it. A DEPENDANT procedure (DEP-06) is opened on the sponsor, so
@@ -12,5 +13,5 @@ export function procedureTitle(
   const label = typeLabel(p.type);
   if (!p.dependant) return label;
   const name = locale === 'ar' && p.dependant.nameAr ? p.dependant.nameAr : p.dependant.nameEn;
-  return `${label} · ${name}`;
+  return dots(locale, label, name);
 }

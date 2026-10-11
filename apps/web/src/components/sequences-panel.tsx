@@ -8,6 +8,7 @@ import { Link } from '@/i18n/navigation';
 import { apiFetch } from '@/lib/api';
 import { useCan } from '@/lib/session';
 import { cn } from '@/lib/utils';
+import { dots } from '@/lib/pieces';
 
 // "Mobilisations and exits" (MOB-05, ADR-018) — the prototype's panel on the
 // Overview and on Reports: every onboarding and final exit still running, each
@@ -96,12 +97,10 @@ export function SequencesPanel({
                     <Avatar name={run.employee.name.en} size="sm" />
                     <span className="flex min-w-0 grow flex-col gap-px">
                       <span className="truncate text-[13px] leading-[18px] font-medium">
-                        <bdi>
-                          {name} · {tm(`kind.${run.kind}.label`)}
-                        </bdi>
+                        <bdi>{dots(locale, name, tm(`kind.${run.kind}.label`))}</bdi>
                       </span>
                       <span className="truncate text-[11px] leading-[15px] text-muted-foreground">
-                        <bdi>{client ? `${client} · ${nextLine}` : nextLine}</bdi>
+                        <bdi>{client ? dots(locale, client, nextLine) : nextLine}</bdi>
                       </span>
                     </span>
                   </span>

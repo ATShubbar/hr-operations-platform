@@ -47,6 +47,11 @@ const LATIN_RUN = /[A-Za-z][A-Za-z0-9]*(?:[ &+./_'-]+[A-Za-z0-9]+)*/g;
 const SLOT = /^\s*\w+\s*(?:,\s*(?:number|date|time)\b[^{}]*)?$/;
 /** {count, plural, …} · {kind, select, …} — the head, then the branches. */
 const BRANCHING = /^(\s*\w+\s*,\s*(?:plural|select|selectordinal)\s*,)([\s\S]*)$/;
+/**
+ * A message with no Arabic of its own that is still a LINE: slots joined by the dot
+ * separator — "{name} · {role}" (UX-22). Its values may be in either language.
+ */
+const SLOT_LINE = /\}\s*\u00b7|\u00b7\s*\{/;
 const TAG = /^<\/?\w+\s*\/?>/;
 
 class Unreadable extends Error {}
@@ -119,12 +124,15 @@ function inner(text: string): string {
 }
 
 /**
- * Make one Arabic message safe to draw in a left-to-right layout. A message with
- * no Arabic letter, or one that already carries a directional control, or one
- * whose braces do not balance, is returned exactly as it came.
+ * Make one Arabic message safe to draw in a left-to-right layout. Returned exactly
+ * as it came: a message with no Arabic letter (unless it is a line of slots joined
+ * by the dot separator), one that already carries a directional control, and one
+ * whose braces do not balance.
  */
 export function rtlSafeMessage(message: string): string {
-  if (!ARABIC_LETTER.test(message) || CONTROLS.test(message)) return message;
+  if ((!ARABIC_LETTER.test(message) && !SLOT_LINE.test(message)) || CONTROLS.test(message)) {
+    return message;
+  }
   let body: string;
   try {
     body = inner(message);
@@ -169,4 +177,33 @@ export function rtlSafeValue(value: string): string {
   if (!ARABIC_LETTER.test(value) && !INNER_MARK.test(value)) return value;
   const first = value.trimStart()[0] ?? '';
   return ARABIC_LETTER.test(first) || LEADING_MARK.test(first) ? value : RLM + value;
+}
+
+/** One piece of a line; anything empty is dropped. */
+export type Piece = string | null | undefined | false;
+
+/**
+ * A line ASSEMBLED in code from several pieces — "job · company · department"
+ * (UX-22). Measured: with an English piece among Arabic ones the browser puts the
+ * English at the wrong end and the Arabic pieces around it swap places.
+ *
+ * Right to left (the Arabic view): every piece is sealed in an isolate, so it
+ * keeps its own direction and cannot join its neighbours, and a mark at each end
+ * makes the sealed pieces run from the right — first piece first, whatever
+ * language each is in. An all-English line runs the same way (owner decision):
+ * one rule for every such line.
+ *
+ * Left to right (English): a plain join, with no invisible character.
+ *
+ * Empty pieces are dropped with their separator. One piece left is returned as it
+ * is — there is no order to protect.
+ */
+export function rtlSafeJoin(
+  pieces: readonly Piece[],
+  options: { rtl: boolean; separator?: string },
+): string {
+  const separator = options.separator ?? ' · ';
+  const kept = pieces.filter((p): p is string => typeof p === 'string' && p.trim() !== '');
+  if (kept.length < 2 || !options.rtl) return kept.join(separator);
+  return RLM + kept.map(isolate).join(separator) + RLM;
 }

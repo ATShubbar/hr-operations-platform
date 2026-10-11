@@ -34,6 +34,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { isOpenProcedure } from '@/components/gro-work-list';
 import { figuresFor, underManagement } from '../clients/client-figures';
 import { dateFormat } from '@/lib/dates';
+import { dots } from '@/lib/pieces';
 
 // The Reports dashboard (DS-16) — the prototype's analytics panels, computed on
 // the page from the list endpoints the screen can already read (owner decision;
@@ -449,7 +450,7 @@ export function ReportsDashboard() {
                       className="flex items-center gap-3 rounded-md px-2 py-1.5 outline-none hover:bg-neutral-50 focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <span className="min-w-0 grow truncate text-[13px] leading-[18px]">
-                        {treq(`type.${r.type}`)} · {r.title}
+                        {dots(locale, treq(`type.${r.type}`), r.title)}
                       </span>
                       <span className="shrink-0 font-mono text-[11px] text-neutral-400">
                         #{r.id.slice(0, 8).toUpperCase()}

@@ -38,6 +38,7 @@ import { StatusPill } from '@/components/ui/status-pill';
 import { toastSuccess } from '@/components/ui/toast';
 import { ProfileRecords } from './profile-records';
 import { dateFormat, hijriDate } from '@/lib/dates';
+import { DotLine } from '@/components/ui/dot-line';
 
 // The Client record's Records tab (DS-22a). Its first built part is the
 // company's OWN documents — those attached to no person (the documents registry
@@ -249,11 +250,13 @@ export function RecordsTab({
                   <span className="flex min-w-0 grow basis-48 flex-col gap-px">
                     <span className="truncate text-sm leading-5 font-medium">{d.title}</span>
                     <span className="truncate text-xs leading-4 text-muted-foreground">
-                      {tc(d.category)} ·{' '}
-                      <bdi dir="ltr" className="font-mono">
-                        {d.fileName}
-                      </bdi>
-                      {d.legalHold ? ` · ${t('legalHold')}` : ''}
+                      <DotLine>
+                        {tc(d.category)}
+                        <bdi dir="ltr" className="font-mono">
+                          {d.fileName}
+                        </bdi>
+                        {d.legalHold ? t('legalHold') : null}
+                      </DotLine>
                     </span>
                   </span>
                   {d.status !== 'available' && (

@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { toastSuccess } from '@/components/ui/toast';
 import { dateFormat } from '@/lib/dates';
+import { dots } from '@/lib/pieces';
 
 // Kept in step with @hr/contracts (REQUEST_ATTACHMENT_*) — values, not imported,
 // so the page doesn't ship zod (the DS-06 landmine).
@@ -237,7 +238,12 @@ export function RequestAttachments({
                       <bdi>{a.fileName}</bdi>
                     </span>
                     <span className="text-[11px] leading-[15px] text-muted-foreground">
-                      {who(a)} · {when(a.createdAt)} · {a.sizeBytes ? size(a.sizeBytes) : ''}
+                      {dots(
+                        locale,
+                        who(a),
+                        when(a.createdAt),
+                        a.sizeBytes ? size(a.sizeBytes) : '',
+                      )}
                     </span>
                   </span>
                   <span className="flex shrink-0 items-center gap-0.5">

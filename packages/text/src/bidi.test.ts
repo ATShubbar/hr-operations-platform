@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { rtlSafeMessage, rtlSafeMessages, rtlSafeValue } from './bidi.js';
+import { rtlSafeJoin, rtlSafeMessage, rtlSafeMessages, rtlSafeValue } from './bidi.js';
 
 // Written as escapes on purpose: an invisible character in a source file cannot
 // be reviewed.
@@ -112,6 +112,36 @@ describe('rtlSafeMessage — message syntax', () => {
   });
 });
 
+describe('rtlSafeMessage — a message that is only slots joined by a dot (UX-22)', () => {
+  // "{name} · {role}" holds no Arabic letter of its own, so the first version of
+  // the rule skipped it — and "Turki Al-Harbi · مسؤول علاقات حكومية" stayed out of
+  // order on the History tab. In the Arabic file such a message is a LINE.
+  it('is sealed and marked like any other line', () => {
+    expect(rtlSafeMessage('{name} · {role}')).toBe(
+      `${RLM}${iso('{name}')} · ${iso('{role}')}${RLM}`,
+    );
+    expect(rtlSafeMessage('{resource} · {action}')).toBe(
+      `${RLM}${iso('{resource}')} · ${iso('{action}')}${RLM}`,
+    );
+  });
+
+  it('a slots-only message WITHOUT the dot is still left alone (a time, a count, a code)', () => {
+    for (const m of [
+      '{count} / {total}',
+      '{hours}:{minutes}',
+      '{from}–{to}',
+      '{verb} {noun}',
+      '{n}',
+    ]) {
+      expect(rtlSafeMessage(m)).toBe(m);
+    }
+  });
+
+  it('a dot with no slot beside it changes nothing', () => {
+    expect(rtlSafeMessage('A · B')).toBe('A · B');
+  });
+});
+
 describe('rtlSafeMessage — English words', () => {
   it('several words in a row are one piece', () => {
     expect(rtlSafeMessage('يُحفظ في Google Calendar فقط')).toBe(
@@ -193,5 +223,68 @@ describe('rtlSafeValue — a formatted value standing on its own (UX-21)', () =>
 
   it('a mark further in does not stop the one in front (browsers put marks inside some formats)', () => {
     expect(rtlSafeValue(`3 أكتوبر${RLM} 2026`)).toBe(`${RLM}3 أكتوبر${RLM} 2026`);
+  });
+});
+
+// UX-22: a line ASSEMBLED in code from several pieces — "job · company · department".
+// Measured on 23 screens: 97 of 226 such lines read out of order, because an English
+// piece is placed at the wrong end and the Arabic pieces around it swap.
+describe('rtlSafeJoin — a line built from several pieces (UX-22)', () => {
+  const rtl = { rtl: true };
+  const line = (...pieces: string[]) => `${RLM}${pieces.map(iso).join(' · ')}${RLM}`;
+
+  it('seals every piece and ties the line to run from the right', () => {
+    expect(rtlSafeJoin(['محاسب', 'شركة الألف التجارية', 'Finance'], rtl)).toBe(
+      line('محاسب', 'شركة الألف التجارية', 'Finance'),
+    );
+  });
+
+  it('an English piece at the start or in the middle is handled the same way', () => {
+    expect(rtlSafeJoin(['Abdulaziz Al-Ghamdi', 'شركة الألف التجارية', 'مفتوح'], rtl)).toBe(
+      line('Abdulaziz Al-Ghamdi', 'شركة الألف التجارية', 'مفتوح'),
+    );
+    expect(rtlSafeJoin(['خدمة حكومية', 'Reem Al-Mutairi', 'العميل'], rtl)).toBe(
+      line('خدمة حكومية', 'Reem Al-Mutairi', 'العميل'),
+    );
+  });
+
+  it('an all-English line runs from the right too (owner decision)', () => {
+    expect(rtlSafeJoin(['PDF', '1 KB'], rtl)).toBe(line('PDF', '1 KB'));
+  });
+
+  it('an all-Arabic line is treated the same — one rule', () => {
+    expect(rtlSafeJoin(['محاسب', 'مصر'], rtl)).toBe(line('محاسب', 'مصر'));
+  });
+
+  it('empty pieces are dropped, with their separator', () => {
+    expect(rtlSafeJoin(['محاسب', '', null, undefined, false, '  ', 'Finance'], rtl)).toBe(
+      line('محاسب', 'Finance'),
+    );
+  });
+
+  it('one piece left is returned as it is; none left is an empty text', () => {
+    expect(rtlSafeJoin(['محاسب', null], rtl)).toBe('محاسب');
+    expect(rtlSafeJoin(['Finance'], rtl)).toBe('Finance');
+    expect(rtlSafeJoin([null, ''], rtl)).toBe('');
+  });
+
+  it('takes another separator', () => {
+    expect(rtlSafeJoin(['إجراء', '#e470adc9'], { rtl: true, separator: ' ' })).toBe(
+      `${RLM}${iso('إجراء')} ${iso('#e470adc9')}${RLM}`,
+    );
+  });
+
+  it('a piece that already carries a mark (a date) is sealed like any other', () => {
+    const date = `${RLM}3 أكتوبر 2026`;
+    expect(rtlSafeJoin(['Reem Al-Mutairi', date], rtl)).toBe(line('Reem Al-Mutairi', date));
+  });
+
+  it('left to right (English): a plain join, no invisible character', () => {
+    expect(rtlSafeJoin(['Accountant', 'Alpha Trading Co.', 'Finance'], { rtl: false })).toBe(
+      'Accountant · Alpha Trading Co. · Finance',
+    );
+    expect(rtlSafeJoin(['Accountant', null, 'Finance'], { rtl: false })).toBe(
+      'Accountant · Finance',
+    );
   });
 });

@@ -16,6 +16,14 @@ export default [
     },
   },
   {
+    // UX-22: a line built from several pieces goes through dots() / <DotLine>,
+    // which keep it in reading order in Arabic. The two files that hold the
+    // separator are the only ones allowed to type it.
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/lib/pieces.ts', 'src/components/ui/dot-line.tsx'],
+    rules: { 'hr/no-hand-joined-line': 'error' },
+  },
+  {
     // UX-21: every date and time shown goes through src/lib/dates.ts, which ties
     // an Arabic date's leading number to the words after it. Formatted directly,
     // "3 أكتوبر 2026" is drawn day, then year, then month under the left-to-right

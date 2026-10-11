@@ -28,6 +28,7 @@ import { OpenWorkTab } from './open-work-tab';
 import { ProfileTab } from './profile-tab';
 import { SelfServiceAccessCard } from './self-service-access-card';
 import { StartProcedureDialog } from './start-procedure-dialog';
+import { dots } from '@/lib/pieces';
 
 // The Person record (DS-06) — the prototype's record page (ADR-012): a back
 // link, a header card (avatar, both names, status, a position · company ·
@@ -173,7 +174,7 @@ export default function PersonRecordPage() {
     : emp.clientId.slice(0, 8);
   const position =
     (locale === 'ar' ? emp.jobTitle.ar : emp.jobTitle.en) ?? emp.jobTitle.en ?? emp.jobTitle.ar;
-  const sub = [position, clientName, emp.department].filter(Boolean).join(' · ');
+  const sub = dots(locale, position, clientName, emp.department);
   const name = locale === 'ar' ? emp.name.ar : emp.name.en;
 
   return (

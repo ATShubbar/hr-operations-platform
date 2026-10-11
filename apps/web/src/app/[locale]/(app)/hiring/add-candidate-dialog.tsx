@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { dots } from '@/lib/pieces';
 
 // "Add a candidate" against a role (DS-09) — they enter the board at Applied.
 // Both names are required (the contract keeps them bilingual); nationality is a
@@ -110,7 +111,7 @@ export function AddCandidateDialog({
           <div className="flex flex-col gap-0.5 rounded-md bg-neutral-50 px-3.5 py-3 ring-1 ring-foreground/10">
             <span className="text-sm leading-[19px] font-medium">{role?.title}</span>
             <span className="text-xs leading-4 text-muted-foreground">
-              {[role?.client, role?.department].filter(Boolean).join(' · ')}
+              {dots(locale, role?.client, role?.department)}
             </span>
           </div>
           <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">

@@ -31,6 +31,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { StatusPill } from '@/components/ui/status-pill';
 import { toastSuccess } from '@/components/ui/toast';
 import { dateFormat, hijriDate } from '@/lib/dates';
+import { dots } from '@/lib/pieces';
 
 // Invoice RECORDS on the Commercial tab (BILL-05, ADR-020).
 //
@@ -552,7 +553,7 @@ export function InvoicesCard({
                             <bdi>{what(f)}</bdi>
                           </span>
                           <span className="font-mono text-[11px] leading-[15px] text-muted-foreground">
-                            {f.ref} · {date(f.paidOn)}
+                            {dots(locale, f.ref, date(f.paidOn))}
                           </span>
                         </span>
                         <span className="shrink-0 font-mono text-xs whitespace-nowrap">

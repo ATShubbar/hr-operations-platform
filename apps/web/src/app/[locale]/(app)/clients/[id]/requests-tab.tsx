@@ -7,6 +7,7 @@ import { Link } from '@/i18n/navigation';
 import { toneFor } from '@/lib/status-tone';
 import { StatusPill } from '@/components/ui/status-pill';
 import { dateFormat } from '@/lib/dates';
+import { dots } from '@/lib/pieces';
 
 // The Client record's Requests tab (DS-11): everything this company has asked
 // for and where each stands, newest first — the prototype's list. Each row opens
@@ -59,14 +60,13 @@ export function RequestsTab({ requests }: { requests: readonly RequestResponse[]
                 <span className="flex min-w-0 grow flex-col gap-px">
                   <span className="truncate text-sm leading-5 font-medium">{r.title}</span>
                   <span className="truncate text-xs leading-4 text-muted-foreground">
-                    {[
+                    {dots(
+                      locale,
                       tr(`type.${r.type}`),
                       r.requester?.name,
                       t('submittedOn', { date: day(r.createdAt) }),
                       r.dueDate ? t('dueOn', { date: day(r.dueDate) }) : null,
-                    ]
-                      .filter(Boolean)
-                      .join(' · ')}
+                    )}
                   </span>
                 </span>
                 <StatusPill tone={toneFor('request', r.status)} className="shrink-0">

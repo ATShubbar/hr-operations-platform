@@ -37,6 +37,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { StatusPill } from '@/components/ui/status-pill';
 import { EntryDialog } from './entry-dialog';
 import { dateFormat, hijriDate } from '@/lib/dates';
+import { dots, spaced } from '@/lib/pieces';
 
 // The Audit trail (DS-15) — the prototype's screen (ADR-012) over the audit log
 // (AUDIT-04), still Administrator + Auditor only (audit.read).
@@ -243,13 +244,14 @@ export default function AuditTrailPage() {
     if (known('phrase', phraseKey)) return t(`phrase.${phraseKey}`);
     return known('verb', e.action) && known('noun', e.resource)
       ? t('actionPhrase', { verb: t(`verb.${e.action}`), noun: t(`noun.${e.resource}`) })
-      : `${e.action} · ${e.resource}`;
+      : dots(locale, e.action, e.resource);
   };
   const targetLabel = (e: AuditEntry) => {
     const noun = known('noun', e.resource) ? t(`noun.${e.resource}`) : e.resource;
     const name = nameIn(e);
     const ref = e.resourceId ? `#${e.resourceId.slice(0, 8)}` : null;
-    return [name ?? noun, name ? null : ref].filter(Boolean).join(' ');
+    // "Procedure #e470adc9": the id is English; sealed, it stays AFTER the word (UX-22).
+    return spaced(locale, name ?? noun, name ? null : ref);
   };
   const actorName = (e: AuditEntry) => {
     if (!e.actorId) return t('system');

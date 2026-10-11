@@ -19,6 +19,7 @@ import { apiFetch } from '@/lib/api';
 import type { Locale } from '@/lib/employee-format';
 import { useSession } from '@/lib/session';
 import { cn } from '@/lib/utils';
+import { dots } from '@/lib/pieces';
 
 // The header's global search (SEARCH-01, ADR-015) — the prototype's box:
 // "Search people, refs, ID numbers", results in a dropdown under it, each with
@@ -136,32 +137,30 @@ function SearchBox({
       case 'person': {
         const job = locale === 'ar' ? h.jobTitleAr : h.jobTitleEn;
         const how = h.matchedOn === 'name' ? null : t(`matchedOn.${h.matchedOn}`);
-        return { title: nm(h), sub: [how, job, nm(h.client)].filter(Boolean).join(' · ') };
+        return { title: nm(h), sub: dots(locale, how, job, nm(h.client)) };
       }
       case 'client':
         // The registration number is on the line, so a match on digits explains itself.
         return {
           title: nm(h),
-          sub: [t('kind.client'), h.crNumber ? tc('cr', { number: h.crNumber }) : null].filter(Boolean).join(' · '),
+          sub: dots(locale, t('kind.client'), h.crNumber ? tc('cr', { number: h.crNumber }) : null),
         };
       case 'procedure':
         return {
           title: h.reference ?? tg(`type.${h.type}`),
-          sub: [h.reference ? tg(`type.${h.type}`) : null, nm(h.employee), tg(`status.${h.status}`)]
-            .filter(Boolean)
-            .join(' · '),
+          sub: dots(locale, h.reference ? tg(`type.${h.type}`) : null, nm(h.employee), tg(`status.${h.status}`)),
         };
       case 'task':
         return { title: h.title, sub: tt(`status.${h.status}`) };
       case 'request':
         return {
           title: h.title,
-          sub: [tr(`type.${h.type}`), tr(`status.${h.status}`), nm(h.client)].filter(Boolean).join(' · '),
+          sub: dots(locale, tr(`type.${h.type}`), tr(`status.${h.status}`), nm(h.client)),
         };
       case 'leave':
         return {
-          title: `${h.ref} · ${tl(`type.${h.type}`)}`,
-          sub: [nm(h.employee), tl(`listStatus.${h.status}`)].join(' · '),
+          title: dots(locale, h.ref, tl(`type.${h.type}`)),
+          sub: dots(locale, nm(h.employee), tl(`listStatus.${h.status}`)),
         };
     }
   }

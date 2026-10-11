@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Skeleton, SkeletonRegion } from '@/components/ui/skeleton';
 import { dateFormat } from '@/lib/dates';
+import { dots } from '@/lib/pieces';
 
 // The notification centre (NC-03, ADR-021) — the prototype's panel behind the
 // header bell.
@@ -259,7 +260,7 @@ export function NotificationCentre() {
         return tc(`title.work.${w}`, {
           // DEP-07: a dependant's renewal says who it is for.
           what: s.dependant
-            ? `${tg(`type.${s.type}`)} · ${name(s.dependant.name)}`
+            ? dots(locale, tg(`type.${s.type}`), name(s.dependant.name))
             : tg(`type.${s.type}`),
           count,
         });
@@ -281,16 +282,14 @@ export function NotificationCentre() {
     // An employee: just what kind of deadline it is. A client manager: the
     // work is PEOPLE&GRO's — no member of staff is named to them.
     if (audience === 'employee') return tc(`rule.${i.rule}`);
-    if (audience === 'client') return `${tc('team')} · ${tc(`rule.${i.rule}`)}`;
+    if (audience === 'client') return dots(locale, tc('team'), tc(`rule.${i.rule}`));
     const owner =
       i.owner === null
         ? tc('unassigned')
         : i.owner.kind === 'person'
           ? (i.owner.name ?? tc('unnamed'))
           : tc(`ownerRole.${i.owner.role}`);
-    return [i.client ? name(i.client.name) : null, owner, tc(`rule.${i.rule}`)]
-      .filter(Boolean)
-      .join(' · ');
+    return dots(locale, i.client ? name(i.client.name) : null, owner, tc(`rule.${i.rule}`));
   }
 
   async function markKeys(keys: string[]) {

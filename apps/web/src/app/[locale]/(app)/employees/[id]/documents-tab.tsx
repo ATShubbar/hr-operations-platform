@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/select';
 import { toastSuccess } from '@/components/ui/toast';
 import { dateFormat, hijriDate } from '@/lib/dates';
+import { dots } from '@/lib/pieces';
 
 // The Person record's Documents tab (DS-07) — the prototype's "Documents on file"
 // table: one row per document type, its scanned file, its expiry with the days-
@@ -423,7 +424,7 @@ export function DocumentsTab({
                         {r.file.fileName}
                       </bdi>
                       <span className="text-[11px] leading-[15px] text-muted-foreground">
-                        {kind(r.file)} · {size(r.file.sizeBytes)}
+                        {dots(locale, kind(r.file), size(r.file.sizeBytes))}
                       </span>
                     </span>
                   ) : (
@@ -521,7 +522,7 @@ export function DocumentsTab({
                 <span className="flex min-w-0 grow flex-col gap-px">
                   <span className="text-sm leading-[19px] font-medium">{renewRow.label}</span>
                   <span className="text-xs leading-4 text-muted-foreground">
-                    {name} · {clientName}
+                    {dots(locale, name, clientName)}
                   </span>
                   <span className="text-[11px] leading-[15px] text-neutral-400">
                     {renewRow.issuer}

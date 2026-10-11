@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/select';
 import { StatusPill } from '@/components/ui/status-pill';
 import { toneFor } from '@/lib/status-tone';
+import { dots } from '@/lib/pieces';
 
 interface Form {
   kind: 'interview' | 'meeting';
@@ -58,11 +59,11 @@ const EMPTY: Form = {
 
 // GCAL-04: what left, shown two ways — the local time in the invitation's zone
 // (what the attendees will see) beside the exact instant sent (UTC).
-function zoned(t: { dateTime: string; timeZone: string }): string {
+function zoned(t: { dateTime: string; timeZone: string }, locale: string): string {
   const local = isValidTimeZone(t.timeZone)
     ? utcToZonedWallClock(new Date(t.dateTime), t.timeZone).replace('T', ' ')
     : '?';
-  return `${local} ${t.timeZone} · ${t.dateTime}`;
+  return dots(locale, `${local} ${t.timeZone}`, t.dateTime);
 }
 
 // Google Calendar invitations (GCAL-03) over the GCAL-02 API. Schedule an
@@ -414,8 +415,8 @@ export function GoogleCalendarSection() {
               <dl className="space-y-2">
                 <Row label={t('payloadSummary')} value={inspect.payload.summary} />
                 <Row label={t('payloadDescription')} value={inspect.payload.description} />
-                <Row label={t('payloadStart')} value={zoned(inspect.payload.start)} />
-                <Row label={t('payloadEnd')} value={zoned(inspect.payload.end)} />
+                <Row label={t('payloadStart')} value={zoned(inspect.payload.start, locale)} />
+                <Row label={t('payloadEnd')} value={zoned(inspect.payload.end, locale)} />
                 {inspect.payload.location && (
                   <Row label={t('payloadLocation')} value={inspect.payload.location} />
                 )}

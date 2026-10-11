@@ -22,6 +22,7 @@ import { Skeleton, SkeletonRegion } from '@/components/ui/skeleton';
 import { FamilySection } from './family-section';
 import { RaiseRequestDialog } from './raise-request-dialog';
 import { dateFormat, hijriDate } from '@/lib/dates';
+import { dots } from '@/lib/pieces';
 
 type Loaded = {
   profile: SelfProfileResponse;
@@ -218,12 +219,11 @@ export default function MyFilePage() {
   if (ids.exitReentryStatus && ids.exitReentryStatus !== 'none') {
     identifiers.push([
       tEmp('fieldExitReentry'),
-      [
+      dots(
+        locale,
         tEmp(EXIT_REENTRY_KEY[ids.exitReentryStatus as keyof typeof EXIT_REENTRY_KEY]),
         ids.exitReentryExpiry ? shortDate(ids.exitReentryExpiry) : null,
-      ]
-        .filter(Boolean)
-        .join(' · '),
+      ),
     ]);
   }
 
@@ -266,13 +266,12 @@ export default function MyFilePage() {
             {otherName}
           </span>
           <span className="text-[13px] leading-[18px] text-neutral-700">
-            {[
+            {dots(
+              locale,
               job,
               company,
               profile.hireDate ? t('joined', { date: shortDate(profile.hireDate) }) : null,
-            ]
-              .filter(Boolean)
-              .join(' · ')}
+            )}
           </span>
         </div>
         <Button

@@ -15,6 +15,8 @@ const SIZE = {
 // side by side are joined by the shaper into something that reads as a
 // (meaningless) word, not as two initials.
 export function initialsOf(name: string | null | undefined): string {
+  // A placeholder glyph for a nameless avatar, not a joined line.
+  // eslint-disable-next-line hr/no-hand-joined-line
   if (!name) return '·';
   const words = name.trim().split(/\s+/);
   if (/[؀-ۿ]/.test(name)) return words[0]!.charAt(0);

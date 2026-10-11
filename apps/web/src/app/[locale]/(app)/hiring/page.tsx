@@ -42,6 +42,7 @@ import { CandidateDialog, type CandidateView } from './candidate-dialog';
 import { OpenRoleDialog } from './open-role-dialog';
 import { COLUMNS, canDrop, forwardOf, isActive, isSaudi, type Column } from './stages';
 import { dateFormat } from '@/lib/dates';
+import { dots } from '@/lib/pieces';
 
 // Hiring (DS-09) — the prototype's Hiring screen (ADR-012): the open roles above
 // the candidate board. It replaces REC-06's two screens (/vacancies, /candidates),
@@ -295,11 +296,12 @@ export default function HiringPage() {
         {loaded && (
           <p className="text-sm text-muted-foreground">
             {canReadCandidates
-              ? [
+              ? dots(
+                  locale,
                   t('summary', { count: board.length }),
                   t('summaryClients', { count: clientCount }),
-                  ...(canAdvance ? [t('summaryDrag')] : []),
-                ].join(' · ')
+                  canAdvance ? t('summaryDrag') : null,
+                )
               : t('summaryRoles', { count: roles.length })}
           </p>
         )}
@@ -389,7 +391,7 @@ export default function HiringPage() {
                             {titleOf(v)}
                           </span>
                           <span className="truncate text-[11px] leading-[15px] text-muted-foreground">
-                            {[clientName(v.clientId), v.department].filter(Boolean).join(' · ')}
+                            {dots(locale, clientName(v.clientId), v.department)}
                           </span>
                         </div>
                         <StatusPill tone={toneFor('vacancy', v.status)} className="shrink-0">
@@ -401,10 +403,11 @@ export default function HiringPage() {
                           <span className="grow">
                             {live + hired === 0
                               ? t('noCandidatesYet')
-                              : [
+                              : dots(
+                                  locale,
                                   t('inPipeline', { count: live }),
-                                  ...(hired ? [t('onboardedCount', { count: hired })] : []),
-                                ].join(' · ')}
+                                  hired ? t('onboardedCount', { count: hired }) : null,
+                                )}
                           </span>
                           <span className="font-mono" title={t('filledOf')}>
                             {hired}/{v.headcount}
@@ -583,7 +586,7 @@ export default function HiringPage() {
                                   {cv.name}
                                 </button>
                                 <span className="truncate text-[11px] leading-[15px] text-muted-foreground">
-                                  {[cv.role, cv.nationality].filter(Boolean).join(' · ')}
+                                  {dots(locale, cv.role, cv.nationality)}
                                 </span>
                               </div>
                               <span className="flex shrink-0 items-center gap-1">

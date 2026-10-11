@@ -13,6 +13,7 @@ import type {
 } from '@hr/contracts';
 import type { QueueItem } from './queue-actions';
 import { procedureTitle } from '@/lib/procedure-title';
+import { dots } from '@/lib/pieces';
 
 // Open work as one list (DS-12; shared with the Overview in DS-17, so the two
 // screens can't disagree about what is open or in what order).
@@ -75,9 +76,7 @@ export function useQueueItems(
         id: p.id,
         title: procedureTitle(p, (ty) => tg(`type.${ty}`), locale),
         ref: p.referenceNumber,
-        meta: [person?.name, clientName(p.clientId), tg(`status.${p.status}`)]
-          .filter(Boolean)
-          .join(' · '),
+        meta: dots(locale, person?.name, clientName(p.clientId), tg(`status.${p.status}`)),
         clientId: p.clientId,
         clientName: clientName(p.clientId),
         person,
@@ -105,14 +104,13 @@ export function useQueueItems(
         id: q.id,
         title: q.title,
         ref: `#${q.id.slice(0, 8).toUpperCase()}`,
-        meta: [
+        meta: dots(
+          locale,
           q.requester?.name,
           clientName(q.clientId),
           tr(`type.${q.type}`),
           tr(`status.${q.status}`),
-        ]
-          .filter(Boolean)
-          .join(' · '),
+        ),
         clientId: q.clientId,
         clientName: clientName(q.clientId),
         person: q.requester?.name ? { name: q.requester.name, ar: null } : null,
@@ -133,9 +131,12 @@ export function useQueueItems(
         id: k.id,
         title: k.title,
         ref: null,
-        meta: [clientName(k.clientId), tt(`priority.${k.priority}`), tt(`status.${k.status}`)]
-          .filter(Boolean)
-          .join(' · '),
+        meta: dots(
+          locale,
+          clientName(k.clientId),
+          tt(`priority.${k.priority}`),
+          tt(`status.${k.status}`),
+        ),
         clientId: k.clientId,
         clientName: clientName(k.clientId),
         person: null,
@@ -167,9 +168,7 @@ export function useQueueItems(
             id: `${run.id}:${st.key}`,
             title,
             ref: null,
-            meta: [person.name, clientName(run.clientId), tm(`kind.${run.kind}.label`)]
-              .filter(Boolean)
-              .join(' · '),
+            meta: dots(locale, person.name, clientName(run.clientId), tm(`kind.${run.kind}.label`)),
             clientId: run.clientId,
             clientName: clientName(run.clientId),
             person,

@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { InfoNeededBanner } from '../../requests/info-needed-banner';
 import { RequestThread } from '../../requests/request-thread';
 import { RaiseRequestDialog } from '../raise-request-dialog';
+import { dots } from '@/lib/pieces';
 
 // "My requests" (SS-07) — the requests THIS employee raised (the database
 // returns only those, SS-05), newest first, and a way to raise another. A list
@@ -116,8 +117,11 @@ export default function MyRequestsPage() {
                     <div className="min-w-0 flex-1 basis-48">
                       <p className="truncate font-medium">{r.title}</p>
                       <p className="text-xs text-muted-foreground">
-                        {tReq(`type.${r.type}`)} ·{' '}
-                        {t('raisedOn', { date: dualDate(r.createdAt, locale) ?? '' })}
+                        {dots(
+                          locale,
+                          tReq(`type.${r.type}`),
+                          t('raisedOn', { date: dualDate(r.createdAt, locale) ?? '' }),
+                        )}
                       </p>
                     </div>
                     <StatusPill tone={toneFor('request', r.status)}>
@@ -138,8 +142,11 @@ export default function MyRequestsPage() {
                   <div className="flex min-w-0 grow flex-col gap-0.5">
                     <h2 className="text-lg leading-7 font-semibold text-pretty">{r.title}</h2>
                     <p className="text-[13px] leading-[18px] text-muted-foreground">
-                      {tReq(`type.${r.type}`)} ·{' '}
-                      {t('raisedOn', { date: dualDate(r.createdAt, locale) ?? '' })}
+                      {dots(
+                        locale,
+                        tReq(`type.${r.type}`),
+                        t('raisedOn', { date: dualDate(r.createdAt, locale) ?? '' }),
+                      )}
                     </p>
                     {r.serviceLevelDays !== null && (
                       <p className="text-xs leading-4 text-muted-foreground">

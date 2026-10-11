@@ -38,6 +38,7 @@ import { StatusPill } from '@/components/ui/status-pill';
 import { Textarea } from '@/components/ui/textarea';
 import { toastError, toastSuccess } from '@/components/ui/toast';
 import { dateFormat, hijriDate } from '@/lib/dates';
+import { dots } from '@/lib/pieces';
 
 // The Client record's Fees tab (BILL-03, ADR-020) — the prototype's: four
 // tiles, "Where the money went" by authority, and the fee ledger.
@@ -450,10 +451,15 @@ export function FeesTab({
                     </span>
                     <span className="text-xs leading-4 text-pretty text-muted-foreground">
                       <bdi>
-                        {tf(`authorityName.${f.authority}`)}
-                        {f.employee
-                          ? ` · ${locale === 'ar' ? f.employee.name.ar : f.employee.name.en}`
-                          : ` · ${t('companyLevel')}`}
+                        {dots(
+                          locale,
+                          tf(`authorityName.${f.authority}`),
+                          f.employee
+                            ? locale === 'ar'
+                              ? f.employee.name.ar
+                              : f.employee.name.en
+                            : t('companyLevel'),
+                        )}
                       </bdi>
                     </span>
                     {f.voided && (

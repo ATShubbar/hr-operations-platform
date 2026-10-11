@@ -11,6 +11,7 @@ import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { StatusPill } from '@/components/ui/status-pill';
 import { dateFormat, hijriDate } from '@/lib/dates';
+import { dots } from '@/lib/pieces';
 
 // One leave request's detail (LEAVE-04; extracted in LEAVE-06 so My leave reuses
 // it): the prototype's header, length / dates (Gregorian + Hijri) / submitted,
@@ -81,8 +82,7 @@ export function LeaveDetail({
             </bdi>
           </div>
           <span className="text-[13px] leading-[18px] text-muted-foreground">
-            {name}
-            {company ? ` · ${company}` : ''}
+            {dots(locale, name, company)}
           </span>
         </div>
         <StatusPill tone={toneFor('leave', lq.status)}>{t(`status.${lq.status}`)}</StatusPill>
@@ -107,7 +107,7 @@ export function LeaveDetail({
           <dt className="text-xs leading-4 text-muted-foreground">{t('submitted')}</dt>
           <dd className="text-sm leading-5">{longDay(lq.createdAt.slice(0, 10))}</dd>
           <dd className="text-[11px] leading-[15px] text-neutral-400">
-            {t('serviceLevel')} · {t('soon')}
+            {dots(locale, t('serviceLevel'), t('soon'))}
           </dd>
         </div>
       </dl>
@@ -169,7 +169,7 @@ export function LeaveDetail({
               <span key={c.id} className="flex items-baseline gap-2.5 text-xs leading-[17px]">
                 <span className="min-w-0 grow truncate text-neutral-700">{c.name}</span>
                 <span className="shrink-0 text-muted-foreground">
-                  {c.type} · {c.window}
+                  {dots(locale, c.type, c.window)}
                 </span>
               </span>
             ))}

@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { LoadError } from '@/components/ui/load-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { dateFormat } from '@/lib/dates';
+import { dots } from '@/lib/pieces';
 
 // The Person record's History tab (AUDIT-06) — the prototype's Timeline over
 // GET /employees/:id/history: what happened on this person's record, their
@@ -83,7 +84,7 @@ export function HistoryTab({ employeeId }: { employeeId: string }) {
         ? dateFormat('ar', { day: 'numeric', month: 'short', year: 'numeric' }).format(d)
         : `${d.getDate()} ${dateFormat('en-US', { month: 'short' }).format(d)} ${d.getFullYear()}`;
     const time = dateFormat(locale, { hour: '2-digit', minute: '2-digit' }).format(d);
-    return `${date} · ${time}`;
+    return dots(locale, date, time);
   };
   const known = messages.person?.history?.action ?? {};
   const mobKnown = messages.person?.mob ?? {};
@@ -91,9 +92,9 @@ export function HistoryTab({ employeeId }: { employeeId: string }) {
     const base = known[e.resource]?.[e.action]
       ? t(`action.${e.resource}.${e.action}`)
       : t('fallback', { resource: e.resource, action: e.action });
-    if (e.subject?.kind === 'document') return `${base} · ${e.subject.title}`;
-    if (e.subject?.kind === 'gro-process') return `${base} · ${tg(`type.${e.subject.type}`)}`;
-    if (e.subject?.kind === 'dependant') return `${base} · ${e.subject.name}`;
+    if (e.subject?.kind === 'document') return dots(locale, base, e.subject.title);
+    if (e.subject?.kind === 'gro-process') return dots(locale, base, tg(`type.${e.subject.type}`));
+    if (e.subject?.kind === 'dependant') return dots(locale, base, e.subject.name);
     if (e.subject?.kind === 'gro-sequence') {
       const label = mobKnown.kind?.[e.subject.sequence]
         ? tm(`kind.${e.subject.sequence}.label`)
@@ -102,7 +103,7 @@ export function HistoryTab({ employeeId }: { employeeId: string }) {
         e.subject.step && mobKnown.step?.[e.subject.step]
           ? tm(`step.${e.subject.step}.title`)
           : e.subject.step;
-      return step ? `${base} · ${step} (${label})` : `${base} · ${label}`;
+      return step ? dots(locale, base, `${step} (${label})`) : dots(locale, base, label);
     }
     return base;
   };

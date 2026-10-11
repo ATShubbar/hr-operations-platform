@@ -41,6 +41,7 @@ import {
 import { EventDialog, type EventTarget } from './event-dialog';
 import { AgendaView, DayPanel, MonthView, WeekView } from './views';
 import { dateFormat } from '@/lib/dates';
+import { dots } from '@/lib/pieces';
 
 // The Calendar (DS-14) — the prototype's calendar (ADR-012): Month (grid + the
 // selected day's panel), Week and Agenda over /calendar/view, which merges booked
@@ -132,7 +133,7 @@ export default function CalendarPage() {
     // DEP-07: a dependant's renewal says who it is for, as the Work queue does.
     if (!it.dependant) return base;
     const who = locale === 'ar' && it.dependant.nameAr ? it.dependant.nameAr : it.dependant.nameEn;
-    return `${base} · ${who}`;
+    return dots(locale, base, who);
   };
   const ownerName = (it: CalendarItem) =>
     staff.find((s) => s.id === it.ownerUserId)?.displayName ?? null;
@@ -140,9 +141,8 @@ export default function CalendarPage() {
     const c = clients.find((x) => x.id === it.clientId);
     const client = c ? (locale === 'ar' ? c.name.ar : c.name.en) : null;
     if (it.kind === 'event') return client;
-    if (it.step)
-      return [tm(`kind.${it.step.sequenceKind}.label`), client].filter(Boolean).join(' · ');
-    return [statusLabel(it.kind as ViewItemKind, it.status), client].filter(Boolean).join(' · ');
+    if (it.step) return dots(locale, tm(`kind.${it.step.sequenceKind}.label`), client);
+    return dots(locale, statusLabel(it.kind as ViewItemKind, it.status), client);
   };
 
   async function open(it: CalendarItem) {

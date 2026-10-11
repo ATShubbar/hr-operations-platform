@@ -54,6 +54,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { dateFormat, hijriDate } from '@/lib/dates';
+import { dots } from '@/lib/pieces';
 
 // People (DS-05) — the prototype's People screen, laid out as the owner's design
 // has it (ADR-012): every employee judged by the document that expires FIRST,
@@ -259,16 +260,19 @@ export default function PeoplePage() {
 
   const summary = (() => {
     const count = t('summaryCount', { count: rows.length });
-    const doc = fDoc === ALL ? '' : ` · ${docLabel(fDoc)}`;
+    const doc = fDoc === ALL ? null : docLabel(fDoc);
     const band =
       fBand === ALL
-        ? ''
+        ? null
         : fBand === 'overdue'
-          ? ` ${t('summaryOverdue')}`
+          ? t('summaryOverdue')
           : // Two slots, not one "8–14" value: a range passed as a single value is
             // drawn left to right inside an Arabic sentence (UX-20).
-            ` ${t('summaryBand', { from: fBand.split('-')[0] ?? '', to: fBand.split('-')[1] ?? '' })}`;
-    return doc || band ? `${count}${doc}${band}` : `${count} · ${t('summarySorted')}`;
+            t('summaryBand', { from: fBand.split('-')[0] ?? '', to: fBand.split('-')[1] ?? '' });
+    if (!doc && !band) return dots(locale, count, t('summarySorted'));
+    // "3 people expiring in 8–14 days": the band continues the count's sentence.
+    if (!doc) return `${count} ${band}`;
+    return dots(locale, count, band ? `${doc} ${band}` : doc);
   })();
 
   const clearFilters = () => {

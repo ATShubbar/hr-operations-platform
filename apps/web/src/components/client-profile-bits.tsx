@@ -1,10 +1,11 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import type { ClientResponse, NitaqatBand } from '@hr/contracts';
 import { StatusPill } from '@/components/ui/status-pill';
 import { toneFor } from '@/lib/status-tone';
 import { cn } from '@/lib/utils';
+import { dots } from '@/lib/pieces';
 
 // Small pieces of the client profile (PROF-02, ADR-019) that several screens
 // draw the same way: the Nitaqat band as a pill, and the "sector · city · CR"
@@ -41,6 +42,7 @@ export function ProfileLine({
   className?: string;
 }) {
   const t = useTranslations('clientProfile');
+  const locale = useLocale();
   const parts = [
     client.sector && t(`sector.${client.sector}`),
     client.city && t(`city.${client.city}`),
@@ -52,7 +54,7 @@ export function ProfileLine({
   return (
     <span className={cn('text-muted-foreground', className)}>
       {/* One isolated run (ADR-012): an Arabic line keeps its number in place. */}
-      <bdi>{parts.join(' · ')}</bdi>
+      <bdi>{dots(locale, ...parts)}</bdi>
     </span>
   );
 }

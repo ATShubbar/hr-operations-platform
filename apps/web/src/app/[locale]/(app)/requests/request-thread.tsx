@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { RequestAttachments } from './request-attachments';
 import { dateFormat } from '@/lib/dates';
+import { dots } from '@/lib/pieces';
 
 // A request's thread (ADR-016) — the prototype's Attachments + Comments blocks
 // under the request detail. THREAD-01: comments; THREAD-02: files
@@ -114,7 +115,11 @@ export function RequestThread({
                     <span className="flex flex-wrap items-baseline gap-x-2 text-xs leading-4">
                       <span className="font-medium">{name}</span>
                       <span className="text-muted-foreground">
-                        {c.author ? t(`kind.${c.author.kind}`) : ''} · {when(c.createdAt)}
+                        {dots(
+                          locale,
+                          c.author ? t(`kind.${c.author.kind}`) : null,
+                          when(c.createdAt),
+                        )}
                       </span>
                     </span>
                     <p
