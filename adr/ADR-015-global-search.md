@@ -45,6 +45,18 @@ sensitive — so where the search runs and what it records are decisions, not im
   each owning module adds an indexed search method (search never queries another module's tables).
 - An identifier search is an audited READ, joining the report export in `AUDITED_READS`.
 
+## Revision 1 — 2026-10-11 (PROF-07)
+Decision 5 said commercial registration numbers were not searched because they were not stored.
+They have been stored since PROF-01 (ADR-019), so:
+- **Clients** are found by name **or by commercial registration number**. The query must be digits
+  (spaces and dashes ignored), at least four, and must BEGIN the number — the whole ten digits or
+  the leading ones. Still `client.read` holders on the staff path only; a client manager gets no
+  company results, their own company's number included.
+- **Not audited.** Decision 4 audits lookups by a PERSON's government identifier. A company's
+  registration number is public-register data.
+- A company result carries the number, so a match on digits explains itself.
+Dependants and fees remain unsearched.
+
 ## Links
 - architecture.md v1.9; ADR-002 (field-level authorization), ADR-011 (self-service), ADR-012
   (prototype fidelity), ADR-014 (leave)

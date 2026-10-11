@@ -450,7 +450,7 @@ export function ReportsDashboard() {
               {m.fees.rows.map((x) => (
                 <li key={x.c.id} className="flex items-center gap-3">
                   <Link
-                    href={`/clients/${x.c.id}`}
+                    href={`/clients/${x.c.id}?tab=fees`}
                     className="w-[150px] shrink-0 truncate text-xs leading-4 hover:underline"
                     title={name(x.c)}
                   >

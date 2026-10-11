@@ -19,6 +19,13 @@ import {
 // unusual word ("Zephyr") so nothing in the seed can match.
 const MARK = 'SEARCH-01-test';
 const IQAMA = '2987654321';
+// PROF-07: two commercial registration numbers sharing their first nine digits
+// (so "leading digits" can be told from "the whole number"). Random per run —
+// the column is unique, and an interrupted run must not block the next one.
+// "79…" cannot meet a seeded number (those start 10 / 20 / 40).
+const CR_BASE = `79${String(Math.floor(Math.random() * 1e7)).padStart(7, '0')}`;
+const CR_X = `${CR_BASE}1`;
+const CR_Y = `${CR_BASE}2`;
 
 describe('Global search (SEARCH-01, e2e)', () => {
   let app: INestApplication;
@@ -35,7 +42,7 @@ describe('Global search (SEARCH-01, e2e)', () => {
   const http = () => request(app.getHttpServer());
   const find = async (who: TestPrincipal, q: string) =>
     (await http().get('/search').query({ q }).set('Cookie', who.cookie).expect(200)).body as {
-      hits: { kind: string; id: string; matchedOn?: string }[];
+      hits: { kind: string; id: string; matchedOn?: string; crNumber?: string | null }[];
       truncated: boolean;
     };
   const idsOf = (r: { hits: { id: string }[] }) => r.hits.map((h) => h.id);
@@ -46,8 +53,8 @@ describe('Global search (SEARCH-01, e2e)', () => {
     await app.listen(0, '127.0.0.1');
     owner = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL ?? '' }) });
 
-    co.x = (await owner.client.create({ data: { nameAr: 'شركة زفير', nameEn: `${MARK} Zephyr Co` } })).id;
-    co.y = (await owner.client.create({ data: { nameAr: 'شركة أخرى', nameEn: `${MARK} Other Co` } })).id;
+    co.x = (await owner.client.create({ data: { nameAr: 'شركة زفير', nameEn: `${MARK} Zephyr Co`, crNumber: CR_X } })).id;
+    co.y = (await owner.client.create({ data: { nameAr: 'شركة أخرى', nameEn: `${MARK} Other Co`, crNumber: CR_Y } })).id;
     await owner.clientSetting.createMany({
       data: [
         { clientId: co.x, key: 'flag.client-self-service', value: true },
@@ -163,6 +170,39 @@ describe('Global search (SEARCH-01, e2e)', () => {
       expect(idsOf(lv)).toContain(ids.leaveMine);
     });
 
+    // PROF-07 (ADR-015 rev. 1): a company is found by its commercial registration
+    // number — the whole number or its leading digits (four at least).
+    it('finds a client by its commercial registration number — whole, leading digits, spaces ignored', async () => {
+      const clientsOf = (r: Awaited<ReturnType<typeof find>>) => r.hits.filter((h) => h.kind === 'client');
+      const whole = clientsOf(await find(gro, CR_X));
+      expect(whole.map((h) => h.id)).toEqual([co.x]);
+      // The result names the number, so a digit match explains itself.
+      expect(whole[0]?.crNumber).toBe(CR_X);
+      const leading = clientsOf(await find(gro, CR_BASE)).map((h) => h.id);
+      expect(leading).toEqual(expect.arrayContaining([co.x, co.y]));
+      expect(leading).toHaveLength(2);
+      const spaced = clientsOf(await find(gro, `${CR_X.slice(0, 4)} ${CR_X.slice(4)}`));
+      expect(spaced.map((h) => h.id)).toEqual([co.x]);
+    });
+
+    it('a registration number matches from its START only, and needs four digits', async () => {
+      const clientsOf = (r: Awaited<ReturnType<typeof find>>) => r.hits.filter((h) => h.kind === 'client');
+      // The LAST nine digits are in the number but do not begin it.
+      expect(clientsOf(await find(gro, CR_X.slice(1)))).toEqual([]);
+      expect(clientsOf(await find(gro, CR_X.slice(0, 3)))).toEqual([]);
+    });
+
+    it('a registration-number search is not audited (a company number is not personal data)', async () => {
+      const before = await owner.auditEntry.count({ where: { resource: 'search' } });
+      await find(hr, CR_X);
+      expect(await owner.auditEntry.count({ where: { resource: 'search' } })).toBe(before);
+    });
+
+    it('a name match still carries the number (null when none is stored)', async () => {
+      const named = (await find(gro, 'Zephyr Co')).hits.find((h) => h.kind === 'client' && h.id === co.x);
+      expect(named?.crNumber).toBe(CR_X);
+    });
+
     it('tasks follow the Tasks rule: own / assigned only without task.read-all', async () => {
       const r = await find(hr, 'Zephyr');
       expect(idsOf(r)).toContain(ids.taskMine);
@@ -179,6 +219,21 @@ describe('Global search (SEARCH-01, e2e)', () => {
       expect(idsOf(r)).not.toContain(ids.requestY);
       expect(kinds.has('client') || kinds.has('procedure') || kinds.has('task')).toBe(false);
       expect((await find(managerX, IQAMA)).hits).toEqual([]);
+      // PROF-07: not their own company's registration number either — a client
+      // manager gets no company results at all.
+      expect((await find(managerX, CR_X)).hits).toEqual([]);
+      expect((await find(managerX, CR_Y)).hits).toEqual([]);
+    });
+
+    // No client role holds client.read today, so the permission alone would hide
+    // companies from them. Granting it here proves the staff check is a second
+    // lock, not decoration (PROF-07).
+    it('get no company results even if a client role were granted client.read', async () => {
+      const policy = app.get(PolicyService);
+      const real = policy.can.bind(policy);
+      vi.spyOn(policy, 'can').mockImplementation((role, p) => (p === 'client.read' ? true : real(role, p)));
+      expect((await find(managerX, CR_X)).hits.filter((h) => h.kind === 'client')).toEqual([]);
+      expect((await find(managerX, 'Zephyr Co')).hits.filter((h) => h.kind === 'client')).toEqual([]);
     });
 
     it('with their portal off, find no people', async () => {

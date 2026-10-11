@@ -90,6 +90,7 @@ function SearchBox({
   const tr = useTranslations('requests');
   const tt = useTranslations('tasks');
   const tl = useTranslations('leaves');
+  const tc = useTranslations('clientProfile');
   const locale = useLocale() as Locale;
   const router = useRouter();
   const principal = useSession().principalType;
@@ -138,7 +139,11 @@ function SearchBox({
         return { title: nm(h), sub: [how, job, nm(h.client)].filter(Boolean).join(' · ') };
       }
       case 'client':
-        return { title: nm(h), sub: t('kind.client') };
+        // The registration number is on the line, so a match on digits explains itself.
+        return {
+          title: nm(h),
+          sub: [t('kind.client'), h.crNumber ? tc('cr', { number: h.crNumber }) : null].filter(Boolean).join(' · '),
+        };
       case 'procedure':
         return {
           title: h.reference ?? tg(`type.${h.type}`),

@@ -1643,6 +1643,10 @@ seed-owned accounts removed, anyone else untouched. No more "sign in again after
 `notResources` (validated like `resources`; `whereFor` now ANDs its conditions). Web `filterOf(category)` sends an include
 list for a named category and an EXCLUDE list (the types other categories claim) for Records — a new record type lands in
 Records with no change. The category map still lives only in the web (`lib/audit-category.ts`).
+**PROF-07 done — client record `?tab=`, and search by registration number (ADR-015 rev. 1).** `/clients/:id?tab=fees`
+(read once on arrival; Reports' fee rows use it). Search: staff with `client.read`, digits only, ≥4, must BEGIN the number
+(`matchesRegistration`), NOT audited; the client hit carries `crNumber`. A widened-policy test proves the staff check (no
+client role holds `client.read`, so the permission alone hid it). API **861/861**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

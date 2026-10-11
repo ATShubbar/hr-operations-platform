@@ -36,6 +36,16 @@ type Names = { nameEn: string; nameAr: string };
 const idKey = (s: string): string => normalizeForSearch(s).replace(/[\s-]/g, '');
 const looksLikeIdentifier = (q: string): boolean => idKey(q).length >= 4 && /\d/.test(idKey(q));
 
+// A commercial registration query (PROF-07, ADR-015 rev. 1): digits only, four
+// at least, and it must BEGIN the number — the whole ten digits or the leading
+// ones. Narrower than a person's identifiers on purpose: a registration number
+// is read from its start (the first digits are the issuing city), and "contains"
+// would let four digits anywhere match every company in a long list.
+const matchesRegistration = (crNumber: string | null, q: string): boolean => {
+  const key = idKey(q);
+  return crNumber !== null && /^\d{4,10}$/.test(key) && crNumber.startsWith(key);
+};
+
 // Global search (ADR-015, SEARCH-01) — a DELIVERY module: owns no data, reads the
 // other modules through their public APIs, nothing imports it. Every kind of
 // result goes through the caller's own access to it (the same permission, and
@@ -87,12 +97,12 @@ export class SearchService {
 
     // Staff → cross-client; client manager → their own company; anyone else 403.
     const scope = scopeOf(ctx);
-    const clientNames = new Map<string, Names>(
+    const companies =
       scope.kind === 'staff'
-        ? (await this.clients.list()).map((c) => [c.id, { nameEn: c.nameEn, nameAr: c.nameAr }])
-        : await this.clients
-            .getById(scope.clientId)
-            .then((c) => (c ? [[c.id, { nameEn: c.nameEn, nameAr: c.nameAr }] as const] : [])),
+        ? await this.clients.list()
+        : await this.clients.getById(scope.clientId).then((c) => (c ? [c] : []));
+    const clientNames = new Map<string, Names>(
+      companies.map((c) => [c.id, { nameEn: c.nameEn, nameAr: c.nameAr }]),
     );
 
     // ---- people ---------------------------------------------------------------
@@ -138,8 +148,12 @@ export class SearchService {
 
     // ---- clients (staff) --------------------------------------------------------
     if (scope.kind === 'staff' && can('client.read')) {
-      for (const [id, n] of clientNames) {
-        if (matchesAnyField([n.nameEn, n.nameAr], q)) hits.push({ kind: 'client', id, ...n });
+      // By name, or by commercial registration number (not audited: a company's
+      // registration is public-register data, not a person's identifier).
+      for (const c of companies) {
+        if (matchesAnyField([c.nameEn, c.nameAr], q) || matchesRegistration(c.crNumber, q)) {
+          hits.push({ kind: 'client', id: c.id, nameEn: c.nameEn, nameAr: c.nameAr, crNumber: c.crNumber });
+        }
       }
     }
 

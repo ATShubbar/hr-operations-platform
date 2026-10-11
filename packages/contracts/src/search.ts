@@ -18,7 +18,10 @@ export const searchHitSchema = z.discriminatedUnion('kind', [
     // How it matched; an identifier match names only the KIND of identifier.
     matchedOn: z.enum(['name', 'iqama', 'national_id', 'border', 'passport', 'gosi', 'work_permit']),
   }),
-  z.object({ kind: z.literal('client'), id: z.uuid(), ...names.shape }),
+  // crNumber: the company's commercial registration number, so a match on the
+  // number explains itself (PROF-07). Staff only — client managers get no
+  // company results.
+  z.object({ kind: z.literal('client'), id: z.uuid(), ...names.shape, crNumber: z.string().nullable() }),
   z.object({
     kind: z.literal('procedure'),
     id: z.uuid(),

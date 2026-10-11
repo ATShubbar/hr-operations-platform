@@ -127,6 +127,13 @@ export default function ClientRecordPage() {
     void load();
   }, [id]);
 
+  // `?tab=fees` opens the record on that tab (PROF-07) — the Person record's rule.
+  // Read from the address once, on arrival; an unknown name is ignored.
+  useEffect(() => {
+    const want = new URLSearchParams(window.location.search).get('tab');
+    if (want && (TABS as readonly string[]).includes(want)) setTab(want as Tab);
+  }, []);
+
   // A procedure moved on in Open work: refetch the company's processes (and, for a
   // completion that wrote an expiry back, its people) without the page skeleton.
   async function reloadWork() {
