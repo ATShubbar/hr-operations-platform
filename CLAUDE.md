@@ -1787,6 +1787,16 @@ too. UX-20's message rule gained one case: an Arabic-file message that is only s
 {role}`) is a line — 845 messages marked. Sweeps: dot lines 97 → 0; UX-20's sweep 28 → 2 (script false positives).
 Follow-ups: **UX-23** (text cut with "…" hides the START of an Arabic line), **UX-24** (other separators, unmeasured).
 
+**UX-23 done — a line cut with "…" keeps its beginning.** Under the left-to-right layout a cut line is clipped at the
+right, where an Arabic line BEGINS: 71 of 111 cut lines at 375px and 76 of 115 at 1100px had lost their first words (all
+44 on People). Fix = two declarations on `.truncate` in `apps/web/src/app/globals.css`, OUTSIDE any `@layer`:
+`unicode-bidi: plaintext` (the line is clipped at its own end) + `text-align: left` (without it every Arabic line would
+right-align; unlayered so it outranks `text-start` on the same element; becomes `right` if ADR-012 is reversed). Rejected
+by measurement: `direction: rtl` (hides the start of ENGLISH lines) and `text-align: match-parent` (right-aligns short
+Arabic lines). After: 0 hidden at both widths, 0 uncut lines moved. **Shorten text with the `truncate` class** — another
+mechanism is not covered. Chrome only. With this the Arabic-order series is closed: UX-18, 20, 21, 22, 23. Open: UX-24
+(lines joined by a dash, slash or brackets — unmeasured).
+
 ## Technical landmines (each cost real debugging — do not rediscover)
 
 - `apps/web/messages/ar.json` must hold NO directional control character (mark or isolate) — the rule in `@hr/text`
@@ -1801,6 +1811,10 @@ Follow-ups: **UX-23** (text cut with "…" hides the START of an Arabic line), *
   data lines out of order; the per-LINE sweep written for UX-22 found 97. Judge the unit the reader sees.
 - `<span dir="rtl">` stretched into a block (a flex column does that) pushes its text to the right-hand edge. An inline
   right-to-left wrapper needs `text-end` to stay where it was (`<DotLine>`, UX-22).
+- To prove a CSS rule on the real build, measure the page, then switch the rule OFF in the browser with
+  `property: revert-layer` in an injected style and measure again — it removes exactly the unlayered rule and leaves
+  Tailwind's layers alone, so the two readings differ only by the rule (UX-23). Prototype a CSS fix the same way, by
+  injecting it, before committing anything.
 - When a tool call writes a `\u` escape for an invisible character into a source file, the character can arrive as the
   LITERAL — it happened three times in one day (a guard script, a test file, a regex). After writing such a file, scan it
   for literal controls and rewrite them as escapes built in code (`chr(92) + 'u200f'`), never by typing the escape again.

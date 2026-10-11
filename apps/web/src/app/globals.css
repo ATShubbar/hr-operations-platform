@@ -230,3 +230,30 @@
     letter-spacing: -0.01em;
     }
 }
+/* UX-23: a line that is cut with "…" keeps its BEGINNING, in either language.
+
+   The layout runs left to right in both languages (ADR-012), so a cut line is
+   clipped at its right-hand edge — and an Arabic line BEGINS at the right. Its
+   first words were what disappeared. Measured on 23 screens in the Arabic view:
+   71 of 111 cut lines at 375px, and 76 of 115 at 1100px, had lost their start
+   (all 44 on People, at both widths).
+
+   `unicode-bidi: plaintext` lets the line take its direction from its own text,
+   so it is clipped at ITS end: an Arabic line keeps its right, an English one its
+   left. On its own that would also right-align every Arabic line ("start" then
+   follows the text), so the alignment is pinned to the layout's side.
+
+   Tried and rejected: `direction: rtl` on cut lines fixes Arabic and hides the
+   start of English ones instead.
+
+   Deliberately outside any @layer, so it also outranks `text-start` on the same
+   element (buttons carry it to undo their centring; with plaintext, "start"
+   would mean the text's own side). `left` is the left-to-right layout's start:
+   if ADR-012 is ever reversed, this becomes `right`.
+
+   After, same screens, both widths: 0 beginnings hidden, and 0 lines that were
+   NOT cut moved. */
+.truncate {
+  unicode-bidi: plaintext;
+  text-align: left;
+}
