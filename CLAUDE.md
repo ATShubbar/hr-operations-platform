@@ -1797,6 +1797,15 @@ Arabic lines). After: 0 hidden at both widths, 0 uncut lines moved. **Shorten te
 mechanism is not covered. Chrome only. With this the Arabic-order series is closed: UX-18, 20, 21, 22, 23. Open: UX-24
 (lines joined by a dash, slash or brackets — unmeasured).
 
+**UX-24 done — the Arabic reading-order series is CLOSED (UX-18, 20, 21, 22, 23, 24).** Measured lines joined by a
+dash, slash, colon, brackets or a bare space: 0 of 14 multi-piece lines out of order on 26 screens; in the code those
+joins are screen-reader labels, URLs and Arabic date ranges. ONE fault, behind a picker no sweep opens: Settings → System →
+per-client settings, «label: raw value» drawn value-first (6 of 6) — now `spaced(locale, label + ':', value)`. No lint
+rule for these separators (they are not only joiners). **What a sweep cannot see:** anything behind a picker, a dialog, a
+menu or a toast — read the code for those. Rules of thumb now in force for the web app's Arabic view: messages → plain
+text in `ar.json` (rule applied at load) · dates/times → `lib/dates.ts` · dot-joined lines → `dots()` / `<DotLine>` ·
+label + value → `spaced()` · shortened text → the `truncate` class.
+
 ## Technical landmines (each cost real debugging — do not rediscover)
 
 - `apps/web/messages/ar.json` must hold NO directional control character (mark or isolate) — the rule in `@hr/text`

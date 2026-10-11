@@ -38,6 +38,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { spaced } from '@/lib/pieces';
 
 type Locale = 'ar' | 'en';
 type SettingsTab = 'access' | 'prefs' | 'system';
@@ -501,8 +502,13 @@ export default function SettingsPage() {
                                   {def.description}
                                 </div>
                                 <div className="mt-1 text-xs text-muted-foreground">
-                                  {t('effectiveValue')}:{' '}
-                                  <bdi dir="ltr">{JSON.stringify(clientValue)}</bdi>
+                                  {/* UX-24: a label, then a raw value. Joined by hand the
+                                      value was drawn BEFORE its label in Arabic. */}
+                                  {spaced(
+                                    locale,
+                                    `${t('effectiveValue')}:`,
+                                    JSON.stringify(clientValue),
+                                  )}
                                 </div>
                               </div>
                               <div className="flex shrink-0 items-center gap-2">
