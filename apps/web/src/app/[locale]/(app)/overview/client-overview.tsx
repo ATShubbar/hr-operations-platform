@@ -35,6 +35,7 @@ import { NewRequestDialog } from '../requests/new-request-dialog';
 import { PortfolioTable } from './portfolio-table';
 import { dateFormat, hijriDate } from '@/lib/dates';
 import { dots } from '@/lib/pieces';
+import { ExportRegisterButton } from '@/components/export-register-button';
 
 // The client manager's Overview (DS-18) — the prototype's client view of its
 // home screen (ADR-012): their company only.
@@ -79,7 +80,6 @@ export function ClientOverview() {
   const tc = useTranslations('overview.client');
   const tp = useTranslations('portal');
   const tr = useTranslations('requests');
-  const ts = useTranslations('states');
   const tcl = useTranslations('clients');
   const locale = useLocale() as 'ar' | 'en';
   const router = useRouter();
@@ -152,12 +152,12 @@ export function ClientOverview() {
         {line && <p className="text-sm text-pretty text-muted-foreground">{line}</p>}
       </div>
       <span className="flex shrink-0 gap-2 self-start sm:self-auto">
-        <Button variant="outline" size="sm" disabled aria-describedby="ov-export-soon">
-          {t('exportRegister')}
-          <span id="ov-export-soon" className="text-[11px] font-normal text-muted-foreground">
-            {ts('soon')}
-          </span>
-        </Button>
+        {/* Their own company's register; the portal must be on for it to have rows. */}
+        <ExportRegisterButton
+          path="/portal/employees/export"
+          label={t('exportRegister')}
+          disabled={!data || data.portalOff}
+        />
         {canRaise && (
           <Button size="sm" onClick={() => setRaiseOpen(true)} disabled={!data}>
             {tc('raise')}

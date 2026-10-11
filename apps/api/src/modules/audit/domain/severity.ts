@@ -51,6 +51,8 @@ const RULES: readonly Rule[] = [
   { resource: 'document', action: 'delete', severity: 'notable' },
   { resource: 'candidate', action: 'delete', severity: 'notable' },
   { resource: 'report', action: 'export', severity: 'notable' },
+  // SOON-01: the People list leaving as a file.
+  { resource: 'employee', action: 'export', severity: 'notable' },
   { resource: 'search', action: 'identifier-lookup', severity: 'notable' },
   { resource: 'leave-balance', action: 'carry-over', severity: 'notable' },
 ];

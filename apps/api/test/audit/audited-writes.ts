@@ -20,6 +20,9 @@
 export const AUDITED_WRITES: Record<string, string> = {
   'POST /scope-check': 'scope-check.create',
   'POST /clients': 'client.create',
+  // SOON-01: an export is a POST (it carries the ids on screen) and is audited as the act.
+  'POST /employees/export': 'employee.export',
+  'POST /portal/employees/export': 'employee.export',
   'PATCH /clients/:id': 'client.update',
   'DELETE /clients/:id': 'client.delete',
   'POST /staff-users': 'staff-user.create',

@@ -50,6 +50,7 @@ import { NeedsRow } from './needs-row';
 import { PortfolioTable } from './portfolio-table';
 import { dateFormat, hijriDate } from '@/lib/dates';
 import { dots } from '@/lib/pieces';
+import { ExportRegisterButton } from '@/components/export-register-button';
 
 // The Overview (DS-17) — the prototype's home screen (ADR-012), for staff. It
 // replaces UX-04's "Today" work list, whose job the Work queue (DS-12) now does
@@ -121,7 +122,6 @@ export default function OverviewPage() {
 function StaffOverview() {
   const t = useTranslations('overview');
   const tq = useTranslations('queue');
-  const ts = useTranslations('states');
   const locale = useLocale() as 'ar' | 'en';
   const router = useRouter();
   const canReadAllTasks = useCan('task.read-all');
@@ -246,12 +246,7 @@ function StaffOverview() {
           {loaded && <p className="text-sm text-pretty text-muted-foreground">{todayLine}</p>}
         </div>
         <span className="flex shrink-0 gap-2 self-start sm:self-auto">
-          <Button variant="outline" size="sm" disabled aria-describedby="ov-export-soon">
-            {t('exportRegister')}
-            <span id="ov-export-soon" className="text-[11px] font-normal text-muted-foreground">
-              {ts('soon')}
-            </span>
-          </Button>
+          <ExportRegisterButton path="/employees/export" label={t('exportRegister')} />
           {canStartProcedure && (
             <Button size="sm" onClick={() => setProcOpen(true)} disabled={!loaded}>
               {t('startProcedure')}

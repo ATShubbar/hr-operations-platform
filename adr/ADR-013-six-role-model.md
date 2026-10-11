@@ -159,6 +159,15 @@ Narrowings:
   **unchanged everywhere else**: `UAT_DISABLE_MFA=true` takes effect only when
   `APP_WEB_ORIGIN` is the UAT address (`auth/domain/uat-mfa.ts`, pinned by
   `test/uat-mfa-switch.e2e-spec.ts`), so production cannot lose it by a copied variable.
+- **rev. 3 (SOON-01, 2026-10-11) — one permission added to the catalog: `employee.export`.**
+  Taking the People list out as a file is a distinct capability from reading it (the
+  `report.export` reasoning). Held by the Administrator, the HR officer and the GRO officer,
+  and by the Client manager for their own company through the portal. **Not the Auditor**, who
+  reads and does not carry data away (their one export remains the audit trail itself). The
+  file holds only what its reader already sees — `salary.read` and `govdata.read` still decide
+  the columns, a client manager gets dates and neither numbers nor pay — and every export is
+  audited. An owner decision ("everyone who sees the button in the prototype"); a catalog
+  addition, the matrix's other cells are unchanged.
 
 ## Consequences
 - architecture.md v1.7 replaces the "Roles" list and the permission matrix.

@@ -15,3 +15,4 @@ export {
 export type { CreateEmployeeInput } from './domain/employee';
 export { toSelfDependant } from './domain/dependant-view';
 export type { DependantInput, DependantPatch, DependantRelationship } from './domain/dependant';
+export { buildRegister, pickForExport, registerFileName } from './domain/register-export';

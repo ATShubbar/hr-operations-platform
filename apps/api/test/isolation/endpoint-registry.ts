@@ -113,6 +113,7 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'GET /employees': 'staff',
   'GET /employees/:id': 'staff',
   'POST /employees': 'staff',
+  'POST /employees/export': 'staff', // SOON-01; scopeOf refuses client managers (employee-export e2e)
   'PATCH /employees/:id': 'staff',
   'PATCH /employees/:id/salary': 'staff',
   'PATCH /employees/:id/govdata': 'staff',
@@ -314,6 +315,8 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'POST /leave/carry-over': 'staff',
   'GET /portal/company': 'client-read',
   'GET /portal/employees': 'client-read',
+  // SOON-01: own company only — proven in employee-export e2e (another company's id matches nothing).
+  'POST /portal/employees/export': 'client-read',
   'GET /portal/employees/:id': 'client-read',
   'GET /portal/documents': 'client-read',
   'GET /portal/documents/:id': 'client-read',

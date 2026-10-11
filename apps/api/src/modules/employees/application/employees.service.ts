@@ -101,6 +101,26 @@ export class EmployeesService {
     return result.row;
   }
 
+  // SOON-01: an export is recorded — the ACT and a fingerprint of the file, never
+  // the rows (copying them here would put gated pay and identifiers into the
+  // audit table). Written BEFORE the bytes are returned: if this fails, nothing
+  // leaves. `scope` is 'all' for staff, the company id for a client manager.
+  async recordExport(input: {
+    rows: number;
+    columns: string[];
+    scope: string;
+    selected: boolean;
+    sha256: string;
+  }): Promise<void> {
+    await this.prisma.$transaction(async (tx) => {
+      await this.audit.record(tx, {
+        resource: 'employee',
+        action: 'export',
+        after: { ...input, format: 'csv' },
+      });
+    });
+  }
+
   list(clientId?: string): Promise<EmployeeRecord[]> {
     return this.prisma.employee.findMany({
       where: clientId ? { clientId } : undefined,

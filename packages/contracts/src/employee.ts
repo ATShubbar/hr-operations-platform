@@ -166,6 +166,15 @@ export const updateGovdataRequestSchema = govdataWriteSchema.refine(
   { message: 'At least one govdata field required' },
 );
 
+// SOON-01: "Export register". `ids` is what the screen is showing — a FILTER over
+// what the caller may already read, never an authority (an id they cannot read
+// matches nothing). Absent = everyone they may read; an empty list = nobody.
+// 2,000 keeps the request inside the server's body limit.
+export const EXPORT_MAX_IDS = 2000;
+export const employeeExportRequestSchema = z
+  .object({ ids: z.array(z.string().uuid()).max(EXPORT_MAX_IDS).optional() })
+  .strict();
+
 export type Gender = z.infer<typeof genderSchema>;
 export type EmploymentStatus = z.infer<typeof employmentStatusSchema>;
 export type ContractType = z.infer<typeof contractTypeSchema>;
@@ -177,3 +186,4 @@ export type CreateEmployeeRequest = z.infer<typeof createEmployeeRequestSchema>;
 export type UpdateEmployeeCoreRequest = z.infer<typeof updateEmployeeCoreRequestSchema>;
 export type UpdateSalaryRequest = z.infer<typeof updateSalaryRequestSchema>;
 export type UpdateGovdataRequest = z.infer<typeof updateGovdataRequestSchema>;
+export type EmployeeExportRequest = z.infer<typeof employeeExportRequestSchema>;

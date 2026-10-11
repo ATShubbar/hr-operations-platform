@@ -89,6 +89,8 @@ export {
   updateEmployeeCoreRequestSchema,
   updateSalaryRequestSchema,
   updateGovdataRequestSchema,
+  employeeExportRequestSchema,
+  EXPORT_MAX_IDS,
   type Gender,
   type EmploymentStatus,
   type ContractType,
@@ -100,6 +102,7 @@ export {
   type UpdateEmployeeCoreRequest,
   type UpdateSalaryRequest,
   type UpdateGovdataRequest,
+  type EmployeeExportRequest,
 } from './employee.js';
 export {
   loginRequestSchema,

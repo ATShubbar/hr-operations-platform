@@ -55,6 +55,7 @@ import {
 } from '@/components/ui/select';
 import { dateFormat, hijriDate } from '@/lib/dates';
 import { dots } from '@/lib/pieces';
+import { ExportRegisterButton } from '@/components/export-register-button';
 
 // People (DS-05) — the prototype's People screen, laid out as the owner's design
 // has it (ADR-012): every employee judged by the document that expires FIRST,
@@ -99,7 +100,6 @@ const FR_TOTAL = FR.reduce((a, b) => a + b, 0);
 
 export default function PeoplePage() {
   const t = useTranslations('people');
-  const ts = useTranslations('states');
   const locale = useLocale() as Locale;
   const router = useRouter();
   const canCreate = useCan('employee.create');
@@ -257,6 +257,8 @@ export default function PeoplePage() {
   const current = Math.min(page, pages - 1);
   const visible = rows.slice(current * PAGE, current * PAGE + PAGE);
   const filtered = fClient !== ALL || fDoc !== ALL || fBand !== ALL;
+  // The export sends the rows on screen only when something narrows them.
+  const narrowed = filtered || search.trim() !== '';
 
   const summary = (() => {
     const count = t('summaryCount', { count: rows.length });
@@ -347,13 +349,14 @@ export default function PeoplePage() {
         <p className="text-sm text-muted-foreground">{loading ? ' ' : summary}</p>
       </div>
       <span className="flex shrink-0 gap-2">
-        {/* No register export exists yet — shown, disabled, and saying so. */}
-        <Button variant="outline" size="sm" disabled aria-describedby="export-soon">
-          {t('exportRegister')}
-          <span id="export-soon" className="text-[11px] font-normal text-muted-foreground">
-            {ts('soon')}
-          </span>
-        </Button>
+        {/* What is on screen: with a filter or a search, exactly those people in
+            that order; with neither, everyone (no list is sent). */}
+        <ExportRegisterButton
+          path="/employees/export"
+          label={t('exportRegister')}
+          ids={narrowed ? rows.map((r) => r.e.id) : undefined}
+          disabled={loading}
+        />
         {canCreate && (
           <Button size="sm" onClick={openAdd}>
             {t('addPerson')}

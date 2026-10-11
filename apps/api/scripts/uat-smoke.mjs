@@ -254,6 +254,27 @@ async function main() {
     const none = await call('/fees', { cookie: cm });
     check(none.status === 403, 'billing: the fee ledger is refused to a client manager', `HTTP ${none.status}`);
   }
+
+  // Export register (SOON-01) — the People list as a file. It writes one audit
+  // entry per run, which is what an export is supposed to do.
+  if (hr) {
+    const file = await call('/employees/export', { cookie: hr, method: 'POST', body: {} });
+    check(
+      file.status === 200 &&
+        (file.headers.get('content-type') ?? '').startsWith('text/csv') &&
+        Number(file.headers.get('x-export-rows')) > 0,
+      'export register: HR downloads the register',
+      `HTTP ${file.status}, ${file.headers.get('x-export-rows')} rows`,
+    );
+  }
+  if (cm) {
+    const refused = await call('/employees/export', { cookie: cm, method: 'POST', body: {} });
+    check(
+      refused.status === 403,
+      'export register: the staff route is refused to a client manager',
+      `HTTP ${refused.status}`,
+    );
+  }
   if (sessions.administrator) {
     const beta = await call(`/billing/clients/${CLIENT_B}`, { cookie: sessions.administrator });
     check(

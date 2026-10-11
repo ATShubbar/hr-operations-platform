@@ -75,6 +75,14 @@ const MATRIX: Record<string, Row> = {
     gro_officer: ['employee.history'],
     auditor: ['employee.history'],
   },
+  // SOON-01 catalog addition: take the People list out as a file. Not the
+  // Auditor (reads, does not carry away); a client manager for their own company.
+  'Employees — export the register': {
+    administrator: ['employee.export'],
+    hr_officer: ['employee.export'],
+    gro_officer: ['employee.export'],
+    client_manager: ['employee.export'],
+  },
   'Employees — core profile': {
     administrator: ['employee.read', 'employee.create', 'employee.update', 'employee.delete'],
     hr_officer: ['employee.read', 'employee.create', 'employee.update'],

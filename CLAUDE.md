@@ -1806,6 +1806,19 @@ menu or a toast — read the code for those. Rules of thumb now in force for the
 text in `ar.json` (rule applied at load) · dates/times → `lib/dates.ts` · dot-joined lines → `dots()` / `<DotLine>` ·
 label + value → `spaced()` · shortened text → the `truncate` class.
 
+**SOON-01 done — Export register (ADR-013 rev. 3).** The "Soon" button on People and both Overviews now downloads a CSV.
+New permission **`employee.export`**: Administrator, HR officer, GRO officer, and the Client manager for their own company;
+NOT the Auditor. `POST /employees/export` (staff; `scopeOf` refuses client managers, who hold the permission too) and
+`POST /portal/employees/export` (company from the session, portal switch required; the ONE portal route not behind
+`portal.read` — a route carries a single permission). Body `{ids?}` = what the screen shows, a FILTER (max 2,000; absent =
+everyone, empty = nobody). Rows are redacted with `toEmployeeResponse` and the columns chosen from the same visibility
+(`employees/domain/register-export.ts`), so a file never holds more than the screen; a bank account number is in no
+export. Audited BEFORE the bytes return (`employee`/`export`, notable: rows, columns, scope, selected, sha256).
+`csvText()` in `src/csv/csv.ts` neutralises formula cells (register only — CSV-01 for the report and audit exports). Web:
+`components/export-register-button.tsx`. API **931/931**. **SOON-02 (Saved views) is ON HOLD by the owner** — they want
+views a person chooses and saves, not the prototype's fixed shortcuts; design card first. SOON-03 (leave service level)
+and SOON-04 (candidate target + health) are approved and next.
+
 ## Technical landmines (each cost real debugging — do not rediscover)
 
 - `apps/web/messages/ar.json` must hold NO directional control character (mark or isolate) — the rule in `@hr/text`
@@ -1824,6 +1837,10 @@ label + value → `spaced()` · shortened text → the `truncate` class.
   `property: revert-layer` in an injected style and measure again — it removes exactly the unlayered rule and leaves
   Tailwind's layers alone, so the two readings differ only by the rule (UX-23). Prototype a CSS fix the same way, by
   injecting it, before committing anything.
+- `RequirePermission` stores ONE permission per route: stacking two decorators keeps only the upper one. A route that
+  needs two checks carries one as the decorator and makes the other in the handler (SOON-01: the portal export).
+- A JSON body over ~100 KB is refused by the server before validation (413). 5,000 uuids is ~190 KB: keep id lists to
+  2,000 (`EXPORT_MAX_IDS`) or raise the body limit on purpose (SOON-01).
 - When a tool call writes a `\u` escape for an invisible character into a source file, the character can arrive as the
   LITERAL — it happened three times in one day (a guard script, a test file, a regex). After writing such a file, scan it
   for literal controls and rewrite them as escapes built in code (`chr(92) + 'u200f'`), never by typing the escape again.

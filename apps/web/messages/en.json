@@ -826,7 +826,8 @@
       "config__client-set": "Changed a client setting",
       "config__client-clear": "Cleared a client setting",
       "config__user-set": "Changed a personal setting",
-      "config__user-clear": "Cleared a personal setting"
+      "config__user-clear": "Cleared a personal setting",
+      "employee__export": "Exported the employee register"
     },
     "changes": "{count, plural, =0 {What changed} one {What changed · # field} other {What changed · # fields}}",
     "noChanges": "No field values were recorded for this entry.",
@@ -2972,5 +2973,12 @@
   },
   "money": {
     "sar": "SAR {amount}"
+  },
+  "exportRegister": {
+    "exporting": "Exporting…",
+    "done": "{count, plural, =0 {Exported an empty register.} one {Exported # person.} other {Exported # people.}}",
+    "tooMany": "This list is too long to export as shown (more than {max} people). Narrow it, or clear the filters to export everyone.",
+    "notAllowed": "You cannot export this register.",
+    "error": "Could not export the register. Try again."
   }
 }

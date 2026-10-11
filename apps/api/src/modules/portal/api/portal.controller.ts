@@ -1,4 +1,16 @@
-import { Controller, ForbiddenException, Get, NotFoundException, Param } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  ForbiddenException,
+  Get,
+  HttpCode,
+  NotFoundException,
+  Param,
+  Post,
+  Res,
+} from '@nestjs/common';
+import { employeeExportRequestSchema } from '@hr/contracts';
 import type {
   ClientResponse,
   DocumentListResponse,
@@ -16,6 +28,9 @@ import { DocumentsService, toDocumentResponse } from '../../documents/public-api
 import {
   EmployeesService,
   PORTAL_EMPLOYEE_VISIBILITY,
+  buildRegister,
+  pickForExport,
+  registerFileName,
   toEmployeeResponse,
 } from '../../employees/public-api';
 import { StorageService } from '../../storage/public-api';
@@ -69,6 +84,47 @@ export class PortalController {
     await this.assertPortalAccess(clientId);
     const rows = await this.employees.listByClient(clientId);
     return { employees: rows.map((r) => toEmployeeResponse(r, PORTAL_EMPLOYEE_VISIBILITY)) };
+  }
+
+  // "Export register" for a client manager (SOON-01): THEIR company's list as a
+  // CSV file, with exactly what the portal list shows — dates, no identifier
+  // numbers, no pay. The company comes from the session; `ids` only narrows it,
+  // so another company's id matches nothing. Audited against their company.
+  // The one portal route NOT gated by `portal.read`: a route carries a single
+  // permission, and this one's is `employee.export`. Staff, who hold that too,
+  // are refused by scope() — they have no company in their session.
+  @RequirePermission('employee.export')
+  @Post('employees/export')
+  @HttpCode(200)
+  async employeesExport(
+    @Body() body: unknown,
+    @Res({ passthrough: true }) res: { setHeader(name: string, value: string): void },
+  ): Promise<string> {
+    const clientId = this.scope();
+    await this.assertPortalAccess(clientId);
+    const parsed = employeeExportRequestSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues[0]?.message);
+    const rows = pickForExport(await this.employees.listByClient(clientId), parsed.data.ids);
+    const company = await this.clients.getById(clientId);
+    const companies = new Map(
+      company ? [[clientId, { nameEn: company.nameEn, nameAr: company.nameAr }]] : [],
+    );
+    const file = buildRegister(
+      rows.map((r) => toEmployeeResponse(r, PORTAL_EMPLOYEE_VISIBILITY)),
+      companies,
+      PORTAL_EMPLOYEE_VISIBILITY,
+    );
+    await this.employees.recordExport({
+      rows: file.rows,
+      columns: file.columns,
+      scope: clientId,
+      selected: parsed.data.ids !== undefined,
+      sha256: file.sha256,
+    });
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${registerFileName()}"`);
+    res.setHeader('X-Export-Rows', String(file.rows));
+    return file.document;
   }
 
   // One own employee — 404 (never 403) for another client's employee so the

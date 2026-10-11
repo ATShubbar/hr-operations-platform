@@ -61,6 +61,13 @@ export const PERMISSIONS = [
   // staff role that reads employee records. Owner-approved as a CATALOG
   // ADDITION, the staff-user.directory pattern (UX-10b), not a matrix change.
   'employee.history',
+  // SOON-01: take the People list out as a file. A DISTINCT capability — seeing
+  // a list is not the same as carrying it away (the report.export reasoning,
+  // REP-03). Administrator, HR officer, GRO officer, and a client manager for
+  // their own company through the portal; NOT the Auditor. The file holds only
+  // what its reader already sees (salary.read / govdata.read still decide the
+  // columns) and every export is audited. Owner-approved catalog addition.
+  'employee.export',
   'salary.read',
   'salary.update',
   'govdata.read',
@@ -273,6 +280,8 @@ const CLIENT_MANAGER: readonly Permission[] = [
   'request.read',
   'request.create',
   'portal.read',
+  // SOON-01: their own company's register, through /portal/employees/export.
+  'employee.export',
   'vacancy.read',
   'gro.read',
   // ADR-014: their own company's leave — raise, approve/decline, withdraw own raises.
@@ -315,6 +324,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'employee.create',
     'employee.update',
     'employee.delete',
+    'employee.export',
     'salary.read',
     'salary.update',
     'govdata.read',
@@ -374,6 +384,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
     'employee-user.update',
     'employee.create',
     'employee.update',
+    'employee.export',
     'salary.read',
     'salary.update',
     'govdata.read',
@@ -415,6 +426,7 @@ export const ROLE_PERMISSIONS: Record<RoleName, readonly Permission[]> = {
   // hiring RW, calendar RWCD). No Reports, no audit (ADR-013).
   gro_officer: [
     ...STAFF_BASE,
+    'employee.export',
     'govdata.read',
     'govdata.update',
     'document.upload',

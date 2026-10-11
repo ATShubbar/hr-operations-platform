@@ -12,9 +12,11 @@ import {
   Patch,
   Post,
   Query,
+  Res,
 } from '@nestjs/common';
 import {
   createEmployeeRequestSchema,
+  employeeExportRequestSchema,
   updateEmployeeCoreRequestSchema,
   updateGovdataRequestSchema,
   updateSalaryRequestSchema,
@@ -22,12 +24,14 @@ import {
   type EmployeeResponse,
 } from '@hr/contracts';
 import { RequirePermission } from '../../../auth/permissions.decorator';
+import { scopeOf } from '../../../auth/scope';
 import { requestContext } from '../../../context/request-context';
 import type { EmployeeModel as EmployeeRecord } from '../../../generated/prisma/models';
 import type { Prisma } from '../../../generated/prisma/client';
 import { PolicyService } from '../../auth/public-api';
 import { ClientsService } from '../../clients/public-api';
 import { EmployeesService } from '../application/employees.service';
+import { buildRegister, pickForExport, registerFileName } from '../domain/register-export';
 import {
   staffVisibility,
   toEmployeeResponse,
@@ -60,6 +64,47 @@ export class EmployeesController {
     const rows = await this.employees.list(clientId);
     const view = this.readVisibility();
     return { employees: rows.map((r) => toEmployeeResponse(r, view)) };
+  }
+
+  // "Export register" (SOON-01): the list as a CSV file. `ids` is what the screen
+  // is showing — a filter over what this person may read, never an authority.
+  // STAFF ONLY: a client manager holds employee.export too and uses the portal
+  // route, where the company comes from their session, so scopeOf must refuse
+  // them here (the permission alone would let them through).
+  @RequirePermission('employee.export')
+  @Post('export')
+  @HttpCode(200)
+  async export(
+    @Body() body: unknown,
+    @Res({ passthrough: true }) res: { setHeader(name: string, value: string): void },
+  ): Promise<string> {
+    if (scopeOf(requestContext.get()).kind !== 'staff') {
+      throw new ForbiddenException('Client accounts export through the portal');
+    }
+    const parsed = employeeExportRequestSchema.safeParse(body ?? {});
+    if (!parsed.success) throw new BadRequestException(parsed.error.issues[0]?.message);
+    const vis = this.readVisibility();
+    const rows = pickForExport(await this.employees.list(), parsed.data.ids);
+    const companies = new Map(
+      (await this.clients.list()).map((c) => [c.id, { nameEn: c.nameEn, nameAr: c.nameAr }]),
+    );
+    const file = buildRegister(
+      rows.map((r) => toEmployeeResponse(r, vis)),
+      companies,
+      vis,
+    );
+    // Audit BEFORE the bytes: an export that cannot be recorded does not leave.
+    await this.employees.recordExport({
+      rows: file.rows,
+      columns: file.columns,
+      scope: 'all',
+      selected: parsed.data.ids !== undefined,
+      sha256: file.sha256,
+    });
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${registerFileName()}"`);
+    res.setHeader('X-Export-Rows', String(file.rows));
+    return file.document;
   }
 
   @RequirePermission('employee.read')
