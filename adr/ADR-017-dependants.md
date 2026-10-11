@@ -1,6 +1,6 @@
 # ADR-017 — Dependants: the family on an employee's sponsorship
 
-- Status: Accepted (rev. 1, 2026-10-11: dependants join the runway and the expiring figures — DEP-05)
+- Status: Accepted (rev. 1, 2026-10-11: dependants join the runway and the expiring figures — DEP-05; rev. 2, 2026-10-11: a dependant's iqama renewal as a procedure — DEP-06)
 - Date: 2026-10-05
 - Owner: Ahmed Alshubbar (product decision; DEP-00)
 - Amends: **architecture.md** — scope (dependants were out of scope in v1.1–v1.10), the
@@ -127,6 +127,27 @@ adds the rest (owner decisions):
   and their figures are unchanged.
 - People's document filter gains the three dependant documents so a runway cell can open the
   sponsors concerned (DEP-05b).
+
+## Revision 2 — 2026-10-11 (DEP-06)
+The last part of "dependants join the expiry engine": renewing a dependant's document as tracked
+work. The prototype has no such procedure (only Renew on the Family tab); this follows the pattern
+already used for the employee's own documents (owner decisions):
+
+- **One procedure type, `dependant_iqama_renewal`** — the iqama only. Insurance and passport keep
+  the Renew button. **One procedure per dependant**: each has their own date and fee.
+- **It lives on the sponsoring employee** and names the dependant (`gro_processes.dependant_id`).
+  The dependant must be a current dependant of that employee. One renewal in flight per dependant.
+- **Completing it writes the new date to the dependant**, through Employees, audited against the
+  sponsor like any other change to a dependant.
+- **Removing a dependant cancels their open renewal** (Employees publishes `DependantRemoved`; GRO
+  subscribes — the direction GRO already depends in).
+- **The fee prefilled on completion is the annual dependant fee** — the one figure in the
+  standard-fees setting. There is no second figure to keep in step.
+- **A client never sees one.** Client managers read their company's procedures (status only); a
+  dependant procedure would tell them a family exists, and this decision gives clients nothing of
+  a family. A RESTRICTIVE database policy hides these rows from the client connection, so no
+  query can forget to.
+- No new permission: `gro.process` starts and completes it, as for any procedure.
 
 ## Build
 - **DEP-01:** the table, its database fences and an audited service.

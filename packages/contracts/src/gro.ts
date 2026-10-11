@@ -17,7 +17,12 @@ export const groProcessTypeSchema = z.enum([
   'medical_insurance_renewal',
   'driving_licence_renewal',
   'driving_licence_conversion',
+  // DEP-06a: one dependant's iqama, renewed on the sponsoring employee.
+  'dependant_iqama_renewal',
 ]);
+
+/** The procedure types that are FOR a dependant: they name one, and no other type does. */
+export const DEPENDANT_PROCEDURE_TYPES: readonly string[] = ['dependant_iqama_renewal'];
 export const groProcessStatusSchema = z.enum([
   'not_started',
   'in_progress',
@@ -42,19 +47,31 @@ export const groProcessResponseSchema = z.object({
   createdByUserId: z.uuid().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
+  // DEP-06a: the dependant a dependant procedure is for (staff only — a client
+  // never receives such a procedure at all). null for every other type.
+  dependant: z
+    .object({ id: z.uuid(), nameEn: z.string(), nameAr: z.string().nullable() })
+    .nullable(),
 });
 
 // Create: staff supply the `employeeId` (validated; clientId is derived from the
 // employee, never taken from input). `status` is never set on create — a process
 // always starts `not_started`.
-export const createGroProcessRequestSchema = z.object({
-  employeeId: z.uuid(),
-  type: groProcessTypeSchema,
-  referenceNumber: z.string().max(120).optional(),
-  dueDate: z.coerce.date().optional(),
-  assigneeUserId: z.uuid().optional(),
-  notes: z.string().max(4000).optional(),
-});
+export const createGroProcessRequestSchema = z
+  .object({
+    employeeId: z.uuid(),
+    type: groProcessTypeSchema,
+    referenceNumber: z.string().max(120).optional(),
+    dueDate: z.coerce.date().optional(),
+    assigneeUserId: z.uuid().optional(),
+    notes: z.string().max(4000).optional(),
+    // DEP-06a: required for a dependant procedure, refused for any other.
+    dependantId: z.uuid().optional(),
+  })
+  .refine((v) => DEPENDANT_PROCEDURE_TYPES.includes(v.type) === (v.dependantId !== undefined), {
+    message: 'A dependant procedure names its dependant; no other procedure does',
+    path: ['dependantId'],
+  });
 
 // Update: editable core fields only — status is advanced via gro.process.
 export const updateGroProcessRequestSchema = z.object({

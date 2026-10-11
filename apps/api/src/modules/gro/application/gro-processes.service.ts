@@ -1,16 +1,27 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { ScopedPrismaService } from '../../../prisma/scoped-prisma.service';
 import type { GroProcessModel as GroProcessRecord } from '../../../generated/prisma/models';
-import type { GroProcessStatus, Prisma } from '../../../generated/prisma/client';
+import { Prisma, type GroProcessStatus } from '../../../generated/prisma/client';
 import { AuditService } from '../../audit/public-api';
 import { UsersService } from '../../auth/public-api';
 import { requestContext } from '../../../context/request-context';
-import { EmployeesService } from '../../employees/public-api';
+import { DependantsService, EmployeesService } from '../../employees/public-api';
 import { NotificationsService } from '../../notifications/public-api';
 import type { CreateGroProcessInput, UpdateGroProcessInput } from '../domain/gro-process';
 import { canTransition } from '../domain/gro-status-workflow';
-import { buildGroAssignedContent, buildGroStatusContent, expiryFieldFor } from '../domain/gro-effects';
+import {
+  buildGroAssignedContent,
+  buildGroStatusContent,
+  expiryFieldFor,
+  isDependantProcedure,
+} from '../domain/gro-effects';
 
 // GRO government-process registry access (GRO-01/02). TWO data paths, both owned
 // here:
@@ -24,14 +35,49 @@ import { buildGroAssignedContent, buildGroStatusContent, expiryFieldFor } from '
 // dueDate) — never gov reference numbers.
 @Injectable()
 export class GroProcessesService {
+  private readonly logger = new Logger(GroProcessesService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly scoped: ScopedPrismaService,
     private readonly audit: AuditService,
     private readonly employees: EmployeesService,
+    private readonly dependants: DependantsService,
     private readonly notifications: NotificationsService,
     private readonly users: UsersService,
   ) {}
+
+  // DEP-06a: a dependant procedure names ONE current dependant of the sponsor it
+  // is opened on; no other procedure names anybody. (The contract and a CHECK
+  // say the same; this is where "of THIS sponsor, and not removed" is decided.)
+  private async assertDependant(input: CreateGroProcessInput): Promise<void> {
+    const forDependant = isDependantProcedure(input.type);
+    if (forDependant !== Boolean(input.dependantId)) {
+      throw new BadRequestException(
+        'A dependant procedure names its dependant; no other procedure does',
+      );
+    }
+    if (!input.dependantId) return;
+    if (!(await this.dependants.findCurrent(input.employeeId, input.dependantId))) {
+      throw new NotFoundException('Dependant not found');
+    }
+  }
+
+  /** The dependants named by these procedures, for display (staff path only). */
+  dependantNames(rows: readonly GroProcessRecord[]) {
+    return this.dependants.namesOf(rows.flatMap((r) => (r.dependantId ? [r.dependantId] : [])));
+  }
+
+  // A removed dependant's open renewal has nothing left to renew (DEP-06a). Each
+  // goes through changeStatus, so it is audited and its assignee is told.
+  async cancelForDependant(dependantId: string): Promise<number> {
+    const open = await this.prisma.groProcess.findMany({
+      where: { dependantId, status: { notIn: ['completed', 'cancelled'] } },
+      select: { id: true },
+    });
+    for (const p of open) await this.changeStatus(p.id, 'cancelled');
+    return open.length;
+  }
 
   // ASSIGN-01: a procedure goes only to someone who can work procedures — Auth's
   // shared rule (an active staff account holding gro.process). Clearing is fine.
@@ -57,17 +103,27 @@ export class GroProcessesService {
 
   async create(input: CreateGroProcessInput): Promise<GroProcessRecord> {
     await this.assertAssignable(input.assigneeUserId);
-    const created = await this.prisma.$transaction(async (tx) => {
-      const row = await tx.groProcess.create({ data: toCreateData(input) });
-      await this.audit.record(tx, {
-        resource: 'gro-process',
-        resourceId: row.id,
-        action: 'create',
-        clientId: row.clientId,
-        after: snapshot(row),
+    await this.assertDependant(input);
+    let created: GroProcessRecord;
+    try {
+      created = await this.prisma.$transaction(async (tx) => {
+        const row = await tx.groProcess.create({ data: toCreateData(input) });
+        await this.audit.record(tx, {
+          resource: 'gro-process',
+          resourceId: row.id,
+          action: 'create',
+          clientId: row.clientId,
+          after: snapshot(row),
+        });
+        return row;
       });
-      return row;
-    });
+    } catch (err) {
+      // The partial unique index: one renewal in flight per dependant.
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+        throw new ConflictException('A renewal is already open for this dependant');
+      }
+      throw err;
+    }
     await this.notifyAssigned(created);
     return created;
   }
@@ -164,6 +220,20 @@ export class GroProcessesService {
     // (GRO operates on Employees). Only expiry-establishing types with a resulting
     // date write anything.
     if (row.status === 'completed' && row.resultingExpiry) {
+      if (row.dependantId) {
+        // DEP-06a: a dependant procedure renews the DEPENDANT's iqama — through
+        // Employees, so it is audited against the sponsor like any other edit.
+        // The dependant may have been removed since (their renewal is cancelled
+        // on removal, so this is a narrow race): nothing is left to write to.
+        if (await this.dependants.findCurrent(row.employeeId, row.dependantId)) {
+          await this.dependants.update(row.employeeId, row.dependantId, {
+            iqamaExpiry: row.resultingExpiry,
+          });
+        } else {
+          this.logger.warn(`Procedure ${row.id} completed for a dependant no longer on file`);
+        }
+        return;
+      }
       const field = expiryFieldFor(row.type);
       if (field) {
         await this.employees.update(row.employeeId, { [field]: row.resultingExpiry }, 'gro-completion');
@@ -194,6 +264,7 @@ function toCreateData(input: CreateGroProcessInput): Prisma.GroProcessUncheckedC
     notes: input.notes ?? null,
     createdByUserId: input.createdByUserId ?? null,
     sourceDocumentId: input.sourceDocumentId ?? null,
+    dependantId: input.dependantId ?? null,
   };
 }
 

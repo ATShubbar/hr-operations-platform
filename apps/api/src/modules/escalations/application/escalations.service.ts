@@ -123,6 +123,7 @@ const toProcedure = (p: ProcedureRecord): LadderProcedure => ({
   status: p.status,
   dueOn: iso(p.dueDate),
   assigneeUserId: p.assigneeUserId,
+  dependantId: p.dependantId,
 });
 const toRequest = (r: RequestRecord): LadderRequest => ({
   id: r.id,

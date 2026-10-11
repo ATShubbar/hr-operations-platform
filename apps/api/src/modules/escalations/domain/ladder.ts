@@ -1,5 +1,6 @@
 import {
   DEPENDANT_DOCS,
+  DEPENDANT_RENEWED_BY,
   DEPENDANT_DOC_OWNER,
   EMPLOYEE_DOCS,
   EMPLOYEE_DOC_OWNER,
@@ -70,6 +71,8 @@ export interface LadderProcedure {
   status: string;
   dueOn: string | null;
   assigneeUserId: string | null;
+  /** The dependant a dependant procedure is for (DEP-06a); absent/null otherwise. */
+  dependantId?: string | null;
 }
 export interface LadderTask {
   id: string;
@@ -223,6 +226,17 @@ function reach(
       }
     }
   }
+  // The same for a dependant (DEP-06a): the open procedure NAMES the dependant,
+  // and quiets that dependant's document only.
+  const dependantBeingRenewed = new Set<string>();
+  for (const proc of input.procedures) {
+    if (!proc.dependantId || isFinished('procedure', proc.status)) continue;
+    for (const doc of DEPENDANT_DOCS) {
+      if (DEPENDANT_RENEWED_BY[doc]?.includes(proc.type)) {
+        dependantBeingRenewed.add(`${proc.dependantId}:${doc}`);
+      }
+    }
+  }
   if (access.employees && access.dependants) {
     for (const d of input.dependants) {
       const sponsor = people.get(d.employeeId);
@@ -230,6 +244,11 @@ function reach(
       for (const doc of DEPENDANT_DOCS) {
         const dueOn = d.dates[doc];
         if (!dueOn) continue;
+        if (dependantBeingRenewed.has(`${d.id}:${doc}`)) {
+          const stage = stageFor('expiry', daysLeft(today, dueOn), thresholds);
+          if (stage !== null) quiet.push(stage);
+          continue;
+        }
         push(
           `dependant:${d.id}:${doc}`,
           'expiry',

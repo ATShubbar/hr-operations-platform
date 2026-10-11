@@ -10,7 +10,9 @@ import type { DependantModel as DependantRecord } from '../../../generated/prism
 import type { Prisma } from '../../../generated/prisma/client';
 import { requestContext } from '../../../context/request-context';
 import { AuditService } from '../../audit/public-api';
+import { EventBus } from '../../events/public-api';
 import type { DependantInput, DependantPatch } from '../domain/dependant';
+import { DependantRemovedEvent } from '../domain/dependant-removed.event';
 
 // Dependants (DEP-01, ADR-017): the family on an employee's sponsorship. Staff
 // path for add/edit/remove (DEP-02 gates it on govdata.update); the employee's
@@ -28,7 +30,26 @@ export class DependantsService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly employeeDb: EmployeeScopedPrismaService,
+    private readonly events: EventBus,
   ) {}
+
+  /** One sponsor's CURRENT dependant, or null — another sponsor's, a removed one and an unknown id alike. */
+  async findCurrent(employeeId: string, dependantId: string): Promise<DependantRecord | null> {
+    const row = await this.prisma.dependant.findUnique({ where: { id: dependantId } });
+    return row && row.employeeId === employeeId && !row.removedAt ? row : null;
+  }
+
+  /** Names for display, by id — removed dependants included (a finished procedure still names them). */
+  async namesOf(
+    ids: readonly string[],
+  ): Promise<Map<string, { nameEn: string; nameAr: string | null }>> {
+    if (ids.length === 0) return new Map();
+    const rows = await this.prisma.dependant.findMany({
+      where: { id: { in: [...new Set(ids)] } },
+      select: { id: true, nameEn: true, nameAr: true },
+    });
+    return new Map(rows.map((r) => [r.id, { nameEn: r.nameEn, nameAr: r.nameAr }]));
+  }
 
   async listFor(employeeId: string): Promise<DependantRecord[]> {
     return order(await this.prisma.dependant.findMany({ where: { employeeId, removedAt: null } }));
@@ -106,8 +127,8 @@ export class DependantsService {
     });
   }
 
-  remove(employeeId: string, dependantId: string): Promise<DependantRecord> {
-    return this.prisma.$transaction(async (tx) => {
+  async remove(employeeId: string, dependantId: string): Promise<DependantRecord> {
+    const removed = await this.prisma.$transaction(async (tx) => {
       const { before, clientId } = await this.current(tx, employeeId, dependantId);
       const actorId = requestContext.get()?.actorId;
       if (!actorId) throw new BadRequestException('Removing a dependant needs a signed-in actor');
@@ -124,6 +145,12 @@ export class DependantsService {
       });
       return row;
     });
+    // DEP-06a: tell whoever holds work for this dependant (GRO cancels their
+    // open renewal). After the commit; the bus is awaited and error-isolated.
+    await this.events.publish(
+      new DependantRemovedEvent(dependantId, employeeId, requestContext.get()?.requestId ?? null),
+    );
+    return removed;
   }
 
   /** The live dependant of THIS sponsor — another sponsor's id is "not found", a removed one is final. */

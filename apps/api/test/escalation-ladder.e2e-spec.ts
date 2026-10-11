@@ -173,6 +173,42 @@ describe('document expiry', () => {
     expect(items[1]?.client?.id).toBe(CO);
   });
 
+  // DEP-06a: a dependant's iqama goes quiet while THEIR renewal is open.
+  it('a dependant\u2019s iqama is quiet while the renewal that names them is open — theirs only', () => {
+    const D1 = 'd0000000-0000-4000-8000-0000000000a1';
+    const D2 = 'd0000000-0000-4000-8000-0000000000a2';
+    const dep = (id: string) => ({
+      id,
+      employeeId: P1,
+      name: { ar: null, en: id.slice(-2) },
+      dates: { iqama: day(-2), insurance: day(-2), passport: null },
+    });
+    const renewal = (dependantId: string | null, type: string, status = 'in_progress') => ({
+      id: 'f0000000-0000-4000-8000-0000000000d1',
+      employeeId: P1,
+      clientId: CO,
+      type,
+      status,
+      dueOn: null,
+      assigneeUserId: null,
+      dependantId,
+    });
+    const run = (procedures: LadderInput['procedures']) => {
+      const out = buildLadder(base({ people: [person()], dependants: [dep(D1), dep(D2)], procedures }), admin);
+      return { keys: keys(out.items).sort(), quiet: out.suppressed };
+    };
+    const all = [D1, D2].flatMap((d) => [`dependant:${d}:insurance`, `dependant:${d}:iqama`]).sort();
+    expect(run([])).toEqual({ keys: all, quiet: 0 });
+    // The renewal names D1: D1's iqama is quiet. Not D1's insurance, nothing of D2's.
+    expect(run([renewal(D1, 'dependant_iqama_renewal')])).toEqual({
+      keys: all.filter((k) => k !== `dependant:${D1}:iqama`),
+      quiet: 1,
+    });
+    // Finished, or the sponsor's OWN iqama renewal, quiets no dependant.
+    expect(run([renewal(D1, 'dependant_iqama_renewal', 'completed')])).toEqual({ keys: all, quiet: 0 });
+    expect(run([renewal(null, 'iqama_renewal')])).toEqual({ keys: all, quiet: 0 });
+  });
+
   it('stays quiet while a procedure that renews the document is open — and says how many are quiet', () => {
     const proc = (over: object) => ({
       id: 'f0000000-0000-4000-8000-000000000001',

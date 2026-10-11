@@ -51,7 +51,13 @@ const TYPE_LABEL: Record<GroProcessType, { ar: string; en: string }> = {
   medical_insurance_renewal: { ar: 'تجديد التأمين الطبي', en: 'Medical insurance renewal' },
   driving_licence_renewal: { ar: 'تجديد رخصة القيادة', en: 'Driving licence renewal' },
   driving_licence_conversion: { ar: 'تحويل رخصة القيادة', en: 'Driving licence conversion' },
+  dependant_iqama_renewal: { ar: 'تجديد إقامة مُعال', en: 'Dependant iqama renewal' },
 };
+
+// DEP-06a: the procedure types that are FOR a dependant. Completing one writes
+// the resulting expiry to the DEPENDANT (their iqama), never to the employee.
+const DEPENDANT_TYPES: ReadonlySet<GroProcessType> = new Set(['dependant_iqama_renewal']);
+export const isDependantProcedure = (type: GroProcessType): boolean => DEPENDANT_TYPES.has(type);
 
 const STATUS_LABEL: Record<GroProcessStatus, { ar: string; en: string }> = {
   not_started: { ar: 'لم تبدأ', en: 'not started' },

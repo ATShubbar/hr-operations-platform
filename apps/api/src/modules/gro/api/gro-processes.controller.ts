@@ -61,8 +61,9 @@ export class GroProcessesController {
       assigneeUserId: req.assigneeUserId ?? null,
       notes: req.notes ?? null,
       createdByUserId: requestContext.get()?.actorId ?? null,
+      dependantId: req.dependantId ?? null,
     });
-    return toResponse(row, false);
+    return this.one(row);
   }
 
   @RequirePermission('gro.read')
@@ -76,7 +77,8 @@ export class GroProcessesController {
     const q = groProcessQuerySchema.safeParse(query);
     const filters = q.success ? q.data : {};
     const rows = await this.gro.list(filters);
-    return { processes: rows.map((r) => toResponse(r, false)) };
+    const names = await this.gro.dependantNames(rows);
+    return { processes: rows.map((r) => toResponse(r, false, names)) };
   }
 
   @RequirePermission('gro.read')
@@ -90,7 +92,7 @@ export class GroProcessesController {
         ? await this.gro.findForClient(scope.clientId, id)
         : await this.gro.getById(id);
     if (!row) throw new NotFoundException('GRO process not found');
-    return toResponse(row, isRep);
+    return isRep ? toResponse(row, true) : this.one(row);
   }
 
   @RequirePermission('gro.process')
@@ -101,7 +103,7 @@ export class GroProcessesController {
     if (!parsed.success) throw new BadRequestException('Invalid GRO process payload');
     const row = await this.gro.update(id, parsed.data);
     if (!row) throw new NotFoundException('GRO process not found');
-    return toResponse(row, false);
+    return this.one(row);
   }
 
   // Advance the workflow (GRO-02) — STAFF only (client reps lack gro.process).
@@ -115,13 +117,24 @@ export class GroProcessesController {
     if (!parsed.success) throw new BadRequestException('Invalid status payload');
     const row = await this.gro.changeStatus(id, parsed.data.status);
     if (!row) throw new NotFoundException('GRO process not found');
-    return toResponse(row, false);
+    return this.one(row);
+  }
+  /** One staff-path response, with the dependant it names (if any). */
+  private async one(row: GroProcessRecord): Promise<GroProcessResponse> {
+    return toResponse(row, false, await this.gro.dependantNames([row]));
   }
 }
 
 // `redacted` = the client-rep status-only view: type/status/dueDate are visible,
 // but referenceNumber (gov reference), notes, and the internal assignee are hidden.
-function toResponse(p: GroProcessRecord, redacted: boolean): GroProcessResponse {
+function toResponse(
+  p: GroProcessRecord,
+  redacted: boolean,
+  names?: ReadonlyMap<string, { nameEn: string; nameAr: string | null }>,
+): GroProcessResponse {
+  // A client never receives a dependant procedure (a database policy hides the
+  // rows), and the redacted view names nobody in any case.
+  const dependant = !redacted && p.dependantId ? names?.get(p.dependantId) : undefined;
   return {
     id: p.id,
     clientId: p.clientId,
@@ -136,5 +149,6 @@ function toResponse(p: GroProcessRecord, redacted: boolean): GroProcessResponse 
     createdByUserId: redacted ? null : p.createdByUserId,
     createdAt: p.createdAt.toISOString(),
     updatedAt: p.updatedAt.toISOString(),
+    dependant: dependant && p.dependantId ? { id: p.dependantId, ...dependant } : null,
   };
 }

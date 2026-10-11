@@ -85,6 +85,9 @@ record (owner decision), so the expiry rule watches them too:
 - **Client managers and employees** follow the existing rules unchanged: a client manager is told
   once one has lapsed (while their portal is on), an employee sees their own at every stage.
 
+**DEP-06 (2026-10-11):** a dependant's iqama is likewise quiet while the `dependant_iqama_renewal`
+that NAMES that dependant is open — theirs only, for staff and for the sponsor's own ladder.
+
 ### Who is told at each stage
 
 | Stage | Document expiry | Queue deadline | Request service level |

@@ -119,8 +119,13 @@ export function standardStepFee(
   return fees.steps[kind]?.[stepKey] ?? 0;
 }
 
-/** The standard fee for a procedure type, or 0. */
+/**
+ * The standard fee for a procedure type, or 0. A dependant's iqama renewal has
+ * no figure of its own: it IS the annual dependant fee (owner decision, DEP-06 —
+ * one number in one place, the one the Family tab shows).
+ */
 export function standardProcedureFee(fees: StandardFees, type: string): number {
+  if (type === 'dependant_iqama_renewal') return fees.dependantAnnual;
   return fees.procedures[type] ?? 0;
 }
 

@@ -7,6 +7,7 @@ import { GroProcessesController } from './api/gro-processes.controller';
 import { SequencesController } from './api/sequences.controller';
 import { DocumentExpiringHandler } from './application/document-expiring.handler';
 import { EmployeeMobilisingHandler } from './application/employee-mobilising.handler';
+import { DependantRemovedHandler } from './application/dependant-removed.handler';
 import { EmployeeTerminatedHandler } from './application/employee-terminated.handler';
 import { GroProcessesService } from './application/gro-processes.service';
 import { SequencesService } from './application/sequences.service';
@@ -29,6 +30,7 @@ import { SequencesService } from './application/sequences.service';
     SequencesService,
     DocumentExpiringHandler,
     EmployeeTerminatedHandler,
+    DependantRemovedHandler,
     EmployeeMobilisingHandler,
   ],
   exports: [GroProcessesService, SequencesService],

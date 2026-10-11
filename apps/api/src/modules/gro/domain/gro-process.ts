@@ -14,6 +14,8 @@ export interface CreateGroProcessInput {
   notes?: string | null;
   createdByUserId?: string | null;
   sourceDocumentId?: string | null; // set when auto-spawned from an expiring document (GRO-05)
+  /** The dependant a dependant procedure is for (DEP-06a); validated by the service. */
+  dependantId?: string | null;
 }
 
 // Editable core fields (GRO-02). Status is NOT here — advancing it is the workflow

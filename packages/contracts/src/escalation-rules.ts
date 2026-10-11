@@ -117,6 +117,12 @@ export const RENEWED_BY: Partial<Record<EmployeeDoc, readonly string[]>> = {
   driving_licence: ['driving_licence_renewal', 'driving_licence_conversion'],
 };
 
+// The same for a dependant's documents (DEP-06a): the procedure names the
+// dependant, and quiets only THEIR document.
+export const DEPENDANT_RENEWED_BY: Partial<Record<DependantDoc, readonly string[]>> = {
+  iqama: ['dependant_iqama_renewal'],
+};
+
 /** Whole days from `today` to `dueOn` (both YYYY-MM-DD). Negative = the date has passed. */
 export function daysLeft(today: string, dueOn: string): number {
   const at = (iso: string) => Date.parse(`${iso.slice(0, 10)}T00:00:00Z`);

@@ -466,6 +466,7 @@ export const GroProcessScalarFieldEnum = {
   dueDate: 'dueDate',
   resultingExpiry: 'resultingExpiry',
   sourceDocumentId: 'sourceDocumentId',
+  dependantId: 'dependantId',
   assigneeUserId: 'assigneeUserId',
   notes: 'notes',
   createdByUserId: 'createdByUserId',

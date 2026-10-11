@@ -295,7 +295,8 @@ export const GroProcessType = {
   other: 'other',
   medical_insurance_renewal: 'medical_insurance_renewal',
   driving_licence_renewal: 'driving_licence_renewal',
-  driving_licence_conversion: 'driving_licence_conversion'
+  driving_licence_conversion: 'driving_licence_conversion',
+  dependant_iqama_renewal: 'dependant_iqama_renewal'
 } as const
 
 export type GroProcessType = (typeof GroProcessType)[keyof typeof GroProcessType]

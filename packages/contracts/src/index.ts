@@ -233,6 +233,7 @@ export {
 } from './calendar.js';
 export {
   groProcessTypeSchema,
+  DEPENDANT_PROCEDURE_TYPES,
   groProcessStatusSchema,
   groProcessResponseSchema,
   createGroProcessRequestSchema,
@@ -553,6 +554,7 @@ export {
   EMPLOYEE_DOC_OWNER,
   DEPENDANT_DOC_OWNER,
   RENEWED_BY,
+  DEPENDANT_RENEWED_BY,
   ESCALATION_THRESHOLDS_KEY,
   daysLeft,
   stageFor,

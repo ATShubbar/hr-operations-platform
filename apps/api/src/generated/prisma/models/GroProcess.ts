@@ -34,6 +34,7 @@ export type GroProcessMinAggregateOutputType = {
   dueDate: Date | null
   resultingExpiry: Date | null
   sourceDocumentId: string | null
+  dependantId: string | null
   assigneeUserId: string | null
   notes: string | null
   createdByUserId: string | null
@@ -51,6 +52,7 @@ export type GroProcessMaxAggregateOutputType = {
   dueDate: Date | null
   resultingExpiry: Date | null
   sourceDocumentId: string | null
+  dependantId: string | null
   assigneeUserId: string | null
   notes: string | null
   createdByUserId: string | null
@@ -68,6 +70,7 @@ export type GroProcessCountAggregateOutputType = {
   dueDate: number
   resultingExpiry: number
   sourceDocumentId: number
+  dependantId: number
   assigneeUserId: number
   notes: number
   createdByUserId: number
@@ -87,6 +90,7 @@ export type GroProcessMinAggregateInputType = {
   dueDate?: true
   resultingExpiry?: true
   sourceDocumentId?: true
+  dependantId?: true
   assigneeUserId?: true
   notes?: true
   createdByUserId?: true
@@ -104,6 +108,7 @@ export type GroProcessMaxAggregateInputType = {
   dueDate?: true
   resultingExpiry?: true
   sourceDocumentId?: true
+  dependantId?: true
   assigneeUserId?: true
   notes?: true
   createdByUserId?: true
@@ -121,6 +126,7 @@ export type GroProcessCountAggregateInputType = {
   dueDate?: true
   resultingExpiry?: true
   sourceDocumentId?: true
+  dependantId?: true
   assigneeUserId?: true
   notes?: true
   createdByUserId?: true
@@ -211,6 +217,7 @@ export type GroProcessGroupByOutputType = {
   dueDate: Date | null
   resultingExpiry: Date | null
   sourceDocumentId: string | null
+  dependantId: string | null
   assigneeUserId: string | null
   notes: string | null
   createdByUserId: string | null
@@ -249,6 +256,7 @@ export type GroProcessWhereInput = {
   dueDate?: Prisma.DateTimeNullableFilter<"GroProcess"> | Date | string | null
   resultingExpiry?: Prisma.DateTimeNullableFilter<"GroProcess"> | Date | string | null
   sourceDocumentId?: Prisma.UuidNullableFilter<"GroProcess"> | string | null
+  dependantId?: Prisma.UuidNullableFilter<"GroProcess"> | string | null
   assigneeUserId?: Prisma.UuidNullableFilter<"GroProcess"> | string | null
   notes?: Prisma.StringNullableFilter<"GroProcess"> | string | null
   createdByUserId?: Prisma.UuidNullableFilter<"GroProcess"> | string | null
@@ -266,6 +274,7 @@ export type GroProcessOrderByWithRelationInput = {
   dueDate?: Prisma.SortOrderInput | Prisma.SortOrder
   resultingExpiry?: Prisma.SortOrderInput | Prisma.SortOrder
   sourceDocumentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  dependantId?: Prisma.SortOrderInput | Prisma.SortOrder
   assigneeUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   createdByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -286,6 +295,7 @@ export type GroProcessWhereUniqueInput = Prisma.AtLeast<{
   dueDate?: Prisma.DateTimeNullableFilter<"GroProcess"> | Date | string | null
   resultingExpiry?: Prisma.DateTimeNullableFilter<"GroProcess"> | Date | string | null
   sourceDocumentId?: Prisma.UuidNullableFilter<"GroProcess"> | string | null
+  dependantId?: Prisma.UuidNullableFilter<"GroProcess"> | string | null
   assigneeUserId?: Prisma.UuidNullableFilter<"GroProcess"> | string | null
   notes?: Prisma.StringNullableFilter<"GroProcess"> | string | null
   createdByUserId?: Prisma.UuidNullableFilter<"GroProcess"> | string | null
@@ -303,6 +313,7 @@ export type GroProcessOrderByWithAggregationInput = {
   dueDate?: Prisma.SortOrderInput | Prisma.SortOrder
   resultingExpiry?: Prisma.SortOrderInput | Prisma.SortOrder
   sourceDocumentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  dependantId?: Prisma.SortOrderInput | Prisma.SortOrder
   assigneeUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   createdByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -326,6 +337,7 @@ export type GroProcessScalarWhereWithAggregatesInput = {
   dueDate?: Prisma.DateTimeNullableWithAggregatesFilter<"GroProcess"> | Date | string | null
   resultingExpiry?: Prisma.DateTimeNullableWithAggregatesFilter<"GroProcess"> | Date | string | null
   sourceDocumentId?: Prisma.UuidNullableWithAggregatesFilter<"GroProcess"> | string | null
+  dependantId?: Prisma.UuidNullableWithAggregatesFilter<"GroProcess"> | string | null
   assigneeUserId?: Prisma.UuidNullableWithAggregatesFilter<"GroProcess"> | string | null
   notes?: Prisma.StringNullableWithAggregatesFilter<"GroProcess"> | string | null
   createdByUserId?: Prisma.UuidNullableWithAggregatesFilter<"GroProcess"> | string | null
@@ -343,6 +355,7 @@ export type GroProcessCreateInput = {
   dueDate?: Date | string | null
   resultingExpiry?: Date | string | null
   sourceDocumentId?: string | null
+  dependantId?: string | null
   assigneeUserId?: string | null
   notes?: string | null
   createdByUserId?: string | null
@@ -360,6 +373,7 @@ export type GroProcessUncheckedCreateInput = {
   dueDate?: Date | string | null
   resultingExpiry?: Date | string | null
   sourceDocumentId?: string | null
+  dependantId?: string | null
   assigneeUserId?: string | null
   notes?: string | null
   createdByUserId?: string | null
@@ -377,6 +391,7 @@ export type GroProcessUpdateInput = {
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resultingExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   sourceDocumentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dependantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   assigneeUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -394,6 +409,7 @@ export type GroProcessUncheckedUpdateInput = {
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resultingExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   sourceDocumentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dependantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   assigneeUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -411,6 +427,7 @@ export type GroProcessCreateManyInput = {
   dueDate?: Date | string | null
   resultingExpiry?: Date | string | null
   sourceDocumentId?: string | null
+  dependantId?: string | null
   assigneeUserId?: string | null
   notes?: string | null
   createdByUserId?: string | null
@@ -428,6 +445,7 @@ export type GroProcessUpdateManyMutationInput = {
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resultingExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   sourceDocumentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dependantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   assigneeUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -445,6 +463,7 @@ export type GroProcessUncheckedUpdateManyInput = {
   dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   resultingExpiry?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   sourceDocumentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dependantId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   assigneeUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -462,6 +481,7 @@ export type GroProcessCountOrderByAggregateInput = {
   dueDate?: Prisma.SortOrder
   resultingExpiry?: Prisma.SortOrder
   sourceDocumentId?: Prisma.SortOrder
+  dependantId?: Prisma.SortOrder
   assigneeUserId?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
@@ -479,6 +499,7 @@ export type GroProcessMaxOrderByAggregateInput = {
   dueDate?: Prisma.SortOrder
   resultingExpiry?: Prisma.SortOrder
   sourceDocumentId?: Prisma.SortOrder
+  dependantId?: Prisma.SortOrder
   assigneeUserId?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
@@ -496,6 +517,7 @@ export type GroProcessMinOrderByAggregateInput = {
   dueDate?: Prisma.SortOrder
   resultingExpiry?: Prisma.SortOrder
   sourceDocumentId?: Prisma.SortOrder
+  dependantId?: Prisma.SortOrder
   assigneeUserId?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
@@ -523,6 +545,7 @@ export type GroProcessSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   dueDate?: boolean
   resultingExpiry?: boolean
   sourceDocumentId?: boolean
+  dependantId?: boolean
   assigneeUserId?: boolean
   notes?: boolean
   createdByUserId?: boolean
@@ -540,6 +563,7 @@ export type GroProcessSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   dueDate?: boolean
   resultingExpiry?: boolean
   sourceDocumentId?: boolean
+  dependantId?: boolean
   assigneeUserId?: boolean
   notes?: boolean
   createdByUserId?: boolean
@@ -557,6 +581,7 @@ export type GroProcessSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   dueDate?: boolean
   resultingExpiry?: boolean
   sourceDocumentId?: boolean
+  dependantId?: boolean
   assigneeUserId?: boolean
   notes?: boolean
   createdByUserId?: boolean
@@ -574,6 +599,7 @@ export type GroProcessSelectScalar = {
   dueDate?: boolean
   resultingExpiry?: boolean
   sourceDocumentId?: boolean
+  dependantId?: boolean
   assigneeUserId?: boolean
   notes?: boolean
   createdByUserId?: boolean
@@ -581,7 +607,7 @@ export type GroProcessSelectScalar = {
   updatedAt?: boolean
 }
 
-export type GroProcessOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clientId" | "employeeId" | "type" | "status" | "referenceNumber" | "dueDate" | "resultingExpiry" | "sourceDocumentId" | "assigneeUserId" | "notes" | "createdByUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["groProcess"]>
+export type GroProcessOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clientId" | "employeeId" | "type" | "status" | "referenceNumber" | "dueDate" | "resultingExpiry" | "sourceDocumentId" | "dependantId" | "assigneeUserId" | "notes" | "createdByUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["groProcess"]>
 
 export type $GroProcessPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "GroProcess"
@@ -596,6 +622,7 @@ export type $GroProcessPayload<ExtArgs extends runtime.Types.Extensions.Internal
     dueDate: Date | null
     resultingExpiry: Date | null
     sourceDocumentId: string | null
+    dependantId: string | null
     assigneeUserId: string | null
     notes: string | null
     createdByUserId: string | null
@@ -1033,6 +1060,7 @@ export interface GroProcessFieldRefs {
   readonly dueDate: Prisma.FieldRef<"GroProcess", 'DateTime'>
   readonly resultingExpiry: Prisma.FieldRef<"GroProcess", 'DateTime'>
   readonly sourceDocumentId: Prisma.FieldRef<"GroProcess", 'String'>
+  readonly dependantId: Prisma.FieldRef<"GroProcess", 'String'>
   readonly assigneeUserId: Prisma.FieldRef<"GroProcess", 'String'>
   readonly notes: Prisma.FieldRef<"GroProcess", 'String'>
   readonly createdByUserId: Prisma.FieldRef<"GroProcess", 'String'>

@@ -803,6 +803,12 @@ model GroProcess {
   // cross-module reference to doc_documents (no FK). Its presence is the idempotency
   // key: the DocumentExpiring → GRO handler spawns at most one process per document.
   sourceDocumentId String?          @map("source_document_id") @db.Uuid
+  // DEP-06a (ADR-017 rev. 2): the DEPENDANT a `dependant_iqama_renewal` is for —
+  // a plain reference to emp_dependants (no FK across modules). Present exactly
+  // when the type is a dependant procedure (CHECK); such a row is invisible to
+  // the client connection (a RESTRICTIVE policy), because a family is not the
+  // employer's business.
+  dependantId      String?          @map("dependant_id") @db.Uuid
   assigneeUserId   String?          @map("assignee_user_id") @db.Uuid
   notes            String?
   createdByUserId  String?          @map("created_by_user_id") @db.Uuid
@@ -814,6 +820,7 @@ model GroProcess {
   @@index([status])
   @@index([dueDate])
   @@index([sourceDocumentId])
+  @@index([dependantId])
   @@map("gro_processes")
 }
 
@@ -831,6 +838,8 @@ enum GroProcessType {
   medical_insurance_renewal
   driving_licence_renewal
   driving_licence_conversion
+  // DEP-06a: renewing ONE dependant's iqama, on the sponsoring employee.
+  dependant_iqama_renewal
 }
 
 enum GroProcessStatus {

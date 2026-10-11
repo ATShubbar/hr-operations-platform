@@ -1692,6 +1692,15 @@ row → `?tab=family`); disabled when the dates couldn't be read. `RunwayTable d
 record's runway stays plain). A runway cell counts DOCUMENTS, the list shows PEOPLE — and People lists everyone while the
 runway counts people under management (true of the employees' own documents already). No API change.
 
+**DEP-06a done — a dependant's iqama renewal is a procedure (ADR-017 rev. 2).** `GroProcessType` +
+`dependant_iqama_renewal`; `gro_processes.dependant_id` (CHECK: present ⇔ that type; partial unique index = one open per
+dependant → 409). **RESTRICTIVE policy `client_no_dependant_procedures`: the `app_client` connection cannot read such a
+row** — every client read of procedures goes through it, so no query can leak a family (ADR-017). Create validates
+`DependantsService.findCurrent(employeeId, dependantId)`; completion writes `iqamaExpiry` to the DEPENDANT via
+`DependantsService.update`; `DependantRemovedEvent` (Employees) → GRO `DependantRemovedHandler` cancels the open renewal.
+Ladder: `DEPENDANT_RENEWED_BY`, quiet keyed by dependant id. `standardProcedureFee(fees, 'dependant_iqama_renewal')` =
+`fees.dependantAnnual` (NOT a `procedures` key). Staff responses carry `dependant {id, nameEn, nameAr}`. API **897/897**.
+
 ## Technical landmines (each cost real debugging — do not rediscover)
 
 - RLS policies MUST use `NULLIF(current_setting('app.client_id', true), '')::uuid` — pooled connections leave the GUC as '' not NULL (SPIKE-001).
