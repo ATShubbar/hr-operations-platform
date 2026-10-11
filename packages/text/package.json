@@ -2,7 +2,7 @@
   "name": "@hr/text",
   "version": "0.0.1",
   "private": true,
-  "description": "Shared text utilities: Arabic search normalisation (folds orthographic variants so search does not silently miss records)",
+  "description": "Shared text utilities: Arabic search normalisation (folds orthographic variants so search does not silently miss records) and the rule that keeps Arabic messages in order in a left-to-right layout",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

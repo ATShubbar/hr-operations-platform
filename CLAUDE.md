@@ -1721,7 +1721,8 @@ queue page and the Overview each load `/gro-sequences?status=running`. Calendar:
 — the duplicate-key landmine), info-tone chip, legend. Mobilisation tab: Owner Select. Seed owners: GRO officer / nobody /
 HR officer → HR ladder 35 items / 19 need action / 7 quiet. Smoke +2. Not done: Reports' officer workload ignores steps.
 
-**UX-18 done — Arabic messages that open with a number read from the right end.** Fixed in the DATA: a right-to-left
+**UX-18 done — Arabic messages that open with a number read from the right end.** (MECHANISM SUPERSEDED BY UX-20 the next
+day — the marks below are no longer in the file.) Fixed in the DATA: a right-to-left
 mark before the number, written in `apps/web/messages/ar.json` as the escape `\u200f` (201 marks, 108 messages; one per
 plural/select branch). `apps/web/scripts/verify-ar-messages.mjs` runs inside the web `lint` and fails on an Arabic message
 or branch that opens with a digit, `#` or a `{placeholder}` without the mark, and on a LITERAL mark. Follow-up **UX-20**
@@ -1753,12 +1754,31 @@ fee is voided, a date is not). Mark-filed dialog: one optional date box on those
 `gro-sequences-api.e2e-spec.ts` pins step keys — a new step field must be added there. API **921/921**.
 Open follow-ups: UX-20, the editable-roles epic (decision card first), NC-07 (needs SMTP), GCP-07 (owner).
 
+**UX-20 done — Arabic messages read in order, by ONE rule.** `@hr/text` `rtlSafeMessages` (`packages/text/src/bidi.ts`),
+applied in `apps/web/src/i18n/request.ts` — the only place messages are loaded — to the ARABIC file only: every slot and
+every English word is sealed in an isolate (FSI…PDI), and a right-to-left mark is added at an end that is not an Arabic
+letter. **This supersedes UX-18's mechanism:** `messages/ar.json` is PLAIN TEXT again (the 201 hand-placed marks are gone)
+and `scripts/verify-ar-messages.mjs` now fails on ANY directional control in the file and formats every message before and
+after the rule (all plural forms, every select branch) to prove the wording is unchanged. Measured, each on its own: a
+mark fixes a trailing stop and a leading NUMBER; it does nothing for an English name anywhere (UX-18 claimed otherwise);
+wrapping the WHOLE message in one isolate reverses lines built from several pieces — rejected. 23 screens before → after:
+stops at the wrong end 56 → 0, pieces out of order 341 → 229, and the 229 are NOT messages: 181 dates (**UX-21**) and data
+lines (**UX-22**). `turbo.json`: `lint` depends on `^build` (the check imports `@hr/text`). No API change.
+
 ## Technical landmines (each cost real debugging — do not rediscover)
 
-- `apps/web/messages/ar.json` holds right-to-left marks as the ESCAPE `\u200f`. `json.dumps(ensure_ascii=False)` (or any
-  tool that rewrites the file) turns them into invisible literal characters and the web lint then fails — re-escape after
-  writing (`text.replace('\u200f', '\\u200f')`). New Arabic messages that start with a number or `{placeholder}` need
-  the mark in front (UX-18).
+- `apps/web/messages/ar.json` must hold NO directional control character (mark or isolate) — the rule in `@hr/text`
+  adds them at load, and skips any message that already has one. Write Arabic messages as plain text; the web lint
+  checks the whole file (UX-20, replacing UX-18's hand-placed marks).
+- A slot's VALUE is sealed as one piece and takes its direction from its own content: a number range passed as a single
+  value ("8–14") is drawn left to right inside an Arabic sentence. Pass the two numbers as two slots (`{from}–{to}`)
+  (UX-20: the People summary).
+- When a tool call writes a `\u` escape for an invisible character into a source file, the character can arrive as the
+  LITERAL — it happened three times in one day (a guard script, a test file, a regex). After writing such a file, scan it
+  for literal controls and rewrite them as escapes built in code (`chr(92) + 'u200f'`), never by typing the escape again.
+- Loading many routes AT ONCE on the Next dev server (16 iframes in parallel) corrupted `.next/prerender-manifest.json`:
+  every page, the favicon included, then answered 500 with `Unexpected non-whitespace character after JSON`. It is the
+  test method, not the app — stop the server, delete `.next`, start again, and load screens one at a time (UX-20).
 - Do not judge bidi order from a screenshot — I misread one. Measure glyph positions: a `Range` over each piece of the
   text node and `getBoundingClientRect()`; the piece with the larger x is further right (UX-18).
 - RLS policies MUST use `NULLIF(current_setting('app.client_id', true), '')::uuid` — pooled connections leave the GUC as '' not NULL (SPIKE-001).

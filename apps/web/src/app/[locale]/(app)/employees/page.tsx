@@ -265,7 +265,9 @@ export default function PeoplePage() {
         ? ''
         : fBand === 'overdue'
           ? ` ${t('summaryOverdue')}`
-          : ` ${t('summaryBand', { range: fBand.replace('-', '\u2013') })}`;
+          : // Two slots, not one "8–14" value: a range passed as a single value is
+            // drawn left to right inside an Arabic sentence (UX-20).
+            ` ${t('summaryBand', { from: fBand.split('-')[0] ?? '', to: fBand.split('-')[1] ?? '' })}`;
     return doc || band ? `${count}${doc}${band}` : `${count} · ${t('summarySorted')}`;
   })();
 

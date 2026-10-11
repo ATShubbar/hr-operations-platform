@@ -74,3 +74,6 @@ export function matchesAnyField(
   if (!q) return true;
   return fields.some((f) => (f ? normalizeForSearch(f).includes(q) : false));
 }
+
+// Arabic messages in a left-to-right layout (UX-20) — see bidi.ts.
+export { rtlSafeMessage, rtlSafeMessages } from './bidi.js';

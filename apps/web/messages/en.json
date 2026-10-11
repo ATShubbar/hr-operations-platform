@@ -1839,7 +1839,7 @@
     "title": "People",
     "summaryCount": "{count, plural, one {# employee} other {# employees}}",
     "summarySorted": "sorted by the document that expires first",
-    "summaryBand": "expiring in {range} days",
+    "summaryBand": "expiring in {from}–{to} days",
     "summaryOverdue": "already expired",
     "exportRegister": "Export register",
     "addPerson": "Add person",
