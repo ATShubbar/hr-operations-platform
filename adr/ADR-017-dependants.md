@@ -1,6 +1,6 @@
 # ADR-017 — Dependants: the family on an employee's sponsorship
 
-- Status: Accepted
+- Status: Accepted (rev. 1, 2026-10-11: dependants join the runway and the expiring figures — DEP-05)
 - Date: 2026-10-05
 - Owner: Ahmed Alshubbar (product decision; DEP-00)
 - Amends: **architecture.md** — scope (dependants were out of scope in v1.1–v1.10), the
@@ -107,6 +107,26 @@ Nothing stores them.
 - The global-search "dependants aren't searchable yet" note stays true.
 - When dependants join the expiry engine, the engine's categories gain dependants. That is a
   later card, deliberately not designed here.
+
+## Revision 1 — 2026-10-11 (DEP-05)
+The decision kept dependants' expiries on the record only, and listed "the runway, the Overview and
+reports" as a later step. Alerts came first, with the notification ladder (ADR-021). This revision
+adds the rest (owner decisions):
+
+- **One read for counting:** `GET /dependants/expiries` returns every current dependant's three
+  expiry dates and the sponsor's id — nothing that identifies a dependant (no name, no birth date,
+  no iqama number, not even their id). Read with `employee.read`; staff only, by the same second
+  lock as the other dependant routes. Optional `clientId`. No new permission.
+- **The runway** shows the three dependant rows with real counts, for the dependants of the people
+  it is given.
+- **"Documents expiring in 30 days"** counts dependants' documents too, everywhere staff see it:
+  the Overview tile, client cards, the client record and Reports (tile and forecast). The
+  prototype counts them only on the Overview tile; one label meaning two things was judged worse
+  than departing from it.
+- **Client managers still see nothing of a family.** Their Overview's runway has no dependant rows
+  and their figures are unchanged.
+- People's document filter gains the three dependant documents so a runway cell can open the
+  sponsors concerned (DEP-05b).
 
 ## Build
 - **DEP-01:** the table, its database fences and an audited service.

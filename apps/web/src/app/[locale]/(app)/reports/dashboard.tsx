@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import type {
   ClientListResponse,
   ClientResponse,
+  DependantExpiry,
   EmployeeListResponse,
   EmployeeResponse,
   FeeListResponse,
@@ -23,6 +24,7 @@ import { Link } from '@/i18n/navigation';
 import { BandPill } from '@/components/client-profile-bits';
 import { SequencesPanel } from '@/components/sequences-panel';
 import { apiFetch } from '@/lib/api';
+import { dependantDocs, loadDependantExpiries } from '@/lib/dependant-docs';
 import { datedDocs, daysTo, isSaudi } from '@/lib/employee-docs';
 import { useMoney } from '@/lib/money';
 import { Avatar } from '@/components/ui/avatar';
@@ -60,6 +62,8 @@ interface Data {
   staff: StaffDirectoryEntry[];
   /** null = the fee ledger could not be read. */
   fees: { recent: FeeResponse[]; owed: FeeResponse[] } | null;
+  /** Dependants' expiry dates (DEP-05a); null = could not be read, so not counted. */
+  dependants: DependantExpiry[] | null;
 }
 
 const empty =
@@ -102,7 +106,8 @@ export function ReportsDashboard() {
           owed: owed.fees,
         }))
         .catch(empty(null)),
-    ]).then(([c, e, g, r, k, d, fees]) =>
+      loadDependantExpiries(),
+    ]).then(([c, e, g, r, k, d, fees, dependants]) =>
       setData({
         clients: c.clients,
         employees: e.employees,
@@ -111,6 +116,7 @@ export function ReportsDashboard() {
         tasks: k.tasks,
         staff: d.users,
         fees,
+        dependants,
       }),
     );
   }, []);
@@ -122,7 +128,12 @@ export function ReportsDashboard() {
     // Everyone under management — not terminated, at an active client (DS-17).
     const staffRows = underManagement(data.employees, data.clients);
     const saudis = staffRows.filter(isSaudi).length;
-    const docs = staffRows.flatMap(datedDocs);
+    // The people's own documents and their dependants' (DEP-05, owner decision):
+    // the tile and the forecast count both, like the Overview.
+    const docs: { iso: string; days: number }[] = [
+      ...staffRows.flatMap(datedDocs),
+      ...dependantDocs(data.dependants ?? [], staffRows),
+    ];
     const procs = data.processes.filter((p) => isOpenProcedure(p.status));
     const reqs = data.requests.filter((r) => !isFinished('request', r.status));
     const tasks = data.tasks.filter((x) => !isFinished('task', x.status));
@@ -203,7 +214,10 @@ export function ReportsDashboard() {
       open: work.length,
       pastDue: work.filter((w) => late(w.due)).length,
       perClient: active
-        .map((c) => ({ c, f: figuresFor(c.id, data.employees, data.processes, data.requests) }))
+        .map((c) => ({
+          c,
+          f: figuresFor(c.id, data.employees, data.processes, data.requests, data.dependants),
+        }))
         .sort((a, b) => b.f.saudiPct - a.f.saudiPct),
       months,
       maxMonth: Math.max(1, ...months.map((x) => x.n)),

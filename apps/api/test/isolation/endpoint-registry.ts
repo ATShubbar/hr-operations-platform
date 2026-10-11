@@ -122,6 +122,8 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'POST /employees/:id/dependants': 'staff',
   'PATCH /employees/:id/dependants/:dependantId': 'staff',
   'POST /employees/:id/dependants/:dependantId/remove': 'staff',
+  // DEP-05a: every dependant's expiry dates, for the runway — staff only.
+  'GET /dependants/expiries': 'staff',
   // Documents upload flow (DOC-02): staff issue/confirm for an explicit client
   // in the body — cross-client by permission, so 'staff'. Client-rep upload-own
   // is deferred (portal); the table still ships RLS.

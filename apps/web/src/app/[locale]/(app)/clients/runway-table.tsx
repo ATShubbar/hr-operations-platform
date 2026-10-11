@@ -1,20 +1,22 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import type { EmployeeResponse } from '@hr/contracts';
+import type { DependantExpiry, EmployeeResponse } from '@hr/contracts';
 import { Link } from '@/i18n/navigation';
 import type { DocKey } from '@/lib/employee-docs';
 import { cn } from '@/lib/utils';
-import { RUNWAY_BANDS, runwayFor, type RunwayBand } from './client-figures';
+import { RUNWAY_BANDS, dependantRunwayFor, runwayFor, type RunwayBand } from './client-figures';
 
 // The expiry runway (DS-10; shared with the Overview in DS-17): each document type
 // × how much time is left, over the people given. The Client record passes one
 // company's register; the Overview passes everyone under management and makes
 // each cell a link to that cohort on People.
 //
-// The prototype adds three rows for dependants' documents. Dependants are not
-// stored yet (the Family tab is "coming soon"), so those rows say so rather than
-// showing zeros that would read as "none expiring".
+// The prototype adds three rows for dependants' documents (DEP-05a): their own
+// iqama, insurance and passport, counted for the dependants of the people given.
+// The caller passes the dates it read; a caller that may not read dependants at
+// all (a client manager — ADR-017) passes nothing and the rows are not drawn.
+// A read that FAILED shows dashes, never zeros that would read as "none expiring".
 
 // The prototype tints the two urgent bands' cells and colours their headings;
 // later bands are muted. `overdue` (our addition) reads as the most urgent.
@@ -34,24 +36,31 @@ const BAND_CELL: Record<RunwayBand, string> = {
   d60: 'text-muted-foreground',
   d90: 'text-muted-foreground',
 };
-const DEPENDANT_ROWS = ['iqama', 'insurance', 'passport'] as const;
 
 export function RunwayTable({
   id,
   hint,
   staff,
+  dependants,
   cellHref,
 }: {
   /** The heading's id — the section and its scroll region are named by it. */
   id: string;
   hint: string;
   staff: readonly EmployeeResponse[];
+  /**
+   * Dependants' expiry dates: an array = draw the three rows from it; `null` =
+   * they could not be read (rows show dashes); omitted = this viewer has no
+   * view of dependants (no rows).
+   */
+  dependants?: readonly DependantExpiry[] | null;
   /** Where a cell leads: a document, and a band (null = every band). Omitted = plain numbers. */
   cellHref?: (doc: DocKey, band: RunwayBand | null) => string;
 }) {
   const t = useTranslations('clients');
   const tp = useTranslations('people');
   const runway = runwayFor(staff);
+  const dependantRows = dependants ? dependantRunwayFor(staff, dependants) : null;
 
   const cell = (doc: DocKey, band: RunwayBand | null, body: string | number, title: string) =>
     cellHref ? (
@@ -141,25 +150,39 @@ export function RunwayTable({
                       colSpan={RUNWAY_BANDS.length + 1}
                       className="px-4 text-center text-xs text-neutral-400"
                     >
-                      {t('notStoredYet')}
+                      —
                     </td>
                   )}
                 </tr>
               );
             })}
-            {DEPENDANT_ROWS.map((k) => (
-              <tr key={`dep-${k}`} className="h-11 [&>td]:border-t">
-                <th scope="row" className="border-t px-4 text-start font-normal">
-                  {t(`dependantDoc.${k}`)}
-                </th>
-                <td
-                  colSpan={RUNWAY_BANDS.length + 1}
-                  className="px-4 text-center text-xs text-neutral-400"
-                >
-                  {t('notStoredYet')}
-                </td>
-              </tr>
-            ))}
+            {dependants !== undefined &&
+              (dependantRows ?? dependantRunwayFor(staff, [])).map((row) => (
+                <tr key={`dep-${row.key}`} className="h-11 [&>td]:border-t">
+                  <th scope="row" className="border-t px-4 text-start font-normal">
+                    {t(`dependantDoc.${row.key}`)}
+                  </th>
+                  {dependantRows ? (
+                    <>
+                      {RUNWAY_BANDS.map((b) => (
+                        <td key={b.key} className={cn('text-center font-mono', BAND_CELL[b.key])}>
+                          {row.counts[b.key]}
+                        </td>
+                      ))}
+                      <td className="px-4 text-end font-mono text-muted-foreground">
+                        {row.tracked}
+                      </td>
+                    </>
+                  ) : (
+                    <td
+                      colSpan={RUNWAY_BANDS.length + 1}
+                      className="px-4 text-center text-xs text-neutral-400"
+                    >
+                      {t('dependantsUnread')}
+                    </td>
+                  )}
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>

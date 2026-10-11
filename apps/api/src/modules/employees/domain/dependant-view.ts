@@ -1,4 +1,4 @@
-import type { DependantResponse, SelfDependant } from '@hr/contracts';
+import type { DependantExpiry, DependantResponse, SelfDependant } from '@hr/contracts';
 import type { DependantModel as DependantRecord } from '../../../generated/prisma/models';
 
 // The dependant read views (DEP-02, ADR-017) — WHITELISTS, field by field, so a
@@ -34,4 +34,17 @@ export function toDependantResponse(
 /** The employee's own family (ADR-011: one's own identifiers, with numbers). No sponsor id. */
 export function toSelfDependant(d: DependantRecord): SelfDependant {
   return { ...common(d), iqamaNumber: d.iqamaNumber };
+}
+
+/**
+ * The runway's view (DEP-05a): whose dependant, and the three dates. Nothing
+ * that identifies the dependant — not even their id.
+ */
+export function toDependantExpiry(d: DependantRecord): DependantExpiry {
+  return {
+    employeeId: d.employeeId,
+    iqamaExpiry: day(d.iqamaExpiry),
+    passportExpiry: day(d.passportExpiry),
+    insuranceExpiry: day(d.insuranceExpiry),
+  };
 }

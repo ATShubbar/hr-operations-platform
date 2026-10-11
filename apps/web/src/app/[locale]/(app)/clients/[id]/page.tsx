@@ -7,6 +7,7 @@ import { ArrowLeft, Ellipsis } from 'lucide-react';
 import type {
   ClientResponse,
   EmployeeListResponse,
+  DependantExpiry,
   EmployeeResponse,
   GroProcessListResponse,
   GroProcessResponse,
@@ -30,6 +31,7 @@ import { toastSuccess } from '@/components/ui/toast';
 import { StartProcedureDialog } from '../../employees/[id]/start-procedure-dialog';
 import { BandPill, ProfileLine } from '@/components/client-profile-bits';
 import { ClientFormDialog } from '../client-form-dialog';
+import { loadDependantExpiries } from '@/lib/dependant-docs';
 import { figuresFor } from '../client-figures';
 import { PortalUsersDialog } from '../portal-users-dialog';
 import { CommercialTab } from './commercial-tab';
@@ -84,6 +86,8 @@ export default function ClientRecordPage() {
   const [employees, setEmployees] = useState<EmployeeResponse[]>([]);
   const [processes, setProcesses] = useState<GroProcessResponse[]>([]);
   const [requests, setRequests] = useState<RequestResponse[]>([]);
+  // DEP-05a: this company's dependants' dates (null = could not be read).
+  const [dependants, setDependants] = useState<DependantExpiry[] | null>(null);
   const [loading, setLoading] = useState(true);
   // The HTTP status decides the state: a 404 won't become findable by retrying,
   // a 403 won't become permitted (UX-06).
@@ -106,14 +110,16 @@ export default function ClientRecordPage() {
       setClient(c);
       // The figures' sources are not fatal: the record still renders without them.
       const q = `?clientId=${id}`;
-      const [e, g, r] = await Promise.all([
+      const [e, g, r, deps] = await Promise.all([
         apiFetch<EmployeeListResponse>(`/employees${q}`).catch(() => ({ employees: [] })),
         apiFetch<GroProcessListResponse>(`/gro-processes${q}`).catch(() => ({ processes: [] })),
         apiFetch<RequestListResponse>(`/requests${q}`).catch(() => ({ requests: [] })),
+        loadDependantExpiries(id),
       ]);
       setEmployees(e.employees);
       setProcesses(g.processes);
       setRequests(r.requests);
+      setDependants(deps);
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
       setStatus(err instanceof ApiError ? err.status : 0);
@@ -151,8 +157,8 @@ export default function ClientRecordPage() {
     [employees],
   );
   const figures = useMemo(
-    () => figuresFor(id, employees, processes, requests),
-    [id, employees, processes, requests],
+    () => figuresFor(id, employees, processes, requests, dependants),
+    [id, employees, processes, requests, dependants],
   );
 
   async function setArchived(archive: boolean) {
@@ -321,7 +327,13 @@ export default function ClientRecordPage() {
         </TabsList>
 
         <TabsPanel value="overview">
-          <OverviewTab client={client} onClientSaved={setClient} figures={figures} staff={staff} />
+          <OverviewTab
+            client={client}
+            onClientSaved={setClient}
+            figures={figures}
+            staff={staff}
+            dependants={dependants}
+          />
         </TabsPanel>
 
         <TabsPanel value="people">

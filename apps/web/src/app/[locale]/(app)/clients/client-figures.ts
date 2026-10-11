@@ -2,10 +2,12 @@ import { hasJoined, isUnderManagement } from '@hr/contracts/headcount';
 import { isFinished } from '@hr/contracts/work-status';
 import type {
   ClientResponse,
+  DependantExpiry,
   EmployeeResponse,
   GroProcessResponse,
   RequestResponse,
 } from '@hr/contracts';
+import { DEPENDANT_DOC_KEYS, dependantDocs, type DependantDocKey } from '@/lib/dependant-docs';
 import { DOC_TYPES, datedDocs, isSaudi, type DocKey } from '@/lib/employee-docs';
 
 // A client company's figures (DS-10), computed from data the screens already read:
@@ -51,17 +53,21 @@ export function figuresFor(
   employees: readonly EmployeeResponse[],
   processes: readonly GroProcessResponse[],
   requests: readonly RequestResponse[],
+  /** Dependants' dates (DEP-05a); `null`/omitted = not read, so not counted. */
+  dependants: readonly DependantExpiry[] | null = null,
 ): ClientFigures {
   // In post only (MOB-04a): neither a leaver nor someone still on the way in.
   const staff = employees.filter((e) => e.clientId === clientId && hasJoined(e.employmentStatus));
   const saudis = staff.filter(isSaudi).length;
+  const within30 = (d: { days: number }) => d.days >= 0 && d.days <= 30;
   return {
     headcount: staff.length,
     saudiPct: staff.length ? Math.round((saudis / staff.length) * 100) : 0,
-    expiring30: staff.reduce(
-      (n, e) => n + datedDocs(e).filter((d) => d.days >= 0 && d.days <= 30).length,
-      0,
-    ),
+    // The people's own documents AND their dependants' (owner decision, DEP-05:
+    // the figure agrees with the runway shown beside it).
+    expiring30:
+      staff.reduce((n, e) => n + datedDocs(e).filter(within30).length, 0) +
+      dependantDocs(dependants ?? [], staff).filter(within30).length,
     openItems: processes.filter(
       (p) => p.clientId === clientId && !isFinished('procedure', p.status),
     ).length,
@@ -100,5 +106,26 @@ export function runwayFor(staff: readonly EmployeeResponse[]): RunwayRow[] {
       RUNWAY_BANDS.map((b) => [b.key, days.filter((n) => n >= b.lo && n <= b.hi).length]),
     ) as Record<RunwayBand, number>;
     return { key: def.key, stored: !!def.date, counts, tracked: days.length };
+  });
+}
+
+export interface DependantRunwayRow {
+  key: DependantDocKey;
+  counts: Record<RunwayBand, number>;
+  tracked: number;
+}
+
+/** The runway's three dependant rows (DEP-05a): the dependants of the people given. */
+export function dependantRunwayFor(
+  staff: readonly EmployeeResponse[],
+  dependants: readonly DependantExpiry[],
+): DependantRunwayRow[] {
+  const docs = dependantDocs(dependants, staff);
+  return DEPENDANT_DOC_KEYS.map((key) => {
+    const days = docs.filter((d) => d.key === key).map((d) => d.days);
+    const counts = Object.fromEntries(
+      RUNWAY_BANDS.map((b) => [b.key, days.filter((n) => n >= b.lo && n <= b.hi).length]),
+    ) as Record<RunwayBand, number>;
+    return { key, counts, tracked: days.length };
   });
 }

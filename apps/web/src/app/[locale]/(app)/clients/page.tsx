@@ -21,6 +21,7 @@ import { StatusPill } from '@/components/ui/status-pill';
 import { toastSuccess } from '@/components/ui/toast';
 import { BandPill, ProfileLine } from '@/components/client-profile-bits';
 import { ClientFormDialog } from './client-form-dialog';
+import { loadDependantExpiries } from '@/lib/dependant-docs';
 import { figuresFor, type ClientFigures } from './client-figures';
 import { SaudiShare } from './saudi-share';
 
@@ -55,16 +56,21 @@ export default function ClientsPage() {
     try {
       // The figures' sources are not fatal: without them a card still opens its
       // record, it just has nothing to count.
-      const [c, e, g, r] = await Promise.all([
+      const [c, e, g, r, deps] = await Promise.all([
         apiFetch<ClientListResponse>('/clients'),
         apiFetch<EmployeeListResponse>('/employees').catch(() => ({ employees: [] })),
         apiFetch<GroProcessListResponse>('/gro-processes').catch(() => ({ processes: [] })),
         apiFetch<RequestListResponse>('/requests').catch(() => ({ requests: [] })),
+        // DEP-05a: "Expiring 30d" counts dependants' documents too.
+        loadDependantExpiries(),
       ]);
       setClients(c.clients);
       setFigures(
         new Map(
-          c.clients.map((x) => [x.id, figuresFor(x.id, e.employees, g.processes, r.requests)]),
+          c.clients.map((x) => [
+            x.id,
+            figuresFor(x.id, e.employees, g.processes, r.requests, deps),
+          ]),
         ),
       );
     } catch (err) {

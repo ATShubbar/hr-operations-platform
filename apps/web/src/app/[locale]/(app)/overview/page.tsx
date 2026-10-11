@@ -8,6 +8,7 @@ import type {
   CandidateResponse,
   ClientListResponse,
   ClientResponse,
+  DependantExpiry,
   EmployeeListResponse,
   EmployeeResponse,
   GroProcessListResponse,
@@ -23,6 +24,7 @@ import { formatHijri } from '@hr/dates';
 import { Link, useRouter } from '@/i18n/navigation';
 import { SequencesPanel } from '@/components/sequences-panel';
 import { apiFetch, ApiError } from '@/lib/api';
+import { dependantDocs, loadDependantExpiries } from '@/lib/dependant-docs';
 import { datedDocs, daysTo, type DocKey } from '@/lib/employee-docs';
 import { useCan, useSession } from '@/lib/session';
 import { Button } from '@/components/ui/button';
@@ -127,6 +129,8 @@ function StaffOverview() {
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [procOpen, setProcOpen] = useState(false);
   const [clientOpen, setClientOpen] = useState(false);
+  // null = dependants' dates could not be read (the runway says so).
+  const [dependants, setDependants] = useState<DependantExpiry[] | null>(null);
 
   // Each source is optional: a role that cannot read one simply has none of it.
   // Only when nothing at all loads is it an error.
@@ -138,7 +142,7 @@ function StaffOverview() {
         fails.push(err);
         return fallback;
       });
-    const [c, e, g, r, k, d, cand] = await Promise.all([
+    const [c, e, g, r, k, d, cand, deps] = await Promise.all([
       get<ClientListResponse>('/clients', { clients: [] }),
       get<EmployeeListResponse>('/employees', { employees: [] }),
       get<GroProcessListResponse>('/gro-processes', { processes: [] }),
@@ -148,7 +152,11 @@ function StaffOverview() {
       canCandidates
         ? get<CandidateListResponse>('/candidates', { candidates: [] })
         : Promise.resolve({ candidates: [] }),
+      // DEP-05a: dependants' dates, for the runway and the expiring tile. Its
+      // own failure is not counted with the rest: the page still stands.
+      loadDependantExpiries(),
     ]);
+    setDependants(deps);
     if (fails.some((x) => x instanceof ApiError && x.status === 401)) {
       return void router.replace('/login');
     }
@@ -188,7 +196,11 @@ function StaffOverview() {
   );
 
   // The tiles.
-  const docDays = people.flatMap((e) => datedDocs(e).map((d) => d.days));
+  // The people's own documents and their dependants' (DEP-05, owner decision).
+  const docDays = [
+    ...people.flatMap((e) => datedDocs(e).map((d) => d.days)),
+    ...dependantDocs(dependants ?? [], people).map((d) => d.days),
+  ];
   const expiring30 = docDays.filter((n) => n >= 0 && n <= 30).length;
   const expiring7 = docDays.filter((n) => n >= 0 && n <= 7).length;
   const pastDue = items.filter((i) => i.due !== null && daysTo(i.due) < 0);
@@ -359,7 +371,13 @@ function StaffOverview() {
             )}
           </div>
 
-          <RunwayTable id="ov-runway" hint={t('runwayHint')} staff={people} cellHref={cohortHref} />
+          <RunwayTable
+            id="ov-runway"
+            hint={t('runwayHint')}
+            staff={people}
+            dependants={dependants}
+            cellHref={cohortHref}
+          />
 
           <section
             aria-labelledby="ov-portfolio"
@@ -392,7 +410,9 @@ function StaffOverview() {
             <PortfolioTable
               labelledBy="ov-portfolio"
               clients={activeClients}
-              figuresOf={(c) => figuresFor(c.id, data.employees, data.processes, data.requests)}
+              figuresOf={(c) =>
+                figuresFor(c.id, data.employees, data.processes, data.requests, dependants)
+              }
               linkToRecord
             />
           </section>

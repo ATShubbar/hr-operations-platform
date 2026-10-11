@@ -1,7 +1,7 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
-import type { ClientResponse, EmployeeResponse } from '@hr/contracts';
+import type { ClientResponse, DependantExpiry, EmployeeResponse } from '@hr/contracts';
 import { bandAbove, bandBelow } from '@hr/contracts/client-profile';
 import { formatHijri } from '@hr/dates';
 import { BandPill } from '@/components/client-profile-bits';
@@ -28,11 +28,14 @@ export function OverviewTab({
   onClientSaved,
   figures,
   staff,
+  dependants,
 }: {
   client: ClientResponse;
   onClientSaved: (saved: ClientResponse) => void;
   figures: ClientFigures;
   staff: readonly EmployeeResponse[];
+  /** This company's dependants' dates; null = could not be read (DEP-05a). */
+  dependants: readonly DependantExpiry[] | null;
 }) {
   const t = useTranslations('clients');
   const tp = useTranslations('clientProfile');
@@ -125,7 +128,7 @@ export function OverviewTab({
         <ServicePanel client={client} onSaved={onClientSaved} />
       </div>
 
-      <RunwayTable id="runway" hint={t('runwayHint')} staff={staff} />
+      <RunwayTable id="runway" hint={t('runwayHint')} staff={staff} dependants={dependants} />
     </div>
   );
 }

@@ -81,6 +81,23 @@ export const selfDependantListResponseSchema = z.object({
   dependants: z.array(selfDependantSchema),
 });
 
+// DEP-05a (ADR-017 rev. 1): every current dependant's expiry dates, for the
+// runway and the "expiring" figures. DATES ONLY — whose dependant, and when
+// each document lapses. No name, no birth date, no iqama number: a count needs
+// none of them. Staff only.
+export const dependantExpirySchema = z.strictObject({
+  employeeId: z.uuid(),
+  iqamaExpiry: z.string().nullable(),
+  passportExpiry: z.string().nullable(),
+  insuranceExpiry: z.string().nullable(),
+});
+export const dependantExpiryListResponseSchema = z.object({
+  dependants: z.array(dependantExpirySchema),
+});
+export const dependantExpiryQuerySchema = z.strictObject({ clientId: z.uuid().optional() });
+
+export type DependantExpiry = z.infer<typeof dependantExpirySchema>;
+export type DependantExpiryListResponse = z.infer<typeof dependantExpiryListResponseSchema>;
 export type DependantRelationship = z.infer<typeof dependantRelationshipSchema>;
 export type CreateDependant = z.infer<typeof createDependantSchema>;
 export type UpdateDependant = z.infer<typeof updateDependantSchema>;

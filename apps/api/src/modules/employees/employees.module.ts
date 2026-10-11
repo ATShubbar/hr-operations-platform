@@ -3,6 +3,7 @@ import { AuditModule } from '../audit/public-api';
 import { AuthModule } from '../auth/public-api';
 import { ClientsModule } from '../clients/public-api';
 import { AccessController } from './api/access.controller';
+import { DependantExpiriesController } from './api/dependant-expiries.controller';
 import { DependantsController } from './api/dependants.controller';
 import { EmployeesController } from './api/employees.controller';
 import { CandidateHiredHandler } from './application/candidate-hired.handler';
@@ -19,7 +20,12 @@ import { EmployeesService } from './application/employees.service';
 // DEP-01 (ADR-017): DependantsService — the family on an employee's sponsorship.
 @Module({
   imports: [AuditModule, AuthModule, ClientsModule],
-  controllers: [EmployeesController, AccessController, DependantsController],
+  controllers: [
+    EmployeesController,
+    AccessController,
+    DependantsController,
+    DependantExpiriesController,
+  ],
   providers: [
     EmployeesService,
     DependantsService,

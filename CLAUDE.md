@@ -1679,6 +1679,13 @@ ladder: HR 35 items / 20 need action, GRO 36 / 16, client manager 1, employee-a 
 migration `…standard_fees_insurance_licence` shows the pattern (add missing keys only, repeatable). Seed: one open insurance
 renewal (Joseph Santos) → HR ladder 35 items / 19 need action / 6 quiet. Smoke +1. API **882/882**.
 
+**DEP-05a done — dependants are in the runway and the expiring figures (ADR-017 rev. 1).** `GET /dependants/expiries`
+(`employee.read` + `scopeOf` staff-only, optional `clientId`): sponsor id + three dates, NOTHING identifying the dependant
+(keys pinned). Web `lib/dependant-docs.ts` (`dependantDocs(deps, sponsors)`, `loadDependantExpiries` → `null` on failure, never
+`[]`); `figuresFor(…, dependants)` and `dependantRunwayFor`; `RunwayTable dependants=` — array = rows, `null` = "couldn't be
+read", OMITTED = no rows (the client manager's Overview). Counted on the Overview tile, client cards, client record and
+Reports (tile + forecast). Seed: Overview "expiring 30d" 19 → 20. API **889/889**. Next: DEP-05b (People filter + cell links).
+
 ## Technical landmines (each cost real debugging — do not rediscover)
 
 - RLS policies MUST use `NULLIF(current_setting('app.client_id', true), '')::uuid` — pooled connections leave the GUC as '' not NULL (SPIKE-001).

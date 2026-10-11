@@ -360,7 +360,7 @@
       "insurance": "Dependant insurance",
       "passport": "Dependant passport"
     },
-    "notStoredYet": "Not stored yet — coming soon",
+    "dependantsUnread": "Couldn't be read just now — reload to try again",
     "register": "Register",
     "registerCount": "{count, plural, =0 {No one on the register} one {# on the register} other {# on the register}}",
     "registerMore": "Showing {shown} of {total} · open People for the full register",
