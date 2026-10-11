@@ -2427,7 +2427,6 @@
       "hired": "Onboarded",
       "mobilisation": "Visa & mobilisation"
     },
-    "soon": "Soon",
     "dropHere": "Drop a candidate here",
     "nothingHere": "Nothing at this stage",
     "addedAgo": "{days, plural, =0 {Added today} one {Added # day ago} other {Added # days ago}}",
@@ -2499,7 +2498,28 @@
     "mobiliseConfirm": "Start mobilisation",
     "progress": "{done} of {total} filed",
     "mobilisationRunning": "Onboarding running",
-    "openOnboarding": "Open onboarding"
+    "openOnboarding": "Open onboarding",
+    "health": {
+      "on_track": "On track",
+      "at_risk": "At risk",
+      "past_target": "Past target"
+    },
+    "targetNote": {
+      "ahead": "{count, plural, one {# day to the target} other {# days to the target}}",
+      "today": "the target is today",
+      "past": "{count, plural, one {# day past the target} other {# days past the target}}"
+    },
+    "healthNoTarget": "No target date",
+    "targetOn": "Target {date}",
+    "fieldTarget": "Target date",
+    "targetHint": "Optional. The day they are meant to be in post by. Health is worked out from it.",
+    "targetSet": "Set a date",
+    "targetChange": "Change",
+    "targetSave": "Save date",
+    "targetClear": "Clear",
+    "targetSaved": "Target for {name} set to {date}.",
+    "targetCleared": "Target date cleared for {name}.",
+    "targetError": "The target date was not saved. Try again."
   },
   "queue": {
     "title": "Work queue",

@@ -30,6 +30,10 @@
     "./escalation-rules": {
       "types": "./dist/escalation-rules.d.ts",
       "default": "./dist/escalation-rules.js"
+    },
+    "./candidate-health": {
+      "types": "./dist/candidate-health.d.ts",
+      "default": "./dist/candidate-health.js"
     }
   },
   "scripts": {

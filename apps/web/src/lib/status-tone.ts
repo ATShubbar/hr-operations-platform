@@ -166,6 +166,13 @@ const STANDING: Record<string, StatusTone> = {
   none: 'neutral',
 };
 
+// SOON-04: worked out from the target date (candidate-health, @hr/contracts).
+const CANDIDATE_HEALTH: Record<string, StatusTone> = {
+  on_track: 'ok',
+  at_risk: 'warning',
+  past_target: 'critical',
+};
+
 const DOMAINS = {
   vacancy: VACANCY,
   client: CLIENT,
@@ -177,6 +184,7 @@ const DOMAINS = {
   document: DOCUMENT,
   employee: EMPLOYEE,
   candidate: CANDIDATE,
+  candidateHealth: CANDIDATE_HEALTH,
   leave: LEAVE,
   auditSeverity: AUDIT_SEVERITY,
   nitaqat: NITAQAT,

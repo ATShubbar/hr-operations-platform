@@ -12,6 +12,8 @@ export interface CreateCandidateInput {
   phone?: string | null;
   cvDocumentId?: string | null;
   notes?: string | null;
+  /** SOON-04: a calendar day (UTC midnight), or null. */
+  targetDate?: Date | null;
   createdByUserId?: string | null;
 }
 
@@ -26,4 +28,5 @@ export interface UpdateCandidateInput {
   phone?: string | null;
   cvDocumentId?: string | null;
   notes?: string | null;
+  targetDate?: Date | null;
 }

@@ -37,6 +37,7 @@ export type CandidateMinAggregateOutputType = {
   cvDocumentId: string | null
   employeeId: string | null
   notes: string | null
+  targetDate: Date | null
   createdByUserId: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -55,6 +56,7 @@ export type CandidateMaxAggregateOutputType = {
   cvDocumentId: string | null
   employeeId: string | null
   notes: string | null
+  targetDate: Date | null
   createdByUserId: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -73,6 +75,7 @@ export type CandidateCountAggregateOutputType = {
   cvDocumentId: number
   employeeId: number
   notes: number
+  targetDate: number
   createdByUserId: number
   createdAt: number
   updatedAt: number
@@ -93,6 +96,7 @@ export type CandidateMinAggregateInputType = {
   cvDocumentId?: true
   employeeId?: true
   notes?: true
+  targetDate?: true
   createdByUserId?: true
   createdAt?: true
   updatedAt?: true
@@ -111,6 +115,7 @@ export type CandidateMaxAggregateInputType = {
   cvDocumentId?: true
   employeeId?: true
   notes?: true
+  targetDate?: true
   createdByUserId?: true
   createdAt?: true
   updatedAt?: true
@@ -129,6 +134,7 @@ export type CandidateCountAggregateInputType = {
   cvDocumentId?: true
   employeeId?: true
   notes?: true
+  targetDate?: true
   createdByUserId?: true
   createdAt?: true
   updatedAt?: true
@@ -220,6 +226,7 @@ export type CandidateGroupByOutputType = {
   cvDocumentId: string | null
   employeeId: string | null
   notes: string | null
+  targetDate: Date | null
   createdByUserId: string | null
   createdAt: Date
   updatedAt: Date
@@ -259,6 +266,7 @@ export type CandidateWhereInput = {
   cvDocumentId?: Prisma.UuidNullableFilter<"Candidate"> | string | null
   employeeId?: Prisma.UuidNullableFilter<"Candidate"> | string | null
   notes?: Prisma.StringNullableFilter<"Candidate"> | string | null
+  targetDate?: Prisma.DateTimeNullableFilter<"Candidate"> | Date | string | null
   createdByUserId?: Prisma.UuidNullableFilter<"Candidate"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Candidate"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Candidate"> | Date | string
@@ -277,6 +285,7 @@ export type CandidateOrderByWithRelationInput = {
   cvDocumentId?: Prisma.SortOrderInput | Prisma.SortOrder
   employeeId?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
+  targetDate?: Prisma.SortOrderInput | Prisma.SortOrder
   createdByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -298,6 +307,7 @@ export type CandidateWhereUniqueInput = Prisma.AtLeast<{
   stage?: Prisma.EnumCandidateStageFilter<"Candidate"> | $Enums.CandidateStage
   cvDocumentId?: Prisma.UuidNullableFilter<"Candidate"> | string | null
   notes?: Prisma.StringNullableFilter<"Candidate"> | string | null
+  targetDate?: Prisma.DateTimeNullableFilter<"Candidate"> | Date | string | null
   createdByUserId?: Prisma.UuidNullableFilter<"Candidate"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Candidate"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Candidate"> | Date | string
@@ -316,6 +326,7 @@ export type CandidateOrderByWithAggregationInput = {
   cvDocumentId?: Prisma.SortOrderInput | Prisma.SortOrder
   employeeId?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
+  targetDate?: Prisma.SortOrderInput | Prisma.SortOrder
   createdByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -340,6 +351,7 @@ export type CandidateScalarWhereWithAggregatesInput = {
   cvDocumentId?: Prisma.UuidNullableWithAggregatesFilter<"Candidate"> | string | null
   employeeId?: Prisma.UuidNullableWithAggregatesFilter<"Candidate"> | string | null
   notes?: Prisma.StringNullableWithAggregatesFilter<"Candidate"> | string | null
+  targetDate?: Prisma.DateTimeNullableWithAggregatesFilter<"Candidate"> | Date | string | null
   createdByUserId?: Prisma.UuidNullableWithAggregatesFilter<"Candidate"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Candidate"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Candidate"> | Date | string
@@ -358,6 +370,7 @@ export type CandidateCreateInput = {
   cvDocumentId?: string | null
   employeeId?: string | null
   notes?: string | null
+  targetDate?: Date | string | null
   createdByUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -376,6 +389,7 @@ export type CandidateUncheckedCreateInput = {
   cvDocumentId?: string | null
   employeeId?: string | null
   notes?: string | null
+  targetDate?: Date | string | null
   createdByUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -394,6 +408,7 @@ export type CandidateUpdateInput = {
   cvDocumentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -412,6 +427,7 @@ export type CandidateUncheckedUpdateInput = {
   cvDocumentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -430,6 +446,7 @@ export type CandidateCreateManyInput = {
   cvDocumentId?: string | null
   employeeId?: string | null
   notes?: string | null
+  targetDate?: Date | string | null
   createdByUserId?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -448,6 +465,7 @@ export type CandidateUpdateManyMutationInput = {
   cvDocumentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -466,6 +484,7 @@ export type CandidateUncheckedUpdateManyInput = {
   cvDocumentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   employeeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -484,6 +503,7 @@ export type CandidateCountOrderByAggregateInput = {
   cvDocumentId?: Prisma.SortOrder
   employeeId?: Prisma.SortOrder
   notes?: Prisma.SortOrder
+  targetDate?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -502,6 +522,7 @@ export type CandidateMaxOrderByAggregateInput = {
   cvDocumentId?: Prisma.SortOrder
   employeeId?: Prisma.SortOrder
   notes?: Prisma.SortOrder
+  targetDate?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -520,6 +541,7 @@ export type CandidateMinOrderByAggregateInput = {
   cvDocumentId?: Prisma.SortOrder
   employeeId?: Prisma.SortOrder
   notes?: Prisma.SortOrder
+  targetDate?: Prisma.SortOrder
   createdByUserId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -544,6 +566,7 @@ export type CandidateSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   cvDocumentId?: boolean
   employeeId?: boolean
   notes?: boolean
+  targetDate?: boolean
   createdByUserId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -562,6 +585,7 @@ export type CandidateSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   cvDocumentId?: boolean
   employeeId?: boolean
   notes?: boolean
+  targetDate?: boolean
   createdByUserId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -580,6 +604,7 @@ export type CandidateSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   cvDocumentId?: boolean
   employeeId?: boolean
   notes?: boolean
+  targetDate?: boolean
   createdByUserId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -598,12 +623,13 @@ export type CandidateSelectScalar = {
   cvDocumentId?: boolean
   employeeId?: boolean
   notes?: boolean
+  targetDate?: boolean
   createdByUserId?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type CandidateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clientId" | "vacancyId" | "nameAr" | "nameEn" | "nationality" | "email" | "phone" | "stage" | "cvDocumentId" | "employeeId" | "notes" | "createdByUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["candidate"]>
+export type CandidateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "clientId" | "vacancyId" | "nameAr" | "nameEn" | "nationality" | "email" | "phone" | "stage" | "cvDocumentId" | "employeeId" | "notes" | "targetDate" | "createdByUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["candidate"]>
 
 export type $CandidatePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Candidate"
@@ -621,6 +647,7 @@ export type $CandidatePayload<ExtArgs extends runtime.Types.Extensions.InternalA
     cvDocumentId: string | null
     employeeId: string | null
     notes: string | null
+    targetDate: Date | null
     createdByUserId: string | null
     createdAt: Date
     updatedAt: Date
@@ -1059,6 +1086,7 @@ export interface CandidateFieldRefs {
   readonly cvDocumentId: Prisma.FieldRef<"Candidate", 'String'>
   readonly employeeId: Prisma.FieldRef<"Candidate", 'String'>
   readonly notes: Prisma.FieldRef<"Candidate", 'String'>
+  readonly targetDate: Prisma.FieldRef<"Candidate", 'DateTime'>
   readonly createdByUserId: Prisma.FieldRef<"Candidate", 'String'>
   readonly createdAt: Prisma.FieldRef<"Candidate", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Candidate", 'DateTime'>

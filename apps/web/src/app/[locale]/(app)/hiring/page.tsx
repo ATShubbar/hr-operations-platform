@@ -36,9 +36,10 @@ import {
 import { LoadError, NoAccess } from '@/components/ui/load-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StatusPill } from '@/components/ui/status-pill';
-import { toastSuccess } from '@/components/ui/toast';
+import { toastError, toastSuccess } from '@/components/ui/toast';
 import { AddCandidateDialog, type RoleSummary } from './add-candidate-dialog';
 import { CandidateDialog, type CandidateView } from './candidate-dialog';
+import { HealthPill, useCandidateHealth } from './candidate-health';
 import { OpenRoleDialog } from './open-role-dialog';
 import { COLUMNS, canDrop, forwardOf, isActive, isSaudi, type Column } from './stages';
 import { dateFormat } from '@/lib/dates';
@@ -91,6 +92,7 @@ export default function HiringPage() {
   const canReadCandidates = useCan('candidate.read');
   const canAdvance = useCan('candidate.advance');
   const canAddCandidate = useCan('candidate.create');
+  const canEditCandidate = useCan('candidate.update');
   const canApproveRole = useCan('vacancy.approve');
   const canOpenRole = useCan('vacancy.create') && canApproveRole;
 
@@ -196,6 +198,16 @@ export default function HiringPage() {
       : `${d.getDate()} ${dateFormat('en-US', { month: 'short' }).format(d)} ${d.getFullYear()}`;
   };
 
+  // A target date is a calendar DAY: worded in UTC so no timezone moves it.
+  const formatDay = (ymd: string) =>
+    dateFormat(locale === 'ar' ? 'ar' : 'en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      timeZone: 'UTC',
+    }).format(new Date(`${ymd}T00:00:00.000Z`));
+  const healthOf = useCandidateHealth();
+
   const board = useMemo(() => candidates.filter((c) => isActive(c.stage)), [candidates]);
   const roles = useMemo(
     () =>
@@ -225,9 +237,33 @@ export default function HiringPage() {
       progress: c.employeeId ? (progress[c.employeeId] ?? null) : null,
       notes: c.notes,
       added: formatDate(c.createdAt),
+      targetDate: c.targetDate,
+      targetLabel: c.targetDate ? formatDay(c.targetDate) : null,
     };
   };
   const byId = (id: string | null) => candidates.find((c) => c.id === id) ?? null;
+
+  // SOON-04: record, change or clear a candidate's target date. The health on
+  // the card and in the window follows from the date; nothing else is saved.
+  async function setTarget(c: CandidateResponse, targetDate: string | null) {
+    setBusy(true);
+    try {
+      const updated = await apiFetch<CandidateResponse>(`/candidates/${c.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ targetDate }),
+      });
+      setCandidates((all) => all.map((x) => (x.id === updated.id ? updated : x)));
+      toastSuccess(
+        targetDate
+          ? t('targetSaved', { name: view(updated).name, date: formatDay(targetDate) })
+          : t('targetCleared', { name: view(updated).name }),
+      );
+    } catch {
+      toastError(t('targetError'));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   // ---- moves ----
   async function move(c: CandidateResponse, to: CandidateStage) {
@@ -599,6 +635,18 @@ export default function HiringPage() {
                             <span className="text-[11px] leading-[15px] text-pretty text-muted-foreground">
                               {c.notes || t('addedAgo', { days: daysSince(c.createdAt) })}
                             </span>
+                            {(() => {
+                              // SOON-04: the target date and the health worked out from it.
+                              const h = healthOf(c);
+                              return h && cv.targetLabel ? (
+                                <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                  <HealthPill health={h.health} label={h.label} />
+                                  <span className="text-[11px] leading-[15px] text-muted-foreground">
+                                    {t('targetOn', { date: cv.targetLabel })}
+                                  </span>
+                                </span>
+                              ) : null;
+                            })()}
                             {c.stage === 'mobilisation' && c.employeeId && (
                               // The work happens on the person's record: say how
                               // far it has got and take the user there.
@@ -682,8 +730,13 @@ export default function HiringPage() {
       <CandidateDialog
         candidate={openCand && byId(openCand) ? view(byId(openCand)!) : null}
         canAdvance={canAdvance}
+        canEdit={canEditCandidate}
         busy={busy}
         onClose={() => setOpenCand(null)}
+        onSetTarget={(targetDate) => {
+          const c = byId(openCand);
+          if (c) void setTarget(c, targetDate);
+        }}
         onMove={(to) => {
           const c = byId(openCand);
           if (c) void move(c, to);

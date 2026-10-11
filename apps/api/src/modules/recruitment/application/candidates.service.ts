@@ -230,6 +230,7 @@ function toCreateData(
     phone: input.phone ?? null,
     cvDocumentId: input.cvDocumentId ?? null,
     notes: input.notes ?? null,
+    targetDate: input.targetDate ?? null,
     createdByUserId: input.createdByUserId ?? null,
   };
 }
@@ -243,6 +244,7 @@ function toUpdateData(data: UpdateCandidateInput): Prisma.CandidateUpdateInput {
     ...(data.phone !== undefined ? { phone: data.phone } : {}),
     ...(data.cvDocumentId !== undefined ? { cvDocumentId: data.cvDocumentId } : {}),
     ...(data.notes !== undefined ? { notes: data.notes } : {}),
+    ...(data.targetDate !== undefined ? { targetDate: data.targetDate } : {}),
   };
 }
 

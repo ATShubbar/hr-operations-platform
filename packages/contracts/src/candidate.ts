@@ -16,6 +16,15 @@ export const candidateStageSchema = z.enum([
   'mobilisation',
 ]);
 
+// A calendar day as YYYY-MM-DD — and a real one (30 February is refused).
+const realDay = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Expected YYYY-MM-DD')
+  .refine((s) => {
+    const d = new Date(`${s}T00:00:00.000Z`);
+    return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
+  }, 'Not a real date');
+
 export const candidateResponseSchema = z.object({
   id: z.uuid(),
   clientId: z.uuid(),
@@ -30,6 +39,9 @@ export const candidateResponseSchema = z.object({
   // (MOB-04b) — null before that, and for a direct hire.
   employeeId: z.uuid().nullable(),
   notes: z.string().nullable(),
+  // SOON-04: the day the candidate is meant to be in post by (YYYY-MM-DD), or
+  // null. Health is worked out from it — see candidate-health.
+  targetDate: z.string().nullable(),
   createdByUserId: z.uuid().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
@@ -45,6 +57,7 @@ export const createCandidateRequestSchema = z.object({
   phone: z.string().max(40).optional(),
   cvDocumentId: z.uuid().optional(),
   notes: z.string().max(4000).optional(),
+  targetDate: realDay.optional(),
 });
 
 // Update: editable core fields only — stage is advanced via candidate.advance.
@@ -55,6 +68,7 @@ export const updateCandidateRequestSchema = z.object({
   phone: z.string().max(40).nullable().optional(),
   cvDocumentId: z.uuid().nullable().optional(),
   notes: z.string().max(4000).nullable().optional(),
+  targetDate: realDay.nullable().optional(), // null clears it
 });
 
 // Stage transition (candidate.advance): advance the pipeline stage, validated

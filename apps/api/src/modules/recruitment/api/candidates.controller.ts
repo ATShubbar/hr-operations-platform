@@ -31,6 +31,10 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 // that clients never see; there is no client-rep path). Who creates, advances or
 // deletes is the v1.7 matrix (ADR-013), enforced by the guard. The
 // clientId is DERIVED from the vacancy by the service, never taken from input.
+// SOON-04: a target date is a calendar DAY — stored at UTC midnight so no
+// timezone can move it to the day before.
+const dayOf = (day: string): Date => new Date(`${day}T00:00:00.000Z`);
+
 @Controller('candidates')
 export class CandidatesController {
   constructor(private readonly candidates: CandidatesService) {}
@@ -51,6 +55,7 @@ export class CandidatesController {
       phone: req.phone ?? null,
       cvDocumentId: req.cvDocumentId ?? null,
       notes: req.notes ?? null,
+      targetDate: req.targetDate ? dayOf(req.targetDate) : null,
       createdByUserId: requestContext.get()?.actorId ?? null,
     });
     return toResponse(row);
@@ -88,6 +93,9 @@ export class CandidatesController {
       ...(p.phone !== undefined ? { phone: p.phone } : {}),
       ...(p.cvDocumentId !== undefined ? { cvDocumentId: p.cvDocumentId } : {}),
       ...(p.notes !== undefined ? { notes: p.notes } : {}),
+      ...(p.targetDate !== undefined
+        ? { targetDate: p.targetDate === null ? null : dayOf(p.targetDate) }
+        : {}),
     };
     const row = await this.candidates.update(id, data);
     if (!row) throw new NotFoundException('Candidate not found');
@@ -130,6 +138,7 @@ function toResponse(c: CandidateRecord): CandidateResponse {
     cvDocumentId: c.cvDocumentId,
     employeeId: c.employeeId,
     notes: c.notes,
+    targetDate: c.targetDate ? c.targetDate.toISOString().slice(0, 10) : null,
     createdByUserId: c.createdByUserId,
     createdAt: c.createdAt.toISOString(),
     updatedAt: c.updatedAt.toISOString(),

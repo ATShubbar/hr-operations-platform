@@ -621,13 +621,32 @@ async function seedCandidates(prisma: PrismaClient): Promise<number> {
       },
     },
   });
+  // SOON-04: target dates, relative to seed day, so a fresh seed shows every
+  // health — on track, at risk (4 days or fewer), past target — and candidates
+  // with none. Set on EVERY run (null included), so a re-seed resets a date
+  // someone changed.
+  const TARGET_IN_DAYS: Record<string, number | null> = {
+    'd1000001-0000-4000-8000-000000000001': 20,
+    'd1000001-0000-4000-8000-000000000002': 3,
+    'd1000001-0000-4000-8000-000000000003': -2,
+    'd1000001-0000-4000-8000-000000000004': null,
+    'd1000001-0000-4000-8000-000000000005': 9,
+    'd1000002-0000-4000-8000-000000000001': 1,
+    'd1000002-0000-4000-8000-000000000002': 30,
+    'd1000002-0000-4000-8000-000000000003': null,
+    'd1000003-0000-4000-8000-000000000001': -6,
+    'd1000004-0000-4000-8000-000000000001': 14,
+    'd1000004-0000-4000-8000-000000000002': 4,
+  };
   for (const { id, ...rest } of candidates) {
+    const inDays = TARGET_IN_DAYS[id] ?? null;
+    const targetDate = inDays === null ? null : daysFromNow(inDays);
     // `employeeId: null` — none of these is mobilising; a re-seed must clear the
     // link a walk-through left behind (the mobilising pair is seedSequences').
     await prisma.candidate.upsert({
       where: { id },
-      create: { id, ...rest },
-      update: { ...rest, employeeId: null },
+      create: { id, ...rest, targetDate },
+      update: { ...rest, employeeId: null, targetDate },
     });
   }
   return candidates.length;
@@ -1039,6 +1058,8 @@ async function seedSequences(prisma: PrismaClient): Promise<number> {
       email: m.email,
       stage: 'mobilisation' as const,
       employeeId: m.employeeId,
+      // SOON-04: both arrivals are due in post inside a fortnight.
+      targetDate: daysFromNow(12),
     };
     await prisma.candidate.upsert({
       where: { id: m.candidateId },

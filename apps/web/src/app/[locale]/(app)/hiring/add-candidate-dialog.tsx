@@ -44,8 +44,10 @@ interface Form {
   nameAr: string;
   nationality: string;
   notes: string;
+  /** SOON-04: optional — YYYY-MM-DD, or empty. */
+  targetDate: string;
 }
-const EMPTY: Form = { nameEn: '', nameAr: '', nationality: 'IN', notes: '' };
+const EMPTY: Form = { nameEn: '', nameAr: '', nationality: 'IN', notes: '', targetDate: '' };
 
 export function AddCandidateDialog({
   role,
@@ -88,6 +90,7 @@ export function AddCandidateDialog({
           name: { en: form.nameEn.trim(), ar: form.nameAr.trim() },
           nationality: form.nationality,
           ...(form.notes.trim() ? { notes: form.notes.trim() } : {}),
+          ...(form.targetDate ? { targetDate: form.targetDate } : {}),
         }),
       });
       onOpenChange(false);
@@ -154,6 +157,19 @@ export function AddCandidateDialog({
             </Select>
             <p id="ac-nat-hint" className="text-xs text-muted-foreground">
               {t('nationalityHint')}
+            </p>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="ac-target">{t('fieldTarget')}</Label>
+            <Input
+              id="ac-target"
+              type="date"
+              value={form.targetDate}
+              aria-describedby="ac-target-hint"
+              onChange={(e) => setForm({ ...form, targetDate: e.target.value })}
+            />
+            <p id="ac-target-hint" className="text-xs text-muted-foreground">
+              {t('targetHint')}
             </p>
           </div>
           <div className="flex flex-col gap-1.5">

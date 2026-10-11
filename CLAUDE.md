@@ -1828,7 +1828,17 @@ running · overdue · met · late · closed (declined/withdrawn). Changing the s
 included (requests store their due date instead — different on purpose). `LeavePresenter` now reads `ConfigService`
 (Leave → Configuration, no loop). Web: the line on `leaves/leave-detail.tsx` (amber when overdue or late). `seedLeave`
 spreads submission/filing dates (`ago`, `filedAfter`) so a fresh seed shows every state. Leave is still NOT in the queue
-or the bell. API **942/942**. Next: SOON-04 (candidate target date + health).
+or the bell. API **942/942**.
+**SOON-04 done — a candidate has a target date and a health.** `rec_candidates.target_date` (optional date; migration
+`…candidate_target_date`); response `targetDate` (`YYYY-MM-DD`|null), create accepts it, `PATCH /candidates/:id` takes a
+day or `null` to clear (not a real day → 400); existing `candidate.create`/`candidate.update`, audited as an update; no ADR.
+Health is NEVER stored: ONE rule `candidateHealth({targetDate, stage, today})` in `@hr/contracts/candidate-health`
+(zod-free subpath) — on_track · at_risk (≤ `AT_RISK_DAYS` = 4, target day included) · past_target; `null` with no target
+or once finished (hired/rejected/withdrawn). Web: `hiring/candidate-health.tsx` (`useCandidateHealth`, `<HealthPill>`,
+today = the VIEWER's day), pill + date on the card, Health/Target facts + inline editor in the candidate window
+(`candidate.update` only — the Auditor reads), a date field on Add candidate; `toneFor('candidateHealth')`. Seed
+`TARGET_IN_DAYS` (relative; every state + one with none). Candidates are still not in the queue or the bell. **SOON-02
+(Saved views) is ON HOLD** — the owner wants views a person chooses and saves; design card first. API **947/947**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 

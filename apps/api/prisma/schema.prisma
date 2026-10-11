@@ -757,6 +757,9 @@ model Candidate {
   // mobilisation (a bare cross-module reference, minted by Recruitment).
   employeeId      String?        @unique @map("employee_id") @db.Uuid
   notes           String?
+  // SOON-04: the day the candidate is meant to be in post by. A DAY, not an
+  // instant. Health (on track / at risk / past target) is derived from it.
+  targetDate      DateTime?      @map("target_date") @db.Date
   createdByUserId String?        @map("created_by_user_id") @db.Uuid
   createdAt       DateTime       @default(now()) @map("created_at")
   updatedAt       DateTime       @updatedAt @map("updated_at")

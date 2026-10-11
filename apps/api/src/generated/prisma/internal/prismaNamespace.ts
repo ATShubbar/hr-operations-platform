@@ -3115,6 +3115,7 @@ export const CandidateScalarFieldEnum = {
   cvDocumentId: 'cvDocumentId',
   employeeId: 'employeeId',
   notes: 'notes',
+  targetDate: 'targetDate',
   createdByUserId: 'createdByUserId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
