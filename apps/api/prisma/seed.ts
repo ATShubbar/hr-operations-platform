@@ -665,6 +665,10 @@ async function seedGroProcesses(prisma: PrismaClient): Promise<number> {
     // renewal is open, so that expiry is QUIET in the bell and this work item
     // carries it instead.
     { id: 'e1000001-0000-4000-8000-000000000005', clientId: SEED_CLIENT_A, employeeId: 'e0000001-0000-4000-8000-000000000006', type: 'medical_insurance_renewal' as const, status: 'in_progress' as const, referenceNumber: 'CCHI-2026-0412', dueDate: daysFromNow(3), assigneeUserId: hrOfficer?.id ?? null },
+    // DEP-06b: Omar Hassan's iqama (Ahmed Hassan's son) lapses in 12 days. Its
+    // renewal is open — a procedure on the SPONSOR that names the dependant — so
+    // that expiry is quiet in the bell. A client manager never sees this row.
+    { id: 'e1000001-0000-4000-8000-000000000006', clientId: SEED_CLIENT_A, employeeId: 'e0000001-0000-4000-8000-000000000002', type: 'dependant_iqama_renewal' as const, status: 'in_progress' as const, referenceNumber: 'MUQ-2026-D0142', dueDate: daysFromNow(10), assigneeUserId: by, dependantId: 'f2000001-0000-4000-8000-000000000002' },
   ];
   for (const { id, ...rest } of processes) {
     await prisma.groProcess.upsert({ where: { id }, create: { id, ...rest }, update: rest });

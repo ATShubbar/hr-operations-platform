@@ -39,6 +39,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { StatusAction } from '@/components/ui/status-action';
+import { procedureTitle } from '@/lib/procedure-title';
 import { toastError, toastSuccess } from '@/components/ui/toast';
 
 // Open government procedures as rows, each with "Resolve" (DS-07, shared in
@@ -125,6 +126,7 @@ export function GroResolve({
 }) {
   const t = useTranslations('person.work');
   const tg = useTranslations('gro');
+  const locale = useLocale();
   const router = useRouter();
   const canProcess = useCan('gro.process');
   const tf = useTranslations('fees');
@@ -228,9 +230,17 @@ export function GroResolve({
       <Dialog open={completing} onOpenChange={(o) => !o && setCompleting(false)}>
         <DialogContent className="sm:max-w-[460px] [&>*]:min-w-0">
           <DialogHeader>
-            <DialogTitle>{t('completeTitle', { type: tg(`type.${p.type}`) })}</DialogTitle>
+            <DialogTitle>
+              {t('completeTitle', { type: procedureTitle(p, (ty) => tg(`type.${ty}`), locale) })}
+            </DialogTitle>
             <DialogDescription>
-              {t(needsExpiry ? 'completeDescription' : 'completeFeeOnly')}
+              {t(
+                !needsExpiry
+                  ? 'completeFeeOnly'
+                  : p.dependant
+                    ? 'completeDescriptionDependant'
+                    : 'completeDescription',
+              )}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={submitComplete} className="flex flex-col gap-3.5" noValidate>
@@ -310,6 +320,7 @@ export function GroWorkRows({
 }) {
   const t = useTranslations('person.work');
   const tg = useTranslations('gro');
+  const locale = useLocale();
   return (
     <>
       {items.map((p) => {
@@ -323,7 +334,9 @@ export function GroWorkRows({
               <Stamp className="size-4" aria-hidden />
             </span>
             <span className="flex min-w-0 grow flex-col gap-px">
-              <span className="text-sm leading-5 font-medium">{tg(`type.${p.type}`)}</span>
+              <span className="text-sm leading-5 font-medium">
+                {procedureTitle(p, (ty) => tg(`type.${ty}`), locale)}
+              </span>
               <span className="text-xs leading-4 text-muted-foreground">
                 {person && <>{person} · </>}
                 {p.referenceNumber ? (

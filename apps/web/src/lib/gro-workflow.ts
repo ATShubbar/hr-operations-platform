@@ -27,4 +27,6 @@ export const GRO_EXPIRY_TYPES: ReadonlySet<GroProcessType> = new Set([
   'medical_insurance_renewal',
   'driving_licence_renewal',
   'driving_licence_conversion',
+  // DEP-06: the new date is the DEPENDANT's iqama expiry.
+  'dependant_iqama_renewal',
 ]);

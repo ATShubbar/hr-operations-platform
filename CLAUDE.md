@@ -1701,6 +1701,13 @@ row** — every client read of procedures goes through it, so no query can leak 
 Ladder: `DEPENDANT_RENEWED_BY`, quiet keyed by dependant id. `standardProcedureFee(fees, 'dependant_iqama_renewal')` =
 `fees.dependantAnnual` (NOT a `procedures` key). Staff responses carry `dependant {id, nameEn, nameAr}`. API **897/897**.
 
+**DEP-06b done — DEP-06 COMPLETE.** Family tab: ⋯ → **Start iqama renewal** (`gro.process`; due = the iqama's expiry);
+an open renewal turns that iqama row into a "Renewal open" link (`/queue?open=procedure-<id>`) INSTEAD of Renew. New
+`lib/procedure-title.ts` `procedureTitle(p, label, locale)` → "Dependant iqama renewal · <name>" in the queue, work lists and
+the completion dialog (Calendar + bell still show the type only). The generic Start-a-procedure dialog does NOT list the
+type (it can't pick a dependant). Seed: Omar Hassan's renewal open → HR ladder 34 items / 19 need action / 7 quiet. Smoke +2
+(the client-exclusion check runs as the real client login on UAT).
+
 ## Technical landmines (each cost real debugging — do not rediscover)
 
 - RLS policies MUST use `NULLIF(current_setting('app.client_id', true), '')::uuid` — pooled connections leave the GUC as '' not NULL (SPIKE-001).

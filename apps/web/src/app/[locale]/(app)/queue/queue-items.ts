@@ -11,6 +11,7 @@ import type {
   TaskResponse,
 } from '@hr/contracts';
 import type { QueueItem } from './queue-actions';
+import { procedureTitle } from '@/lib/procedure-title';
 
 // Open work as one list (DS-12; shared with the Overview in DS-17, so the two
 // screens can't disagree about what is open or in what order).
@@ -68,7 +69,7 @@ export function useQueueItems(
       items.push({
         kind: 'procedure',
         id: p.id,
-        title: tg(`type.${p.type}`),
+        title: procedureTitle(p, (ty) => tg(`type.${ty}`), locale),
         ref: p.referenceNumber,
         meta: [person?.name, clientName(p.clientId), tg(`status.${p.status}`)]
           .filter(Boolean)
@@ -82,7 +83,14 @@ export function useQueueItems(
         assigneeUserId: p.assigneeUserId,
         recordHref: `/employees/${p.employeeId}`,
         gro: p,
-        searchText: [tg(`type.${p.type}`), p.referenceNumber ?? '', person?.name ?? ''],
+        searchText: [
+          tg(`type.${p.type}`),
+          p.referenceNumber ?? '',
+          person?.name ?? '',
+          // DEP-06: a dependant procedure is findable by the dependant's name.
+          p.dependant?.nameEn ?? '',
+          p.dependant?.nameAr ?? '',
+        ],
       });
     }
     for (const q of requests.filter((x) =>

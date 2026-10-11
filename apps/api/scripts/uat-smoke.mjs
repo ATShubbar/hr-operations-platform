@@ -346,6 +346,28 @@ async function main() {
       'insurance and licence: an open renewal keeps its expiry quiet',
       `renewal ${renewal?.status ?? 'missing'}, quiet items ${ladder.json?.suppressed}`,
     );
+    // DEP-06: a dependant's iqama renewal is a procedure on the sponsor. Staff
+    // see it, NAMED; its expiry is quiet; and the client manager of the same
+    // company never sees it (a database policy — clients see nothing of a family).
+    const depRenewal = (procedures.json?.processes ?? []).find((p) => p.type === 'dependant_iqama_renewal');
+    check(
+      Boolean(depRenewal?.dependant?.nameEn) &&
+        !(ladder.json?.items ?? []).some((i) => i.key === `dependant:${depRenewal?.dependant?.id}:iqama`),
+      'dependant renewal: staff see it named, and its iqama is quiet',
+      `renewal ${depRenewal ? depRenewal.status : 'missing'}`,
+    );
+    if (cm && depRenewal) {
+      const theirs = await call('/gro-processes', { cookie: cm });
+      const direct = await call(`/gro-processes/${depRenewal.id}`, { cookie: cm });
+      check(
+        theirs.status === 200 &&
+          (theirs.json?.processes ?? []).length > 0 &&
+          !(theirs.json?.processes ?? []).some((p) => p.type === 'dependant_iqama_renewal') &&
+          direct.status === 404,
+        'dependant renewal: hidden from the client manager of the same company',
+        `list HTTP ${theirs.status} (${(theirs.json?.processes ?? []).length} procedures), by id HTTP ${direct.status}`,
+      );
+    }
     // Ahmed Hassan — a fixed seed id, with a policy and a licence on file.
     const person = await call('/employees/e0000001-0000-4000-8000-000000000002', { cookie: hr });
     const gov = person.json?.govdata ?? {};

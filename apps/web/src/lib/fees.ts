@@ -28,6 +28,8 @@ export const PROCEDURE_AUTHORITY: Record<string, FeeAuthority> = {
   medical_insurance_renewal: 'cchi',
   driving_licence_renewal: 'absher',
   driving_licence_conversion: 'absher',
+  // DEP-06: a family iqama is renewed where the sponsor's is.
+  dependant_iqama_renewal: 'muqeem',
 };
 
 export type ReceiptProblem = 'type' | 'size';

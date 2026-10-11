@@ -3,9 +3,15 @@
 import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Ellipsis } from 'lucide-react';
-import type { DependantListResponse, DependantResponse } from '@hr/contracts';
+import type {
+  DependantListResponse,
+  DependantResponse,
+  GroProcessListResponse,
+  GroProcessResponse,
+} from '@hr/contracts';
+import { isFinished } from '@hr/contracts/work-status';
 import { formatHijri } from '@hr/dates';
-import { useRouter } from '@/i18n/navigation';
+import { Link, useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { useMoney } from '@/lib/money';
 import { useCan } from '@/lib/session';
@@ -104,6 +110,11 @@ export function FamilyTab({
   const locale = useLocale() as Locale;
   const router = useRouter();
   const canWrite = useCan('govdata.update') && !terminated;
+  // DEP-06b: a dependant's iqama renewal as a procedure. Starting one needs
+  // gro.process; seeing that one is open needs gro.read (every staff role).
+  const canProcess = useCan('gro.process') && !terminated;
+  const canReadGro = useCan('gro.read');
+  const [renewals, setRenewals] = useState<Map<string, GroProcessResponse>>(new Map());
 
   const [rows, setRows] = useState<DependantResponse[] | null>(null);
   const [error, setError] = useState('');
@@ -114,10 +125,28 @@ export function FamilyTab({
     try {
       const res = await apiFetch<DependantListResponse>(`/employees/${employeeId}/dependants`);
       setRows(res.dependants);
+      void loadRenewals();
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
       if (err instanceof ApiError && err.status === 403) return setForbidden(true);
       setError(t('loadError'));
+    }
+  }
+  // The OPEN renewal of each dependant, by dependant id. Not fatal: without it
+  // the tab still lists the family, it just cannot say a renewal is under way.
+  async function loadRenewals() {
+    if (!canReadGro) return;
+    try {
+      const res = await apiFetch<GroProcessListResponse>(`/gro-processes?employeeId=${employeeId}`);
+      setRenewals(
+        new Map(
+          res.processes
+            .filter((p) => p.dependant && !isFinished('procedure', p.status))
+            .map((p) => [p.dependant!.id, p]),
+        ),
+      );
+    } catch {
+      setRenewals(new Map());
     }
   }
   useEffect(() => {
@@ -178,6 +207,40 @@ export function FamilyTab({
       setRemoveError(t('removeError'));
     } finally {
       setBusy(false);
+    }
+  }
+
+  // ---- start an iqama renewal (a procedure on the sponsor) ----
+  const [starting, setStarting] = useState<DependantResponse | null>(null);
+  const [startBusy, setStartBusy] = useState(false);
+  const [startError, setStartError] = useState('');
+  async function confirmStart() {
+    if (!starting) return;
+    setStartBusy(true);
+    setStartError('');
+    try {
+      await apiFetch('/gro-processes', {
+        method: 'POST',
+        body: JSON.stringify({
+          employeeId,
+          type: 'dependant_iqama_renewal',
+          dependantId: starting.id,
+          // Due when the iqama lapses, as an auto-opened renewal is (GRO-05).
+          ...(starting.iqamaExpiry ? { dueDate: starting.iqamaExpiry } : {}),
+        }),
+      });
+      toastSuccess(t('renewalStarted', { name: nameOf(starting) }));
+      setStarting(null);
+      void loadRenewals();
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
+      // 409 = someone else started one meanwhile: show it rather than a failure.
+      if (err instanceof ApiError && err.status === 409) {
+        setStartError(t('renewalExists'));
+        void loadRenewals();
+      } else setStartError(t('renewalError'));
+    } finally {
+      setStartBusy(false);
     }
   }
 
@@ -310,12 +373,28 @@ export function FamilyTab({
                   </span>
                 )}
               </span>
-              {canWrite && (
+              {(canWrite || (canProcess && !renewals.has(d.id))) && (
                 <RowMenu
                   label={t('more', { name: d.nameEn })}
                   items={[
-                    { key: 'edit', label: t('edit'), run: () => openEdit(d) },
-                    { key: 'remove', label: t('remove'), run: () => setRemoving(d) },
+                    ...(canProcess && !renewals.has(d.id)
+                      ? [
+                          {
+                            key: 'renewal',
+                            label: t('startRenewal'),
+                            run: () => {
+                              setStartError('');
+                              setStarting(d);
+                            },
+                          },
+                        ]
+                      : []),
+                    ...(canWrite
+                      ? [
+                          { key: 'edit', label: t('edit'), run: () => openEdit(d) },
+                          { key: 'remove', label: t('remove'), run: () => setRemoving(d) },
+                        ]
+                      : []),
                   ]}
                 />
               )}
@@ -327,7 +406,11 @@ export function FamilyTab({
               {DOCS.map((doc) => {
                 const iso = d[doc.field];
                 const days = iso ? daysTo(iso) : null;
-                const renewable = canWrite && days !== null && days <= 90;
+                // While a renewal PROCEDURE is open for this dependant, its iqama row
+                // points to that work instead of offering the direct Renew: the
+                // procedure's completion is what records the new date.
+                const open = doc.key === 'iqama' ? renewals.get(d.id) : undefined;
+                const renewable = !open && canWrite && days !== null && days <= 90;
                 const cell = 'flex min-h-11 items-center border-t sm:h-11';
                 const date = iso ? (
                   <>
@@ -370,6 +453,15 @@ export function FamilyTab({
                       )}
                     </span>
                     <span className={cn(cell, 'justify-end ps-1 pe-4 sm:px-5')}>
+                      {open && (
+                        <Link
+                          href={`/queue?open=procedure-${open.id}`}
+                          title={t('renewalOpenHint', { name: nameOf(d) })}
+                          className="text-xs leading-4 whitespace-nowrap text-muted-foreground underline underline-offset-2 outline-none hover:text-foreground focus-visible:text-foreground"
+                        >
+                          {t('renewalOpen')}
+                        </Link>
+                      )}
                       {renewable && (
                         <Button
                           variant="outline"
@@ -423,6 +515,31 @@ export function FamilyTab({
               onClick={() => void confirmRemove()}
             >
               {busy ? t('removing') : t('removeConfirm')}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ---- Start an iqama renewal ---- */}
+      <Dialog open={starting !== null} onOpenChange={(o) => !o && setStarting(null)}>
+        <DialogContent className="sm:max-w-[440px] [&>*]:min-w-0">
+          <DialogHeader>
+            <DialogTitle>
+              {starting ? t('startRenewalTitle', { name: nameOf(starting) }) : ''}
+            </DialogTitle>
+            <DialogDescription>{t('startRenewalBody', { sponsor: sponsorName })}</DialogDescription>
+          </DialogHeader>
+          {startError && (
+            <p role="alert" className="text-sm text-destructive">
+              {startError}
+            </p>
+          )}
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" size="sm" onClick={() => setStarting(null)}>
+              {t('cancel')}
+            </Button>
+            <Button size="sm" disabled={startBusy} onClick={() => void confirmStart()}>
+              {startBusy ? t('starting') : t('startRenewalConfirm')}
             </Button>
           </div>
         </DialogContent>
