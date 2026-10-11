@@ -1721,8 +1721,20 @@ queue page and the Overview each load `/gro-sequences?status=running`. Calendar:
 — the duplicate-key landmine), info-tone chip, legend. Mobilisation tab: Owner Select. Seed owners: GRO officer / nobody /
 HR officer → HR ladder 35 items / 19 need action / 7 quiet. Smoke +2. Not done: Reports' officer workload ignores steps.
 
+**UX-18 done — Arabic messages that open with a number read from the right end.** Fixed in the DATA: a right-to-left
+mark before the number, written in `apps/web/messages/ar.json` as the escape `\u200f` (201 marks, 108 messages; one per
+plural/select branch). `apps/web/scripts/verify-ar-messages.mjs` runs inside the web `lint` and fails on an Arabic message
+or branch that opens with a digit, `#` or a `{placeholder}` without the mark, and on a LITERAL mark. Follow-up **UX-20**
+(a trailing full stop at the wrong end; Arabic sentences holding a Latin name).
+
 ## Technical landmines (each cost real debugging — do not rediscover)
 
+- `apps/web/messages/ar.json` holds right-to-left marks as the ESCAPE `\u200f`. `json.dumps(ensure_ascii=False)` (or any
+  tool that rewrites the file) turns them into invisible literal characters and the web lint then fails — re-escape after
+  writing (`text.replace('\u200f', '\\u200f')`). New Arabic messages that start with a number or `{placeholder}` need
+  the mark in front (UX-18).
+- Do not judge bidi order from a screenshot — I misread one. Measure glyph positions: a `Range` over each piece of the
+  text node and `getBoundingClientRect()`; the piece with the larger x is further right (UX-18).
 - RLS policies MUST use `NULLIF(current_setting('app.client_id', true), '')::uuid` — pooled connections leave the GUC as '' not NULL (SPIKE-001).
 - QUALIFY the policy table's columns inside an RLS subquery (`req_comments.client_id`, not `client_id`): an unqualified
   name resolves to the SUBQUERY's table first, so `r.client_id = client_id` compares a column with itself and the policy
