@@ -33,6 +33,7 @@ const RUN_KEYS = [
   'steps',
 ];
 const STEP_KEYS = [
+  'captures',
   'day',
   'fee',
   'filedBy',

@@ -251,9 +251,13 @@ export function MobilisationTab({
     filing.run.steps.every((s) => s.key === filing.step.key || s.state === 'filed');
   const [filedOn, setFiledOn] = useState('');
   const [fileError, setFileError] = useState('');
+  // MOB-07: two onboarding steps PRODUCE a date the record holds (the iqama's
+  // and the insurance's expiry). Optional — the step files without it.
+  const [expiry, setExpiry] = useState('');
   const [paid, setPaid] = useState<FeeCaptureValue>({ amount: '', receipt: null });
   const openFile = (run: SequenceResponse, step: SequenceStep) => {
     setFiledOn(todayIso());
+    setExpiry('');
     setFileError('');
     setPaid({ amount: halalasToInput(standardOf(run, step)), receipt: null });
     setFiling({ run, step });
@@ -261,6 +265,8 @@ export function MobilisationTab({
   async function submitFile() {
     if (!filing || !filedOn) return;
     if (filedOn > todayIso()) return setFileError(t('error.future'));
+    const resultingExpiry = filing.step.captures && expiry ? expiry : undefined;
+    if (resultingExpiry && resultingExpiry <= filedOn) return setFileError(t('error.expiryOrder'));
     const problem = canRecordFee ? feeCaptureProblem(paid) : null;
     if (problem) return setFileError(tf(`error.${problem}`));
     const amountHalalas = canRecordFee ? (sarTextToHalalas(paid.amount) ?? 0) : 0;
@@ -271,7 +277,7 @@ export function MobilisationTab({
     try {
       updated = await apiFetch<SequenceResponse>(
         `/gro-sequences/${run.id}/steps/${step.key}/file`,
-        { method: 'POST', body: JSON.stringify({ filedOn }) },
+        { method: 'POST', body: JSON.stringify({ filedOn, resultingExpiry }) },
       );
     } catch (err) {
       setFiling(null);
@@ -297,8 +303,9 @@ export function MobilisationTab({
     }
     setBusy(false);
     // A completion changes the person — onboarding makes them active, a final
-    // exit ends their employment (MOB-05): let the record refresh.
-    if (updated.status === 'completed') onEmployeeChanged?.();
+    // exit ends their employment (MOB-05) — and so does a recorded expiry
+    // (MOB-07): let the record refresh.
+    if (updated.status === 'completed' || resultingExpiry) onEmployeeChanged?.();
   }
 
   // ---- record a fee for a step that is already filed ----
@@ -556,6 +563,22 @@ export function MobilisationTab({
                   onChange={(e) => setFiledOn(e.target.value)}
                 />
               </div>
+              {filing.step.captures && (
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="mob-expiry">{t(`capture.${filing.step.captures}`)}</Label>
+                  <Input
+                    id="mob-expiry"
+                    type="date"
+                    min={filedOn || undefined}
+                    value={expiry}
+                    aria-describedby="mob-expiry-note"
+                    onChange={(e) => (setFileError(''), setExpiry(e.target.value))}
+                  />
+                  <p id="mob-expiry-note" className="text-xs leading-4 text-muted-foreground">
+                    {expiry ? hijri(expiry) : t('captureNote')}
+                  </p>
+                </div>
+              )}
               {canRecordFee ? (
                 <FeeCapture
                   id="mob-file"

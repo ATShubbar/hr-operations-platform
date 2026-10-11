@@ -1,6 +1,6 @@
 # ADR-018 — Onboarding and final exit: ordered sequences of government steps
 
-- Status: Accepted (rev. 2, 2026-10-11: ready steps are work items with one owner per run — MOB-06)
+- Status: Accepted (rev. 3, 2026-10-11: a filed step can record the expiry of the document it issues — MOB-07; rev. 2, 2026-10-11: ready steps are work items with one owner per run — MOB-06)
 - Date: 2026-10-07
 - Owner: Ahmed Alshubbar (product decision; MOB-00)
 - Amends: **architecture.md**:
@@ -191,6 +191,24 @@ their steps in. The prototype has neither; these are owner decisions.
   exit ends the employment).
 - No snooze: a step's target date comes from the run's start date, not from anyone's choice.
 - Staff only, as sequences already are. No new permission.
+
+## Revision 3 — 2026-10-11 (MOB-07)
+The decision had a step record one fact: the date it was filed. Two onboarding steps issue a dated
+document, and the person filing has it in hand.
+
+- **Filing may also record an expiry** (`resultingExpiry`, optional): "Iqama issued" → the
+  employee's iqama expiry; "Medical insurance activated" → their medical insurance expiry (owner's
+  choice of scope ★). No other step, and none on a final exit. The list is code
+  (`STEP_CAPTURES`), beside the step lists.
+- GRO writes it through Employees with the audited call a completed renewal already uses
+  (GRO-03) — the existing one-way edge, no new event.
+- Refused, with nothing filed: a date on or before the filing date, or one sent for a step that
+  records none.
+- **Reopening the step does not take the date back.** Reopening corrects the filing; the document
+  exists. (Billing differs deliberately: a reopened step voids its un-invoiced fee.)
+- A failed write to the record never un-files the step; it is logged, and the date can be set on
+  the Profile tab.
+- No new permission (`gro.process`, staff only).
 
 ## Build
 

@@ -2282,7 +2282,8 @@
         "onboardingRunning": "Onboarding is still running for this person.",
         "terminated": "This person is terminated.",
         "changed": "This sequence changed in the meantime. It has been refreshed.",
-        "generic": "Could not save. Try again."
+        "generic": "Could not save. Try again.",
+        "expiryOrder": "The expiry must be after the filing date."
       },
       "step": {
         "block-visa": {
@@ -2365,7 +2366,12 @@
       "endsEmployment": "Filing this ends {name}'s employment. Their record stays as history and any self-service account is closed.",
       "owner": "Owner",
       "ownerNone": "Nobody yet",
-      "ownerSomeone": "Someone"
+      "ownerSomeone": "Someone",
+      "capture": {
+        "iqama_expiry": "Iqama expiry",
+        "insurance_expiry": "Medical insurance expiry"
+      },
+      "captureNote": "Optional. Saved to this person's record."
     },
     "statusFollowsOnboarding": "Follows the onboarding sequence — it becomes Active when the sequence completes."
   },

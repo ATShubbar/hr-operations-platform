@@ -25,6 +25,7 @@ import { requestContext } from '../../../context/request-context';
 import { UsersService } from '../../auth/public-api';
 import { EmployeesService } from '../../employees/public-api';
 import { SequencesService, type SequenceView } from '../application/sequences.service';
+import { STEP_CAPTURES } from '../domain/sequence-definitions';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -101,7 +102,9 @@ export class SequencesController {
     this.requireId(id);
     const parsed = fileSequenceStepSchema.safeParse(body ?? {});
     if (!parsed.success) throw new BadRequestException('Invalid filing');
-    return this.one(await this.sequences.file(id, key, parsed.data.filedOn));
+    return this.one(
+      await this.sequences.file(id, key, parsed.data.filedOn, parsed.data.resultingExpiry),
+    );
   }
 
   @RequirePermission('gro.process')
@@ -179,6 +182,7 @@ export class SequencesController {
         state: s.state,
         needs: [...s.needs],
         // Keys, not the engine's English titles — the web translates them.
+        captures: STEP_CAPTURES[v.kind]?.[s.key]?.capture ?? null,
         waitingOn:
           s.state === 'blocked'
             ? s.needs.filter((k) => v.steps.find((x) => x.key === k)?.state !== 'filed')

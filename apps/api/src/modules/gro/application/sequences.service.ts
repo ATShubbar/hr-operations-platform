@@ -15,7 +15,7 @@ import { ClientsService } from '../../clients/public-api';
 import { EmployeesService } from '../../employees/public-api';
 import { NotificationsService } from '../../notifications/public-api';
 import { EventBus } from '../../events/public-api';
-import { SEQUENCES, type SequenceKind } from '../domain/sequence-definitions';
+import { SEQUENCES, STEP_CAPTURES, type SequenceKind } from '../domain/sequence-definitions';
 import { SequenceStepReopenedEvent } from '../domain/sequence-step-reopened.event';
 import {
   filedDependents,
@@ -222,18 +222,32 @@ export class SequencesService {
     }
   }
 
-  async file(id: string, stepKey: string, filedOn?: string): Promise<SequenceView> {
+  async file(
+    id: string,
+    stepKey: string,
+    filedOn?: string,
+    resultingExpiry?: string,
+  ): Promise<SequenceView> {
     const on = filedOn ?? todayIso();
     if (!/^\d{4}-\d{2}-\d{2}$/.test(on) || Number.isNaN(Date.parse(`${on}T00:00:00Z`))) {
       throw new BadRequestException('Invalid filing date');
     }
     if (on > todayIso()) throw new BadRequestException('A step cannot be filed in the future');
+    // MOB-07: a document cannot expire on or before the day it was issued.
+    if (resultingExpiry !== undefined && resultingExpiry <= on) {
+      throw new BadRequestException('The expiry must be after the filing date');
+    }
     const actorId = this.actor();
     const view = await this.prisma.$transaction(async (tx) => {
       const row = await this.load(tx, id);
       if (row.status !== 'running') throw new ConflictException(`This sequence is ${row.status}`);
       const def = stepDefinition(row.kind, stepKey);
       if (!def) throw new BadRequestException('Unknown step');
+      // MOB-07: only a step that issues a dated document takes an expiry. Refused
+      // BEFORE anything is written — a rejected request files nothing.
+      if (resultingExpiry !== undefined && !STEP_CAPTURES[row.kind]?.[stepKey]) {
+        throw new BadRequestException(`"${def.title}" records no expiry`);
+      }
       const view = stepsOf(row.kind, day(row.startedOn), filedMap(row)).find(
         (s) => s.key === stepKey,
       )!;
@@ -257,6 +271,25 @@ export class SequencesService {
       }
       return toView(after);
     });
+    // MOB-07: record the expiry of the document this step issued — through
+    // Employees, audited like a procedure's completion (GRO-03). After the commit,
+    // and BEFORE the completion effects: a final step's own effect still runs. A
+    // failure here is logged and never un-files the step.
+    const captured = resultingExpiry ? STEP_CAPTURES[view.kind]?.[stepKey] : undefined;
+    if (captured && resultingExpiry) {
+      try {
+        await this.employees.update(
+          view.employeeId,
+          { [captured.field]: new Date(`${resultingExpiry}T00:00:00.000Z`) },
+          'gro-completion',
+        );
+      } catch (err) {
+        this.logger.error(
+          `Step ${stepKey} of sequence ${view.id} was filed but its expiry was not recorded`,
+          err instanceof Error ? err.stack : String(err),
+        );
+      }
+    }
     if (view.status === 'completed') await this.afterCompletion(view);
     return view;
   }

@@ -1743,6 +1743,16 @@ text, so measure a new placeholder before shipping it. No API change.
 `dependant {name} | null` (`LadderProcedure.dependantName`, staff ladder only). Web appends `· name` to the title in both.
 To see a seeded item in the bell that is not yet on the ladder, move its due date by SQL and put it back. API **921/921**.
 
+**MOB-07 done — a filed step can record the expiry of the document it issues (ADR-018 rev. 3); the clean-up batch
+(UX-18, UX-03b, CI-01, UX-19, DEP-07, MOB-07) is COMPLETE.** `POST /gro-sequences/:id/steps/:key/file` takes an optional
+`resultingExpiry`; `STEP_CAPTURES` (`gro/domain/sequence-definitions.ts`) names the two steps that take one — onboarding
+`iqama` → `iqamaExpiry`, `insurance` → `medicalInsuranceExpiry` — and each step response says what it `captures`. Written
+AFTER the filing commits through `EmployeesService.update(…, 'gro-completion')`; a failure is logged and never un-files the
+step. 400 with nothing filed: date not after the filing date, or a step that records none. Reopening leaves the date (a
+fee is voided, a date is not). Mark-filed dialog: one optional date box on those steps. `STEP_KEYS` in
+`gro-sequences-api.e2e-spec.ts` pins step keys — a new step field must be added there. API **921/921**.
+Open follow-ups: UX-20, the editable-roles epic (decision card first), NC-07 (needs SMTP), GCP-07 (owner).
+
 ## Technical landmines (each cost real debugging — do not rediscover)
 
 - `apps/web/messages/ar.json` holds right-to-left marks as the ESCAPE `\u200f`. `json.dumps(ensure_ascii=False)` (or any

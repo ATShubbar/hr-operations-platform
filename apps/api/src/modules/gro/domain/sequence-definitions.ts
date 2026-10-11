@@ -26,6 +26,32 @@ export interface SequenceDefinition {
   steps: readonly SequenceStepDefinition[];
 }
 
+// MOB-07 (ADR-018 rev. 3): the steps whose filing can also RECORD the expiry of
+// the document they issue — the date is known at that moment. `capture` is the
+// key the API names it by; `field` is where it lives on the employee record.
+// Everything else files a date and nothing more.
+export const STEP_CAPTURES: Readonly<
+  Partial<
+    Record<
+      SequenceKind,
+      Readonly<
+        Record<
+          string,
+          {
+            capture: 'iqama_expiry' | 'insurance_expiry';
+            field: 'iqamaExpiry' | 'medicalInsuranceExpiry';
+          }
+        >
+      >
+    >
+  >
+> = {
+  onboarding: {
+    iqama: { capture: 'iqama_expiry', field: 'iqamaExpiry' },
+    insurance: { capture: 'insurance_expiry', field: 'medicalInsuranceExpiry' },
+  },
+};
+
 export const SEQUENCES: Readonly<Record<SequenceKind, SequenceDefinition>> = {
   onboarding: {
     kind: 'onboarding',

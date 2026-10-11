@@ -16,15 +16,23 @@ const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export const startSequenceSchema = z.strictObject({ kind: sequenceKindSchema });
 
+const realDate = z
+  .string()
+  .regex(DATE_RE, 'Expected YYYY-MM-DD')
+  .refine((s) => {
+    const d = new Date(`${s}T00:00:00.000Z`);
+    return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
+  }, 'Not a real date');
+
+// What a filed step can also RECORD on the person's record (MOB-07): the expiry
+// of the document the step issues. A key — the web words it.
+export const stepCaptureSchema = z.enum(['iqama_expiry', 'insurance_expiry']);
+
 export const fileSequenceStepSchema = z.strictObject({
-  filedOn: z
-    .string()
-    .regex(DATE_RE, 'Expected YYYY-MM-DD')
-    .refine((s) => {
-      const d = new Date(`${s}T00:00:00.000Z`);
-      return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
-    }, 'Not a real date')
-    .optional(),
+  filedOn: realDate.optional(),
+  // MOB-07: the expiry of the document this step issues — optional, and only for
+  // a step that records one (the server refuses it on any other step).
+  resultingExpiry: realDate.optional(),
 });
 
 const person = z.strictObject({ name: z.string().nullable() });
@@ -39,6 +47,8 @@ export const sequenceStepSchema = z.strictObject({
   /** The steps this one waits on (keys) — the fixed list, so the screen can explain a refusal. */
   needs: z.array(z.string()),
   waitingOn: z.array(z.string()),
+  /** What filing this step can also record on the person's record, if anything (MOB-07). */
+  captures: stepCaptureSchema.nullable(),
   filedOn: z.string().nullable(),
   filedBy: person.nullable(),
 });
@@ -80,6 +90,7 @@ export const sequenceInFlightListResponseSchema = z.object({
 export type SequenceKind = z.infer<typeof sequenceKindSchema>;
 export type SequenceStatus = z.infer<typeof sequenceStatusSchema>;
 export type SequenceStepState = z.infer<typeof sequenceStepStateSchema>;
+export type StepCapture = z.infer<typeof stepCaptureSchema>;
 export type SequenceStep = z.infer<typeof sequenceStepSchema>;
 export type SequenceResponse = z.infer<typeof sequenceResponseSchema>;
 export type SequenceListResponse = z.infer<typeof sequenceListResponseSchema>;
