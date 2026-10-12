@@ -26,8 +26,8 @@ build contract. Changes go through ADRs (adr/), never through drift.
 
 | File | What |
 |---|---|
-| architecture.md | Frozen build contract — **v1.15** (ADR-011 self-service · ADR-012 LTR/prototype fidelity · ADR-013 six roles · ADR-014 leave · ADR-015 search · ADR-016 request thread · ADR-017 dependants · ADR-018 onboarding/final exit · ADR-019 client profile + Nitaqat · ADR-020 billing · ADR-021 notification centre) |
-| adr/README.md | Decision index (ADR-001..021, statuses) |
+| architecture.md | Frozen build contract — **v1.16** (ADR-011 self-service · ADR-012 LTR/prototype fidelity · ADR-013 six roles · ADR-014 leave · ADR-015 search · ADR-016 request thread · ADR-017 dependants · ADR-018 onboarding/final exit · ADR-019 client profile + Nitaqat · ADR-020 billing · ADR-021 notification centre · ADR-022 audit detail) |
+| adr/README.md | Decision index (ADR-001..022, statuses) |
 | BACKLOG.md | Task board + cards + working rules |
 | ACTION-PLAN.md | Phased plan, DoD checklists with evidence rule |
 | evidence/skeleton/ | Per-task proof (WS-01..) |
@@ -1848,6 +1848,14 @@ People, report and audit exports and any later one. API **954/954**.
 (`AuditQueryService.actorsAmong`), name null when the account has none, absent when it never acted or no longer exists.
 The page asks once per id the staff directory does not name and shows the name, "Unnamed account #4a81", "Former account
 #fb20", or — until answered — the id fragment. The Actor FILTER still lists staff only. No new permission. API **962/962**.
+**AUDIT-10 done — the audit trail records WHAT CHANGED (ADR-022, architecture.md v1.16; no code yet).** Owner: an edit's
+entry holds every field it changed, old and new, **pay and ID values included** (bank account number too) — for employees,
+dependants and candidates, the three records that stored too little (an employee edit stored only name/status/contract
+type, so most edits showed no difference). Reverses EMP-01 ("values never enter the trail") and AUDIT-06 ("History never
+carries values"); revises ADR-017. Audit trail readers unchanged; the audit EXPORT now carries those values. A person's
+History shows details by the reader's own field access (pay with `salary.read`, ID numbers with `govdata.read`). Old
+entries cannot be filled in. Build: AUDIT-11 (record) → AUDIT-12 (readable trail) → HIST-01 (History) → AUDIT-13 (Actor
+filter), all approved.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 - A string built by `spaced()` / `dots()` / the date helpers OPENS with an invisible direction mark in Arabic. Never

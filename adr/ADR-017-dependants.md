@@ -1,6 +1,6 @@
 # ADR-017 — Dependants: the family on an employee's sponsorship
 
-- Status: Accepted (rev. 1, 2026-10-11: dependants join the runway and the expiring figures — DEP-05; rev. 2, 2026-10-11: a dependant's iqama renewal as a procedure — DEP-06)
+- Status: Accepted (rev. 1, 2026-10-11: dependants join the runway and the expiring figures — DEP-05; rev. 2, 2026-10-11: a dependant's iqama renewal as a procedure — DEP-06) · revised by ADR-022 (2026-10-12): a dependant edit now records the changed values, not only the field names
 - Date: 2026-10-05
 - Owner: Ahmed Alshubbar (product decision; DEP-00)
 - Amends: **architecture.md** — scope (dependants were out of scope in v1.1–v1.10), the
