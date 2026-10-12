@@ -5,6 +5,7 @@ import { useLocale, useMessages, useTranslations } from 'next-intl';
 import { ChevronRight } from 'lucide-react';
 import type {
   AuditActorsResponse,
+  ClientListResponse,
   AuditEntry,
   AuditListResponse,
   AuditSummaryResponse,
@@ -22,7 +23,9 @@ import {
   filterOf,
   type AuditCategory,
 } from '@/lib/audit-category';
+import { changesOf } from '@/lib/audit-changes';
 import { cn } from '@/lib/utils';
+import { ChangeSummary, useChangeFormat } from '@/components/change-list';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -120,6 +123,7 @@ export default function AuditTrailPage() {
   // answered (id → name, or null for an account with none); `answered` is every
   // id asked about, so one that came back absent is known to be a former account.
   const [staffReady, setStaffReady] = useState(false);
+  const [clients, setClients] = useState<Map<string, { en: string; ar: string }>>(new Map());
   const [named, setNamed] = useState<Map<string, string | null>>(new Map());
   const [answered, setAnswered] = useState<Set<string>>(new Set());
   const asked = useRef<Set<string>>(new Set());
@@ -195,6 +199,10 @@ export default function AuditTrailPage() {
       .then((r) => setStaff(r.users))
       .catch(() => setStaff([]))
       .finally(() => setStaffReady(true));
+    // AUDIT-12: a changed company is shown by name. Readers of the trail read clients.
+    apiFetch<ClientListResponse>('/clients')
+      .then((r) => setClients(new Map(r.clients.map((c) => [c.id, c.name]))))
+      .catch(() => setClients(new Map()));
   }, []);
 
   // Ask once for each actor on screen that the directory does not name. A failed
@@ -291,7 +299,12 @@ export default function AuditTrailPage() {
       : dots(locale, e.action, e.resource);
   };
   const targetLabel = (e: AuditEntry) => {
-    const noun = known('noun', e.resource) ? t(`noun.${e.resource}`) : e.resource;
+    // The noun as a heading: "a procedure" → "Procedure" (English carries an article).
+    const asHeading = (noun: string) => {
+      const bare = locale === 'en' ? noun.replace(/^(a|an|the) /i, '') : noun;
+      return bare.charAt(0).toUpperCase() + bare.slice(1);
+    };
+    const noun = known('noun', e.resource) ? asHeading(t(`noun.${e.resource}`)) : e.resource;
     const name = nameIn(e);
     const ref = e.resourceId ? `#${e.resourceId.slice(0, 8)}` : null;
     // "Procedure #e470adc9": the id is English; sealed, it stays AFTER the word (UX-22).
@@ -311,6 +324,12 @@ export default function AuditTrailPage() {
     return { plain, line: spaced(locale, plain, `#${e.actorId.slice(0, 4)}`) };
   };
   const actorName = (e: AuditEntry) => actorOf(e).line;
+  // AUDIT-12: what changed, in words. An account or company in a changed field
+  // is shown by name when the page knows it.
+  const format = useChangeFormat({
+    userName: (id) => staff.find((s) => s.id === id)?.displayName ?? named.get(id) ?? null,
+    clientName: (id) => clients.get(id)?.[locale] ?? null,
+  });
   const roleLabel = (e: AuditEntry) =>
     e.actorRole && messages.roles?.[e.actorRole] ? tr(e.actorRole) : (e.actorRole ?? '');
   const time = (iso: string) =>
@@ -571,6 +590,16 @@ export default function AuditTrailPage() {
                           <span className="truncate text-xs leading-4 text-muted-foreground">
                             {targetLabel(e)}
                           </span>
+                          {/* An edit says what it changed, here on the row. A new
+                              record's fields are in its window, not listed here. */}
+                          {e.before !== null && e.after !== null && (
+                            <ChangeSummary
+                              format={format}
+                              resource={e.resource}
+                              changes={changesOf(e.before, e.after)}
+                              className="text-xs leading-4"
+                            />
+                          )}
                         </span>
                         <span
                           className={cn(
@@ -621,6 +650,7 @@ export default function AuditTrailPage() {
         role={open ? roleLabel(open) : ''}
         action={open ? actionLabel(open) : ''}
         target={open ? targetLabel(open) : ''}
+        format={format}
         onClose={() => setOpen(null)}
       />
     </div>

@@ -4,8 +4,10 @@ import type { ReactNode } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { AuditEntry } from '@hr/contracts';
 import { categoryOf, CATEGORY_CLASS } from '@/lib/audit-category';
+import { changesOf, type ChangeFormat } from '@/lib/audit-changes';
 import { toneFor } from '@/lib/status-tone';
 import { cn } from '@/lib/utils';
+import { ChangeList } from '@/components/change-list';
 import { Avatar } from '@/components/ui/avatar';
 import {
   Dialog,
@@ -19,34 +21,14 @@ import { dateFormat, hijriDate } from '@/lib/dates';
 
 // One audit entry (DS-15) — the prototype's detail dialog: what happened to
 // which record, the category, who, when (both calendars), and — owner decision —
-// each changed field as before → after. That is what audit.read already returns
-// to its holders (Administrator, Auditor); nothing new is exposed.
+// each changed field as before → after, in words (AUDIT-12: field names and
+// values translated, dates in both calendars). That is what audit.read already
+// returns to its holders (Administrator, Auditor); nothing new is exposed.
 //
 // Not recorded, and said so: the source address (the log has none). The
 // severity is the server's (AUDIT-07).
 
 const MAX_FIELDS = 30;
-
-type Snapshot = Record<string, unknown> | null;
-const asObject = (v: unknown): Snapshot =>
-  v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : null;
-
-function show(v: unknown): string {
-  if (v === null || v === undefined || v === '') return '—';
-  if (typeof v === 'string') return v;
-  if (typeof v === 'number' || typeof v === 'boolean') return String(v);
-  return JSON.stringify(v);
-}
-
-/** Fields whose value differs between the two snapshots (all of one side when the other is absent). */
-export function changedFields(before: unknown, after: unknown) {
-  const b = asObject(before);
-  const a = asObject(after);
-  const keys = [...new Set([...Object.keys(b ?? {}), ...Object.keys(a ?? {})])];
-  return keys
-    .filter((k) => JSON.stringify(b?.[k]) !== JSON.stringify(a?.[k]))
-    .map((k) => ({ field: k, before: b ? show(b[k]) : null, after: a ? show(a[k]) : null }));
-}
 
 export function EntryDialog({
   entry,
@@ -54,6 +36,7 @@ export function EntryDialog({
   role,
   action,
   target,
+  format,
   onClose,
 }: {
   entry: AuditEntry | null;
@@ -61,11 +44,13 @@ export function EntryDialog({
   role: string;
   action: string;
   target: string;
+  /** How field names and values read (AUDIT-12) — the page knows the names. */
+  format: ChangeFormat;
   onClose: () => void;
 }) {
   const t = useTranslations('audit');
   const locale = useLocale() as 'ar' | 'en';
-  const changes = entry ? changedFields(entry.before, entry.after) : [];
+  const changes = entry ? changesOf(entry.before, entry.after) : [];
   const cat = entry ? categoryOf(entry.resource) : 'records';
   const when = entry ? new Date(entry.createdAt) : null;
 
@@ -107,36 +92,13 @@ export function EntryDialog({
                 {changes.length === 0 ? (
                   <p className="text-[13px] leading-5 text-muted-foreground">{t('noChanges')}</p>
                 ) : (
-                  <dl className="flex max-h-64 flex-col overflow-y-auto rounded-md ring-1 ring-foreground/10">
-                    {changes.slice(0, MAX_FIELDS).map((c) => (
-                      <div
-                        key={c.field}
-                        className="grid grid-cols-1 gap-x-3 gap-y-0.5 border-t px-3 py-2 first:border-t-0 sm:grid-cols-[140px_1fr]"
-                      >
-                        <dt className="truncate font-mono text-[11px] leading-5 text-muted-foreground">
-                          {c.field}
-                        </dt>
-                        <dd className="min-w-0 text-[12px] leading-5 break-words">
-                          {c.before !== null && (
-                            <span className="text-status-critical line-through decoration-status-critical/40">
-                              {c.before}
-                            </span>
-                          )}
-                          {c.before !== null && c.after !== null && (
-                            <span aria-hidden className="mx-1.5 text-muted-foreground">
-                              →
-                            </span>
-                          )}
-                          {c.after !== null && <span className="text-status-ok">{c.after}</span>}
-                        </dd>
-                      </div>
-                    ))}
-                  </dl>
-                )}
-                {changes.length > MAX_FIELDS && (
-                  <p className="text-xs text-muted-foreground">
-                    {t('moreFields', { count: changes.length - MAX_FIELDS })}
-                  </p>
+                  <ChangeList
+                    format={format}
+                    resource={entry.resource}
+                    changes={changes}
+                    max={MAX_FIELDS}
+                    className="max-h-72 overflow-y-auto"
+                  />
                 )}
               </section>
 

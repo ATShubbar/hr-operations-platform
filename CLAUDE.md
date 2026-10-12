@@ -1864,8 +1864,22 @@ A day is `YYYY-MM-DD`, an amount a number; `id`/`createdAt`/`updatedAt` never co
 of every audited edit route (122 fields, 22 routes) and fails on one that leaves no trace; ADD a new editable field or
 route to it. It found nine records recording too little (employee, dependant, candidate, request, task, vacancy,
 procedure, calendar event, invitation). Pay and ID values are in the trail and in its export (ADR-022). API **978/978**.
+**AUDIT-12 done — the Audit trail reads in plain words.** `apps/web/src/lib/audit-changes.ts` (pure: `changesOf`,
+`fieldLabel`, `fieldValue` — a status by the KIND of record, a day as a date, halalas as SAR, an account or company by
+name, unknown keys as plain words) + `components/change-list.tsx` (`ChangeSummary` = the first two changes on a row,
+`ChangeList` = all of them with both calendars, `useChangeFormat`). In Arabic the pair runs from the right with «←».
+Messages: `auditField.*` (151 labels), `auditChange.*`, 43 new `audit.phrase.*`. **`scripts/verify-audit-changes.mjs`
+runs in the web lint**: the formatter's rules, a label for EVERY changeable column of the ten field-by-field records
+(read from schema.prisma — a new column fails until named) and a sentence for EVERY action (registry + the twelve the
+server writes itself), in both languages. A new audited action needs `audit.phrase.<resource>__<action>`. No API change.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
+- The `truncate` rule (UX-23) cannot find a direction in a line that is ONE right-to-left run inside an element (a
+  `<DotLine>`, a `dir="rtl"` span): isolates are neutral, so the line is treated as left-to-right and cut at its START.
+  Give the cut element the direction itself: `dir="rtl"` plus the inline style `unicode-bidi: isolate` (an inline style
+  is what outranks the unlayered rule) (AUDIT-12).
+- A check that reads a list from another file can pass on an EMPTY list. `verify-audit-changes.mjs` first reported "0
+  action sentences" as success. Assert a floor on what was read (AUDIT-12).
 - zsh does NOT split an unquoted variable into words: `for f in $FILES` loops ONCE over the whole string, and `$CMD
   arg` looks for a program named after the whole string. A red-proof script built that way made no backups and restored
   nothing while printing RESTORED — twelve breaks piled up in the source (AUDIT-11). Use an array, or pipe a list into

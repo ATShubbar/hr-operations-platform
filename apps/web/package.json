@@ -7,7 +7,7 @@
     "dev": "next dev --port 3000",
     "build": "next build",
     "start": "next start --port 3000",
-    "lint": "eslint src && node scripts/verify-ar-messages.mjs",
+    "lint": "eslint src && node scripts/verify-ar-messages.mjs && node --experimental-strip-types --no-warnings scripts/verify-audit-changes.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
