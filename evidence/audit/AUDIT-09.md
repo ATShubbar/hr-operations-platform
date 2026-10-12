@@ -68,7 +68,7 @@ Signed in as the client manager and raised a request, then signed in as the Audi
   below). One lookup request for the page, carrying 8 ids. 0px overflow.
 - **Unnamed state.** With the client manager's name removed for the check, the rows read
   "Unnamed account #4a81"; name restored afterwards.
-- **Arabic, 375px.** «حساب بلا اسم ‎#4a81» and «حساب سابق ‎#fb20», role beside each, in reading
+- **Arabic, 375px.** «حساب بلا اسم #4a81» and «حساب سابق #fb20», role beside each, in reading
   order; no label cut off; 0px overflow.
 
 **Caught on screen and fixed:** in Arabic the avatar beside a nameless account was blank. The
