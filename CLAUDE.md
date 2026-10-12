@@ -1839,6 +1839,10 @@ today = the VIEWER's day), pill + date on the card, Health/Target facts + inline
 (`candidate.update` only — the Auditor reads), a date field on Add candidate; `toneFor('candidateHealth')`. Seed
 `TARGET_IN_DAYS` (relative; every state + one with none). Candidates are still not in the queue or the bell. **SOON-02
 (Saved views) is ON HOLD** — the owner wants views a person chooses and saves; design card first. API **947/947**.
+**CSV-01 done — every export guards against formula cells.** The guard lives in the ONE writer, `src/csv/csv.ts`
+`csvField`: a TEXT cell that opens with = + - @ (or a tab / carriage return) gets a leading apostrophe, before quoting.
+Numbers must be passed as NUMBERS (they are never touched). `csvText` now only maps "no value" to an empty cell. Covers the
+People, report and audit exports and any later one. API **954/954**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 
