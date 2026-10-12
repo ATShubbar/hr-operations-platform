@@ -5,6 +5,7 @@ import { useLocale, useMessages, useTranslations } from 'next-intl';
 import { ChevronRight } from 'lucide-react';
 import type {
   AuditActorsResponse,
+  AuditNonStaffActorsResponse,
   ClientListResponse,
   AuditEntry,
   AuditListResponse,
@@ -33,7 +34,9 @@ import { LoadError, NoAccess } from '@/components/ui/load-state';
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
@@ -124,6 +127,9 @@ export default function AuditTrailPage() {
   // id asked about, so one that came back absent is known to be a former account.
   const [staffReady, setStaffReady] = useState(false);
   const [clients, setClients] = useState<Map<string, { en: string; ar: string }>>(new Map());
+  // AUDIT-13: the client managers and employees who appear in the trail — the
+  // Actor filter offers them beside the staff directory.
+  const [outside, setOutside] = useState<AuditNonStaffActorsResponse['actors']>([]);
   const [named, setNamed] = useState<Map<string, string | null>>(new Map());
   const [answered, setAnswered] = useState<Set<string>>(new Set());
   const asked = useRef<Set<string>>(new Set());
@@ -203,6 +209,9 @@ export default function AuditTrailPage() {
     apiFetch<ClientListResponse>('/clients')
       .then((r) => setClients(new Map(r.clients.map((c) => [c.id, c.name]))))
       .catch(() => setClients(new Map()));
+    apiFetch<AuditNonStaffActorsResponse>('/audit/actors/non-staff')
+      .then((r) => setOutside(r.actors))
+      .catch(() => setOutside([]));
   }, []);
 
   // Ask once for each actor on screen that the directory does not name. A failed
@@ -449,7 +458,9 @@ export default function AuditTrailPage() {
               {(v) =>
                 v === ALL
                   ? t('everyone')
-                  : (staff.find((s) => s.id === v)?.displayName ?? String(v).slice(0, 8))
+                  : (staff.find((s) => s.id === v)?.displayName ??
+                    outside.find((o) => o.id === v)?.name ??
+                    String(v).slice(0, 8))
               }
             </SelectValue>
           </SelectTrigger>
@@ -460,6 +471,21 @@ export default function AuditTrailPage() {
                 {s.displayName ?? s.id.slice(0, 8)}
               </SelectItem>
             ))}
+            {/* AUDIT-13: beyond the staff — whoever else appears in the trail. */}
+            {(['client', 'employee'] as const).map((kind) => {
+              const group = outside.filter((o) => o.kind === kind);
+              if (group.length === 0) return null;
+              return (
+                <SelectGroup key={kind}>
+                  <SelectLabel>{t(`actorGroup.${kind}`)}</SelectLabel>
+                  {group.map((o) => (
+                    <SelectItem key={o.id} value={o.id}>
+                      {o.name ?? spaced(locale, t('unnamedAccount'), `#${o.id.slice(0, 4)}`)}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              );
+            })}
           </SelectContent>
         </Select>
         <Select

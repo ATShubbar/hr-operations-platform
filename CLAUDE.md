@@ -1880,6 +1880,12 @@ record; a dependant loses only the iqama number), an account's details need `emp
 the permission that reads it, an UNDECIDED kind shows nothing, locator ids never leave. `SALARY_FIELDS` / `GOVDATA_FIELDS`
 (employee-view.ts) are held equal to the record's response groups by a test — add a guarded field in both. Web: the
 History tab renders `ChangeList` + a line per kind withheld. API **990/990**. Next: AUDIT-13 (Actor filter).
+**AUDIT-13 done — the audit-detail batch (ADR-022: AUDIT-10..13 + HIST-01) is COMPLETE.** `GET /audit/actors/non-staff`
+(`audit.read` + `scopeOf` staff-only): the client managers and employees who appear in the trail and still exist —
+`{id, name, kind}` — so the Audit trail's Actor filter offers them in two headed groups under the staff list (the filter
+itself, `GET /audit?actorId=`, already took any account). API **995/995**. Open afterwards: the Requests page redesign
+(previews parked on local branch `preview/requests-layouts`), SOON-02 (Saved views, design first), WS-21 backup restore
+test, editable roles (decision card first), NC-07 (needs SMTP), GCP-07 (owner).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 - The `truncate` rule (UX-23) cannot find a direction in a line that is ONE right-to-left run inside an element (a

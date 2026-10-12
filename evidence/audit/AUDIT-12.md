@@ -60,7 +60,7 @@ the new one.
 
 The web app has no test runner, so this runs beside the Arabic-messages check. It holds:
 
-1. the formatter's rules (37 assertions);
+1. the formatter's rules (33 assertions);
 2. **every changeable column** of the ten records written field by field has a label in both
    languages — read from the database schema, so a column added later fails until it is named;
 3. **every action** the trail can hold (the API's registry plus the twelve the server writes by

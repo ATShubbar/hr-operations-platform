@@ -912,7 +912,11 @@
       "critical": "حرج"
     },
     "formerAccount": "حساب سابق",
-    "unnamedAccount": "حساب بلا اسم"
+    "unnamedAccount": "حساب بلا اسم",
+    "actorGroup": {
+      "client": "مديرو العملاء",
+      "employee": "الموظفون"
+    }
   },
   "expiry": {
     "runScan": "تشغيل الفحص الآن",

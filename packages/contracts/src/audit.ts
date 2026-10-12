@@ -95,8 +95,20 @@ export const auditActorsResponseSchema = z.object({
   actors: z.array(z.object({ id: z.uuid(), name: z.string().nullable() }).strict()),
 });
 
+// AUDIT-13: the accounts OUTSIDE the staff directory that appear in the trail —
+// client managers and employees — so the Actor filter can offer them. The id,
+// the display name and which kind of account; never the email.
+export const auditNonStaffActorsResponseSchema = z.object({
+  actors: z.array(
+    z
+      .object({ id: z.uuid(), name: z.string().nullable(), kind: z.enum(['client', 'employee']) })
+      .strict(),
+  ),
+});
+
 export type AuditQuery = z.infer<typeof auditQuerySchema>;
 export type AuditSummaryResponse = z.infer<typeof auditSummaryResponseSchema>;
 export type AuditEntry = z.infer<typeof auditEntrySchema>;
 export type AuditListResponse = z.infer<typeof auditListResponseSchema>;
 export type AuditActorsResponse = z.infer<typeof auditActorsResponseSchema>;
+export type AuditNonStaffActorsResponse = z.infer<typeof auditNonStaffActorsResponseSchema>;

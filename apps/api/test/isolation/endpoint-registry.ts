@@ -62,6 +62,8 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'GET /audit/export': 'staff',
   // AUDIT-09: names for the actors of a page of the trail (audit.read; staff only).
   'GET /audit/actors': 'staff',
+  // AUDIT-13: client managers and employees who appear in the trail (for the Actor filter).
+  'GET /audit/actors/non-staff': 'staff',
   'GET /ready': 'public',
   'POST /auth/login': 'public',
   // SS-06a: set a password from a one-time emailed link (the TOKEN is the

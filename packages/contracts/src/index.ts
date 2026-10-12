@@ -127,11 +127,13 @@ export {
   AUDIT_ACTORS_MAX_IDS,
   auditActorsQuerySchema,
   auditActorsResponseSchema,
+  auditNonStaffActorsResponseSchema,
   type AuditQuery,
   type AuditEntry,
   type AuditListResponse,
   type AuditSummaryResponse,
   type AuditActorsResponse,
+  type AuditNonStaffActorsResponse,
 } from './audit.js';
 export {
   settingLevelSchema,

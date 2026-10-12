@@ -912,7 +912,11 @@
       "critical": "Critical"
     },
     "formerAccount": "Former account",
-    "unnamedAccount": "Unnamed account"
+    "unnamedAccount": "Unnamed account",
+    "actorGroup": {
+      "client": "Client managers",
+      "employee": "Employees"
+    }
   },
   "expiry": {
     "runScan": "Run scan now",

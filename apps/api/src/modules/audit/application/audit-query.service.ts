@@ -135,6 +135,16 @@ export class AuditQueryService {
     return { eventsToday, actors: actors.length, critical };
   }
 
+  /** AUDIT-13: every account that appears in the log as an actor. */
+  async actorIds(): Promise<string[]> {
+    const rows = await this.prisma.auditEntry.findMany({
+      where: { actorId: { not: null } },
+      distinct: ['actorId'],
+      select: { actorId: true },
+    });
+    return rows.map((r) => r.actorId).filter((id): id is string => id !== null);
+  }
+
   /**
    * AUDIT-09: which of these ids appear in the log as an actor. Lets a caller
    * name the actors of a page without becoming a way to look up any account.

@@ -10,6 +10,7 @@ import { PolicyService } from '../src/modules/auth/public-api';
 import {
   cleanupHelperUsers,
   loginAsClientRep,
+  loginAsEmployee,
   loginAsEnrolledStaff,
   loginAsStaff,
   type TestPrincipal,
@@ -32,6 +33,8 @@ describe('Audit actors (AUDIT-09, e2e)', () => {
   let auditor: TestPrincipal;
   let hr: TestPrincipal;
   let manager: TestPrincipal;
+  let idleManager: TestPrincipal;
+  let worker: TestPrincipal;
   let clientId: string;
   // An account that acted and has no name; one that exists and never acted; an
   // id that acted and whose account is gone.
@@ -71,6 +74,13 @@ describe('Audit actors (AUDIT-09, e2e)', () => {
       where: { id: manager.userId },
       data: { displayName: `${MARK} Client Manager` },
     });
+    // AUDIT-13: a second client manager who never acted, and an employee account that did.
+    idleManager = await loginAsClientRep(app, clientId, 'client_manager');
+    worker = await loginAsEmployee(app);
+    await owner.authUser.update({
+      where: { id: worker.userId },
+      data: { displayName: `${MARK} Employee` },
+    });
     await account(unnamed, null);
     await account(silent, `${MARK} Silent`);
     await owner.auditEntry.createMany({
@@ -90,6 +100,13 @@ describe('Audit actors (AUDIT-09, e2e)', () => {
           action: 'update',
         },
         { actorId: unnamed, actorRole: 'hr_officer', resource: 'task', action: 'create' },
+        {
+          actorId: worker.userId,
+          actorRole: 'employee',
+          clientId,
+          resource: 'request',
+          action: 'create',
+        },
         { actorId: gone, actorRole: 'hr_officer', resource: 'task', action: 'create' },
       ],
     });
@@ -97,7 +114,7 @@ describe('Audit actors (AUDIT-09, e2e)', () => {
 
   afterAll(async () => {
     await owner.auditEntry.deleteMany({
-      where: { actorId: { in: [manager.userId, unnamed, gone] } },
+      where: { actorId: { in: [manager.userId, worker.userId, unnamed, gone] } },
     });
     await owner.authUser.deleteMany({ where: { id: { in: [unnamed, silent] } } });
     await cleanupHelperUsers(app);
@@ -153,6 +170,60 @@ describe('Audit actors (AUDIT-09, e2e)', () => {
     await actors(manager, manager.userId).expect(403);
     await request(app.getHttpServer()).get('/audit/actors').query({ ids: unnamed }).expect(401);
   });
+
+  // AUDIT-13: who to offer in the Actor filter beyond the staff directory.
+  describe('GET /audit/actors/non-staff', () => {
+    const others = (who: TestPrincipal) =>
+      request(app.getHttpServer()).get('/audit/actors/non-staff').set('Cookie', who.cookie);
+    type Other = { id: string; name: string | null; kind: string };
+    const mine = (body: { actors: Other[] }) =>
+      body.actors.filter((a) =>
+        [manager.userId, idleManager.userId, worker.userId, unnamed, gone].includes(a.id),
+      );
+
+    it('lists the client managers and employees who acted — id, name and kind, nothing else', async () => {
+      const res = await others(admin).expect(200);
+      expect(mine(res.body).sort((a, b) => a.kind.localeCompare(b.kind))).toEqual([
+        { id: manager.userId, name: `${MARK} Client Manager`, kind: 'client' },
+        { id: worker.userId, name: `${MARK} Employee`, kind: 'employee' },
+      ]);
+      for (const a of res.body.actors as Other[]) {
+        expect(Object.keys(a).sort()).toEqual(['id', 'kind', 'name']);
+        expect(['client', 'employee']).toContain(a.kind);
+      }
+      expect(res.text).not.toContain('@'); // never an email
+    });
+
+    it('never lists staff, an account that did nothing, or one that no longer exists', async () => {
+      const ids = (await others(admin).expect(200)).body.actors.map((a: Other) => a.id);
+      expect(ids).not.toContain(unnamed); // staff — the directory lists staff
+      expect(ids).not.toContain(admin.userId);
+      expect(ids).not.toContain(idleManager.userId);
+      expect(ids).not.toContain(gone);
+    });
+
+    it('each account appears once, however many entries it wrote', async () => {
+      const ids = (await others(admin).expect(200)).body.actors.map((a: Other) => a.id);
+      expect(ids.filter((id: string) => id === manager.userId)).toHaveLength(1);
+    });
+
+    it('the trail can then be narrowed to that account', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/audit')
+        .query({ actorId: manager.userId })
+        .set('Cookie', admin.cookie)
+        .expect(200);
+      expect(res.body.entries).toHaveLength(2);
+      for (const e of res.body.entries) expect(e.actorId).toBe(manager.userId);
+    });
+
+    it('is for the readers of the trail only', async () => {
+      await others(auditor).expect(200);
+      await others(hr).expect(403);
+      await others(manager).expect(403);
+      await request(app.getHttpServer()).get('/audit/actors/non-staff').expect(401);
+    });
+  });
 });
 
 // No client role holds audit.read, so the permission alone keeps a client
@@ -204,6 +275,10 @@ describe('Audit actors — staff only, even for a widened client role (AUDIT-09)
     await request(app.getHttpServer())
       .get('/audit/actors')
       .query({ ids: manager.userId })
+      .set('Cookie', manager.cookie)
+      .expect(403);
+    await request(app.getHttpServer())
+      .get('/audit/actors/non-staff')
       .set('Cookie', manager.cookie)
       .expect(403);
   });
