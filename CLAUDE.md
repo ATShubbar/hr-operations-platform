@@ -1861,7 +1861,7 @@ filter), all approved.
 two halves — what names the record + EVERY changed field, old and new; **`auditCreated(row, identify)`** for a new record.
 A day is `YYYY-MM-DD`, an amount a number; `id`/`createdAt`/`updatedAt` never count. **A service that edits a record uses
 `auditEdit`, never a hand-picked snapshot** — the inventory test `test/audit-records-change.e2e-spec.ts` edits every field
-of every audited edit route (104 fields, 22 routes) and fails on one that leaves no trace; ADD a new editable field or
+of every audited edit route (122 fields, 22 routes) and fails on one that leaves no trace; ADD a new editable field or
 route to it. It found nine records recording too little (employee, dependant, candidate, request, task, vacancy,
 procedure, calendar event, invitation). Pay and ID values are in the trail and in its export (ADR-022). API **978/978**.
 

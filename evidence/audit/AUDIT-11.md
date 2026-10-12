@@ -23,7 +23,7 @@ One helper does it for every module: `apps/api/src/modules/audit/domain/change-s
 ## What the inventory found
 
 `apps/api/test/audit-records-change.e2e-spec.ts` takes **every audited edit route** (22) and
-every field each lets a person change. Each field is set twice through the API — to A, then to
+the fields each lets a person change (the three exceptions are listed below). Each field is set twice through the API — to A, then to
 B — and the second entry must hold a field that was A before and is B after.
 
 First run against the old code — 7 of 10 groups failed. More than the three records the ADR
@@ -44,7 +44,12 @@ named were recording too little:
 Already complete, unchanged: client, staff account, client account, employee account, fee,
 invoice record, commercial terms, settings (three levels), notification preference.
 
-All ten groups pass now: **104 fields across 22 routes**.
+All ten groups pass now: **122 fields across 22 routes**.
+
+Not exercised field by field, and said so: an invoice record's list of fees, a calendar event's
+company, and most of a Google Calendar invitation's fields (two are edited; the whole payload is
+recorded either way). (The commit message of 92b73ed says 104 fields — it was counted before the
+client profile's groups and the event start time were added to the inventory.)
 
 ## Changed
 
