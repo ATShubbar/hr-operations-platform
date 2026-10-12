@@ -1843,8 +1843,16 @@ today = the VIEWER's day), pill + date on the card, Health/Target facts + inline
 `csvField`: a TEXT cell that opens with = + - @ (or a tab / carriage return) gets a leading apostrophe, before quoting.
 Numbers must be passed as NUMBERS (they are never touched). `csvText` now only maps "no value" to an empty cell. Covers the
 People, report and audit exports and any later one. API **954/954**.
+**AUDIT-09 done — the Audit trail names every actor.** `GET /audit/actors?ids=` (`modules/history`, `audit.read` +
+`scopeOf` staff-only, 1–100 uuids): `{actors: [{id, name}]}` — ONLY accounts that appear in the trail as an actor
+(`AuditQueryService.actorsAmong`), name null when the account has none, absent when it never acted or no longer exists.
+The page asks once per id the staff directory does not name and shows the name, "Unnamed account #4a81", "Former account
+#fb20", or — until answered — the id fragment. The Actor FILTER still lists staff only. No new permission. API **962/962**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
+- A string built by `spaced()` / `dots()` / the date helpers OPENS with an invisible direction mark in Arabic. Never
+  hand one to code that reads its first character — the Audit trail's avatar drew a blank initial (AUDIT-09). Keep the
+  plain words for the avatar, a key or a sort; assemble the line only for display.
 
 - `apps/web/messages/ar.json` must hold NO directional control character (mark or isolate) — the rule in `@hr/text`
   adds them at load, and skips any message that already has one. Write Arabic messages as plain text; the web lint

@@ -60,6 +60,8 @@ export const ENDPOINT_REGISTRY: Record<string, ScopeClass> = {
   'GET /health': 'public',
   // AUDIT-07: the audit trail export (staff only: Administrator + Auditor).
   'GET /audit/export': 'staff',
+  // AUDIT-09: names for the actors of a page of the trail (audit.read; staff only).
+  'GET /audit/actors': 'staff',
   'GET /ready': 'public',
   'POST /auth/login': 'public',
   // SS-06a: set a password from a one-time emailed link (the TOKEN is the

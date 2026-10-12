@@ -1,9 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useLocale, useMessages, useTranslations } from 'next-intl';
 import { ChevronRight } from 'lucide-react';
 import type {
+  AuditActorsResponse,
   AuditEntry,
   AuditListResponse,
   AuditSummaryResponse,
@@ -58,6 +59,8 @@ import { dots, spaced } from '@/lib/pieces';
 
 const PAGE_SIZE = 50;
 const ALL = 'all';
+// Most ids one actor lookup takes (AUDIT_ACTORS_MAX_IDS in the contract).
+const ACTOR_BATCH = 100;
 const WINDOWS = ['all', '0', '7', '30'] as const;
 type Window = (typeof WINDOWS)[number];
 const SEVERITIES = ['critical', 'notable', 'routine'] as const;
@@ -112,6 +115,14 @@ export default function AuditTrailPage() {
   const [cursor, setCursor] = useState<string | null>(null);
   const [summary, setSummary] = useState<AuditSummaryResponse | null>(null);
   const [staff, setStaff] = useState<StaffDirectoryEntry[]>([]);
+  // AUDIT-09: actors the staff directory does not name — a client manager, an
+  // employee, a staff account with no name. `named` holds what the server
+  // answered (id → name, or null for an account with none); `answered` is every
+  // id asked about, so one that came back absent is known to be a former account.
+  const [staffReady, setStaffReady] = useState(false);
+  const [named, setNamed] = useState<Map<string, string | null>>(new Map());
+  const [answered, setAnswered] = useState<Set<string>>(new Set());
+  const asked = useRef<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState('');
@@ -182,8 +193,41 @@ export default function AuditTrailPage() {
       .catch(() => setSummary(null));
     apiFetch<StaffDirectoryResponse>('/staff-users/directory')
       .then((r) => setStaff(r.users))
-      .catch(() => setStaff([]));
+      .catch(() => setStaff([]))
+      .finally(() => setStaffReady(true));
   }, []);
+
+  // Ask once for each actor on screen that the directory does not name. A failed
+  // request leaves them as they were (an id), and they are asked again next time.
+  useEffect(() => {
+    if (!staffReady) return;
+    const want = [
+      ...new Set(
+        entries
+          .map((e) => e.actorId)
+          .filter((id): id is string => !!id)
+          .filter((id) => !staff.find((s) => s.id === id)?.displayName)
+          .filter((id) => !asked.current.has(id)),
+      ),
+    ];
+    if (want.length === 0) return;
+    for (const id of want) asked.current.add(id);
+    for (let i = 0; i < want.length; i += ACTOR_BATCH) {
+      const batch = want.slice(i, i + ACTOR_BATCH);
+      apiFetch<AuditActorsResponse>(`/audit/actors?ids=${batch.join(',')}`)
+        .then((r) => {
+          setNamed((prev) => {
+            const next = new Map(prev);
+            for (const a of r.actors) next.set(a.id, a.name);
+            return next;
+          });
+          setAnswered((prev) => new Set([...prev, ...batch]));
+        })
+        .catch(() => {
+          for (const id of batch) asked.current.delete(id);
+        });
+    }
+  }, [entries, staff, staffReady]);
 
   const filtered =
     q !== '' || actor !== ALL || category !== ALL || win !== 'all' || severity !== ALL;
@@ -253,10 +297,20 @@ export default function AuditTrailPage() {
     // "Procedure #e470adc9": the id is English; sealed, it stays AFTER the word (UX-22).
     return spaced(locale, name ?? noun, name ? null : ref);
   };
-  const actorName = (e: AuditEntry) => {
-    if (!e.actorId) return t('system');
-    return staff.find((s) => s.id === e.actorId)?.displayName ?? `#${e.actorId.slice(0, 8)}`;
+  // Who acted. `plain` is the words alone (the avatar draws its initials from
+  // them); `line` is what the row shows.
+  const actorOf = (e: AuditEntry): { plain: string | null; line: string } => {
+    if (!e.actorId) return { plain: t('system'), line: t('system') };
+    const name = staff.find((s) => s.id === e.actorId)?.displayName ?? named.get(e.actorId);
+    if (name) return { plain: name, line: name };
+    // Not answered yet (or the lookup failed): the id alone, claiming nothing.
+    if (!answered.has(e.actorId)) return { plain: null, line: `#${e.actorId.slice(0, 8)}` };
+    // Answered: the account exists without a name, or it no longer exists. A
+    // short piece of the id keeps two such accounts apart.
+    const plain = named.has(e.actorId) ? t('unnamedAccount') : t('formerAccount');
+    return { plain, line: spaced(locale, plain, `#${e.actorId.slice(0, 4)}`) };
   };
+  const actorName = (e: AuditEntry) => actorOf(e).line;
   const roleLabel = (e: AuditEntry) =>
     e.actorRole && messages.roles?.[e.actorRole] ? tr(e.actorRole) : (e.actorRole ?? '');
   const time = (iso: string) =>
@@ -501,7 +555,7 @@ export default function AuditTrailPage() {
                         <span className="w-11 shrink-0 font-mono text-xs leading-4 text-muted-foreground">
                           {time(e.createdAt)}
                         </span>
-                        <Avatar name={actorName(e)} size="sm" />
+                        <Avatar name={actorOf(e).plain} size="sm" />
                         <span className="flex w-36 shrink-0 flex-col">
                           <span className="truncate text-[13px] leading-[18px] font-medium">
                             {actorName(e)}

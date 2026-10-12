@@ -857,7 +857,9 @@
       "routine": "Routine",
       "notable": "Notable",
       "critical": "Critical"
-    }
+    },
+    "formerAccount": "Former account",
+    "unnamedAccount": "Unnamed account"
   },
   "expiry": {
     "runScan": "Run scan now",

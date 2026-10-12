@@ -5,6 +5,7 @@ import { DocumentsModule } from '../documents/public-api';
 import { EmployeesModule } from '../employees/public-api';
 import { GroModule } from '../gro/public-api';
 import { RequestsModule } from '../requests/public-api';
+import { AuditActorsController } from './api/audit-actors.controller';
 import { AuditExportController } from './api/audit-export.controller';
 import { EmployeeHistoryController } from './api/employee-history.controller';
 import { RequestHistoryController } from './api/request-history.controller';
@@ -15,9 +16,16 @@ import { RequestHistoryController } from './api/request-history.controller';
 // processes' — by asking each owning module for the ids (Employees, Documents,
 // GRO) and the Audit module for the entries. Audit never reads another module's
 // tables; this module never reads any table directly. DS-08 adds a request's
-// decision trail (GET /requests/:id/history) on the same terms.
+// decision trail (GET /requests/:id/history) on the same terms. AUDIT-07's export and
+// AUDIT-09's actor names live here too: both put a NAME beside an audit entry,
+// and Audit (a foundation module) may not import Auth.
 @Module({
   imports: [AuditModule, AuthModule, EmployeesModule, DocumentsModule, GroModule, RequestsModule],
-  controllers: [EmployeeHistoryController, RequestHistoryController, AuditExportController],
+  controllers: [
+    EmployeeHistoryController,
+    RequestHistoryController,
+    AuditExportController,
+    AuditActorsController,
+  ],
 })
 export class HistoryModule {}

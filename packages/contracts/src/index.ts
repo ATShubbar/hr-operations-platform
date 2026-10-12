@@ -124,10 +124,14 @@ export {
   auditListResponseSchema,
   auditSummaryQuerySchema,
   auditSummaryResponseSchema,
+  AUDIT_ACTORS_MAX_IDS,
+  auditActorsQuerySchema,
+  auditActorsResponseSchema,
   type AuditQuery,
   type AuditEntry,
   type AuditListResponse,
   type AuditSummaryResponse,
+  type AuditActorsResponse,
 } from './audit.js';
 export {
   settingLevelSchema,

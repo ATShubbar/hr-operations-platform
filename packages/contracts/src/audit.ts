@@ -77,7 +77,26 @@ export const auditSummaryResponseSchema = z.object({
   critical: z.number().int(),
 });
 
+// AUDIT-09: who a set of actor ids are — for the Audit trail to name an actor
+// the staff directory does not list (a client manager, an employee). `ids` is a
+// comma-separated list, at most 100 (one page of the trail holds fewer).
+export const AUDIT_ACTORS_MAX_IDS = 100;
+export const auditActorsQuerySchema = z.object({
+  ids: z
+    .string()
+    .min(1)
+    .transform((v) => v.split(','))
+    .pipe(z.array(z.uuid()).min(1).max(AUDIT_ACTORS_MAX_IDS)),
+});
+// The id and the display name — never the email, role or status. An account
+// with no name comes back with `name: null`; an id that never acted, or whose
+// account no longer exists, is simply absent.
+export const auditActorsResponseSchema = z.object({
+  actors: z.array(z.object({ id: z.uuid(), name: z.string().nullable() }).strict()),
+});
+
 export type AuditQuery = z.infer<typeof auditQuerySchema>;
 export type AuditSummaryResponse = z.infer<typeof auditSummaryResponseSchema>;
 export type AuditEntry = z.infer<typeof auditEntrySchema>;
 export type AuditListResponse = z.infer<typeof auditListResponseSchema>;
+export type AuditActorsResponse = z.infer<typeof auditActorsResponseSchema>;

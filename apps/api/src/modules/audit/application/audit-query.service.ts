@@ -130,6 +130,20 @@ export class AuditQueryService {
   }
 
   /**
+   * AUDIT-09: which of these ids appear in the log as an actor. Lets a caller
+   * name the actors of a page without becoming a way to look up any account.
+   */
+  async actorsAmong(ids: readonly string[]): Promise<string[]> {
+    if (ids.length === 0) return [];
+    const rows = await this.prisma.auditEntry.findMany({
+      where: { actorId: { in: [...new Set(ids)] } },
+      distinct: ['actorId'],
+      select: { actorId: true },
+    });
+    return rows.map((r) => r.actorId).filter((id): id is string => id !== null);
+  }
+
+  /**
    * AUDIT-07: the rows an export holds — the same filters as the list, newest
    * first, at most `max` (one more is read to tell the caller it was cut).
    */

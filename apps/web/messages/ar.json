@@ -857,7 +857,9 @@
       "routine": "اعتيادي",
       "notable": "جدير بالانتباه",
       "critical": "حرج"
-    }
+    },
+    "formerAccount": "حساب سابق",
+    "unnamedAccount": "حساب بلا اسم"
   },
   "expiry": {
     "runScan": "تشغيل الفحص الآن",
