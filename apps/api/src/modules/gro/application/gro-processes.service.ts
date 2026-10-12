@@ -9,7 +9,7 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import { ScopedPrismaService } from '../../../prisma/scoped-prisma.service';
 import type { GroProcessModel as GroProcessRecord } from '../../../generated/prisma/models';
 import { Prisma, type GroProcessStatus } from '../../../generated/prisma/client';
-import { AuditService } from '../../audit/public-api';
+import { auditEdit, AuditService } from '../../audit/public-api';
 import { UsersService } from '../../auth/public-api';
 import { requestContext } from '../../../context/request-context';
 import { DependantsService, EmployeesService } from '../../employees/public-api';
@@ -160,8 +160,8 @@ export class GroProcessesService {
         resourceId: row.id,
         action: 'update',
         clientId: row.clientId,
-        before: snapshot(before),
-        after: snapshot(row),
+        // Every field the edit changed, old and new (ADR-022).
+        ...auditEdit(before, row, snapshot),
       });
       return { before, row };
     });

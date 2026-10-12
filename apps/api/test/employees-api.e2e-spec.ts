@@ -306,14 +306,14 @@ describe('Employees API — field-level authorization (EMP-02, e2e)', () => {
       await patch(readOnly.cookie, emp.id, { medicalInsuranceExpiry: '2028-01-01' }).expect(403);
     });
 
-    it('the audit entry of such a change carries no number and no date', async () => {
+    it('the audit entry of such a change holds the numbers, old and new (ADR-022)', async () => {
       const emp = await createVia(hr.cookie, baseCreate());
       await patch(hr.cookie, emp.id, { medicalInsuranceNumber: POLICY, drivingLicenceNumber: LICENCE }).expect(200);
       const entries = await owner.auditEntry.findMany({ where: { resource: 'employee', resourceId: emp.id } });
       expect(entries.some((e) => e.action === 'govdata-update')).toBe(true);
-      const dump = JSON.stringify(entries.map((e) => [e.before, e.after]));
-      expect(dump).not.toContain(POLICY);
-      expect(dump).not.toContain(LICENCE);
+      const edit = entries.find((e) => e.action === 'govdata-update');
+      expect(edit?.before).toMatchObject({ medicalInsuranceNumber: null, drivingLicenceNumber: null });
+      expect(edit?.after).toMatchObject({ medicalInsuranceNumber: POLICY, drivingLicenceNumber: LICENCE });
     });
   });
 
@@ -336,8 +336,9 @@ describe('Employees API — field-level authorization (EMP-02, e2e)', () => {
     expect(actions.has('salary-update')).toBe(true);
     expect(actions.has('govdata-update')).toBe(true);
     expect(actions.has('terminate')).toBe(true);
-    // Audit snapshots carry NO salary/govdata values.
-    const dump = JSON.stringify(entries.map((e) => [e.before, e.after]));
-    expect(dump).not.toMatch(/basicSalary|iqamaNumber|2333444555/);
+    // ADR-022 reverses EMP-01: the entries hold the pay and ID values that changed.
+    const dump = JSON.stringify(entries.map((e) => [e.action, e.before, e.after]));
+    expect(dump).toMatch(/basicSalary/);
+    expect(dump).toMatch(/iqamaNumber/);
   });
 });

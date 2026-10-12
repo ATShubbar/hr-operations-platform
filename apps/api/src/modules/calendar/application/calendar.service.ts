@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import type { CalendarEventModel as CalendarEventRecord } from '../../../generated/prisma/models';
 import type { Prisma } from '../../../generated/prisma/client';
-import { AuditService } from '../../audit/public-api';
+import { auditEdit, AuditService } from '../../audit/public-api';
 import type { CreateCalendarEventInput, UpdateCalendarEventInput } from '../domain/calendar-event';
 
 // Calendar event registry access (CAL-01). STAFF-INTERNAL — no client path (clients
@@ -56,8 +56,8 @@ export class CalendarService {
         resource: 'calendar-event',
         action: 'update',
         clientId: row.clientId ?? undefined,
-        before: snapshot(before),
-        after: snapshot(row),
+        // Every field the edit changed, old and new (ADR-022).
+        ...auditEdit(before, row, snapshot),
       });
       return row;
     });

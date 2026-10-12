@@ -1856,8 +1856,21 @@ carries values"); revises ADR-017. Audit trail readers unchanged; the audit EXPO
 History shows details by the reader's own field access (pay with `salary.read`, ID numbers with `govdata.read`). Old
 entries cannot be filled in. Build: AUDIT-11 (record) → AUDIT-12 (readable trail) → HIST-01 (History) → AUDIT-13 (Actor
 filter), all approved.
+**AUDIT-11 done — an edit records what changed.** `modules/audit/domain/change-set.ts` (exported from the audit module):
+**`auditEdit(before, after, identify)`** compares the stored row before and after, column by column, and returns the entry's
+two halves — what names the record + EVERY changed field, old and new; **`auditCreated(row, identify)`** for a new record.
+A day is `YYYY-MM-DD`, an amount a number; `id`/`createdAt`/`updatedAt` never count. **A service that edits a record uses
+`auditEdit`, never a hand-picked snapshot** — the inventory test `test/audit-records-change.e2e-spec.ts` edits every field
+of every audited edit route (104 fields, 22 routes) and fails on one that leaves no trace; ADD a new editable field or
+route to it. It found nine records recording too little (employee, dependant, candidate, request, task, vacancy,
+procedure, calendar event, invitation). Pay and ID values are in the trail and in its export (ADR-022). API **978/978**.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
+- zsh does NOT split an unquoted variable into words: `for f in $FILES` loops ONCE over the whole string, and `$CMD
+  arg` looks for a program named after the whole string. A red-proof script built that way made no backups and restored
+  nothing while printing RESTORED — twelve breaks piled up in the source (AUDIT-11). Use an array, or pipe a list into
+  `while read`; restore from the staged copy (`git add` first, then `git checkout -- src`) and CHECK the tree is clean
+  after every proof.
 - A string built by `spaced()` / `dots()` / the date helpers OPENS with an invisible direction mark in Arabic. Never
   hand one to code that reads its first character — the Audit trail's avatar drew a blank initial (AUDIT-09). Keep the
   plain words for the avatar, a key or a sort; assemble the line only for display.

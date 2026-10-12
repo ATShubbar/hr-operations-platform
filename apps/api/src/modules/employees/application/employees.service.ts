@@ -4,15 +4,16 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import type { EmployeeModel as EmployeeRecord } from '../../../generated/prisma/models';
 import type { Prisma } from '../../../generated/prisma/client';
 import { requestContext } from '../../../context/request-context';
-import { AuditService } from '../../audit/public-api';
+import { auditCreated, auditEdit, AuditService } from '../../audit/public-api';
 import { EventBus } from '../../events/public-api';
 import { EmployeeJoinedEvent } from '../domain/employee-mobilisation.event';
 import { EmployeeTerminatedEvent } from '../domain/employee-terminated.event';
 
 // Employee registry access (EMP-01/02). Staff path only. Every mutation writes
 // its audit entry in the same transaction (AUDIT-03), scoped to the employee's
-// client. The audit snapshot is deliberately NON-SENSITIVE (core identity +
-// which action) — salary/govdata values never enter the audit trail.
+// client. The entry records every field the edit changed, old and new — pay and
+// ID values included (ADR-022, an owner decision that reverses EMP-01's
+// "values never enter the trail").
 @Injectable()
 export class EmployeesService {
   constructor(
@@ -40,14 +41,14 @@ export class EmployeesService {
         resourceId: row.id,
         action: 'create',
         clientId: row.clientId,
-        after: snapshot(row),
+        after: auditCreated(row, snapshot),
       });
       return row;
     });
   }
 
   // One update path; `action` distinguishes core / salary / govdata / terminate
-  // in the audit trail without leaking the changed values.
+  // in the audit trail, and the entry holds what changed (ADR-022).
   async update(
     id: string,
     data: Prisma.EmployeeUncheckedUpdateInput,
@@ -62,8 +63,7 @@ export class EmployeesService {
         resourceId: id,
         action,
         clientId: row.clientId,
-        before: snapshot(before),
-        after: snapshot(row),
+        ...auditEdit(before, row, snapshot),
       });
       return { before, row };
     });
@@ -149,6 +149,7 @@ export class EmployeesService {
   }
 }
 
+// What names the record in every entry; the changed fields are added to it.
 function snapshot(e: EmployeeRecord): Prisma.InputJsonValue {
-  return { nameEn: e.nameEn, employmentStatus: e.employmentStatus, contractType: e.contractType };
+  return { nameEn: e.nameEn };
 }

@@ -3,7 +3,7 @@ import { requestContext } from '../../../context/request-context';
 import { PrismaService } from '../../../prisma/prisma.service';
 import type { TaskModel as TaskRecord } from '../../../generated/prisma/models';
 import type { Prisma } from '../../../generated/prisma/client';
-import { AuditService } from '../../audit/public-api';
+import { auditEdit, AuditService } from '../../audit/public-api';
 import { UsersService } from '../../auth/public-api';
 import { EventBus } from '../../events/public-api';
 import { TaskAssignedEvent } from '../domain/task-assigned.event';
@@ -95,8 +95,8 @@ export class TasksService {
         resource: 'task',
         action: 'update',
         clientId: row.clientId ?? undefined,
-        before: snapshot(before),
-        after: snapshot(row),
+        // Every field the edit changed, old and new (ADR-022).
+        ...auditEdit(before, row, snapshot),
       });
       return { before, row };
     });

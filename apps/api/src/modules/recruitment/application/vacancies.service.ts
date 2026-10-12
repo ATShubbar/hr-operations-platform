@@ -4,7 +4,7 @@ import { ScopedPrismaService } from '../../../prisma/scoped-prisma.service';
 import type { VacancyModel as VacancyRecord } from '../../../generated/prisma/models';
 import type { Prisma, VacancyStatus } from '../../../generated/prisma/client';
 import type { VacancyPipeline } from '@hr/contracts';
-import { AuditService } from '../../audit/public-api';
+import { auditEdit, AuditService } from '../../audit/public-api';
 import type { CreateVacancyInput, UpdateVacancyInput } from '../domain/vacancy';
 import { canTransition } from '../domain/vacancy-status-workflow';
 
@@ -61,8 +61,8 @@ export class VacanciesService {
         resource: 'vacancy',
         action: 'update',
         clientId: row.clientId,
-        before: snapshot(before),
-        after: snapshot(row),
+        // Every field the edit changed, old and new (ADR-022).
+        ...auditEdit(before, row, snapshot),
       });
       return row;
     });

@@ -3,7 +3,7 @@ import type { CreateGcalInvitationRequest } from '@hr/contracts';
 import { PrismaService } from '../../../prisma/prisma.service';
 import type { GcalInvitationModel as GcalInvitationRecord } from '../../../generated/prisma/models';
 import type { Prisma } from '../../../generated/prisma/client';
-import { AuditService } from '../../audit/public-api';
+import { auditEdit, AuditService } from '../../audit/public-api';
 import type { CalendarInvitation } from '../domain/calendar-invitation';
 import { GoogleCalendarAdapter } from './google-calendar.adapter';
 
@@ -75,8 +75,8 @@ export class GcalInvitationsService {
       await this.audit.record(tx, {
         resource: 'gcal-invitation',
         action: 'update',
-        before: snapshot(before),
-        after: snapshot(row),
+        // Every field the edit changed, old and new (ADR-022).
+        ...auditEdit(before, row, snapshot),
       });
       return row;
     });

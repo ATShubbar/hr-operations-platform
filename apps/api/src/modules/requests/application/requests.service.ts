@@ -6,7 +6,7 @@ import { ScopedPrismaService } from '../../../prisma/scoped-prisma.service';
 import { requestContext } from '../../../context/request-context';
 import type { RequestModel as RequestRecord } from '../../../generated/prisma/models';
 import type { Prisma } from '../../../generated/prisma/client';
-import { AuditService } from '../../audit/public-api';
+import { auditEdit, AuditService } from '../../audit/public-api';
 import { EventBus } from '../../events/public-api';
 import type {
   CreateRequestInput,
@@ -214,8 +214,8 @@ export class RequestsService {
         resourceId: row.id,
         action: 'update',
         clientId: row.clientId,
-        before: snapshot(before),
-        after: snapshot(row),
+        // Every field the edit changed, old and new (ADR-022).
+        ...auditEdit(before, row, snapshot),
       });
       return { before, row };
     });
@@ -392,8 +392,8 @@ export class RequestsService {
         resource: 'request',
         resourceId: row.id,
         action: 'update',
-        before: snapshot(before),
-        after: snapshot(row),
+        // Every field the edit changed, old and new (ADR-022).
+        ...auditEdit(before, row, snapshot),
       });
       return { before, row };
     });

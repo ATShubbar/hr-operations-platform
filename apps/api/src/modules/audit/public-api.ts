@@ -5,3 +5,5 @@ export { AuditQueryService, type RecordHistoryRow } from './application/audit-qu
 export type { AuditRecordInput } from './domain/audit-entry';
 // AUDIT-07: how serious an event is — one rule table, read by the list, the export and the page.
 export { severityOf, whereSeverity, type Severity } from './domain/severity';
+// AUDIT-11 (ADR-022): what an edit changed — every field, old and new.
+export { auditCreated, auditEdit, auditValue, changedValues } from './domain/change-set';

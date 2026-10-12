@@ -110,7 +110,7 @@ describe('Dependants — table, fences and service (DEP-01, e2e)', () => {
   });
 
   describe('the service (staff)', () => {
-    it('adds a dependant and audits it against the SPONSOR, without the identifier', async () => {
+    it('adds a dependant and audits it against the SPONSOR, with what it was created with (ADR-022)', async () => {
       const row = await asStaff(() => deps.add(ids.me, spouse(ids.me)));
       expect(row).toMatchObject({ employeeId: ids.me, relationship: 'spouse', removedAt: null });
       expect((await deps.listFor(ids.me)).map((d) => d.id)).toEqual([row.id]);
@@ -120,7 +120,8 @@ describe('Dependants — table, fences and service (DEP-01, e2e)', () => {
       });
       expect(audit).toMatchObject({ clientId: CLIENT_A, actorId: STAFF_USER });
       expect(audit.after).toMatchObject({ dependantId: row.id, relationship: 'spouse' });
-      expect(JSON.stringify(audit.after)).not.toContain('2123456789'); // the iqama number never enters the trail
+      // ADR-022 reverses ADR-017's "never the identifier": the entry holds the values.
+      expect(audit.after).toMatchObject({ iqamaNumber: '2123456789' });
       expect(severityOf('dependant', 'create')).toBe('notable');
     });
 
@@ -153,7 +154,7 @@ describe('Dependants — table, fences and service (DEP-01, e2e)', () => {
       });
     });
 
-    it('edits — the audit names WHICH fields changed, never their values', async () => {
+    it('edits — the audit holds each changed field, old and new (ADR-022)', async () => {
       const row = await asStaff(() => deps.add(ids.me, spouse(ids.me, `${MARK} to edit`)));
       const edited = await asStaff(() =>
         deps.update(ids.me, row.id, {
@@ -166,12 +167,14 @@ describe('Dependants — table, fences and service (DEP-01, e2e)', () => {
         where: { resource: 'dependant', action: 'update', resourceId: ids.me },
         orderBy: { id: 'desc' },
       });
-      expect((audit.after as { changed: string[] }).changed.sort()).toEqual([
-        'iqamaNumber',
-        'passportExpiry',
-      ]);
-      expect(JSON.stringify([audit.before, audit.after])).not.toMatch(
-        /2999999999|2123456789|2030-02-02/,
+      expect(audit.before).toMatchObject({ iqamaNumber: '2123456789' });
+      expect(audit.after).toMatchObject({
+        iqamaNumber: '2999999999',
+        passportExpiry: '2030-02-02',
+      });
+      // Only what changed, beside what names the dependant.
+      expect(Object.keys(audit.after as object).sort()).toEqual(
+        ['dependantId', 'iqamaNumber', 'nameEn', 'passportExpiry', 'relationship'].sort(),
       );
     });
 

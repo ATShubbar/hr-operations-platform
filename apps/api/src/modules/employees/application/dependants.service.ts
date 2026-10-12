@@ -9,7 +9,7 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import type { DependantModel as DependantRecord } from '../../../generated/prisma/models';
 import type { Prisma } from '../../../generated/prisma/client';
 import { requestContext } from '../../../context/request-context';
-import { AuditService } from '../../audit/public-api';
+import { auditCreated, auditEdit, AuditService } from '../../audit/public-api';
 import { EventBus } from '../../events/public-api';
 import type { DependantInput, DependantPatch } from '../domain/dependant';
 import { DependantRemovedEvent } from '../domain/dependant-removed.event';
@@ -21,9 +21,9 @@ import { DependantRemovedEvent } from '../domain/dependant-removed.event';
 //
 // Every change is audited as resource `dependant` against the SPONSOR
 // (`resource_id` = the employee — the Person record's History reads by it,
-// AUDIT-06), with the employee's company. Like EmployeesService, the snapshot
-// is deliberately non-sensitive: who, which relationship, and WHICH fields
-// changed — never the iqama number or the dates themselves.
+// AUDIT-06), with the employee's company. Like EmployeesService, an edit
+// records every field it changed, old and new — the iqama number and the dates
+// included (ADR-022, which revises ADR-017's "names only").
 @Injectable()
 export class DependantsService {
   constructor(
@@ -97,7 +97,7 @@ export class DependantsService {
         resourceId: employeeId,
         action: 'create',
         clientId: sponsor.clientId,
-        after: snapshot(row),
+        after: auditCreated(row, snapshot, NOT_RECORDED),
       });
       return row;
     });
@@ -120,8 +120,8 @@ export class DependantsService {
         resourceId: employeeId,
         action: 'update',
         clientId,
-        before: snapshot(before),
-        after: { ...snapshot(row), changed: changedFields(before, row) },
+        // Every field the edit changed, old and new (ADR-022 revises ADR-017).
+        ...auditEdit(before, row, snapshot, NOT_RECORDED),
       });
       return row;
     });
@@ -199,10 +199,8 @@ function clean(input: DependantPatch): DependantPatch {
   return out as DependantPatch;
 }
 
-function changedFields(before: DependantRecord, after: DependantRecord): string[] {
-  const v = (x: unknown) => (x instanceof Date ? x.getTime() : x);
-  return FIELDS.filter((k) => v(before[k]) !== v(after[k]));
-}
+// The sponsor is the entry's record; removal has its own entry.
+const NOT_RECORDED = ['employeeId', 'removedAt', 'removedByUserId'] as const;
 
 function snapshot(d: DependantRecord): {
   dependantId: string;

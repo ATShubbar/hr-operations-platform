@@ -4,7 +4,7 @@ import { PrismaService } from '../../../prisma/prisma.service';
 import { requestContext } from '../../../context/request-context';
 import type { CandidateModel as CandidateRecord } from '../../../generated/prisma/models';
 import type { CandidateStage, Prisma } from '../../../generated/prisma/client';
-import { AuditService } from '../../audit/public-api';
+import { auditCreated, auditEdit, AuditService } from '../../audit/public-api';
 import { EventBus } from '../../events/public-api';
 import type { CreateCandidateInput, UpdateCandidateInput } from '../domain/candidate';
 import { canSystemTransition, canTransition } from '../domain/candidate-stage-workflow';
@@ -18,7 +18,8 @@ import { VacanciesService } from './vacancies.service';
 // Candidate registry access (REC-03). STAFF-INTERNAL — no client-rep path (clients
 // never see candidates). Every mutation writes its audit entry in the SAME
 // transaction (AUDIT-03), scoped to the candidate's client (derived from the
-// vacancy); the snapshot is non-sensitive metadata (name/stage), never the CV.
+// vacancy); an edit records every field it changed, old and new (ADR-022) —
+// never the CV itself, which is a file, not a field.
 @Injectable()
 export class CandidatesService {
   constructor(
@@ -42,7 +43,7 @@ export class CandidatesService {
         resource: 'candidate',
         action: 'create',
         clientId: row.clientId,
-        after: snapshot(row),
+        after: auditCreated(row, snapshot),
       });
       return row;
     });
@@ -71,8 +72,8 @@ export class CandidatesService {
         resource: 'candidate',
         action: 'update',
         clientId: row.clientId,
-        before: snapshot(before),
-        after: snapshot(row),
+        // Every field the edit changed, old and new (ADR-022).
+        ...auditEdit(before, row, snapshot),
       });
       return row;
     });
