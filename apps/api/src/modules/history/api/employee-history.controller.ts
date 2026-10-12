@@ -1,13 +1,14 @@
 import { Controller, ForbiddenException, Get, NotFoundException, Param } from '@nestjs/common';
-import type { EmployeeHistoryEntry, EmployeeHistoryResponse, HistoryResource } from '@hr/contracts';
+import type { HistoryResource, PersonHistoryEntry, PersonHistoryResponse } from '@hr/contracts';
 import { RequirePermission } from '../../../auth/permissions.decorator';
 import { scopeOf } from '../../../auth/scope';
 import { requestContext } from '../../../context/request-context';
 import { AuditQueryService } from '../../audit/public-api';
-import { UsersService } from '../../auth/public-api';
+import { PolicyService, UsersService } from '../../auth/public-api';
 import { DocumentsService } from '../../documents/public-api';
 import { DependantsService, EmployeesService } from '../../employees/public-api';
 import { GroProcessesService } from '../../gro/public-api';
+import { detailsFor } from '../domain/history-details';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 // One page of history. The Person record shows the most recent; `truncated`
@@ -20,10 +21,12 @@ const LIMIT = 100;
 // sequences, newest first.
 //
 // STAFF ONLY and gated by `employee.history`, the curated capability every staff
-// role holds. What it returns is curated on purpose: action, which record, the
-// actor's NAME and role, and when — never the audit snapshots (before/after),
-// which stay behind audit.read. Entries written before AUDIT-06 carry no record
-// id and are not included; none is guessed.
+// role holds. Each entry says what happened, to which record, who did it (NAME
+// and role) and when — and, since HIST-01 (ADR-022), WHAT CHANGED: the entry's
+// two sides, cut down to what this reader could already see on the record
+// (`detailsFor`: pay with salary.read, ID fields with govdata.read, an account's
+// details with employee-user.read). Entries written before AUDIT-06 carry no
+// record id and are not included; none is guessed.
 @Controller('employees')
 export class EmployeeHistoryController {
   constructor(
@@ -33,12 +36,15 @@ export class EmployeeHistoryController {
     private readonly gro: GroProcessesService,
     private readonly audit: AuditQueryService,
     private readonly users: UsersService,
+    private readonly policy: PolicyService,
   ) {}
 
   @RequirePermission('employee.history')
   @Get(':id/history')
-  async history(@Param('id') id: string): Promise<EmployeeHistoryResponse> {
-    if (scopeOf(requestContext.get()).kind !== 'staff') throw new ForbiddenException('Staff only');
+  async history(@Param('id') id: string): Promise<PersonHistoryResponse> {
+    const ctx = requestContext.get();
+    if (scopeOf(ctx).kind !== 'staff') throw new ForbiddenException('Staff only');
+    const can = (permission: string) => this.policy.can(ctx?.role, permission);
     if (!UUID_RE.test(id) || !(await this.employees.getById(id))) {
       throw new NotFoundException('Employee not found');
     }
@@ -71,7 +77,7 @@ export class EmployeeHistoryController {
       page.map((r) => r.actorId).filter((a): a is string => !!a),
     );
 
-    const entries: EmployeeHistoryEntry[] = page.map((r) => {
+    const entries: PersonHistoryEntry[] = page.map((r) => {
       const doc = r.resource === 'document' ? docById.get(r.resourceId) : undefined;
       const proc = r.resource === 'gro-process' ? procById.get(r.resourceId) : undefined;
       const dep =
@@ -95,6 +101,7 @@ export class EmployeeHistoryController {
               : r.sequence
                 ? { kind: 'gro-sequence', sequence: r.sequence.kind, step: r.sequence.step }
                 : null,
+        ...detailsFor(r, can),
       };
     });
     return { entries, truncated: rows.length > LIMIT };

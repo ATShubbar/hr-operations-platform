@@ -1,6 +1,6 @@
 # ADR-022 — The audit trail records what changed, and History shows it
 
-- Status: Accepted
+- Status: Accepted (rev. 1, 2026-10-12: three points settled while building HIST-01)
 - Date: 2026-10-12
 - Owner: Ahmed Alshubbar (product decision; AUDIT-10)
 - Amends: **architecture.md** (Audit Logs, the History surface). Revises **ADR-017** (what a dependant edit records). Reverses two earlier build rules: EMP-01 ("salary and government-data values never enter the audit trail") and AUDIT-06 ("a person's History never carries before/after"). Now **v1.16**.
@@ -57,6 +57,18 @@ For History: show details only to the two roles that read the whole trail, or **
 - ADR-017's line "a dependant edit records field names, never the iqama number or the dates" is replaced by the rule above.
 - The History contract changes on purpose: its test pinned "never before/after" and is rewritten to pin the new rule (details by permission).
 - Severity grading (AUDIT-07) is unchanged.
+
+## Rev. 1 — settled while building HIST-01
+
+- **Without `govdata.read`, a reader of History loses the dates with the numbers.** The decision
+  says "ID numbers only with `govdata.read`"; the record itself shows a staff reader the
+  government-data group whole or not at all, and History follows the record. (A dependant keeps
+  everything but the iqama number, as on the Family tab.) Every staff role holds the permission
+  today.
+- **An account's details need `employee-user.read`.** The self-service card is hidden from the
+  GRO officer on the record, so the invitation's email is hidden from them in History.
+- **Each kind of record's details need the permission that reads it**, and a kind nobody has
+  decided about shows no details to anyone. Ids that only locate a row never leave the server.
 
 ## Build
 

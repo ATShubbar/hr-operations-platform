@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import type { EmployeeHistoryResponse } from '@hr/contracts';
+import type { PersonHistoryResponse } from '@hr/contracts';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';
 import {
@@ -133,7 +133,7 @@ describe('Employee history (AUDIT-06, e2e)', () => {
 
   const historyOf = async (id: string, cookie = hr.cookie) =>
     (await request(http()).get(`/employees/${id}/history`).set('Cookie', cookie).expect(200))
-      .body as EmployeeHistoryResponse;
+      .body as PersonHistoryResponse;
 
   it('every listed write records the id of the record it is about', async () => {
     const rows = await prisma.auditEntry.findMany({
@@ -188,14 +188,34 @@ describe('Employee history (AUDIT-06, e2e)', () => {
     expect(JSON.stringify(body)).not.toContain(theirProc);
   });
 
-  it('is newest first, names the records it is about, and carries no snapshots', async () => {
+  it('is newest first, names the records it is about, and carries each entry\u2019s two sides (HIST-01)', async () => {
     const body = await historyOf(me);
     const times = body.entries.map((e) => e.at);
     expect([...times].sort().reverse()).toEqual(times);
     for (const e of body.entries) {
-      expect(Object.keys(e).sort()).toEqual(['action', 'actor', 'at', 'id', 'resource', 'subject']);
+      // ADR-022 reverses AUDIT-06's "never before/after": the two sides are here,
+      // cut to what the reader may see (test/employee-history-details.e2e-spec.ts).
+      expect(Object.keys(e).sort()).toEqual(
+        [
+          'action',
+          'actor',
+          'after',
+          'at',
+          'before',
+          'id',
+          'resource',
+          'subject',
+          'withheld',
+        ].sort(),
+      );
     }
-    expect(JSON.stringify(body)).not.toMatch(/"before"|"after"|requestId|clientId|2027-01-01/);
+    // Still not the audit log: no request id travels with an entry.
+    expect(JSON.stringify(body)).not.toMatch(/requestId/);
+    // The HR officer reads ID dates, so the edit shows its change.
+    const ids = body.entries.find(
+      (e) => e.resource === 'employee' && e.action === 'govdata-update',
+    );
+    expect(ids?.after).toMatchObject({ iqamaExpiry: '2027-01-01' });
     const proc = body.entries.find((e) => e.resource === 'gro-process');
     expect(proc?.subject).toEqual({ kind: 'gro-process', type: 'iqama_renewal' });
     const doc = body.entries.find((e) => e.resource === 'document');

@@ -306,8 +306,12 @@ describe('Dependants API (DEP-02, e2e)', () => {
           name: `${MARK} history wife`,
           relationship: 'spouse',
         });
-      // The entry stays curated: no snapshots, no identifier.
-      expect(JSON.stringify(mine.body)).not.toContain('2111111111');
+      // HIST-01 (ADR-022): this reader reads ID numbers, so History shows the number
+      // the dependant was added with. (The reader without govdata.read is covered in
+      // test/employee-history-details.e2e-spec.ts.)
+      expect(JSON.stringify(mine.body)).toContain('2111111111');
+      // What only locates the row never rides along.
+      expect(JSON.stringify(mine.body)).not.toContain('dependantId');
 
       const theirs = await http()
         .get(`/employees/${ids.colleague}/history`)

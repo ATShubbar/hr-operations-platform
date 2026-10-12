@@ -6,6 +6,8 @@ export { EmployeeTerminatedEvent } from './domain/employee-terminated.event';
 export { DependantRemovedEvent } from './domain/dependant-removed.event';
 export { EmployeeJoinedEvent, EmployeeMobilisingEvent } from './domain/employee-mobilisation.event';
 export {
+  GOVDATA_FIELDS,
+  SALARY_FIELDS,
   PORTAL_EMPLOYEE_VISIBILITY,
   staffVisibility,
   toEmployeeResponse,

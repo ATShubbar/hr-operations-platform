@@ -1872,6 +1872,14 @@ Messages: `auditField.*` (151 labels), `auditChange.*`, 43 new `audit.phrase.*`.
 runs in the web lint**: the formatter's rules, a label for EVERY changeable column of the ten field-by-field records
 (read from schema.prisma — a new column fails until named) and a sentence for EVERY action (registry + the twelve the
 server writes itself), in both languages. A new audited action needs `audit.phrase.<resource>__<action>`. No API change.
+**HIST-01 done — a person's History shows what changed (ADR-022 rev. 1).** `GET /employees/:id/history` entries carry
+`before` / `after` / `withheld` (`personHistoryEntrySchema`; a request's decision trail keeps the plain entry). The SERVER
+cuts each entry with **`history/domain/history-details.ts` `detailsFor(entry, can)`**: pay fields need `salary.read`
+(today: not the GRO officer), the whole government-data group needs `govdata.read` (dates go with numbers, as on the
+record; a dependant loses only the iqama number), an account's details need `employee-user.read`, any other kind needs
+the permission that reads it, an UNDECIDED kind shows nothing, locator ids never leave. `SALARY_FIELDS` / `GOVDATA_FIELDS`
+(employee-view.ts) are held equal to the record's response groups by a test — add a guarded field in both. Web: the
+History tab renders `ChangeList` + a line per kind withheld. API **990/990**. Next: AUDIT-13 (Actor filter).
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 - The `truncate` rule (UX-23) cannot find a direction in a line that is ONE right-to-left run inside an element (a

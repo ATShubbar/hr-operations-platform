@@ -19,6 +19,42 @@ export interface EmployeeVisibility {
 // behind govdata.read, otherwise none. `can` answers for the caller's role. The
 // staff controller enforces with this, and GET /access (DS-21) describes with
 // it — so the Settings → Access table cannot claim something this does not do.
+// The record's two guarded groups, by column (HIST-01). The same fields
+// `toEmployeeResponse` puts under `salary` and `govdata`; a test holds the two
+// lists equal to the response groups, so a field added to one cannot be missed
+// in the other. A person's History withholds exactly these from a reader the
+// record would withhold them from.
+export const SALARY_FIELDS = [
+  'currency',
+  'basicSalary',
+  'housingAllowance',
+  'transportAllowance',
+  'otherAllowances',
+  'gosiWage',
+  'gosiContributionBasis',
+  'bankIban',
+  'wpsStatus',
+] as const;
+export const GOVDATA_FIELDS = [
+  'iqamaNumber',
+  'nationalId',
+  'borderNumber',
+  'passportNumber',
+  'workPermitNumber',
+  'gosiRegistrationNumber',
+  'absherServiceRef',
+  'medicalInsuranceNumber',
+  'drivingLicenceNumber',
+  'iqamaExpiry',
+  'passportExpiry',
+  'workPermitExpiry',
+  'exitReentryStatus',
+  'exitReentryExpiry',
+  'gosiRegistrationStatus',
+  'medicalInsuranceExpiry',
+  'drivingLicenceExpiry',
+] as const;
+
 export function staffVisibility(can: (permission: string) => boolean): EmployeeVisibility {
   return {
     salary: can('salary.read'),

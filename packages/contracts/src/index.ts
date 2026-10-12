@@ -351,7 +351,13 @@ export {
   historyResourceSchema,
   employeeHistoryEntrySchema,
   employeeHistoryResponseSchema,
+  historyWithheldSchema,
+  personHistoryEntrySchema,
+  personHistoryResponseSchema,
   type HistoryResource,
+  type HistoryWithheld,
+  type PersonHistoryEntry,
+  type PersonHistoryResponse,
   type EmployeeHistoryEntry,
   type EmployeeHistoryResponse,
 } from './employee-history.js';

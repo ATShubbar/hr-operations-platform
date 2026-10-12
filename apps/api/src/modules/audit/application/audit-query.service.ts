@@ -11,9 +11,9 @@ import { severityOf, whereSeverity } from '../domain/severity';
 // BigInt id is serialized to a string so it survives JSON without precision
 // loss (JSON has no BigInt).
 // One entry of a record's history (AUDIT-06): WHAT happened to WHICH record, by
-// whom, when — and deliberately no before/after. The snapshots stay in the full
-// audit log (audit.read); a record's history is readable more widely, so it
-// carries only the facts that are safe to read more widely.
+// whom, when. The two sides of each entry travel with it since HIST-01 (ADR-022);
+// a record's history is readable more widely than the audit log, so the CALLER
+// filters them to what its reader may see.
 export interface RecordHistoryRow {
   id: string;
   resource: string;
@@ -22,6 +22,12 @@ export interface RecordHistoryRow {
   actorId: string | null;
   actorRole: string | null;
   at: string;
+  /**
+   * The entry's two sides as recorded (HIST-01, ADR-022). The caller decides
+   * what of them its reader may see — a request's trail shows none.
+   */
+  before: unknown;
+  after: unknown;
   /**
    * For entries keyed to a PARENT record, the sub-record they concern, read from
    * the snapshot (DEP-03: a dependant's changes are keyed to the sponsor and carry
@@ -197,6 +203,8 @@ export class AuditQueryService {
       actorId: r.actorId,
       actorRole: r.actorRole,
       at: r.createdAt.toISOString(),
+      before: r.before,
+      after: r.after,
       subjectId: dependantRef(r.after) ?? dependantRef(r.before),
       sequence: r.resource === 'gro-sequence' ? sequenceRef(r.after) : null,
     }));

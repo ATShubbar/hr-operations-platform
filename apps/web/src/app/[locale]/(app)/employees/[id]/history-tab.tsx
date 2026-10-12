@@ -2,11 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import { useLocale, useMessages, useTranslations } from 'next-intl';
-import type { EmployeeHistoryEntry, EmployeeHistoryResponse } from '@hr/contracts';
+import type {
+  ClientListResponse,
+  PersonHistoryEntry,
+  PersonHistoryResponse,
+  StaffDirectoryResponse,
+} from '@hr/contracts';
 import { useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import type { Locale } from '@/lib/employee-format';
+import { changesOf } from '@/lib/audit-changes';
 import { cn } from '@/lib/utils';
+import { ChangeList, useChangeFormat } from '@/components/change-list';
 import { LoadError } from '@/components/ui/load-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { dateFormat } from '@/lib/dates';
@@ -16,10 +23,12 @@ import { dots } from '@/lib/pieces';
 // GET /employees/:id/history: what happened on this person's record, their
 // self-service account, their documents and their GRO processes, newest first.
 //
-// The API sends curated facts only (action, which record, who, when) — never the
-// audit snapshots — so this tab can only ever say "Government data updated", not
-// what it was changed to. Entries from before AUDIT-06 carry no record id and
-// are absent; the tab says so rather than implying the record has no past.
+// HIST-01 (ADR-022): each event also lists WHAT CHANGED, old → new — the fields
+// the API judged this reader may see (pay with salary.read, ID fields with
+// govdata.read, an account's details with employee-user.read). When something
+// was left out, the event says which kind. Entries from before AUDIT-06 carry no
+// record id and are absent, and entries from before 12 Oct 2026 recorded few
+// values; the tab says so rather than implying the record has no past.
 
 type Tone = 'primary' | 'info' | 'success' | 'warning' | 'error' | 'muted';
 
@@ -35,7 +44,7 @@ const TONE: Record<Tone, { dot: string; halo: string }> = {
 
 // What deserves colour on a person's timeline: a beginning, a completed step,
 // an ending, a problem. Routine edits stay muted (the prototype's use).
-function toneOf(e: EmployeeHistoryEntry): Tone {
+function toneOf(e: PersonHistoryEntry): Tone {
   const k = `${e.resource}:${e.action}`;
   if (k === 'employee:create') return 'primary';
   if (k === 'employee:terminate' || k === 'document:delete') return 'error';
@@ -61,13 +70,31 @@ export function HistoryTab({ employeeId }: { employeeId: string }) {
   };
   const locale = useLocale() as Locale;
   const router = useRouter();
-  const [data, setData] = useState<EmployeeHistoryResponse | null>(null);
+  const [data, setData] = useState<PersonHistoryResponse | null>(null);
   const [error, setError] = useState('');
+  // Names for an account or a company that appears in a changed field. Both
+  // lists are best-effort: without them the field shows a short id.
+  const [people, setPeople] = useState<Map<string, string>>(new Map());
+  const [companies, setCompanies] = useState<Map<string, { en: string; ar: string }>>(new Map());
+  useEffect(() => {
+    apiFetch<StaffDirectoryResponse>('/staff-users/directory')
+      .then((r) =>
+        setPeople(new Map(r.users.flatMap((u) => (u.displayName ? [[u.id, u.displayName]] : [])))),
+      )
+      .catch(() => setPeople(new Map()));
+    apiFetch<ClientListResponse>('/clients')
+      .then((r) => setCompanies(new Map(r.clients.map((c) => [c.id, c.name]))))
+      .catch(() => setCompanies(new Map()));
+  }, []);
+  const format = useChangeFormat({
+    userName: (id) => people.get(id) ?? null,
+    clientName: (id) => companies.get(id)?.[locale] ?? null,
+  });
 
   async function load() {
     setError('');
     try {
-      setData(await apiFetch<EmployeeHistoryResponse>(`/employees/${employeeId}/history`));
+      setData(await apiFetch<PersonHistoryResponse>(`/employees/${employeeId}/history`));
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) return void router.replace('/login');
       setError(t('error'));
@@ -88,7 +115,7 @@ export function HistoryTab({ employeeId }: { employeeId: string }) {
   };
   const known = messages.person?.history?.action ?? {};
   const mobKnown = messages.person?.mob ?? {};
-  const title = (e: EmployeeHistoryEntry) => {
+  const title = (e: PersonHistoryEntry) => {
     const base = known[e.resource]?.[e.action]
       ? t(`action.${e.resource}.${e.action}`)
       : t('fallback', { resource: e.resource, action: e.action });
@@ -115,7 +142,7 @@ export function HistoryTab({ employeeId }: { employeeId: string }) {
       return role;
     }
   };
-  const actor = (e: EmployeeHistoryEntry) => {
+  const actor = (e: PersonHistoryEntry) => {
     if (!e.actor) return t('system');
     const role = roleLabel(e.actor.role);
     if (e.actor.name) return role ? t('by', { name: e.actor.name, role }) : e.actor.name;
@@ -165,6 +192,18 @@ export function HistoryTab({ employeeId }: { employeeId: string }) {
                     </time>
                   </span>
                   <span className="text-sm leading-5 text-muted-foreground">{actor(e)}</span>
+                  <ChangeList
+                    format={format}
+                    resource={e.resource}
+                    changes={changesOf(e.before, e.after)}
+                    max={12}
+                    className="mt-1.5 max-w-2xl"
+                  />
+                  {e.withheld.map((kind) => (
+                    <span key={kind} className="mt-1 text-xs leading-4 text-muted-foreground">
+                      {t(`withheld.${kind}`)}
+                    </span>
+                  ))}
                 </span>
               </li>
             );
@@ -174,7 +213,7 @@ export function HistoryTab({ employeeId }: { employeeId: string }) {
       {data && (
         <p className="mt-4 border-t pt-3 text-xs leading-4 text-muted-foreground">
           {data.truncated ? `${t('truncated')} ` : ''}
-          {t('since')}
+          {t('since')} {t('detailsSince')}
         </p>
       )}
     </div>

@@ -55,6 +55,27 @@ export const employeeHistoryResponseSchema = z.object({
   truncated: z.boolean(),
 });
 
+// HIST-01 (ADR-022): a PERSON's history also says what changed. `before` and
+// `after` hold the changed fields the READER may see (the same keys and raw
+// values the audit trail records); `withheld` names the kinds of detail that
+// changed and were left out for this reader — pay without `salary.read`, ID
+// fields without `govdata.read`, an account's details without
+// `employee-user.read`. A request's decision trail keeps the plain entry above.
+export const historyWithheldSchema = z.enum(['pay', 'ids', 'account', 'record']);
+const historySideSchema = z.record(z.string(), z.unknown()).nullable();
+export const personHistoryEntrySchema = employeeHistoryEntrySchema.extend({
+  before: historySideSchema,
+  after: historySideSchema,
+  withheld: z.array(historyWithheldSchema),
+});
+export const personHistoryResponseSchema = z.object({
+  entries: z.array(personHistoryEntrySchema),
+  truncated: z.boolean(),
+});
+
 export type HistoryResource = z.infer<typeof historyResourceSchema>;
+export type HistoryWithheld = z.infer<typeof historyWithheldSchema>;
+export type PersonHistoryEntry = z.infer<typeof personHistoryEntrySchema>;
+export type PersonHistoryResponse = z.infer<typeof personHistoryResponseSchema>;
 export type EmployeeHistoryEntry = z.infer<typeof employeeHistoryEntrySchema>;
 export type EmployeeHistoryResponse = z.infer<typeof employeeHistoryResponseSchema>;
