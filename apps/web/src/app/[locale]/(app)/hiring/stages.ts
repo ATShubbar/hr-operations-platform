@@ -1,6 +1,7 @@
 import type { CandidateStage } from '@hr/contracts';
 
-// The hiring board's columns (DS-09), in the prototype's order — all six are real
+// The pipeline's stages (DS-09), in order — the Hiring sheet's Stage filter and
+// its stage order (HIRING-01). All six are real
 // candidate stages since MOB-04b (ADR-018): `mobilisation` is "Visa &
 // mobilisation", where the employee record exists as `onboarding` and their
 // onboarding sequence is running.
@@ -50,8 +51,5 @@ export function forwardOf(
 export const nextOf = (s: CandidateStage, nationality: string | null | undefined) =>
   forwardOf(s, nationality)[0] ?? null;
 export const prevOf = (s: CandidateStage) => BACK[s] ?? null;
-/** Still in the pipeline: rejected / withdrawn candidates leave the board. */
+/** Still in the pipeline: rejected / withdrawn candidates leave the sheet. */
 export const isActive = (s: CandidateStage) => s !== 'rejected' && s !== 'withdrawn';
-/** A legal drop: a forward move this candidate may make, or the previous column. */
-export const canDrop = (from: CandidateStage, to: Column, nationality: string | null | undefined) =>
-  forwardOf(from, nationality).includes(to) || prevOf(from) === to;

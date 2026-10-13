@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { GripVertical } from 'lucide-react';
 import type {
   CandidateListResponse,
   CandidateResponse,
@@ -14,6 +13,7 @@ import type {
   VacancyResponse,
   VacancyStatus,
 } from '@hr/contracts';
+import { matchesAnyField } from '@hr/text';
 import { Link, useRouter } from '@/i18n/navigation';
 import { apiFetch, ApiError } from '@/lib/api';
 import { BandWarning, type BandSource } from '@/components/band-warning';
@@ -23,7 +23,6 @@ import { useNationalityName } from '@/lib/nationality';
 import type { Locale } from '@/lib/employee-format';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -33,7 +32,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { LoadError, NoAccess } from '@/components/ui/load-state';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StatusPill } from '@/components/ui/status-pill';
 import { toastError, toastSuccess } from '@/components/ui/toast';
@@ -41,45 +49,56 @@ import { AddCandidateDialog, type RoleSummary } from './add-candidate-dialog';
 import { CandidateDialog, type CandidateView } from './candidate-dialog';
 import { HealthPill, useCandidateHealth } from './candidate-health';
 import { OpenRoleDialog } from './open-role-dialog';
-import { COLUMNS, canDrop, forwardOf, isActive, isSaudi, type Column } from './stages';
+import { StagePill } from './stage-pill';
+import { COLUMNS, forwardOf, isActive, isSaudi, type Column } from './stages';
 import { dateFormat } from '@/lib/dates';
 import { dots } from '@/lib/pieces';
 
-// Hiring (DS-09) — the prototype's Hiring screen (ADR-012): the open roles above
-// the candidate board. It replaces REC-06's two screens (/vacancies, /candidates),
-// which now redirect here.
+// Hiring — the roles being recruited for and their candidates, over the existing
+// APIs: a role is a vacancy (REC-02), a row a candidate (REC-04).
 //
-// Over the existing APIs: a role is a vacancy (REC-02), a card a candidate
-// (REC-04). The board's moves are the candidate workflow — one step forward, or
-// (DS-09) one step back — by button, by the dialog, or by dragging a card onto
-// the next or previous column; any other column refuses the drop. Moving an Offer
-// to Onboarded is the hire (REC-05: it creates the employee record), so it asks
-// first.
+// HIRING-01 (ADR-012 rev. 2, owner decisions): the page is ONE SHEET of
+// candidates, in the app's own theme — it replaced the prototype's six-column
+// board (DS-09). A candidate is a row: names, nationality, stage (a soft-coloured
+// pill), health and target date, how long since they were added. A switch
+// arranges them under their role — the heading carries what the old roles strip
+// carried, actions included — or as one list, where the role is a column.
 //
-// Visa & mobilisation (MOB-04b, ADR-018) is a real column: an Offer for someone
-// coming from abroad moves there — which creates their employee record as
-// `onboarding` and starts their onboarding sequence, so it asks first too. A card
-// in it shows how far the onboarding has got and links to the person's
-// Mobilisation tab; nobody moves it on by hand — filing the last onboarding step
-// carries the candidate to Onboarded. It can still be withdrawn or not selected
-// (which cancels the onboarding and terminates the record). A Saudi national is
-// never offered the column; anyone at Offer may be onboarded directly instead.
+// Every move the board allowed is still here, by button: one step forward on the
+// row, and everything else (one step back, not selected, withdrew, the target
+// date) in the candidate's window. Dragging went with the columns.
 //
-// Roles: the board needs candidate.read; a client manager holds vacancy.read only
-// (the matrix keeps candidates from clients), so they see their open roles and no
-// board. The Auditor reads both: no grip, no moves, no buttons.
+// Moving an Offer to Onboarded is the hire (REC-05: it creates the employee
+// record), so it asks first. Visa & mobilisation (MOB-04b, ADR-018) is a real
+// stage: an Offer for someone coming from abroad moves there — which creates
+// their employee record as `onboarding` and starts their onboarding sequence, so
+// it asks first too. A mobilising candidate shows how far the onboarding has got
+// and links to the person's Mobilisation tab; nobody moves them on by hand —
+// filing the last onboarding step carries the candidate to Onboarded. They can
+// still be withdrawn or not selected (which cancels the onboarding and
+// terminates the record). A Saudi national is never offered that stage; anyone
+// at Offer may be onboarded directly instead.
+//
+// Roles: the sheet needs candidate.read; a client manager holds vacancy.read only
+// (the matrix keeps candidates from clients), so they see their roles and no
+// candidates. The Auditor reads both: no moves, no buttons.
 
 const ROLE_STATUSES: readonly VacancyStatus[] = ['open', 'draft', 'filled'];
-// Column dots, the prototype's ramp: greys deepening along the pipeline, then the
-// visa stage amber and onboarded green.
-const DOT: Record<Column, string> = {
-  applied: 'bg-neutral-300',
-  screening: 'bg-neutral-400',
-  interview: 'bg-neutral-500',
-  offer: 'bg-neutral-700',
-  mobilisation: 'bg-status-warning',
-  hired: 'bg-status-ok',
-};
+const ALL = 'all';
+// The Stage filter's last choice: the candidates who left the pipeline.
+const ENDED = 'ended';
+const STAGE_ORDER: readonly CandidateStage[] = [...COLUMNS, 'rejected', 'withdrawn'];
+const SORTS = ['target', 'stage', 'newest'] as const;
+type SortKey = (typeof SORTS)[number];
+// Remembered on this device: a convenience, never something the page depends on.
+const ARRANGE_KEY = 'hiring.arrange';
+
+// The sheet's columns from `lg` up; below it a candidate is a stacked block.
+// By role: the role is the heading. One list: the role is a column.
+const GROUPED_COLS =
+  'lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(0,1.1fr)_minmax(0,1.3fr)_minmax(0,1.7fr)_minmax(0,1.5fr)_minmax(0,1.3fr)] lg:items-center lg:gap-4';
+const FLAT_COLS =
+  'lg:grid lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1.6fr)_minmax(0,1fr)_minmax(0,1.2fr)_minmax(0,1.6fr)_minmax(0,1.3fr)_minmax(0,1.2fr)] lg:items-center lg:gap-3';
 
 const daysSince = (iso: string) =>
   Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000));
@@ -116,13 +135,29 @@ export default function HiringPage() {
   const [progress, setProgress] = useState<Record<string, { done: number; total: number }>>({});
   const [busy, setBusy] = useState(false);
   const [moveError, setMoveError] = useState('');
-  const [dragId, setDragId] = useState<string | null>(null);
-  // Legality is judged from a REF set synchronously in dragstart: the first
-  // dragover can arrive before React re-renders with `dragId`, and a column that
-  // does not preventDefault on it never receives the drop (measured: a quick drag
-  // sent ONE dragover and was refused). State only drives the visuals.
-  const dragRef = useRef<string | null>(null);
-  const [overCol, setOverCol] = useState<Column | null>(null);
+  const [search, setSearch] = useState('');
+  const [fClient, setFClient] = useState<string>(ALL);
+  const [fStage, setFStage] = useState<string>(ALL);
+  const [sort, setSort] = useState<SortKey>('target');
+  const [pickRole, setPickRole] = useState(false);
+  // Under each role, or one list. Opens by role; the last choice is remembered
+  // on this device (read after mount, so the server and the first paint agree).
+  const [grouped, setGrouped] = useState(true);
+  useEffect(() => {
+    try {
+      if (window.localStorage.getItem(ARRANGE_KEY) === 'flat') setGrouped(false);
+    } catch {
+      // No storage (a private window): the page opens by role.
+    }
+  }, []);
+  const arrange = (value: boolean) => {
+    setGrouped(value);
+    try {
+      window.localStorage.setItem(ARRANGE_KEY, value ? 'grouped' : 'flat');
+    } catch {
+      // Not remembered; nothing else depends on it.
+    }
+  };
 
   async function load() {
     setError('');
@@ -243,6 +278,84 @@ export default function HiringPage() {
   };
   const byId = (id: string | null) => candidates.find((c) => c.id === id) ?? null;
 
+  // ---- the sheet: who is on it, and in what order ----
+  const filtering = search.trim() !== '' || fStage !== ALL;
+  const shown = useMemo(() => {
+    // Soonest target first; then the people still in play without a date; then
+    // those for whom nothing is left to be late for.
+    const far = Number.MAX_SAFE_INTEGER;
+    const urgency = (c: CandidateResponse) =>
+      healthOf(c)?.daysToTarget ?? (c.stage === 'hired' || !isActive(c.stage) ? far : far - 1);
+    const stageAt = (c: CandidateResponse) => STAGE_ORDER.indexOf(c.stage);
+    const nameOf = (c: CandidateResponse) => (locale === 'ar' ? c.name.ar : c.name.en);
+    return candidates
+      .filter((c) =>
+        // As the board did, people who left the pipeline are off the page — until
+        // the Stage filter asks for them.
+        fStage === ENDED
+          ? !isActive(c.stage)
+          : isActive(c.stage) && (fStage === ALL || c.stage === fStage),
+      )
+      .filter((c) => fClient === ALL || c.clientId === fClient)
+      .filter((c) => {
+        const v = vacancyOf(c.vacancyId);
+        return matchesAnyField(
+          [
+            c.name.en,
+            c.name.ar,
+            v?.title.en ?? '',
+            v?.title.ar ?? '',
+            clientName(c.clientId),
+            nationalityName(c.nationality),
+          ],
+          search,
+        );
+      })
+      .sort((a, b) => {
+        if (sort === 'newest') return b.createdAt.localeCompare(a.createdAt);
+        if (sort === 'stage') {
+          return (
+            stageAt(a) - stageAt(b) ||
+            urgency(a) - urgency(b) ||
+            nameOf(a).localeCompare(nameOf(b), locale)
+          );
+        }
+        return (
+          urgency(a) - urgency(b) ||
+          stageAt(b) - stageAt(a) ||
+          nameOf(a).localeCompare(nameOf(b), locale)
+        );
+      });
+    // healthOf/vacancyOf/clientName read the state listed here.
+  }, [candidates, vacancies, clients, search, fClient, fStage, sort, locale]);
+
+  // By role: every role being recruited for is a heading — an empty one too, so
+  // a candidate can be added to it — followed by any other role one of the
+  // candidates shown belongs to (a role that has since closed). While a search or
+  // a stage filter is on, a heading with nobody under it is left out.
+  const groups = useMemo(() => {
+    if (!grouped) return [{ role: null as VacancyResponse | null, people: shown }];
+    const inScope = (v: VacancyResponse) => fClient === ALL || v.clientId === fClient;
+    const listed = roles.filter(inScope);
+    const others = vacancies.filter(
+      (v) => !listed.includes(v) && shown.some((c) => c.vacancyId === v.id),
+    );
+    return [...listed, ...others]
+      .map((v) => ({
+        role: v as VacancyResponse | null,
+        people: shown.filter((c) => c.vacancyId === v.id),
+      }))
+      .filter((g) => g.people.length > 0 || (!filtering && listed.includes(g.role!)));
+  }, [grouped, shown, roles, vacancies, fClient, filtering]);
+  // Roles a candidate can be added to — for the One-list view, which has no headings.
+  const addable = roles.filter((v) => v.status !== 'filled');
+  const roleSummary = (v: VacancyResponse): RoleSummary => ({
+    id: v.id,
+    title: titleOf(v),
+    client: clientName(v.clientId),
+    department: v.department,
+  });
+
   // SOON-04: record, change or clear a candidate's target date. The health on
   // the card and in the window follows from the date; nothing else is saved.
   async function setTarget(c: CandidateResponse, targetDate: string | null) {
@@ -336,7 +449,6 @@ export default function HiringPage() {
                   locale,
                   t('summary', { count: board.length }),
                   t('summaryClients', { count: clientCount }),
-                  canAdvance ? t('summaryDrag') : null,
                 )
               : t('summaryRoles', { count: roles.length })}
           </p>
@@ -366,6 +478,199 @@ export default function HiringPage() {
   const hireCandidate = byId(confirmMove?.id ?? null);
   const confirmTo = confirmMove?.to ?? 'hired';
 
+  const COLS = grouped ? GROUPED_COLS : FLAT_COLS;
+  // The companies that have a role — the Client filter offers no others.
+  const roleClients = [...new Set(vacancies.map((v) => v.clientId))].sort((a, b) =>
+    clientName(a).localeCompare(clientName(b), locale),
+  );
+  const stageLabel = (stage: CandidateStage) =>
+    isActive(stage) ? t(`column.${stage as Column}`) : t(`end.${stage}`);
+
+  // A role's heading: what the roles strip used to carry — where it stands, how
+  // far it has got, and what can be done to it.
+  const roleHeading = (v: VacancyResponse): ReactNode => {
+    const linked = candidates.filter((c) => c.vacancyId === v.id);
+    const hired = linked.filter((c) => c.stage === 'hired').length;
+    const live = linked.filter((c) => isActive(c.stage) && c.stage !== 'hired').length;
+    const reached = hired >= v.headcount;
+    const close: VacancyStatus =
+      v.status === 'filled' || (v.status === 'open' && reached) ? 'closed' : 'cancelled';
+    // A role that is closed or withdrawn is only here because someone shown
+    // belongs to it: it is named, and nothing more can be done to it.
+    const current = ROLE_STATUSES.includes(v.status);
+    return (
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 bg-neutral-50 px-4 py-2 lg:border-t">
+        <h2 className="max-w-full truncate text-[13px] leading-[18px] font-medium">{titleOf(v)}</h2>
+        <span className="max-w-full truncate text-xs leading-4 text-muted-foreground">
+          {dots(locale, clientName(v.clientId), v.department)}
+        </span>
+        <StatusPill tone={toneFor('vacancy', v.status)} className="shrink-0">
+          {t(`roleStatus.${v.status}`)}
+        </StatusPill>
+        <span className="text-xs leading-4 text-muted-foreground">
+          {live + hired === 0
+            ? t('noCandidatesYet')
+            : dots(
+                locale,
+                t('inPipeline', { count: live }),
+                hired ? t('onboardedCount', { count: hired }) : null,
+              )}
+        </span>
+        <span
+          className="font-mono text-[11px] leading-[15px] text-muted-foreground"
+          title={t('filledOf')}
+        >
+          {hired}/{v.headcount}
+        </span>
+        {current && (
+          <span className="text-[11px] leading-[15px] text-neutral-400">
+            {t('openFor', { days: daysSince(v.createdAt) })}
+          </span>
+        )}
+        <span className="grow" />
+        {current && (canAddCandidate || canApproveRole) && (
+          <span className="flex flex-wrap items-center gap-1.5">
+            {canAddCandidate && v.status !== 'filled' && (
+              <Button variant="outline" size="xs" onClick={() => setAddTo(roleSummary(v))}>
+                {t('addCandidate')}
+              </Button>
+            )}
+            {canApproveRole && v.status === 'draft' && (
+              <Button
+                variant="ghost"
+                size="xs"
+                disabled={busy}
+                onClick={() => void setRoleStatus(v, 'open')}
+              >
+                {t('publishRole')}
+              </Button>
+            )}
+            {canApproveRole && (
+              <Button
+                variant="ghost"
+                size="xs"
+                disabled={busy}
+                onClick={() => void setRoleStatus(v, close)}
+              >
+                {close === 'closed' ? t('closeRole') : t('withdrawRole')}
+              </Button>
+            )}
+          </span>
+        )}
+      </div>
+    );
+  };
+
+  // A candidate's row. The NAME opens their window — its ::after stretches over
+  // the row, so the whole row is the target with one real button for keyboard and
+  // assistive tech; the move buttons sit above it and stay their own targets.
+  const candidateRow = (c: CandidateResponse): ReactNode => {
+    const cv = view(c);
+    const forward = forwardOf(c.stage, c.nationality);
+    const next = forward[0] ?? null;
+    const direct = forward[1] ?? null;
+    const h = healthOf(c);
+    return (
+      <li
+        key={c.id}
+        className={cn(
+          'relative flex flex-col gap-2 border-t px-4 py-2.5 transition-colors hover:bg-muted/40',
+          COLS,
+        )}
+      >
+        <span className="flex min-w-0 items-center gap-2.5">
+          <Avatar name={c.name.en} size="sm" />
+          <span className="flex min-w-0 flex-col">
+            <button
+              type="button"
+              onClick={() => setOpenCand(c.id)}
+              className="truncate text-start text-sm leading-[19px] font-medium outline-none after:absolute after:inset-0 focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-ring"
+            >
+              {cv.name}
+            </button>
+            <span className="truncate text-xs leading-4 text-muted-foreground">
+              {locale === 'ar' ? c.name.en : c.name.ar}
+            </span>
+          </span>
+        </span>
+        {!grouped && (
+          <span className="flex min-w-0 flex-col">
+            <span className="truncate text-[13px] leading-[18px]">{cv.role || '—'}</span>
+            <span className="truncate text-[11px] leading-[15px] text-muted-foreground">
+              {cv.client}
+            </span>
+          </span>
+        )}
+        <span className="truncate text-[13px] leading-[18px] text-neutral-700">
+          {cv.nationality || '—'}
+        </span>
+        <span className="min-w-0">
+          <StagePill stage={c.stage} label={stageLabel(c.stage)} />
+        </span>
+        {/* SOON-04: the health worked out from the target date, and the date. */}
+        <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+          {h && cv.targetLabel ? (
+            <>
+              <HealthPill health={h.health} label={h.label} />
+              <span className="truncate text-[11px] leading-[15px] text-muted-foreground">
+                {t('targetOn', { date: cv.targetLabel })}
+              </span>
+            </>
+          ) : (
+            <span className="text-[11px] leading-[15px] text-neutral-400">
+              {cv.targetLabel
+                ? t('targetOn', { date: cv.targetLabel })
+                : isActive(c.stage) && c.stage !== 'hired'
+                  ? t('healthNoTarget')
+                  : '—'}
+            </span>
+          )}
+        </span>
+        <span className="flex min-w-0 flex-col">
+          <span className="truncate text-[13px] leading-[18px] text-neutral-700">
+            {t('addedAgo', { days: daysSince(c.createdAt) })}
+          </span>
+          {c.notes && (
+            <span className="truncate text-[11px] leading-[15px] text-muted-foreground">
+              {c.notes}
+            </span>
+          )}
+        </span>
+        <span className="relative z-10 flex flex-wrap items-center gap-1.5 lg:justify-end">
+          {c.stage === 'mobilisation' && c.employeeId && (
+            // The work happens on the person's record: say how far it has got
+            // and take the user there. Nobody moves a mobilising hire by hand.
+            <>
+              <span className="font-mono text-[11px] leading-[15px] text-neutral-700">
+                {cv.progress
+                  ? t('progress', { done: cv.progress.done, total: cv.progress.total })
+                  : t('mobilisationRunning')}
+              </span>
+              <Button
+                variant="outline"
+                size="xs"
+                nativeButton={false}
+                render={<Link href={`/employees/${c.employeeId}?tab=mob`} />}
+              >
+                {t('openOnboarding')}
+              </Button>
+            </>
+          )}
+          {canAdvance && next && (
+            <Button variant="outline" size="xs" disabled={busy} onClick={() => void move(c, next)}>
+              {next === 'mobilisation' ? t('toMobilisation') : t('moveForward')}
+            </Button>
+          )}
+          {canAdvance && direct && (
+            <Button variant="ghost" size="xs" disabled={busy} onClick={() => void move(c, direct)}>
+              {t('onboardDirectly')}
+            </Button>
+          )}
+        </span>
+      </li>
+    );
+  };
+
   return (
     <div className="flex min-w-0 flex-col gap-4">
       {header}
@@ -379,16 +684,14 @@ export default function HiringPage() {
       )}
 
       {!loaded ? (
-        <div className="flex flex-col gap-4" aria-busy="true">
-          <Skeleton className="h-36 w-full rounded-xl" />
-          <div className="flex gap-3 overflow-hidden">
-            {COLUMNS.map((c) => (
-              <Skeleton key={c} className="h-80 w-[276px] shrink-0 rounded-xl" />
-            ))}
-          </div>
+        <div className="flex flex-col gap-3" aria-busy="true">
+          <Skeleton className="h-7 w-full max-w-xl rounded-lg" />
+          <Skeleton className="h-96 w-full rounded-xl" />
         </div>
-      ) : (
+      ) : !canReadCandidates ? (
         <>
+          {/* A reader without candidates (a client manager) sees the roles and
+              how far each has got — never who is in them. */}
           {/* ---- open roles ---- */}
           {roles.length > 0 && (
             <section
@@ -500,212 +803,169 @@ export default function HiringPage() {
               </ul>
             </section>
           )}
-
-          {/* ---- the board ---- */}
-          {canReadCandidates && (
+        </>
+      ) : (
+        <>
+          <div className="flex flex-wrap items-center gap-2">
+            <Input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t('searchPlaceholder')}
+              aria-label={t('searchPlaceholder')}
+              className="h-7 w-full text-sm sm:w-[260px]"
+            />
+            <Select value={fClient} onValueChange={(v) => setFClient(v ?? ALL)}>
+              <SelectTrigger
+                size="sm"
+                className="w-full sm:w-[200px]"
+                aria-label={t('filterClient')}
+              >
+                <SelectValue>
+                  {(v) => (v === ALL ? t('allClients') : clientName(String(v)))}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>{t('allClients')}</SelectItem>
+                {roleClients.map((id) => (
+                  <SelectItem key={id} value={id}>
+                    {clientName(id)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={fStage} onValueChange={(v) => setFStage(v ?? ALL)}>
+              <SelectTrigger size="sm" className="w-full sm:w-[190px]" aria-label={t('factStage')}>
+                <SelectValue>
+                  {(v) =>
+                    v === ALL
+                      ? t('allStages')
+                      : v === ENDED
+                        ? t('notProgressing')
+                        : t(`column.${String(v)}`)
+                  }
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>{t('allStages')}</SelectItem>
+                {COLUMNS.map((col) => (
+                  <SelectItem key={col} value={col}>
+                    {t(`column.${col}`)}
+                  </SelectItem>
+                ))}
+                <SelectItem value={ENDED}>{t('notProgressing')}</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={sort} onValueChange={(v) => setSort((v as SortKey) ?? 'target')}>
+              <SelectTrigger size="sm" className="w-full sm:w-[210px]" aria-label={t('sortBy')}>
+                <SelectValue>{(v) => t('sortValue', { by: t(`sort.${String(v)}`) })}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {SORTS.map((key) => (
+                  <SelectItem key={key} value={key}>
+                    {t(`sort.${key}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {/* One list has no role headings to add from, so it asks which role. */}
+            {!grouped && canAddCandidate && addable.length > 0 && (
+              <Popover open={pickRole} onOpenChange={setPickRole}>
+                <PopoverTrigger render={<Button variant="outline" size="sm" />}>
+                  {t('addCandidate')}
+                </PopoverTrigger>
+                <PopoverContent align="start" className="w-[300px] p-1">
+                  <p className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
+                    {t('addTo')}
+                  </p>
+                  <ul>
+                    {addable.map((v) => (
+                      <li key={v.id}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPickRole(false);
+                            setAddTo(roleSummary(v));
+                          }}
+                          className="flex w-full flex-col gap-px rounded-md px-2 py-1.5 text-start outline-none hover:bg-accent focus-visible:bg-accent"
+                        >
+                          <span className="truncate text-[13px] leading-[17px] font-medium">
+                            {titleOf(v)}
+                          </span>
+                          <span className="truncate text-[11px] leading-[15px] text-muted-foreground">
+                            {dots(locale, clientName(v.clientId), v.department)}
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </PopoverContent>
+              </Popover>
+            )}
+            {/* Under each role, or one list across all of them. */}
             <div
-              role="region"
-              aria-label={t('board')}
-              // Keyboard-reachable: the board scrolls sideways on a narrow screen,
-              // and a scroll area must take focus or its far columns are mouse-only
-              // (UX-11).
-              tabIndex={0}
-              className="flex gap-3 overflow-x-auto pb-2 focus-visible:rounded-xl focus-visible:outline-2 focus-visible:outline-ring"
+              role="group"
+              aria-label={t('arrange.label')}
+              className="ms-auto inline-flex h-7 items-center rounded-lg bg-muted p-0.5"
             >
-              {COLUMNS.map((col) => {
-                const items = board.filter((c) => c.stage === col);
-                const visual = byId(dragId);
-                const over =
-                  overCol === col && !!visual && canDrop(visual.stage, col, visual.nationality);
-                const draggedNow = () => byId(dragRef.current);
-                const legalNow = () => {
-                  const d = draggedNow();
-                  return !!d && canDrop(d.stage, col, d.nationality);
-                };
-                return (
-                  <section
-                    key={col}
-                    aria-labelledby={`col-${col}`}
-                    className="flex w-[276px] shrink-0 flex-col"
-                  >
-                    <div className="flex items-center gap-2 px-1 pt-0.5 pb-2.5">
-                      <span aria-hidden className={cn('size-2 shrink-0 rounded-full', DOT[col])} />
-                      <h2
-                        id={`col-${col}`}
-                        className={cn(
-                          'grow truncate text-[13px] leading-[18px] font-medium',
-                          col === 'mobilisation' && 'text-status-warning',
-                        )}
-                      >
-                        {t(`column.${col}`)}
-                      </h2>
-                      <Badge variant="outline">{items.length}</Badge>
-                    </div>
-                    <div
-                      // Only a legal column accepts: cancelling dragenter AND
-                      // dragover is what makes it a drop target (HTML DnD), so an
-                      // illegal one shows the browser's "not allowed" and never
-                      // receives the drop. Both, because a fast drag can enter a
-                      // column and release before any dragover fires there.
-                      onDragEnter={(e) => {
-                        if (!legalNow()) return;
-                        e.preventDefault();
-                        if (overCol !== col) setOverCol(col);
-                      }}
-                      onDragOver={(e) => {
-                        if (!legalNow()) return;
-                        e.preventDefault();
-                        e.dataTransfer.dropEffect = 'move';
-                        if (overCol !== col) setOverCol(col);
-                      }}
-                      onDragLeave={(e) => {
-                        if (e.currentTarget.contains(e.relatedTarget as Node | null)) return;
-                        if (overCol === col) setOverCol(null);
-                      }}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        const d = draggedNow();
-                        const ok = legalNow();
-                        dragRef.current = null;
-                        setOverCol(null);
-                        setDragId(null);
-                        if (d && ok) void move(d, col);
-                      }}
-                      className={cn(
-                        'flex min-h-80 grow flex-col gap-2.5 rounded-xl p-2 transition-colors',
-                        over ? 'bg-neutral-100 ring-1 ring-neutral-400 ring-inset' : '',
-                      )}
-                    >
-                      {items.map((c) => {
-                        const cv = view(c);
-                        const forward = forwardOf(c.stage, c.nationality);
-                        const next = forward[0] ?? null;
-                        const direct = forward[1] ?? null;
-                        // A mobilising hire is moved by their onboarding, not by hand.
-                        const movable = canAdvance && c.stage !== 'mobilisation';
-                        return (
-                          <article
-                            key={c.id}
-                            draggable={movable}
-                            onDragStart={(e) => {
-                              e.dataTransfer.effectAllowed = 'move';
-                              e.dataTransfer.setData('text/plain', c.id);
-                              dragRef.current = c.id;
-                              setDragId(c.id);
-                            }}
-                            onDragEnd={() => {
-                              dragRef.current = null;
-                              setDragId(null);
-                              setOverCol(null);
-                            }}
-                            className={cn(
-                              'relative flex flex-col gap-2.5 rounded-xl bg-card p-3 ring-1 ring-foreground/10 transition-shadow hover:ring-foreground/20',
-                              movable && 'cursor-grab',
-                              dragId === c.id && 'opacity-40',
-                            )}
-                          >
-                            <div className="flex items-start gap-2.5">
-                              <div className="flex min-w-0 grow flex-col gap-1">
-                                {cv.client && (
-                                  <Badge variant="secondary" className="max-w-full rounded-md">
-                                    <span className="truncate">{cv.client}</span>
-                                  </Badge>
-                                )}
-                                {/* The name opens the dialog; its ::after stretches
-                                    over the card so the whole card is the target,
-                                    with one real button for keyboard and AT. */}
-                                <button
-                                  type="button"
-                                  onClick={() => setOpenCand(c.id)}
-                                  className="truncate text-start text-sm leading-[19px] font-medium after:absolute after:inset-0 after:rounded-xl focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-ring"
-                                >
-                                  {cv.name}
-                                </button>
-                                <span className="truncate text-[11px] leading-[15px] text-muted-foreground">
-                                  {dots(locale, cv.role, cv.nationality)}
-                                </span>
-                              </div>
-                              <span className="flex shrink-0 items-center gap-1">
-                                <Avatar name={cv.name} size="sm" />
-                                {movable && (
-                                  <GripVertical aria-hidden className="size-3.5 text-neutral-300" />
-                                )}
-                              </span>
-                            </div>
-                            <span className="text-[11px] leading-[15px] text-pretty text-muted-foreground">
-                              {c.notes || t('addedAgo', { days: daysSince(c.createdAt) })}
-                            </span>
-                            {(() => {
-                              // SOON-04: the target date and the health worked out from it.
-                              const h = healthOf(c);
-                              return h && cv.targetLabel ? (
-                                <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                                  <HealthPill health={h.health} label={h.label} />
-                                  <span className="text-[11px] leading-[15px] text-muted-foreground">
-                                    {t('targetOn', { date: cv.targetLabel })}
-                                  </span>
-                                </span>
-                              ) : null;
-                            })()}
-                            {c.stage === 'mobilisation' && c.employeeId && (
-                              // The work happens on the person's record: say how
-                              // far it has got and take the user there.
-                              <span className="relative z-10 flex items-center gap-2">
-                                <span className="grow font-mono text-[11px] leading-[15px] text-neutral-700">
-                                  {cv.progress
-                                    ? t('progress', {
-                                        done: cv.progress.done,
-                                        total: cv.progress.total,
-                                      })
-                                    : t('mobilisationRunning')}
-                                </span>
-                                <Button
-                                  variant="outline"
-                                  size="xs"
-                                  nativeButton={false}
-                                  render={<Link href={`/employees/${c.employeeId}?tab=mob`} />}
-                                >
-                                  {t('openOnboarding')}
-                                </Button>
-                              </span>
-                            )}
-                            {canAdvance && next && (
-                              <Button
-                                variant="outline"
-                                size="xs"
-                                disabled={busy}
-                                // Above the stretched name button, so it stays its own target.
-                                className="relative z-10 w-full"
-                                onClick={() => void move(c, next)}
-                              >
-                                {next === 'mobilisation' ? t('toMobilisation') : t('moveForward')}
-                              </Button>
-                            )}
-                            {canAdvance && direct && (
-                              <Button
-                                variant="ghost"
-                                size="xs"
-                                disabled={busy}
-                                className="relative z-10 w-full"
-                                onClick={() => void move(c, direct)}
-                              >
-                                {t('onboardDirectly')}
-                              </Button>
-                            )}
-                          </article>
-                        );
-                      })}
-                      {items.length === 0 && (
-                        <div className="flex min-h-22 items-center justify-center rounded-xl bg-neutral-50 px-3 text-center text-xs leading-4 text-neutral-400">
-                          {canAdvance && col !== 'hired' ? t('dropHere') : t('nothingHere')}
-                        </div>
-                      )}
-                    </div>
-                  </section>
-                );
-              })}
+              {([true, false] as const).map((value) => (
+                <button
+                  key={String(value)}
+                  type="button"
+                  aria-pressed={grouped === value}
+                  onClick={() => arrange(value)}
+                  className={cn(
+                    'h-6 rounded-md px-2.5 text-xs leading-4 font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50',
+                    grouped === value
+                      ? 'bg-background text-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground',
+                  )}
+                >
+                  {value ? t('arrange.byRole') : t('arrange.flat')}
+                </button>
+              ))}
             </div>
-          )}
+          </div>
+
+          <div
+            role="region"
+            aria-label={t('sheet')}
+            className="overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10"
+          >
+            <div
+              className={cn(
+                'hidden bg-neutral-100 px-4 py-2 text-xs leading-4 font-medium text-muted-foreground',
+                COLS,
+              )}
+            >
+              <span>{t('colCandidate')}</span>
+              {!grouped && <span>{t('colRole')}</span>}
+              <span>{t('factNationality')}</span>
+              <span>{t('factStage')}</span>
+              <span>{t('colHealth')}</span>
+              <span>{t('colAdded')}</span>
+              <span className="sr-only">{t('colActions')}</span>
+            </div>
+            {groups.map((group) => (
+              <section
+                key={group.role?.id ?? 'everyone'}
+                className="border-t first:border-t-0 lg:border-t-0"
+              >
+                {group.role && roleHeading(group.role)}
+                {group.people.length > 0 && <ul>{group.people.map((c) => candidateRow(c))}</ul>}
+                {group.people.length === 0 && group.role && (
+                  <p className="border-t px-4 py-3 text-xs leading-4 text-muted-foreground">
+                    {t('noCandidatesYet')}
+                  </p>
+                )}
+              </section>
+            ))}
+            {groups.every((g) => g.people.length === 0) && (!grouped || groups.length === 0) && (
+              <p className="px-4 py-10 text-center text-sm text-muted-foreground">
+                {candidates.length === 0 ? t('noCandidatesYet') : t('noMatch')}
+              </p>
+            )}
+          </div>
         </>
       )}
 

@@ -1894,8 +1894,18 @@ coloured thing in the theme; colours are DATA in `lib/department-tint.ts`, appli
 titles), nationality, iqama, first document due and status; an **Arrange** switch (by company with headings / one list
 with a Client column; remembered in localStorage `people.arrange`); **Sort by** (first document · name · newest). Grouped
 view sorts by company first, so a company continues across a page break. Filters, export, add person and paging
-unchanged. No server change. **Open: previews of Clients, Requests, Hiring and Work queue (three each) are being shown
-to the owner; nothing chosen yet.**
+unchanged. No server change.
+**HIRING-01 done — Hiring is one sheet of candidates; the board is gone (ADR-012 rev. 2, owner decisions).** Of twelve
+previews (Clients, Requests, Hiring, Work queue × 3) the owner took ONE — Hiring A — and chose the sheet INSTEAD of the
+board; the other three lists keep their layouts. `/hiring`: a row per candidate (names · nationality · **stage** as a
+soft pill, `hiring/stage-pill.tsx` + `lib/stage-tint.ts` — the second coloured category, checked by
+`scripts/verify-tints.mjs` with the departments · health + target · added · moves); **Arrange** by role / one list
+(localStorage `hiring.arrange`); search, client, stage ("Not progressing" = those who left the pipeline, otherwise off the
+page) and sort (target · stage · newest). A role's HEADING carries the old roles strip: figures plus Add candidate / Open
+/ Close / Withdraw (empty roles still shown); in One list, Add candidate asks which role. Moves are buttons — one step
+forward on the row, the rest in the candidate's window; no drag (`canDrop` removed). The row's name button stretches over
+the row (`after:absolute after:inset-0`), with the move buttons above it. Client managers still get the roles strip only.
+No server change.
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 - The `truncate` rule (UX-23) cannot find a direction in a line that is ONE right-to-left run inside an element (a

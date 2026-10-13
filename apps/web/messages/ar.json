@@ -2472,11 +2472,9 @@
     "title": "التوظيف",
     "summary": "{count, plural, zero {لا مرشحين} one {مرشح واحد} two {مرشحان} few {# مرشحين} many {# مرشحًا} other {# مرشح}}",
     "summaryClients": "{count, plural, zero {لا عملاء} one {عميل واحد} two {عميلان} few {# عملاء} many {# عميلًا} other {# عميل}}",
-    "summaryDrag": "اسحب البطاقة لتغيير المرحلة",
     "summaryRoles": "{count, plural, zero {لا وظائف} one {وظيفة واحدة} two {وظيفتان} few {# وظائف} many {# وظيفة} other {# وظيفة}}",
     "openRole": "فتح وظيفة",
     "openRoles": "الوظائف المفتوحة",
-    "openRolesHint": "أضف مرشحًا إلى وظيفة فيدخل اللوحة في مرحلة «تقدّم».",
     "openRolesHintRead": "الوظائف الجاري التوظيف لها، وإلى أين وصلت كل منها.",
     "noCandidatesYet": "لا مرشحين بعد",
     "inPipeline": "{count} قيد التوظيف",
@@ -2502,7 +2500,6 @@
       "draft": "حُفظت وظيفة {title} مسودةً."
     },
     "roleOpened": "فُتحت وظيفة {title} لدى {client} · {count} شاغر.",
-    "board": "لوحة التوظيف",
     "column": {
       "applied": "تقدّم",
       "screening": "تم الفرز",
@@ -2511,8 +2508,6 @@
       "hired": "التحق",
       "mobilisation": "التأشيرة والاستقدام"
     },
-    "dropHere": "أفلت مرشحًا هنا",
-    "nothingHere": "لا أحد في هذه المرحلة",
     "addedAgo": "{days, plural, =0 {أُضيف اليوم} one {أُضيف قبل يوم} two {أُضيف قبل يومين} few {أُضيف قبل # أيام} many {أُضيف قبل # يومًا} other {أُضيف قبل # يوم}}",
     "moveForward": "نقل للأمام",
     "moved": "نُقل {name} إلى «{stage}».",
@@ -2603,7 +2598,31 @@
     "targetClear": "مسح",
     "targetSaved": "حُدِّد الموعد المستهدف لـ {name} في {date}.",
     "targetCleared": "مُسح الموعد المستهدف لـ {name}.",
-    "targetError": "لم يُحفظ الموعد المستهدف. حاول مرة أخرى."
+    "targetError": "لم يُحفظ الموعد المستهدف. حاول مرة أخرى.",
+    "searchPlaceholder": "ابحث بمرشح أو وظيفة أو شركة",
+    "filterClient": "العميل",
+    "allClients": "كل العملاء",
+    "allStages": "كل المراحل",
+    "sortBy": "الترتيب حسب",
+    "sortValue": "الترتيب حسب: {by}",
+    "sort": {
+      "target": "الموعد المستهدف",
+      "stage": "المرحلة",
+      "newest": "الأحدث"
+    },
+    "arrange": {
+      "label": "طريقة العرض",
+      "byRole": "حسب الوظيفة",
+      "flat": "قائمة واحدة"
+    },
+    "colCandidate": "المرشح",
+    "colRole": "الوظيفة",
+    "colHealth": "الحالة والموعد",
+    "colAdded": "الإضافة",
+    "colActions": "الإجراءات",
+    "sheet": "المرشحون",
+    "noMatch": "لا مرشحين مطابقين.",
+    "addTo": "إضافة مرشح إلى"
   },
   "queue": {
     "title": "قائمة العمل",

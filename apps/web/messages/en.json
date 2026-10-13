@@ -2472,11 +2472,9 @@
     "title": "Hiring",
     "summary": "{count, plural, one {# candidate} other {# candidates}}",
     "summaryClients": "{count, plural, one {# client} other {# clients}}",
-    "summaryDrag": "drag a card to change stage",
     "summaryRoles": "{count, plural, one {# role} other {# roles}}",
     "openRole": "Open a role",
     "openRoles": "Open roles",
-    "openRolesHint": "Add a candidate against a role and they enter the board at Applied.",
     "openRolesHintRead": "The roles being recruited for, and how far each has got.",
     "noCandidatesYet": "No candidates yet",
     "inPipeline": "{count} in the pipeline",
@@ -2502,7 +2500,6 @@
       "draft": "{title} saved as a draft."
     },
     "roleOpened": "{title} opened at {client} · {count} to fill.",
-    "board": "Hiring board",
     "column": {
       "applied": "Applied",
       "screening": "Screened",
@@ -2511,8 +2508,6 @@
       "hired": "Onboarded",
       "mobilisation": "Visa & mobilisation"
     },
-    "dropHere": "Drop a candidate here",
-    "nothingHere": "Nothing at this stage",
     "addedAgo": "{days, plural, =0 {Added today} one {Added # day ago} other {Added # days ago}}",
     "moveForward": "Move forward",
     "moved": "{name} moved to {stage}.",
@@ -2603,7 +2598,31 @@
     "targetClear": "Clear",
     "targetSaved": "Target for {name} set to {date}.",
     "targetCleared": "Target date cleared for {name}.",
-    "targetError": "The target date was not saved. Try again."
+    "targetError": "The target date was not saved. Try again.",
+    "searchPlaceholder": "Search candidate, role or company",
+    "filterClient": "Client",
+    "allClients": "All clients",
+    "allStages": "All stages",
+    "sortBy": "Sort by",
+    "sortValue": "Sort by: {by}",
+    "sort": {
+      "target": "Target date",
+      "stage": "Stage",
+      "newest": "Newest"
+    },
+    "arrange": {
+      "label": "Arrange",
+      "byRole": "By role",
+      "flat": "One list"
+    },
+    "colCandidate": "Candidate",
+    "colRole": "Role",
+    "colHealth": "Health and target",
+    "colAdded": "Added",
+    "colActions": "Actions",
+    "sheet": "Candidates",
+    "noMatch": "No candidates match.",
+    "addTo": "Add a candidate to"
   },
   "queue": {
     "title": "Work queue",

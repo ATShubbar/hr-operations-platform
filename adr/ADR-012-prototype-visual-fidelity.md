@@ -1,6 +1,6 @@
 # ADR-012 — Pixel-exact fidelity to the People & Gro prototype
 
-- Status: Accepted (rev. 1, 2026-10-13: the People list leaves the prototype's layout, and a department is coloured — PEOPLE-01)
+- Status: Accepted (rev. 1, 2026-10-13: the People list leaves the prototype's layout, and a department is coloured — PEOPLE-01; rev. 2, 2026-10-13: Hiring becomes one sheet of candidates, and a stage is coloured — HIRING-01)
 - Date: 2026-10-03
 - Owner: Ahmed Alshubbar (product decision)
 - Revises: **ADR-005 (Localization)** — the requirement that Arabic renders in a right-to-left
@@ -77,8 +77,24 @@ change; the rest of this decision stands.
   the status colours accepted above, these are held to 4.5:1 (checked in lint): the first
   drawing measured 2.9–4.2 and was darkened.
 
-Whether Clients, Requests, Hiring and the Work queue follow is open: previews are being shown
-to the owner first.
+Whether Clients, Requests, Hiring and the Work queue follow was put to the owner with three
+previews of each (rev. 2).
+
+## Rev. 2 — Hiring (HIRING-01, owner decisions)
+
+Shown three previews each of Clients, Requests, Hiring and the Work queue, the owner chose one:
+"I only want to do version A for Hiring, forget about the rest." Clients, Requests and the Work
+queue keep the prototype's layouts.
+
+- ★ **Hiring is one sheet of candidates, and it replaces the board.** A candidate is a row —
+  names, nationality, stage, health and target date, how long since added — arranged under
+  their role or as one list, like People. Asked directly whether the six-column board should
+  stay as a second view, the owner chose the sheet alone: a candidate is moved by a button on
+  the row or from their window, and dragging between columns is gone. Every move the board
+  allowed is kept; what the roles strip carried now sits on each role's heading.
+- ★ **A candidate's stage is the second coloured category**, to the same rule as the department:
+  it says which stage, never how the candidate is doing (the health pill keeps the status
+  tones); leaving the pipeline is grey; every pair is held to 4.5:1 in lint.
 
 ## Links
 - ADR-005 (localization) — revised here on layout direction only
