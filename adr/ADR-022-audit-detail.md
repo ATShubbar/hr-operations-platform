@@ -1,6 +1,6 @@
 # ADR-022 — The audit trail records what changed, and History shows it
 
-- Status: Accepted (rev. 1, 2026-10-12: three points settled while building HIST-01)
+- Status: Accepted (rev. 1, 2026-10-12: three points settled while building HIST-01; rev. 2, 2026-10-13: the bank account number confirmed in full)
 - Date: 2026-10-12
 - Owner: Ahmed Alshubbar (product decision; AUDIT-10)
 - Amends: **architecture.md** (Audit Logs, the History surface). Revises **ADR-017** (what a dependant edit records). Reverses two earlier build rules: EMP-01 ("salary and government-data values never enter the audit trail") and AUDIT-06 ("a person's History never carries before/after"). Now **v1.16**.
@@ -69,6 +69,18 @@ For History: show details only to the two roles that read the whole trail, or **
   GRO officer on the record, so the invitation's email is hidden from them in History.
 - **Each kind of record's details need the permission that reads it**, and a kind nobody has
   decided about shows no details to anyone. Ids that only locate a row never leave the server.
+
+## Rev. 2 — the bank account number, confirmed
+
+The decision lists the bank account number among the pay values recorded old and new. It was put
+to the owner on its own once the screens existed, with masking to the last four digits as the
+alternative. ★ Owner: **it shows in full** — in the audit trail, in its export, and in a
+person's History for readers who may read pay. Nothing was changed by this revision; the code
+already did so.
+
+Unchanged, and not part of this decision: an employee's own file still shows their account
+number as its last four digits (ADR-011), and the People export still carries no account number
+(ADR-013 rev. 3).
 
 ## Build
 

@@ -42,6 +42,12 @@ per event and no values.
 - Entries written before the change cannot be filled in.
 - Client managers and employees read neither surface; nothing changes for them.
 
+## Confirmed afterwards (2026-10-13)
+
+Asked separately once the screens existed: the bank account number stays recorded and shown **in
+full** (owner: "it should show in full"); masking to four digits was the alternative. ADR-022
+rev. 2. No code change.
+
 ## Next
 
 AUDIT-11 (record what changed) → AUDIT-12 (readable Audit trail) → HIST-01 (History details) →
