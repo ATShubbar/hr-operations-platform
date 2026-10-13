@@ -1886,6 +1886,16 @@ History tab renders `ChangeList` + a line per kind withheld. API **990/990**. Ne
 itself, `GET /audit?actorId=`, already took any account). API **995/995**. Open afterwards: the Requests page redesign
 (previews parked on local branch `preview/requests-layouts`), SOON-02 (Saved views, design first), WS-21 backup restore
 test, editable roles (decision card first), NC-07 (needs SMTP), GCP-07 (owner).
+**PEOPLE-01 done — the People page is "one sheet" (ADR-012 rev. 1, owner decisions).** Chosen from three previews after a
+reference the owner liked, with the condition "stay with our current theme". `/employees`: rows as ONE link each in a
+ringed card (stacked below `lg`, no sideways scroll), with **department** (`components/department-pill.tsx` — the one
+coloured thing in the theme; colours are DATA in `lib/department-tint.ts`, applied as a style, and
+`scripts/verify-department-tints.mjs` holds every pair to 4.5:1 in the web lint), a two-tone **`JobTitle`** (English
+titles), nationality, iqama, first document due and status; an **Arrange** switch (by company with headings / one list
+with a Client column; remembered in localStorage `people.arrange`); **Sort by** (first document · name · newest). Grouped
+view sorts by company first, so a company continues across a page break. Filters, export, add person and paging
+unchanged. No server change. **Open: previews of Clients, Requests, Hiring and Work queue (three each) are being shown
+to the owner; nothing chosen yet.**
 
 ## Technical landmines (each cost real debugging — do not rediscover)
 - The `truncate` rule (UX-23) cannot find a direction in a line that is ONE right-to-left run inside an element (a

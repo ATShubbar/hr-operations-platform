@@ -1906,7 +1906,6 @@
   "people": {
     "title": "People",
     "summaryCount": "{count, plural, one {# employee} other {# employees}}",
-    "summarySorted": "sorted by the document that expires first",
     "summaryBand": "expiring in {from}–{to} days",
     "summaryOverdue": "already expired",
     "exportRegister": "Export register",
@@ -1979,6 +1978,25 @@
       "errClient": "Choose a client company",
       "saveError": "Could not add the person. Check the details and try again.",
       "added": "{name} added to {client} · identifiers still pending."
+    },
+    "colDepartment": "Department",
+    "colStatus": "Status",
+    "sortBy": "Sort by",
+    "sortValue": "Sort by: {by}",
+    "sort": {
+      "doc": "First document due",
+      "name": "Name",
+      "newest": "Newest employees"
+    },
+    "sorted": {
+      "doc": "sorted by the document that expires first",
+      "name": "sorted by name",
+      "newest": "newest employees first"
+    },
+    "arrange": {
+      "label": "Arrange",
+      "grouped": "By company",
+      "flat": "One list"
     }
   },
   "person": {

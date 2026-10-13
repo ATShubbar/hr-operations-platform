@@ -1,6 +1,6 @@
 # ADR-012 — Pixel-exact fidelity to the People & Gro prototype
 
-- Status: Accepted
+- Status: Accepted (rev. 1, 2026-10-13: the People list leaves the prototype's layout, and a department is coloured — PEOPLE-01)
 - Date: 2026-10-03
 - Owner: Ahmed Alshubbar (product decision)
 - Revises: **ADR-005 (Localization)** — the requirement that Arabic renders in a right-to-left
@@ -59,6 +59,26 @@ with keeping them recommended, and chose the **pixel-exact copy**.
 - Status colour is now below AA for text; colour is still never the only signal (every pill
   has its label and a dot), so WCAG 1.4.1 is still met — 1.4.3 contrast is not.
 - **Reversal is cheap by design:** set `dir` back from the locale and restore the status tones.
+
+## Rev. 1 — the People list (PEOPLE-01, owner decisions)
+
+The owner brought a reference they liked for the People list and chose, from three previews
+built on the real data, a layout that is **not** the prototype's People screen. Two things
+change; the rest of this decision stands.
+
+- ★ **The People list is "one sheet", not the prototype's table.** Department, a two-tone job
+  title and the employment status join each row; a switch arranges people under their company
+  or as one list; the list can be ordered by first document due, by name or by newest. It is
+  drawn in the theme as it is — white page, ringed card, grey header band, the existing
+  controls, chips and status pills. The owner's instruction was "it should stay with our
+  current theme": the reference's warm ground and floating rows were tried and not taken.
+- ★ **A department is shown in a soft colour** — the one coloured thing in the monochrome
+  theme. It marks "the same department" and nothing else; status keeps its own pill. Unlike
+  the status colours accepted above, these are held to 4.5:1 (checked in lint): the first
+  drawing measured 2.9–4.2 and was darkened.
+
+Whether Clients, Requests, Hiring and the Work queue follow is open: previews are being shown
+to the owner first.
 
 ## Links
 - ADR-005 (localization) — revised here on layout direction only

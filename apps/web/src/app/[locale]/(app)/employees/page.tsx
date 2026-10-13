@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { ChevronRight } from 'lucide-react';
 import type {
   ClientListResponse,
   ClientResponse,
@@ -30,7 +29,11 @@ import {
   type DependantDocKey,
 } from '@/lib/dependant-docs';
 import type { Locale } from '@/lib/employee-format';
+import { toneFor } from '@/lib/status-tone';
 import { cn } from '@/lib/utils';
+import { DepartmentPill } from '@/components/department-pill';
+import { JobTitle } from '@/components/job-title';
+import { StatusPill } from '@/components/ui/status-pill';
 import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -57,10 +60,15 @@ import { dateFormat, hijriDate } from '@/lib/dates';
 import { dots } from '@/lib/pieces';
 import { ExportRegisterButton } from '@/components/export-register-button';
 
-// People (DS-05) — the prototype's People screen, laid out as the owner's design
-// has it (ADR-012): every employee judged by the document that expires FIRST,
-// sorted soonest-first, with a client / document / time-left filter row and a
-// coloured "days left" chip.
+// People — every employee judged by the document that expires FIRST, with a
+// client / document / time-left filter row and a coloured "days left" chip
+// (DS-05, from the prototype).
+//
+// PEOPLE-01 (ADR-012 rev. 1, owner decisions) changed the list itself: it is one
+// sheet in the app's own theme, with the department (a soft-coloured pill — the
+// one coloured thing in the theme), a two-tone job title and the employment
+// status on each row; a SWITCH between people grouped under their company and
+// one flat list (in which the company is a column); and a choice of order.
 //
 // The expiry dates come from the employee record itself: iqama, work permit,
 // passport, medical insurance and driving licence from government data, the
@@ -91,15 +99,23 @@ interface Focus {
 const PAGE = 50;
 const ALL = 'all';
 
-// The prototype's 6-column grid (2.2fr 1.5fr 1.4fr 1.3fr 1.5fr 40px), as table
-// columns so the list keeps real table semantics. A <col> ignores calc(), so the
-// five flexible columns take their share of 96% and the browser spreads the
-// remainder proportionally — measured exact at 984px (263/179/167/155/179/40).
-const FR = [2.2, 1.5, 1.4, 1.3, 1.5];
-const FR_TOTAL = FR.reduce((a, b) => a + b, 0);
+// PEOPLE-01: how the list is ordered, and how it is arranged.
+const SORTS = ['doc', 'name', 'newest'] as const;
+type SortKey = (typeof SORTS)[number];
+// Remembered on this device: a convenience, never something the page depends on.
+const ARRANGE_KEY = 'people.arrange';
+
+// The sheet's columns from `lg` up; below it a person is a stacked block, so the
+// list never scrolls sideways on a phone. Grouped: the company is the heading.
+// One list: the company is a column.
+const GROUPED_COLS =
+  'lg:grid lg:grid-cols-[minmax(0,2.1fr)_minmax(0,1.2fr)_minmax(0,1.5fr)_minmax(0,1.2fr)_minmax(0,1.4fr)_minmax(0,0.9fr)] lg:items-center lg:gap-4';
+const FLAT_COLS =
+  'lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(0,1.4fr)_minmax(0,1.1fr)_minmax(0,1.4fr)_minmax(0,1.1fr)_minmax(0,1.3fr)_minmax(0,0.8fr)] lg:items-center lg:gap-3';
 
 export default function PeoplePage() {
   const t = useTranslations('people');
+  const te = useTranslations('employees');
   const locale = useLocale() as Locale;
   const router = useRouter();
   const canCreate = useCan('employee.create');
@@ -118,6 +134,27 @@ export default function PeoplePage() {
   const [dependants, setDependants] = useState<DependantExpiry[] | null>(null);
   const [fBand, setFBand] = useState<(typeof BANDS)[number] | typeof ALL>(ALL);
   const [page, setPage] = useState(0);
+  const [sort, setSort] = useState<SortKey>('doc');
+  // Grouped under each company, or one list. Opens grouped; the last choice is
+  // remembered on this device (read after mount, so the server and the first
+  // paint agree).
+  const [grouped, setGrouped] = useState(true);
+  useEffect(() => {
+    try {
+      if (window.localStorage.getItem(ARRANGE_KEY) === 'flat') setGrouped(false);
+    } catch {
+      // No storage (a private window): the page opens grouped.
+    }
+  }, []);
+  const arrange = (value: boolean) => {
+    setGrouped(value);
+    setPage(0);
+    try {
+      window.localStorage.setItem(ARRANGE_KEY, value ? 'grouped' : 'flat');
+    } catch {
+      // Not remembered; nothing else depends on it.
+    }
+  };
 
   async function load() {
     setLoading(true);
@@ -244,18 +281,46 @@ export default function PeoplePage() {
         // prototype's rule); with neither set, nobody is dropped.
         .filter(({ doc }) => (narrowing ? doc !== null && inBand(doc.days) : true))
         .sort((a, b) => {
-          if (a.doc && b.doc) return a.doc.days - b.doc.days;
-          if (a.doc) return -1;
-          if (b.doc) return 1;
+          // Grouped: a company's people stay together, companies by name — so a
+          // company continues across a page break rather than being scattered.
+          if (grouped && a.e.clientId !== b.e.clientId) {
+            return clientName(a.e.clientId).localeCompare(clientName(b.e.clientId), locale);
+          }
+          if (sort === 'name') return name(a.e).localeCompare(name(b.e), locale);
+          if (sort === 'newest') {
+            const newest = (b.e.hireDate ?? '').localeCompare(a.e.hireDate ?? '');
+            if (newest !== 0) return newest;
+          } else {
+            // The document that expires first; people with none come last.
+            if (a.doc && b.doc && a.doc.days !== b.doc.days) return a.doc.days - b.doc.days;
+            if (a.doc && !b.doc) return -1;
+            if (b.doc && !a.doc) return 1;
+          }
           return name(a.e).localeCompare(name(b.e), locale);
         })
     );
     // focusDoc/inBand/name read the filter state listed here.
-  }, [employees, clients, dependants, search, fClient, fDoc, fBand, locale]);
+  }, [employees, clients, dependants, search, fClient, fDoc, fBand, locale, sort, grouped]);
 
   const pages = Math.max(1, Math.ceil(rows.length / PAGE));
   const current = Math.min(page, pages - 1);
   const visible = rows.slice(current * PAGE, current * PAGE + PAGE);
+  // The page's people under their company headings — or all under one, unnamed.
+  const groups = (() => {
+    if (!grouped) return [{ id: 'everyone', name: '', people: visible }];
+    const out: { id: string; name: string; people: typeof visible }[] = [];
+    for (const row of visible) {
+      const last = out[out.length - 1];
+      if (last && last.id === row.e.clientId) last.people.push(row);
+      else out.push({ id: row.e.clientId, name: clientName(row.e.clientId), people: [row] });
+    }
+    return out;
+  })();
+  // How many of each company the FILTERS keep — a heading shows the whole
+  // company's count, not only the part of it on this page.
+  const perCompany = new Map<string, number>();
+  for (const r of rows) perCompany.set(r.e.clientId, (perCompany.get(r.e.clientId) ?? 0) + 1);
+  const COLS = grouped ? GROUPED_COLS : FLAT_COLS;
   const filtered = fClient !== ALL || fDoc !== ALL || fBand !== ALL;
   // The export sends the rows on screen only when something narrows them.
   const narrowed = filtered || search.trim() !== '';
@@ -271,7 +336,7 @@ export default function PeoplePage() {
           : // Two slots, not one "8–14" value: a range passed as a single value is
             // drawn left to right inside an Arabic sentence (UX-20).
             t('summaryBand', { from: fBand.split('-')[0] ?? '', to: fBand.split('-')[1] ?? '' });
-    if (!doc && !band) return dots(locale, count, t('summarySorted'));
+    if (!doc && !band) return dots(locale, count, t(`sorted.${sort}`));
     // "3 people expiring in 8–14 days": the band continues the count's sentence.
     if (!doc) return `${count} ${band}`;
     return dots(locale, count, band ? `${doc} ${band}` : doc);
@@ -464,6 +529,47 @@ export default function PeoplePage() {
             {t('clearFilters')}
           </Button>
         )}
+        <Select
+          value={sort}
+          onValueChange={(v) => {
+            setSort((v as SortKey) ?? 'doc');
+            setPage(0);
+          }}
+        >
+          <SelectTrigger size="sm" className="w-[240px] max-w-full" aria-label={t('sortBy')}>
+            <SelectValue>{(v) => t('sortValue', { by: t(`sort.${String(v)}`) })}</SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {SORTS.map((key) => (
+              <SelectItem key={key} value={key}>
+                {t(`sort.${key}`)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {/* Grouped under each company, or one list across all of them. */}
+        <div
+          role="group"
+          aria-label={t('arrange.label')}
+          className="ms-auto inline-flex h-7 items-center rounded-lg bg-muted p-0.5"
+        >
+          {([true, false] as const).map((value) => (
+            <button
+              key={String(value)}
+              type="button"
+              aria-pressed={grouped === value}
+              onClick={() => arrange(value)}
+              className={cn(
+                'h-6 rounded-md px-2.5 text-xs leading-4 font-medium transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50',
+                grouped === value
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              {value ? t('arrange.grouped') : t('arrange.flat')}
+            </button>
+          ))}
+        </div>
       </div>
 
       {error && (
@@ -471,44 +577,41 @@ export default function PeoplePage() {
       )}
 
       <div className="overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10">
-        {/* Scrolls sideways on a phone, and is a keyboard stop so that scroll is
-            reachable (UX-11). */}
         <div
-          role="region"
-          aria-label={t('title')}
-          tabIndex={0}
-          className="overflow-x-auto focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          className={cn(
+            'hidden bg-neutral-100 px-4 py-2 text-xs leading-4 font-medium text-muted-foreground',
+            COLS,
+          )}
         >
-          <table className="w-full min-w-[860px] table-fixed border-separate border-spacing-0">
-            <colgroup>
-              {FR.map((fr, i) => (
-                <col key={i} style={{ width: `${((fr / FR_TOTAL) * 96).toFixed(3)}%` }} />
-              ))}
-              <col style={{ width: 40 }} />
-            </colgroup>
-            <thead>
-              <tr className="bg-neutral-100 text-start text-xs leading-4 font-medium text-muted-foreground">
-                <th className="px-4 py-2 text-start font-medium">{t('colEmployee')}</th>
-                <th className="px-4 py-2 text-start font-medium">{t('colClient')}</th>
-                <th className="px-4 py-2 text-start font-medium">{t('colPosition')}</th>
-                <th className="px-4 py-2 text-start font-medium">{t('colIqama')}</th>
-                <th className="px-4 py-2 text-start font-medium">
-                  {fDoc === ALL ? t('colFirstDue') : t('colDocExpiry', { doc: docLabel(fDoc) })}
-                </th>
-                <th aria-hidden />
-              </tr>
-            </thead>
-            <tbody>
-              {loading &&
-                Array.from({ length: 8 }, (_, i) => (
-                  <tr key={i} className="h-14 [&>td]:border-t">
-                    <td colSpan={6} className="px-4">
-                      <Skeleton className="h-4 w-1/2" />
-                    </td>
-                  </tr>
-                ))}
-              {!loading &&
-                visible.map(({ e, doc }) => {
+          <span>{t('colEmployee')}</span>
+          {!grouped && <span>{t('colClient')}</span>}
+          <span>{t('colDepartment')}</span>
+          <span>{t('colPosition')}</span>
+          <span>{t('colIqama')}</span>
+          <span>
+            {fDoc === ALL ? t('colFirstDue') : t('colDocExpiry', { doc: docLabel(fDoc) })}
+          </span>
+          <span>{t('colStatus')}</span>
+        </div>
+        {loading &&
+          Array.from({ length: 8 }, (_, i) => (
+            <div key={i} className="flex h-14 items-center border-t px-4">
+              <Skeleton className="h-4 w-1/2" />
+            </div>
+          ))}
+        {!loading &&
+          groups.map((group) => (
+            <section key={group.id} aria-label={group.name || t('title')}>
+              {grouped && (
+                <h2 className="flex items-center gap-2 border-t bg-neutral-50 px-4 py-1.5 text-xs leading-4 font-medium">
+                  <span className="truncate">{group.name}</span>
+                  <span className="text-muted-foreground tabular-nums">
+                    {perCompany.get(group.id) ?? group.people.length}
+                  </span>
+                </h2>
+              )}
+              <ul>
+                {group.people.map(({ e, doc }) => {
                   // Under a dependant filter the row opens where the dependants are.
                   const href =
                     fDoc !== ALL && depKeyOf(fDoc)
@@ -516,93 +619,93 @@ export default function PeoplePage() {
                       : `/employees/${e.id}`;
                   const iqama = e.govdata?.iqamaExpiry ?? null;
                   return (
-                    // The row is a mouse target as in the prototype; the NAME is
-                    // the real link, so keyboard and screen-reader users reach the
-                    // same place without a focus stop per cell.
-                    <tr
-                      key={e.id}
-                      onClick={() => router.push(href)}
-                      className="h-14 cursor-pointer transition-colors hover:bg-muted/40 [&>td]:border-t"
-                    >
-                      <td className="px-4">
-                        <span className="flex items-center gap-2.5">
+                    <li key={e.id} className="border-t">
+                      {/* The whole row is ONE link: one focus stop per person,
+                          named by everything on the row. */}
+                      <Link
+                        href={href}
+                        className={cn(
+                          'flex min-h-14 flex-col gap-2 px-4 py-2.5 transition-colors outline-none hover:bg-muted/40 focus-visible:bg-muted/60',
+                          COLS,
+                        )}
+                      >
+                        <span className="flex min-w-0 items-center gap-2.5">
                           <Avatar name={e.name.en} size="sm" />
                           <span className="flex min-w-0 flex-col">
-                            <Link
-                              href={href}
-                              onClick={(ev) => ev.stopPropagation()}
-                              className="truncate text-sm leading-[19px] font-medium outline-none hover:underline focus-visible:underline"
-                            >
-                              {e.name.en}
-                            </Link>
-                            <span
-                              dir="rtl"
-                              // The prototype: direction rtl, aligned LEFT — in an
-                              // rtl box that is the END edge.
-                              className="text-end text-xs leading-4 text-muted-foreground"
-                            >
-                              {e.name.ar}
+                            <span className="truncate text-sm leading-[19px] font-medium">
+                              {name(e)}
+                            </span>
+                            <span className="truncate text-xs leading-4 text-muted-foreground">
+                              {locale === 'ar' ? e.name.en : e.name.ar}
                             </span>
                           </span>
                         </span>
-                      </td>
-                      <td className="truncate px-4 text-[13px] leading-[18px] text-neutral-700">
-                        {clientName(e.clientId)}
-                      </td>
-                      <td className="px-4">
-                        <span className="flex flex-col">
-                          <span className="truncate text-[13px] leading-[18px]">{position(e)}</span>
+                        {!grouped && (
+                          <span className="truncate text-[13px] leading-[18px] text-neutral-700">
+                            {clientName(e.clientId)}
+                          </span>
+                        )}
+                        <span className="min-w-0">
+                          <DepartmentPill department={e.department} />
+                        </span>
+                        <span className="flex min-w-0 flex-col">
+                          <JobTitle
+                            title={position(e)}
+                            className="truncate text-[13px] leading-[18px]"
+                          />
                           <span className="truncate text-[11px] leading-[15px] text-muted-foreground">
                             {nationalityName(e.nationality)}
                           </span>
                         </span>
-                      </td>
-                      <td className="px-4">
-                        {isSaudi(e) || !iqama ? (
-                          <span className="text-[13px] leading-[18px] text-neutral-400">
-                            {isSaudi(e) ? t('noExpiry') : '—'}
-                          </span>
-                        ) : (
-                          <span className="flex flex-col">
-                            <span className="text-[13px] leading-[18px]">{shortDate(iqama)}</span>
-                            <span className="text-[10px] leading-[14px] text-neutral-400">
-                              {hijriDate(new Date(iqama), locale)}
+                        <span className="flex min-w-0 flex-col">
+                          {isSaudi(e) || !iqama ? (
+                            <span className="text-[13px] leading-[18px] text-neutral-400">
+                              {isSaudi(e) ? t('noExpiry') : '—'}
                             </span>
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4">
-                        {doc ? (
-                          <span className="flex min-w-0 items-center gap-2">
-                            <span
-                              className={cn(
-                                'inline-flex h-5 shrink-0 items-center rounded-full px-2 font-mono text-[11px] leading-5 whitespace-nowrap',
-                                chipClass(doc.days),
-                              )}
-                            >
-                              {doc.days < 0
-                                ? t('over', { n: Math.abs(doc.days) })
-                                : t('left', { n: doc.days })}
-                            </span>
-                            <span className="truncate text-xs leading-4 text-muted-foreground">
-                              {doc.label}
-                            </span>
-                          </span>
-                        ) : (
-                          <span className="font-mono text-[11px] text-neutral-400">—</span>
-                        )}
-                      </td>
-                      <td aria-hidden className="text-neutral-400">
-                        <span className="flex justify-center">
-                          <ChevronRight className="size-4" />
+                          ) : (
+                            <>
+                              <span className="truncate text-[13px] leading-[18px]">
+                                {shortDate(iqama)}
+                              </span>
+                              <span className="truncate text-[10px] leading-[14px] text-neutral-400">
+                                {hijriDate(new Date(iqama), locale)}
+                              </span>
+                            </>
+                          )}
                         </span>
-                      </td>
-                    </tr>
+                        <span className="flex min-w-0 items-center gap-2">
+                          {doc ? (
+                            <>
+                              <span
+                                className={cn(
+                                  'inline-flex h-5 shrink-0 items-center rounded-full px-2 font-mono text-[11px] leading-5 whitespace-nowrap',
+                                  chipClass(doc.days),
+                                )}
+                              >
+                                {doc.days < 0
+                                  ? t('over', { n: Math.abs(doc.days) })
+                                  : t('left', { n: doc.days })}
+                              </span>
+                              <span className="truncate text-xs leading-4 text-muted-foreground">
+                                {doc.label}
+                              </span>
+                            </>
+                          ) : (
+                            <span className="font-mono text-[11px] text-neutral-400">—</span>
+                          )}
+                        </span>
+                        <span>
+                          <StatusPill tone={toneFor('employee', e.employmentStatus)}>
+                            {te(`status.${e.employmentStatus}`)}
+                          </StatusPill>
+                        </span>
+                      </Link>
+                    </li>
                   );
                 })}
-            </tbody>
-          </table>
-        </div>
+              </ul>
+            </section>
+          ))}
 
         {!loading && rows.length === 0 && (
           <div className="border-t p-6">
